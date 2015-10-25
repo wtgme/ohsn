@@ -1,0 +1,11 @@
+Access Token	3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G
+Access Token Secret	HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO
+Access Level	Read-only
+Owner	drbnev
+Owner ID	3034707280
+
+Consumer Key (API Key)	Mfm5oNdGSPMvwhZcB8N4MlsL8
+Consumer Secret (API Secret)	C0rbmJP0uKbuF6xcT6aR5vFOV9fS4L1965TKOH97pSqj3NJ1mP
+Access Level	Read-only (modify app permissions)
+Owner	drbnev
+Owner ID	3034707280
