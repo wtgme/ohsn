@@ -15,7 +15,7 @@ import pymongo
 
 
 MONGOURL = 'localhost'
-MONGOUSER =  'harold'
+MONGOUSER = 'harold'
 DBPASSWD = 'AcKerTalksMaChine'
 DBNAME = 'echelon'
 MONGOAUTH = 'mongodb://' + MONGOUSER + ':' + DBPASSWD + '@' + MONGOURL + '/' + DBNAME

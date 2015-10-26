@@ -2,7 +2,11 @@
 """
 Created on Wed Jun 03 03:43:09 2015
 
-@author: home
+@author: wt
+
+crawl stream with keyword-filtering
+Keywords are in keywords.txt
+
 """
 
 from twython import TwythonStreamer
@@ -11,13 +15,14 @@ import imghdr
 import os
 import ConfigParser
 import datetime
-from pymongo import Connection
+import pymongo
 import logging
+import util.db_util as dbutil
 #import time
 #from twython import Twython, TwythonRateLimitError
 
 config = ConfigParser.ConfigParser()
-config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'streamer.cfg'))
+config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'twitterAPI.cfg'))
 
 # spin up twitter api
 APP_KEY = config.get('credentials', 'app_key')
@@ -27,12 +32,9 @@ OAUTH_TOKEN_SECRET = config.get('credentials', 'oath_token_secret')
 print('loaded configuation')
 
 # spin up database
-DBNAME = 'twitter_test'
-COLLECTION = 'stream_keywords'
-print(DBNAME)
-print(COLLECTION)
-conn = Connection()
-db = conn[DBNAME]
+DBNAME = 'stream'
+COLLECTION = 'streamtrack'
+db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
 
 
@@ -94,7 +96,6 @@ while True:
         with open('keywords.txt', 'r') as fo:
             for line in fo.readlines():
                 track_list.append(line.strip())
-        # print ','.join(track_list)
         stream.statuses.filter(language=['en'], track=','.join(track_list))
     except:
         print "error to file"

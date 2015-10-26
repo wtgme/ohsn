@@ -7,7 +7,7 @@ Created on Tue Jun 23 13:19:30 2015
 import pymongo
 
 
-MONGOURL = 'aicvm-bjn1c13-1.ecs.soton.ac.uk'
+MONGOURL = 'localhost'
 MONGOUSER =  'harold'
 DBPASSWD = 'AcKerTalksMaChine'
 DBNAME = 'echelon'
