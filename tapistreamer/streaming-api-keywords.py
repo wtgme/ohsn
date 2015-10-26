@@ -6,53 +6,50 @@ Created on Wed Jun 03 03:43:09 2015
 """
 
 from twython import TwythonStreamer
-
 import urllib
 import imghdr
 import os
 import ConfigParser
 import datetime
 from pymongo import Connection
+import logging
 #import time
 #from twython import Twython, TwythonRateLimitError
 
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'streamer.cfg'))
 
- 
 # spin up twitter api
 APP_KEY = config.get('credentials', 'app_key')
 APP_SECRET = config.get('credentials', 'app_secret')
 OAUTH_TOKEN = config.get('credentials', 'oath_token')
 OAUTH_TOKEN_SECRET = config.get('credentials', 'oath_token_secret')
+print('loaded configuation')
 
 # spin up database
 DBNAME = 'twitter_test'
-COLLECTION = 'stream'
+COLLECTION = 'stream_keywords'
 print(DBNAME)
 print(COLLECTION)
 conn = Connection()
 db = conn[DBNAME]
 tweets = db[COLLECTION]
 
-print("twitter connection and database connection configured")
 
+
+print("twitter connection and database connection configured")
+logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
 class MyStreamer(TwythonStreamer):
     def on_success(self, data):
         if 'warning' in data:
-            print data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full']
-            output = open("streaming-warnings.log","w")
-            output.write( data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
-            output.close()
+            logging.warning(data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
         if 'text' in data:
             store_tweet(data)
             # print data['user']['screen_name'].encode('utf-8') + "\t" + data['text'].encode('utf-8').replace('\n', ' ') 
-            
+
     def on_error(self, status_code, data):
         print status_code
-        output = open("streaming-errors.log","w")
-        output.write( data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
-        output.close()
+        logging.error(data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
 
         # Want to stop trying to get data because of the error?
         # Uncomment the next line!
@@ -66,10 +63,10 @@ def get_pictures(tweet):
                 if item['type']=='photo':
                     # print "PHOTO!!!"
                     urllib.urlretrieve(item['media_url_https'], 'api-timelines-scraper-media/' + item['id_str'])
-                    # code to get the extension.... 
+                    # code to get the extension....
                     ext = imghdr.what('api-timelines-scraper-media/' + item['id_str'])
                     os.rename('api-timelines-scraper-media/' + item['id_str'], 'api-timelines-scraper-media/' + item['id_str'] + "." + ext)
-        except: 
+        except:
             pass
 
 def store_tweet(tweet, collection=tweets, pictures=False):
@@ -82,7 +79,7 @@ def store_tweet(tweet, collection=tweets, pictures=False):
     # get pictures in tweet...
     if pictures:
         get_pictures(tweet)
- 
+
     #print "TODO: alter the schema of the tweet to match the edge network spec from the network miner..."
     #print "TODO: make the tweet id a unique index to avoid duplicates... db.collection.createIndex( { a: 1 }, { unique: true } )"
     collection.insert(tweet)
@@ -92,7 +89,12 @@ while True:
     try:
         stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
         # https://dev.twitter.com/streaming/overview/request-parameters                                 
-        # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])                                 
-        stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW, thinspiration, thinspo, bonespo, bonespiration'])
+        # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])
+        track_list = []
+        with open('keywords.txt', 'r') as fo:
+            for line in fo.readlines():
+                track_list.append(line.strip())
+        # print ','.join(track_list)
+        stream.statuses.filter(language=['en'], track=','.join(track_list))
     except:
         print "error to file"

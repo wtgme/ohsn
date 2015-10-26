@@ -1,6 +1,6 @@
 # create a new user and db
 #use summerschool
-#db.addUser( { user: "ramine", pwd: "itle1slearn5", roles: [ "readWrite", "dbAdmin" ]})
+#db.createUser( { user: "ramine", pwd: "itle1slearn5", roles: [ "readWrite", "dbAdmin" ]})
 #db.system.users.find()
 #exit
 # user: ramine
