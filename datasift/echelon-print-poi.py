@@ -19,14 +19,14 @@ import pymongo
 echelon = False
 
 if echelon:
-    MONGOURL = 'aicvm-bjn1c13-1.ecs.soton.ac.uk'
+    MONGOURL = 'localhost'
     MONGOUSER =  'harold'
     DBPASSWD = 'AcKerTalksMaChine'
     DBNAME = 'echelon'
     MONGOAUTH = 'mongodb://' + MONGOUSER + ':' + DBPASSWD + '@' + MONGOURL + '/' + DBNAME
     POI_COL = 'poi'
 else:
-    MONGOURL = 'aicvm-bjn1c13-1.ecs.soton.ac.uk'
+    MONGOURL = 'localhost'
     MONGOUSER =  'dsUser'
     DBPASSWD = 'SiftLittleMentsals'
     DBNAME = 'datasift'
