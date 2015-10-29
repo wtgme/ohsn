@@ -9,16 +9,20 @@ from twython import Twython, TwythonRateLimitError, TwythonAuthError, TwythonErr
 import ConfigParser
 
 
-config = ConfigParser.ConfigParser()
-config.read('scraper.cfg')
+def twitter_auth():
+    config = ConfigParser.ConfigParser()
+    config.read('scraper.cfg')
+    # spin up twitter api
+    APP_KEY = config.get('credentials', 'app_key')
+    APP_SECRET = config.get('credentials', 'app_secret')
+    OAUTH_TOKEN = config.get('credentials', 'oath_token')
+    OAUTH_TOKEN_SECRET = config.get('credentials', 'oath_token_secret')
 
-# spin up twitter api
-APP_KEY = config.get('credentials', 'app_key')
-APP_SECRET = config.get('credentials', 'app_secret')
-OAUTH_TOKEN = config.get('credentials', 'oath_token')
-OAUTH_TOKEN_SECRET = config.get('credentials', 'oath_token_secret')
-
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
-
+    try:
+        twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+        twitter.verify_credentials()
+        return twitter
+    except Exception as e:
+        print str(e)
+        exit(1)
 
