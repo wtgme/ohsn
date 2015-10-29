@@ -7,11 +7,13 @@ Created on 21:25, 26/10/15
 
 from twython import Twython, TwythonRateLimitError, TwythonAuthError, TwythonError
 import ConfigParser
+import os
 
 
 def twitter_auth():
+
     config = ConfigParser.ConfigParser()
-    config.read('scraper.cfg')
+    config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg'))
     # spin up twitter api
     APP_KEY = config.get('credentials', 'app_key')
     APP_SECRET = config.get('credentials', 'app_secret')

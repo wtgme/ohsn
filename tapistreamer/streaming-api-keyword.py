@@ -24,7 +24,7 @@ import util.db_util as dbutil
 #from twython import Twython, TwythonRateLimitError
 
 config = ConfigParser.ConfigParser()
-config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'twitterAPI.cfg'))
+config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg'))
 
 # spin up twitter api
 APP_KEY = config.get('credentials', 'app_key')
