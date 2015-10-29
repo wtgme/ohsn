@@ -10,6 +10,8 @@ Keywords are in keywords.txt
 """
 
 from twython import TwythonStreamer
+import sys
+sys.path.append('..')
 import urllib
 import imghdr
 import os

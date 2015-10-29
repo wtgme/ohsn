@@ -9,6 +9,8 @@ get stream sample in English
 """
 
 from twython import TwythonStreamer
+import sys
+sys.path.append('..')
 import urllib
 import imghdr
 import os
@@ -16,6 +18,7 @@ import ConfigParser
 import datetime
 import pymongo
 import logging
+#from util.db_util import *
 import util.db_util as dbutil
 #import time
 #from twython import Twython, TwythonRateLimitError
