@@ -31,7 +31,7 @@ try:
 	client = pymongo.MongoClient(MONGOAUTH)
 	print MONGOUSER +" connected to " + DBNAME
 	db = client[DBNAME]
-	 = db[COLNAME]
+	col = db[COLNAME]
 except Exception, e:
 	print MONGOUSER +" FAILED to connect to " + DBNAME
 	exit()
