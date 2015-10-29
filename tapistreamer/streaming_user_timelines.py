@@ -55,7 +55,7 @@ def get_user_timeline(user_id, collection):
     try:
         user_timeline = twitter.get_user_timeline(id=user_id)
         store_tweets(user_timeline, collection)
-    except tweepy.TwythonError as e:
+    except tweepy.TweepError as e:
         print e
 
 
