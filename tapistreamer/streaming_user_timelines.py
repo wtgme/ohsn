@@ -8,14 +8,12 @@ Created on 20:34, 26/10/15
 
 """
 
+import random
 import sys
-
 sys.path.append('..')
 import util.db_util as dbutil
-import random
 import util.twitter_util as twutil
 import datetime
-import time
 import tweepy
 
 '''Connecting db and user collection'''
