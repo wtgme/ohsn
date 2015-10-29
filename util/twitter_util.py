@@ -13,6 +13,7 @@ import os
 def twitter_auth():
 
     config = ConfigParser.ConfigParser()
+    print 'CFG: ' + os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg')
     config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg'))
     # spin up twitter api
     APP_KEY = config.get('credentials', 'app_key')
