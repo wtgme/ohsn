@@ -5,6 +5,8 @@ Created on 20:34, 26/10/15
 @author: wt
 """
 
+import sys
+sys.path.append('..')
 import util.db_util as dbutil
 
 db = dbutil.db_connect_no_auth('twitter_test')
