@@ -85,7 +85,8 @@ def get_user_timeline(user_id, collection):
     # Get latest tweet ID scrapted in db collection
     latest = None  # the latest tweet ID scraped
     try:
-        last_tweet = collection.find({'user.id':user_id}, sort=[('id',-1)]).limit( 1 )[0] # sort: 1 = ascending, -1 = descending
+        last_tweet = collection.find({'user.id':user_id}, sort=[('id',-1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
+        print 'Timeline count of User ' + user_id +'is ' + collection.count({'user.id':user_id})
         if last_tweet:
             latest = last_tweet['id']
     except Exception as detail:
