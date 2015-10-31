@@ -48,6 +48,8 @@ AUTH_ERROR_WAIT = 10
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
 IDLETIME = 60*10 # 10 minutes
 TIMELINE_POI_CLASS_THRESHOLD = 1
+remaining = 0
+reset = ON_EXCEPTION_WAIT
 
 def store_tweets(tweets_to_save, collection):
     """
@@ -66,58 +68,59 @@ def store_tweets(tweets_to_save, collection):
 # Test rate_limit is OK? If not, sleep till to next reset time
 def handle_rate_limiting():
     while True:
-        try:
-            rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
-            reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
-            remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
-            print 'user calls reset at ' + str(reset)
-            print 'user calls remaining ' + str(remaining)
-            if remaining == 0:
-                wait = max(reset - time.time(), 0) + 10
-                time.sleep(wait)
-            else:
-                return
-        except TypeError as e:
-            logging.error(str(e))
-            time.sleep(ON_EXCEPTION_WAIT)
+        # try:
+        rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
+        reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
+        remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
+        print 'user calls reset at ' + str(reset)
+        print 'user calls remaining ' + str(remaining)
+        if remaining == 0:
+            wait = max(reset - time.time(), 0) + 10
+            time.sleep(wait)
+        else:
+            return
+        # except TypeError as e:
+        #     logging.error(str(e))
+        #     time.sleep(ON_EXCEPTION_WAIT)
 
 def get_user_timeline(user_id, collection):
     # Get latest tweet ID scrapted in db collection
     latest = None  # the latest tweet ID scraped
-    try:
-        last_tweet = collection.find({'user.id':user_id}, sort=[('id',-1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
+    # try:
+    if collection.count() != 0:
+        last_tweet = collection.find({'user.id': user_id}, sort=[('id', -1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
         print 'Timeline count of User ' + user_id +'is ' + collection.count({'user.id':user_id})
         if last_tweet:
             latest = last_tweet['id']
-    except Exception as detail:
-        logging.error(str(detail))
+        # except Exception as detail:
+        #     logging.error(str(detail))
     no_tweets_sleep = 1
     #  loop to get the timelines of user, and update the reset and remaining
     while True:
-        try:
-            newest = None
-            params = {'count':GET_USER_TIMELINE_COUNT, 'contributor_details':True, 'id':user_id, 'since_id':latest, 'include_rts':1}
-            timelines = twitter.get_user_timeline(**params)
-            if timelines:
-                while timelines:
-                    store_tweets(timelines, collection)
-                    if newest is None:
-                        newest = True
-                        latest = timelines[0]['id']
-                    params['max_id'] = timelines[-1]['id'] - 1
-                    handle_rate_limiting()
-                    timelines = twitter.get_user_timeline(**params)
-            else:
-                time.sleep(60*no_tweets_sleep)
+        # try:
+        newest = None
+        params = {'count':GET_USER_TIMELINE_COUNT, 'contributor_details':True, 'id':user_id, 'since_id':latest, 'include_rts':1}
+        timelines = twitter.get_user_timeline(**params)
+        if timelines:
+            while timelines:
+                store_tweets(timelines, collection)
+                if newest is None:
+                    newest = True
+                    latest = timelines[0]['id']
+                params['max_id'] = timelines[-1]['id'] - 1
+                handle_rate_limiting()
+                timelines = twitter.get_user_timeline(**params)
+        else:
+            time.sleep(60*no_tweets_sleep)
 
-        except TwythonRateLimitError as e:
-            reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-            wait = max(reset - time.time(), 0) + 10
-            time.sleep(wait)
-        except Exception as e:
-            print "Error:" + str(e)
-            logging.error(str(e))
-            time.sleep(60*15)
+        # except TwythonRateLimitError as e:
+        #     reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
+        #     wait = max(reset - time.time(), 0) + 10
+        #     time.sleep(wait)
+        # except Exception as e:
+        #     print "Error:" + str(e)
+        #     logging.error(str(e))
+        #     time.sleep(60*15)
 
 def stream_timeline(id_list, user_collection, timeline_collection):
     for rand_id in id_list:

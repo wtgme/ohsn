@@ -73,7 +73,7 @@ while True:
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
         print "user calls reset at " + str(reset)
-        print "user calls remaining " +str(remaining)
+        print "user calls remaining " + str(remaining)
         break
     except TwythonError, e:
         error = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "TWYTHONERROR getting rate-limit-status\t" + str(e.__class__) +"\t" + str(e) + " Non rate-limit exception encountered. Sleeping for " + str(ON_EXCEPTION_WAIT) + " before retrying\n" 
