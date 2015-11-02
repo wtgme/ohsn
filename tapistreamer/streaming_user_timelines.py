@@ -14,7 +14,7 @@ sys.path.append('..')
 import util.db_util as dbutil
 import util.twitter_util as twutil
 import datetime
-from twython import TwythonRateLimitError
+from twython import TwythonRateLimitError, TwythonAuthError
 import logging
 import time
 from multiprocessing import Process
@@ -65,6 +65,11 @@ def handle_rate_limiting():
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
         except TwythonRateLimitError as detail:
             print 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            twutil.release_app(app_id)
+            app_id, twitter = twutil.twitter_change_auth(app_id)
+            continue
+        except TwythonAuthError as detail:
+            print 'Author Error, change Twitter APP ID'
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
