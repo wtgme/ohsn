@@ -4,35 +4,33 @@ Created on 19:31, 02/11/15
 
 @author: wt
 """
-import threading
-import _multiprocessing
-class FetchUrls(threading.Thread):
-    """
-    Thread checking URLs.
-    """
+from multiprocessing import Process, Lock
+from multiprocessing import Process, Value, Array
 
-    def __init__(self, urls, output):
-        """
-        Constructor.
 
-        @param urls list of urls to check
-        @param output file to write urls output
-        """
-        threading.Thread.__init__(self)
-        self.urls = urls
-        self.output = output
+# def f(l, i):
+#     l.acquire()
+#     print 'hello world', i
+#     l.release()
+#
+# lock = Lock()
+#
+# for num in range(10):
+#     Process(target=f, args=(lock, num)).start()
 
-    def run(self):
-        """
-        Thread run method. Check URLs one by one.
-        """
-        while self.urls:
-            url = self.urls.pop()
-            req = urllib2.Request(url)
-            try:
-                d = urllib2.urlopen(req)
-            except urllib2.URLError, e:
-                print 'URL %s failed: %s' % (url, e.reason)
-            self.output.write(d.read())
-            print 'write done by %s' % self.name
-            print 'URL %s fetched by %s' % (url, self.name)
+def f(n, a):
+    n.value = 3.1415927
+    for i in range(len(a)):
+        a[i] = -a[i]
+
+num = Value('d', 0.0)
+arr = Array('i', range(10))
+# arr = Array('i', [1, 1, 1, 1, 1])
+
+p1 = Process(target=f, args=(num, arr)).start()
+p2 = Process(target=f, args=(num, arr)).start()
+# p.start()
+# p1.join()
+# p2.join()
+print num.value
+print arr[:]

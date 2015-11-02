@@ -1,2 +1,6 @@
 
 *.log
+
+.idea/misc.xml
+
+.idea/ohsn.iml

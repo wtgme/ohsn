@@ -14,11 +14,10 @@ sys.path.append('..')
 import util.db_util as dbutil
 import util.twitter_util as twutil
 import datetime
-from twython import Twython, TwythonRateLimitError, TwythonAuthError, TwythonError
+from twython import TwythonRateLimitError
 import logging
 import time
-import pymongo
-import re
+from multiprocessing import Process
 
 logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
 
@@ -35,8 +34,9 @@ track_time = db['timeline_track_test']
 print 'Connecting timeline dbs well'
 
 '''Auth twitter API'''
-app_id = 2
+app_id = 0
 twitter = twutil.twitter_auth(app_id)
+
 print 'Connect Twitter.com'
 
 def store_tweets(tweets_to_save, collection):
@@ -67,7 +67,6 @@ def handle_rate_limiting():
             print 'Cannot test due to last incorrect connection, change Twitter APP ID'
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
-            # time.sleep(60)
             continue
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
@@ -133,5 +132,8 @@ def stream_timeline(user_collection, timeline_collection):
         if get_user_timeline(twitter_user_id, timeline_collection):
             ids.append(rand_id)
 
-# stream_timeline(sample_user, sample_time)
+# p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
+# p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
 stream_timeline(track_user, track_time)
+stream_timeline(sample_user, sample_time)
+
