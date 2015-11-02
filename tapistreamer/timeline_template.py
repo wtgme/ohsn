@@ -16,7 +16,7 @@ import logging
 import time
 import re
 
-logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
+logging.basicConfig(filename='timeline.log', level=logging.DEBUG)
 
 '''Connecting db and user collection'''
 db = dbutil.db_connect_no_auth('stream')
@@ -43,7 +43,7 @@ GET_USER_TIMELINE_COUNT = 200
 ON_EXCEPTION_WAIT = 60*16
 AUTH_ERROR_WAIT = 10
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
-IDLETIME = 60*10 # 10 minutes
+IDLETIME = 60*10  # 10 minutes
 TIMELINE_POI_CLASS_THRESHOLD = 1
 remaining = 0
 reset = ON_EXCEPTION_WAIT
