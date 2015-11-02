@@ -34,26 +34,10 @@ track_time = db['timeline_track_test']
 # logging.info('Connecting timeline dbs well')
 print 'Connecting timeline dbs well'
 
-'''Sample 5000 users from user collections'''
-sample_count = sample_user.count()
-track_count = track_user.count()
-sample_sample_ids = random.sample(range(sample_count), 5000)
-track_sample_ids = random.sample(range(track_count), 5000)
-# logging.info('Get random id list ready')
-print 'Get random id list ready'
-
 '''Auth twitter API'''
-twitter = twutil.twitter_auth()
+app_id = 2
+twitter = twutil.twitter_auth(app_id)
 print 'Connect Twitter.com'
-
-GET_USER_TIMELINE_COUNT = 200
-ON_EXCEPTION_WAIT = 60*16
-AUTH_ERROR_WAIT = 10
-MIN_RESOLUTION = datetime.timedelta(seconds=86400)
-IDLETIME = 60*10 # 10 minutes
-TIMELINE_POI_CLASS_THRESHOLD = 1
-remaining = 0
-reset = ON_EXCEPTION_WAIT
 
 def store_tweets(tweets_to_save, collection):
     """
@@ -74,83 +58,80 @@ def store_tweets(tweets_to_save, collection):
 def handle_rate_limiting():
     global reset
     global remaining
+    global twitter
+    global app_id
     while True:
         try:
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
         except TwythonRateLimitError as detail:
-            print 'Cannot test'
-            t = random.randint(0, 15*60)
-            time.sleep(t)
+            print 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            twutil.release_app(app_id)
+            app_id, twitter = twutil.twitter_change_auth(app_id)
+            # time.sleep(60)
             continue
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
         # print 'user calls reset at ' + str(reset)
         # print 'user calls remaining ' + str(remaining)
         if remaining == 0:
-            print 'Need to wait'
+            print 'Need to wait till next reset time'
             wait = max(reset - time.time(), 0) + 10
             time.sleep(wait)
         else:
-            print 'Ready rate'
+            print 'Ready rate to current query'
             break
-
 
 def get_user_timeline(user_id, collection):
     global reset
     global remaining
     # Get latest tweet ID scrapted in db collection
-    latest = None  # the latest tweet ID scraped
+    latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
         last_tweet = collection.find({'user.id':int(user_id)}).sort([('id', -1)])[0]  # sort: 1 = ascending, -1 = descending
-        print 'Get the latest stored tweet' + str(last_tweet)
+        print 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
         print 'Timeline count of User ' + user_id +' is ' + str(collection.count({'user.id': int(user_id)}))
         if last_tweet:
             latest = last_tweet['id']
     except IndexError as detail:
-        print 'Get latest stored tweet ERROR'
-        print detail
+        print 'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
         pass
 
-    no_tweets_sleep = 1
     #  loop to get the timelines of user, and update the reset and remaining
     while True:
-        # try:
         newest = None
-        params = {'count': GET_USER_TIMELINE_COUNT, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
+        params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
         handle_rate_limiting()
         timelines = twitter.get_user_timeline(**params)
         if timelines:
-            print 'Start to crawl all timelines'
+            print 'Start to crawl all timelines of this user ' + user_id
             while timelines:
                 store_tweets(timelines, collection)
                 if newest is None:
                     newest = True
+                    # The largest id in the first timeline
                     latest = timelines[0]['id']
                 params['max_id'] = timelines[-1]['id'] - 1
                 handle_rate_limiting()
                 timelines = twitter.get_user_timeline(**params)
-                reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-                remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
+                # reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                # remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
             print 'Get user ' + user_id + ' tweet number: ' + str(collection.count({'user.id':int(user_id)}))
-            break
+            return True
         else:
-            time.sleep(60*no_tweets_sleep)
-            break
-
-        # except TwythonRateLimitError as e:
-        #     reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-        #     wait = max(reset - time.time(), 0) + 10
-        #     time.sleep(wait)
-        # except Exception as e:
-        #     print "Error:" + str(e)
-        #     logging.error(str(e))
-        #     time.sleep(60*15)
+            print 'Cannot get timeline of user ' + user_id
+            return False
 
 # get_user_timeline('1268510412', sample_time)
-def stream_timeline(id_list, user_collection, timeline_collection):
-    for rand_id in id_list:
+def stream_timeline(user_collection, timeline_collection):
+    user_count = user_collection.count()
+    ids = []
+    while len(ids) < 5000:
+        rand_id = random.randint(0, user_count)
+        while rand_id in ids:
+            rand_id = random.randint(0, user_count)
         twitter_user_id = user_collection.find()[rand_id]['id_str']
-        get_user_timeline(twitter_user_id, timeline_collection)
+        if get_user_timeline(twitter_user_id, timeline_collection):
+            ids.append(rand_id)
 
-stream_timeline(sample_sample_ids, sample_user, sample_time)
-stream_timeline(track_sample_ids, track_user, track_time)
+# stream_timeline(sample_user, sample_time)
+stream_timeline(track_user, track_time)

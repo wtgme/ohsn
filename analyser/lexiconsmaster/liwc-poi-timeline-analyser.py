@@ -40,7 +40,7 @@ except Exception:
 
 print poi.find({"liwc_anal.mined": True}).count()
 
-exit()
+# exit()
 
 # set every poi to have not been analysed.
 # poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
@@ -51,7 +51,7 @@ while True:
     if count == 0:
         break
     else:
-	print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
+	    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 	
     for user in poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).limit(250):
         #progcounter += 1
