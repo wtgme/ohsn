@@ -162,6 +162,7 @@ def stream_timeline(user_collection, timeline_collection):
 
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
-stream_timeline(track_user, track_time)
 stream_timeline(sample_user, sample_time)
+stream_timeline(track_user, track_time)
+
 
