@@ -15,36 +15,36 @@ import util.db_util as dbutil
 import util.twitter_util as twutil
 import datetime
 from twython import TwythonRateLimitError, TwythonAuthError
-import logging
 import time
-from multiprocessing import Process
 
-logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
 
 '''Connecting db and user collection'''
 db = dbutil.db_connect_no_auth('stream')
 sample_user = db['poi_sample']
 track_user = db['poi_track']
-# logging.info('Connecting db well')
-print 'Connecting db well'
 
-sample_time = db['timeline_sample_test']
-track_time = db['timeline_track_test']
-# logging.info('Connecting timeline dbs well')
-print 'Connecting timeline dbs well'
+# set every poi user default flags
+# sample_user.update({},{'$set':{"timeline_scraped_flag": False, '"timeline_threeTHs_flag" : false':False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+# track_user.update({},{'$set':{"timeline_scraped_flag": False, '"timeline_threeTHs_flag" : false':False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
+
+sample_time = db['timeline_sample']
+track_time = db['timeline_track']
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Auth twitter API'''
 app_id = 0
 twitter = twutil.twitter_auth(app_id)
 
-print 'Connect Twitter.com'
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect Twitter.com'
 
 def store_tweets(tweets_to_save, collection):
     """
     Simple wrapper to facilitate persisting tweets. Right now, the only
     pre-processing accomplished is coercing date values to datetime.
     """
-    print 'Size of Stored Timelines: ' + str(len(tweets_to_save))
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Size of Stored Timelines: ' + str(len(tweets_to_save))
     for tw in tweets_to_save:
         tw['created_at'] = datetime.datetime.strptime(tw['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         tw['user']['created_at'] = datetime.datetime.strptime(tw['user']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -64,12 +64,12 @@ def handle_rate_limiting():
         try:
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
         except TwythonRateLimitError as detail:
-            print 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
         except TwythonAuthError as detail:
-            print 'Author Error, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Author Error, change Twitter APP ID'
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
@@ -78,26 +78,26 @@ def handle_rate_limiting():
         # print 'user calls reset at ' + str(reset)
         # print 'user calls remaining ' + str(remaining)
         if remaining == 0:
-            print 'Need to wait till next reset time'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Need to wait till next reset time'
             wait = max(reset - time.time(), 0) + 10
             time.sleep(wait)
         else:
-            print 'Ready rate to current query'
+            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             break
 
-def get_user_timeline(user_id, collection):
+def get_user_timeline(user_id, user_collection, timeline_collection):
     global reset
     global remaining
-    # Get latest tweet ID scrapted in db collection
+    # Get latest tweet ID scraped in db collection
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
-        last_tweet = collection.find({'user.id':int(user_id)}).sort([('id', -1)])[0]  # sort: 1 = ascending, -1 = descending
-        print 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
-        print 'Timeline count of User ' + user_id +' is ' + str(collection.count({'user.id': int(user_id)}))
+        last_tweet = timeline_collection.find({'user.id':int(user_id)}).sort([('id', -1)])[0]  # sort: 1 = ascending, -1 = descending
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Timeline count of User ' + user_id +' is ' + str(timeline_collection.count({'user.id': int(user_id)}))
         if last_tweet:
             latest = last_tweet['id']
     except IndexError as detail:
-        print 'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
         pass
 
     #  loop to get the timelines of user, and update the reset and remaining
@@ -105,11 +105,16 @@ def get_user_timeline(user_id, collection):
         newest = None
         params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
         handle_rate_limiting()
-        timelines = twitter.get_user_timeline(**params)
+        try:
+            timelines = twitter.get_user_timeline(**params)
+        except TwythonAuthError:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users'
+            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, "timeline_threeTHs_flag": False, 'timeline_count': 0}}, upsert=False)
+            return (False, False)
         if timelines:
-            print 'Start to crawl all timelines of this user ' + user_id
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + user_id
             while timelines:
-                store_tweets(timelines, collection)
+                store_tweets(timelines, timeline_collection)
                 if newest is None:
                     newest = True
                     # The largest id in the first timeline
@@ -119,23 +124,34 @@ def get_user_timeline(user_id, collection):
                 timelines = twitter.get_user_timeline(**params)
                 # reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
                 # remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
-            print 'Get user ' + user_id + ' tweet number: ' + str(collection.count({'user.id':int(user_id)}))
-            return True
+            count_scraped = timeline_collection.count({'user.id':int(user_id)})
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get user ' + user_id + ' tweet number: ' + str(count_scraped)
+            ### First Flag is for having scrapted some timelines; Second Flag is for having timeline more than 3000
+            if count_scraped >= 3000:
+                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, "timeline_threeTHs_flag": True, 'timeline_count': count_scraped}}, upsert=False)
+                return (True, True)
+            else:
+                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, "timeline_threeTHs_flag": False, 'timeline_count': count_scraped}}, upsert=False)
+                return (True, False)
         else:
-            print 'Cannot get timeline of user ' + user_id
-            return False
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + user_id
+            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, "timeline_threeTHs_flag": False, 'timeline_count': 0}}, upsert=False)
+            return (False, False)
 
 # get_user_timeline('1268510412', sample_time)
 def stream_timeline(user_collection, timeline_collection):
     user_count = user_collection.count()
     ids = []
-    while len(ids) < 5000:
+    count = 0
+    while count < 5000:
         rand_id = random.randint(0, user_count)
         while rand_id in ids:
             rand_id = random.randint(0, user_count)
         twitter_user_id = user_collection.find()[rand_id]['id_str']
-        if get_user_timeline(twitter_user_id, timeline_collection):
-            ids.append(rand_id)
+        flags = get_user_timeline(twitter_user_id, user_collection, timeline_collection)
+        ids.append(rand_id)
+        if flags[0] and flags[1]:
+            count += 1
 
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()

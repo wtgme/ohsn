@@ -8,6 +8,7 @@ Created on 20:34, 26/10/15
 import pymongo
 import ConfigParser
 import os
+import datetime
 
 def db_connect_auth(DBNAME):
     config = ConfigParser.ConfigParser()
@@ -21,11 +22,11 @@ def db_connect_auth(DBNAME):
     try:
         conn = pymongo.MongoClient(MONGOAUTH)
         db = conn[DBNAME]
-        print MONGOUSER + " connected to " + DBNAME
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " connected to " + DBNAME
         return db
     except Exception as detail:
         print detail
-        print MONGOUSER + " FAILED to connect to " + DBNAME
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " FAILED to connect to " + DBNAME
         exit()
 
 
@@ -40,11 +41,11 @@ def db_connect_no_auth(DBNAME):
     try:
         conn = pymongo.MongoClient(MONGOAUTH)
         db = conn[DBNAME]
-        print "Success connected to " + DBNAME
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "Success connected to " + DBNAME
         return db
     except Exception as detail:
         print detail
-        print "FAILED to connect to " + DBNAME
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "FAILED to connect to " + DBNAME
         exit()
 
 

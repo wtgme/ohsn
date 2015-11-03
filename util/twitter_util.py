@@ -10,14 +10,15 @@ import ConfigParser
 import os
 import time
 from multiprocessing import Array
+import datetime
 
 flags = Array('i', [1, 1, 1, 1])
 
 def twitter_auth(app_id=1):
     global flags
     flags[app_id] = 0
-    print 'Auth with APP ID: ' + str(app_id)
-    print 'Avaiable IDs: ' + str(flags[:])
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth with APP ID: ' + str(app_id)
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Avaiable IDs: ' + str(flags[:])
 
     config = ConfigParser.ConfigParser()
     print 'CFG: ' + os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg')
@@ -34,11 +35,11 @@ def twitter_auth(app_id=1):
             twitter.verify_credentials()
             return twitter
         except TwythonRateLimitError as e:
-            print 'Sleep 10 sec for next connection'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Sleep 10 sec for next connection'
             time.sleep(10)
             continue
         except TwythonAuthError as e:
-            print 'Auth Unsucessful'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth Unsucessful'
             exit(1)
 
 def twitter_change_auth(index):
