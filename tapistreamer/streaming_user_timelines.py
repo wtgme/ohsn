@@ -14,7 +14,7 @@ sys.path.append('..')
 import util.db_util as dbutil
 import util.twitter_util as twutil
 import datetime
-from twython import TwythonRateLimitError, TwythonAuthError
+from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import time
 
 
@@ -24,8 +24,8 @@ sample_user = db['poi_sample']
 track_user = db['poi_track']
 
 # set every poi user default flags
-sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
-track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+# sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+# track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 
@@ -121,7 +121,11 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                     latest = timelines[0]['id']
                 params['max_id'] = timelines[-1]['id'] - 1
                 handle_rate_limiting()
-                timelines = twitter.get_user_timeline(**params)
+                try:
+                    timelines = twitter.get_user_timeline(**params)
+                except TwythonError as detail:
+                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + detail + ' sleep 20 Sec'
+                    time.sleep(20)
                 # reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
                 # remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
             count_scraped = timeline_collection.count({'user.id':int(user_id)})
