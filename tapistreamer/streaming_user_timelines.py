@@ -121,11 +121,14 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                     latest = timelines[0]['id']
                 params['max_id'] = timelines[-1]['id'] - 1
                 handle_rate_limiting()
-                try:
-                    timelines = twitter.get_user_timeline(**params)
-                except TwythonError as detail:
-                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + detail + ' sleep 20 Sec'
-                    time.sleep(20)
+                while True:
+                    try:
+                        timelines = twitter.get_user_timeline(**params)
+                        break
+                    except TwythonError as detail:
+                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + detail + ' sleep 20 Sec'
+                        time.sleep(20)
+                        continue
                 # reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
                 # remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
             count_scraped = timeline_collection.count({'user.id':int(user_id)})

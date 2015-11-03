@@ -28,7 +28,8 @@ print 'LIWC mined user in Track Col: ' + track_poi.find({"liwc_anal.mined": True
 
 
 # set every poi to have not been analysed.
-# poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
+sample_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
+track_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
 
 '''Process the timelines of users in POI'''
 def process(poi, timelines):
@@ -63,4 +64,5 @@ def process(poi, timelines):
         # Liwc.print_summarization(liwc, result)
 
         poi.update({'id':user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
+
 
