@@ -24,8 +24,8 @@ sample_user = db['poi_sample']
 track_user = db['poi_track']
 
 # set every poi user default flags
-sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_threeTHs_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
-track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_threeTHs_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 
@@ -109,7 +109,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             timelines = twitter.get_user_timeline(**params)
         except TwythonAuthError:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users'
-            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, "timeline_threeTHs_flag": False, 'timeline_count': 0}}, upsert=False)
+            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, 'timeline_count': 0}}, upsert=False)
             return (False, False)
         if timelines:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + user_id
@@ -128,14 +128,14 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get user ' + user_id + ' tweet number: ' + str(count_scraped)
             ### First Flag is for having scrapted some timelines; Second Flag is for having timeline more than 3000
             if count_scraped >= 3000:
-                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, "timeline_threeTHs_flag": True, 'timeline_count': count_scraped}}, upsert=False)
+                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, 'timeline_count': count_scraped}}, upsert=False)
                 return (True, True)
             else:
-                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, "timeline_threeTHs_flag": False, 'timeline_count': count_scraped}}, upsert=False)
+                user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':False, "timeline_scraped_flag": True, 'timeline_count': count_scraped}}, upsert=False)
                 return (True, False)
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + user_id
-            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, "timeline_threeTHs_flag": False, 'timeline_count': 0}}, upsert=False)
+            user_collection.update({'id_str': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True, "timeline_scraped_flag": False, 'timeline_count': 0}}, upsert=False)
             return (False, False)
 
 # get_user_timeline('1268510412', sample_time)
