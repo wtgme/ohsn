@@ -34,6 +34,7 @@ track_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
 '''Process the timelines of users in POI'''
 def process(poi, timelines):
     while True:
+        # How many users whose timelines have not been processed by LIWC
         count = poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).count()
         if count == 0:
             break
@@ -44,25 +45,23 @@ def process(poi, timelines):
             #progcounter += 1
             #if progcounter%1000 == 0:
             #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
-
-        liwc = Liwc()
-        textmass = ""
-
+            liwc = Liwc()
+            textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
             # is it a retweet?
             #if not ('retweeted_status' in tweet):
-            text = tweet['text'].encode('utf8')
+                text = tweet['text'].encode('utf8')
             # text = re.sub(r"http\S+", "", text) # this doesn't do anything
-            textmass = textmass + " " + text
+                textmass = textmass + " " + text
             # print tweet['text'].encode('utf8')
 
-        textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",textmass).split())
-        textmass.lower()
-        result = Liwc.summarize_document(liwc, textmass)
+            textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",textmass).split())
+            textmass.lower()
+            result = Liwc.summarize_document(liwc, textmass)
         #print result
         #exit()
         # Liwc.print_summarization(liwc, result)
 
-        poi.update({'id':user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
+            poi.update({'id':user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
 
 

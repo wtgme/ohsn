@@ -126,7 +126,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                         timelines = twitter.get_user_timeline(**params)
                         break
                     except TwythonError as detail:
-                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + detail + ' sleep 20 Sec'
+                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(detail) + ' sleep 20 Sec'
                         time.sleep(20)
                         continue
                 # reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
