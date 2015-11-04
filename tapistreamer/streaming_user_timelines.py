@@ -24,8 +24,8 @@ sample_user = db['poi_sample']
 track_user = db['poi_track']
 
 # set every poi user default flags
-# sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
-# track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : True, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : False, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
+track_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : False, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 
@@ -146,19 +146,34 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             return (False, False)
 
 # get_user_timeline('1268510412', sample_time)
+# def stream_timeline(user_collection, timeline_collection):
+#     user_count = user_collection.count()
+#     ids = []
+#     count = 0
+#     while count < 5000:
+#         rand_id = random.randint(0, user_count)
+#         while rand_id in ids:
+#             rand_id = random.randint(0, user_count)
+#         twitter_user_id = user_collection.find()[rand_id]['id_str']
+#         flags = get_user_timeline(twitter_user_id, user_collection, timeline_collection)
+#         ids.append(rand_id)
+#         if flags[0] and flags[1]:
+#             count += 1
+
 def stream_timeline(user_collection, timeline_collection):
-    user_count = user_collection.count()
-    ids = []
-    count = 0
-    while count < 5000:
-        rand_id = random.randint(0, user_count)
-        while rand_id in ids:
-            rand_id = random.randint(0, user_count)
-        twitter_user_id = user_collection.find()[rand_id]['id_str']
-        flags = get_user_timeline(twitter_user_id, user_collection, timeline_collection)
-        ids.append(rand_id)
-        if flags[0] and flags[1]:
-            count += 1
+    count = user_collection.find({"timeline_count": {'$lt': 3000}}).count()
+    while True:
+        if count < 5000:
+            nextpoi = user_collection.find({"timeline_count": 0, 'timeline_auth_error_flag':False}).limit(1)[0]
+            twitter_user_id = nextpoi['id_str']
+            get_user_timeline(twitter_user_id, user_collection, timeline_collection)
+            count = user_collection.find({"timeline_count": {'$lt': 3000}}).count()
+        else:
+            return
+
+
+
+
 
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()

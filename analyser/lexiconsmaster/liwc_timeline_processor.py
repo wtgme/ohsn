@@ -23,8 +23,8 @@ track_time = db['timeline_track_test']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Counting the number of users whose timelines have been processed by LIWC'''
-print 'LIWC mined user in Sample Col: ' + sample_poi.find({"liwc_anal.mined": True}).count()
-print 'LIWC mined user in Track Col: ' + track_poi.find({"liwc_anal.mined": True}).count()
+print 'LIWC mined user in Sample Col: ' + str(sample_poi.find({"liwc_anal.mined": True}).count())
+print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": True}).count())
 
 
 # set every poi to have not been analysed.
@@ -33,6 +33,7 @@ track_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
 
 '''Process the timelines of users in POI'''
 def process(poi, timelines):
+    progcounter = 0
     while True:
         # How many users whose timelines have not been processed by LIWC
         count = poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).count()
@@ -42,9 +43,6 @@ def process(poi, timelines):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
         for user in poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).limit(250):
-            #progcounter += 1
-            #if progcounter%1000 == 0:
-            #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
@@ -53,15 +51,18 @@ def process(poi, timelines):
                 text = tweet['text'].encode('utf8')
             # text = re.sub(r"http\S+", "", text) # this doesn't do anything
                 textmass = textmass + " " + text
-            # print tweet['text'].encode('utf8')
 
             textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",textmass).split())
             textmass.lower()
             result = Liwc.summarize_document(liwc, textmass)
-        #print result
-        #exit()
-        # Liwc.print_summarization(liwc, result)
+            print result
 
-            poi.update({'id':user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
+            poi.update({'id': user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
+            progcounter += 1
+            if progcounter%1000 == 0:
+               print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
 
+
+process(track_poi, track_time)
+process(sample_poi, sample_time)
 
