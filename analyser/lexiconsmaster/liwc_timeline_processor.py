@@ -18,8 +18,8 @@ sample_poi = db['poi_sample']
 track_poi = db['poi_track']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting POI dbs well'
 
-sample_time = db['timeline_sample_test']
-track_time = db['timeline_track_test']
+sample_time = db['timeline_sample']
+track_time = db['timeline_track']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Counting the number of users whose timelines have been processed by LIWC'''
@@ -28,8 +28,8 @@ print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": 
 
 
 # set every poi to have not been analysed.
-sample_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
-track_poi.update({},{'$set':{"liwc_anal.mined": False}}, multi=True)
+sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result":None}}, multi=True)
+track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result":None}}, multi=True)
 
 '''Process the timelines of users in POI'''
 def process(poi, timelines):
@@ -55,7 +55,7 @@ def process(poi, timelines):
             textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ",textmass).split())
             textmass.lower()
             result = Liwc.summarize_document(liwc, textmass)
-            print result
+            # print result
 
             poi.update({'id': user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
             progcounter += 1
@@ -63,6 +63,6 @@ def process(poi, timelines):
                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
 
 
-process(track_poi, track_time)
 process(sample_poi, sample_time)
+process(track_poi, track_time)
 
