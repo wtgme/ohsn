@@ -161,20 +161,16 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
 #             count += 1
 
 def stream_timeline(user_collection, timeline_collection):
-    count = user_collection.find({"timeline_count": {'$lt': 3000}}).count()
+    count = user_collection.find({"timeline_count": {'$gt': 3000}}).count()
     while True:
         if count < 5000:
             nextpoi = user_collection.find({"timeline_count": 0, 'timeline_auth_error_flag':False}).limit(1)[0]
             twitter_user_id = nextpoi['id_str']
             get_user_timeline(twitter_user_id, user_collection, timeline_collection)
             count = user_collection.find({"timeline_count": {'$lt': 3000}}).count()
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have users number: ' + str(count)
         else:
             return
-
-
-
-
-
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
 stream_timeline(sample_user, sample_time)
