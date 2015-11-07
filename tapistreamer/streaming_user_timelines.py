@@ -49,7 +49,7 @@ track_time = db['timeline_track']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Auth twitter API'''
-app_id = 1
+app_id = 0
 twitter = twutil.twitter_auth(app_id)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect Twitter.com'
@@ -189,7 +189,7 @@ def stream_timeline(user_collection, timeline_collection):
     while True:
         if count < 5000:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get next user to scrape'
-            twitter_user = user_collection.find_one({"timeline_count": 0},{'id':1})
+            twitter_user = user_collection.find_one({"timeline_count": 0, 'timeline_auth_error_flag': False},{'id':1})
             # twitter_user_id = nextpoi['id']
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(twitter_user['id'])
             get_user_timeline(twitter_user['id'], user_collection, timeline_collection)
