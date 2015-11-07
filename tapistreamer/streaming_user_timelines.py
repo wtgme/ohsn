@@ -88,6 +88,15 @@ def handle_rate_limiting():
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
+        except TwythonError as detail:
+            if 'Twitter API returned a 503' in str(detail):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
+                time.sleep(30)
+                continue
+            else:
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                exit(1)
+
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
         # print 'user calls reset at ' + str(reset)

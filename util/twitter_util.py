@@ -35,8 +35,8 @@ def twitter_auth(app_id=1):
             twitter.verify_credentials()
             return twitter
         except TwythonRateLimitError as e:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Sleep 10 sec for next connection'
-            time.sleep(10)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Sleep 30 sec for next connection'
+            time.sleep(30)
             continue
         except TwythonAuthError as e:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth Unsucessful'
