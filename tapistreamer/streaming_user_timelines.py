@@ -8,6 +8,8 @@ Created on 20:34, 26/10/15
 2. Add indexes for collection, in case mongodb consumes too much RAM
         db.poi_sample.createIndex({"id":1})
         db.poi_track.createIndex({"id":1})
+        db.poi_sample.createIndex({"timeline_count":1, "timeline_auth_error_flag":-1})
+        db.poi_track.createIndex({"timeline_count":1, "timeline_auth_error_flag":-1})
 
         db.timeline_sample.createIndex( { "user.id" : 1, "id" : -1 } )
         db.timeline_track.createIndex( { "user.id" : 1, "id" : -1 } )
@@ -16,6 +18,7 @@ Created on 20:34, 26/10/15
 
         db.timeline_sample.dropIndex( {"user,id":1 } )
         db.timeline_sample.dropIndex( {"user,id":1, "id":-1 } )
+    using limit and project to reduce burden of Mongodb
 3. Change Twitter App ID when without engouth rate
 4. Target users are those have timelines more than 3000
 
@@ -34,9 +37,7 @@ import time
 '''Connecting db and user collection'''
 db = dbutil.db_connect_no_auth('stream')
 sample_user = db['poi_sample']
-# sample_user.create_index([("id", pymongo.DESCENDING)], unique=True)
 track_user = db['poi_track']
-# track_user.create_index([("id", pymongo.DESCENDING)], unique=True)
 
 # set every poi user default flags
 # sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : False, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
@@ -44,9 +45,7 @@ track_user = db['poi_track']
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 sample_time = db['timeline_sample']
-# sample_time.create_index([("id", pymongo.DESCENDING)], unique=True)
 track_time = db['timeline_track']
-# track_time.create_index([("id", pymongo.DESCENDING)], unique=True)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Auth twitter API'''
@@ -107,10 +106,10 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     # Get latest tweet ID scraped in db collection
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
-        last_tweet = timeline_collection.find({'user.id':user_id}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
+        last_tweet = timeline_collection.find({'user.id':user_id}, {'id':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
         # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Timeline count of User ' + str(user_id) +' is ' + str(timeline_collection.count({'user.id': (user_id)}))
         if last_tweet:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
             latest = last_tweet['id']
     except IndexError as detail:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
@@ -175,18 +174,18 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
 #             count += 1
 
 def stream_timeline(user_collection, timeline_collection):
-    # count = user_collection.find({"timeline_count": {'$gt': 3000}}).count()
-    count = 0
+    count = user_collection.count({"timeline_count": {'$gt': 3000}})
+    # count = 0
     while True:
         if count < 5000:
-            print 'Get next user to scrape'
-            nextpoi = user_collection.find_one({"timeline_count": 0, 'timeline_auth_error_flag':False})
-            twitter_user_id = nextpoi['id']
-            print 'Start to scrape user ' + str(twitter_user_id)
-            get_user_timeline(twitter_user_id, user_collection, timeline_collection)
-            # count = user_collection.find({"timeline_count": {'$gt': 3000}}).count()
-            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
-            count += 1
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get next user to scrape'
+            twitter_user = user_collection.find_one({"timeline_count": 0, 'timeline_auth_error_flag':False},{'id':1})
+            # twitter_user_id = nextpoi['id']
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(twitter_user['id'])
+            get_user_timeline(twitter_user['id'], user_collection, timeline_collection)
+            count = user_collection.count({"timeline_count": {'$gt': 3000}})
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
+            # count += 1
         else:
             return
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
