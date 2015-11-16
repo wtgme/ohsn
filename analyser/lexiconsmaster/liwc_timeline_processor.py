@@ -6,7 +6,7 @@ Created on 14:56, 03/11/15
 """
 
 import sys
-sys.path.append('..')
+sys.path.append('...')
 import util.db_util as dbutil
 import datetime
 import re
@@ -28,21 +28,21 @@ print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": 
 
 
 # set every poi to have not been analysed.
-sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result":None}}, multi=True)
-track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result":None}}, multi=True)
+sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
+track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
 
 '''Process the timelines of users in POI'''
 def process(poi, timelines):
-    progcounter = 0
+    # progcounter = 0
     while True:
         # How many users whose timelines have not been processed by LIWC
-        count = poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).count()
+        count = poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).count()
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        for user in poi.find({'timeline_auth_error_flag':False, "liwc_anal.mined": False}).limit(250):
+        for user in poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).limit(250):
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
@@ -58,9 +58,9 @@ def process(poi, timelines):
             # print result
 
             poi.update({'id': user['id']},{'$set':{"liwc_anal.mined": True, "liwc_anal.result":result}})
-            progcounter += 1
-            if progcounter%1000 == 0:
-               print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
+            # progcounter += 1
+            # if progcounter%1000 == 0:
+            #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
 
 
 process(sample_poi, sample_time)
