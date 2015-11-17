@@ -65,3 +65,6 @@ def release_app(index):
 #     print '-------------------'
 #     release_app(ida)
 #     ida, a = twitter_change_auth(ida)
+
+if __name__ == '__main__':
+    pass

@@ -54,3 +54,6 @@ def db_connect_no_auth(DBNAME):
 # for tweet in collection.find().limit(10):
 #     print tweet
 # collection = DBConnectNOAuth('twitter_test', 'streamtrack')
+
+if __name__ == '__main__':
+    pass
