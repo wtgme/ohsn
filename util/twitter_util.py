@@ -5,7 +5,7 @@ Created on 21:25, 26/10/15
 @author: wt
 """
 
-from twython import Twython, TwythonRateLimitError, TwythonAuthError
+from twython import Twython, TwythonRateLimitError,TwythonError, TwythonAuthError
 import ConfigParser
 import os
 import time
@@ -65,6 +65,3 @@ def release_app(index):
 #     print '-------------------'
 #     release_app(ida)
 #     ida, a = twitter_change_auth(ida)
-
-if __name__ == '__main__':
-    pass

@@ -3,3 +3,4 @@
 lexicons.egg-info/
 /log/
 /node_modules/
+*.out

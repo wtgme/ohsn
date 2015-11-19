@@ -6,16 +6,20 @@ Created on 15:04, 29/10/15
 
 1. Extracting unique twitter users from twitter streaming data
 
+Due to user embedded within tweets cannot always be relied upon, this file is discarded, using streaming_poi_info.py
+
 """
 import sys
 sys.path.append('..')
 import util.db_util as dbt
+import util.twitter_util as twt
 import pymongo
 
 '''Connect db and stream collections'''
 db = dbt.db_connect_no_auth('stream')
 sample = db['streamsample']
 track = db['streamtrack']
+
 
 '''Extracting users from stream files, add index for id to avoid duplicated users'''
 sample_poi = db['poi_sample']

@@ -14,42 +14,39 @@ import re
 from lexicons.liwc import Liwc
 import pymongo
 
-'''Connecting db and collections'''
-db = dbutil.db_connect_no_auth('stream')
-sample_poi = db['poi_sample']
-track_poi = db['poi_track']
+# '''Connecting db and collections'''
+db = dbutil.db_connect_no_auth('echelon')
+sample_poi = db['poi']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 
-sample_time = db['timeline_sample']
-track_time = db['timeline_track']
+sample_time = db['timelines']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
 
-'''Counting the number of users whose timelines have been processed by LIWC'''
-print 'LIWC mined user in Sample Col: ' + str(sample_poi.find({"liwc_anal.mined": True}).count())
-print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": True}).count())
+# '''Counting the number of users whose timelines have been processed by LIWC'''
+print 'LIWC mined user in Sample Col: ' + str(sample_poi.find({"rliwc_anal.mined": True}).count())
 
 
 # set every poi to have not been analysed.
-# sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
-# track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
+# sample_poi.update({},{'$set':{"rliwc_anal.mined": False, "rliwc_anal.result": None}}, multi=True)
+# track_poi.update({},{'$set':{"rliwc_anal.mined": False, "rliwc_anal.result": None}}, multi=True)
 
-'''Process the timelines of users in POI'''
+# '''Process the timelines of users in POI'''
 
 
 def process(poi, timelines):
-    poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
-    poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('liwc_anal.mined', pymongo.ASCENDING)])
+    poi.update({},{'$set':{"rliwc_anal.mined": False, "rliwc_anal.result": None}}, multi=True)
+    poi.create_index([('timeline_auth_error_flag', pymongo.ASCENDING),
+                      ('rliwc_anal.mined', pymongo.ASCENDING)])
 
     while True:
         # How many users whose timelines have not been processed by LIWC
-        count = poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).count()
+        count = poi.find({'timeline_auth_error_flag':False, "rliwc_anal.mined": False}).count()
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).limit(250):
+        for user in poi.find({'timeline_auth_error_flag':False, "rliwc_anal.mined": False}).limit(250):
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
@@ -64,7 +61,7 @@ def process(poi, timelines):
             result = Liwc.summarize_document(liwc, textmass)
             # print result
 
-            poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
+            poi.update({'id': user['id']}, {'$set': {"rliwc_anal.mined": True, "rliwc_anal.result": result}})
             # progcounter += 1
             # if progcounter%1000 == 0:
             #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
@@ -72,4 +69,3 @@ def process(poi, timelines):
 
 if __name__ == '__main__':
     process(sample_poi, sample_time)
-    process(track_poi, track_time)

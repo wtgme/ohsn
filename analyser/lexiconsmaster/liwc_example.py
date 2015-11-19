@@ -18,8 +18,10 @@ gettysburg = '''Four score and seven years ago our fathers brought forth on
   for those who here gave their lives that that nation might live. It is
   altogether fitting and proper that we should do this.'''
 # read_document() is a generator, but Counter will consume the whole thing
-category_counts = Counter(liwc_lexicon.read_document(gettysburg))
-print 'Basic category counts: {}'.format(category_counts)
+# category_counts = Counter(liwc_lexicon.read_document(gettysburg))
+# print 'Basic category counts: {}'.format(category_counts)
 # print out a tabulation that looks like the LIWC software's text report
 full_counts = liwc_lexicon.summarize_document(gettysburg)
-liwc_lexicon.print_summarization(full_counts)
+print full_counts
+# liwc_lexicon.print_summarization(full_counts)
+print Liwc.summarize_document(liwc_lexicon, gettysburg)

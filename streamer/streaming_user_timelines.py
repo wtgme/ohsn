@@ -24,7 +24,7 @@ Created on 20:34, 26/10/15
 
 """
 
-import pymongo
+
 import sys
 sys.path.append('..')
 import util.db_util as dbutil
@@ -32,12 +32,20 @@ import util.twitter_util as twutil
 import datetime
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import time
+import pymongo
 
 
 '''Connecting db and user collection'''
 db = dbutil.db_connect_no_auth('stream')
 sample_user = db['poi_sample']
 track_user = db['poi_track']
+sample_user.create_index([('id', pymongo.ASCENDING)])
+track_user.create_index([('id', pymongo.ASCENDING)])
+sample_user.create_index([('timeline_count', pymongo.ASCENDING),
+                         ('timeline_auth_error_flag', pymongo.DESCENDING)])
+track_user.create_index([('timeline_count', pymongo.ASCENDING),
+                         ('timeline_auth_error_flag', pymongo.DESCENDING)])
+
 
 # set every poi user default flags
 # sample_user.update({},{'$set':{"timeline_scraped_flag": False, "timeline_auth_error_flag" : False, "datetime_last_timeline_scrape" : None, "timeline_count" : 0}}, multi=True)
@@ -46,6 +54,11 @@ track_user = db['poi_track']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 sample_time = db['timeline_sample']
 track_time = db['timeline_track']
+sample_time.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+track_time.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Auth twitter API'''
