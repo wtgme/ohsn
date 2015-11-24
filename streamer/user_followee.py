@@ -159,16 +159,24 @@ def snowball_following(poi_db, start_leve):
         params = {'cursor': -1, 'user_id': user['id_str'], 'count': 5000}
         # followee getting
         handle_following_rate_limiting()
-        followee_ids = twitter.get_friends_ids(**params)['ids']
+        try:
+            followees = twitter.get_friends_ids(**params)
+        except TwythonAuthError as detail:
+            # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
+            if 'Twitter API returned a 401' in detail:
+                continue
+        except TwythonError as detail:
+            if 'Received response with content-encoding: gzip' in detail:
+                continue
 
         # Eliminate the users that have been scraped
         '''Get all documents in stream collections'''
         user_list_all = poi_db.distinct('id', {'level': start_leve+1, 'pre_level_node': user['id_str']})
-
+        followee_ids = followees['ids']
         '''Eliminate the users that have been scraped'''
         process_user_list = list(set(followee_ids) - set(user_list_all))
         # print len(followee_ids), len(process_user_list)
-
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process', len(process_user_list), 'in', len(followee_ids), 'friends of user', user['id_str'], 'where', len(user_list_all), 'have been processed'
         if process_user_list:
             profiles = get_users_info(process_user_list)
             for profile in profiles:
@@ -179,7 +187,18 @@ def snowball_following(poi_db, start_leve):
                 except pymongo.errors.DuplicateKeyError:
                     pass
 
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
 trans_seed_to_poi(sample_seed, sample_poi)
-snowball_following(sample_poi, 0)
 trans_seed_to_poi(track_seed, track_poi)
+
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
+snowball_following(sample_poi, 0)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for track db'
 snowball_following(track_poi, 0)
+
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
+snowball_following(sample_poi, 1)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
+snowball_following(track_poi, 1)
+
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'
