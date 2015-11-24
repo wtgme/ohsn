@@ -4,7 +4,8 @@ Created on Wed Jun 03 03:43:09 2015
 
 @author: wt
 
-get stream sample in English
+crawl stream with keyword-filtering
+Keywords are in keywords.txt
 
 """
 
@@ -18,7 +19,6 @@ import ConfigParser
 import datetime
 import pymongo
 import logging
-#from util.db_util import *
 import util.db_util as dbutil
 #import time
 #from twython import Twython, TwythonRateLimitError
@@ -35,7 +35,7 @@ print('loaded configuation')
 
 # spin up database
 DBNAME = 'stream'
-COLLECTION = 'streamsample'
+COLLECTION = 'stream_track'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
 
@@ -94,11 +94,10 @@ while True:
         stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
         # https://dev.twitter.com/streaming/overview/request-parameters                                 
         # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])
-        # track_list = []
-        # with open('keywords.txt', 'r') as fo:
-        #     for line in fo.readlines():
-        #         track_list.append(line.strip())
-        stream.statuses.sample(language=['en'])
-        # stream.statuses.filter(language=['en'], track=','.join(track_list))
+        track_list = []
+        with open('keywords.txt', 'r') as fo:
+            for line in fo.readlines():
+                track_list.append(line.strip())
+        stream.statuses.filter(language=['en'], track=','.join(track_list))
     except:
         print "error to file"

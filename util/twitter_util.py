@@ -12,9 +12,9 @@ import time
 from multiprocessing import Array
 import datetime
 
-flags = Array('i', [1, 1, 1, 1])
+flags = Array('i', [1, 1, 1, 1, 1, 1, 1])
 
-def twitter_auth(app_id=1):
+def twitter_auth(app_id=0):
     global flags
     flags[app_id] = 0
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth with APP ID: ' + str(app_id)
@@ -45,10 +45,10 @@ def twitter_auth(app_id=1):
 def twitter_change_auth(index):
     global flags
     index += 1
-    index = index%4
+    index = index%len(flags)
     while flags[index] == 0:
         index += 1
-        index = index%4
+        index = index%len(flags)
     flags[index] = 0
     return (index, twitter_auth(index))
 

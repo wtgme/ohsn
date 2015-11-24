@@ -15,20 +15,20 @@ from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
 import time
 
-'''Connect db and stream collections'''
+# '''Connect db and stream collections'''
 db = dbt.db_connect_no_auth('stream')
-sample = db['streamsample']
-track = db['streamtrack']
+sample = db['stream_sample']
+track = db['stream_track']
 
-'''Connect to Twitter.com'''
+# '''Connect to Twitter.com'''
 app_id = 0
 twitter = twutil.twitter_auth(app_id)
 
-'''Extracting users from stream files, add index for id to avoid duplicated users'''
-sample_poi = db['poi_sample']
-sample_poi.ensure_index("id", unique=True)
-track_poi = db['poi_track']
-track_poi.ensure_index("id", unique=True)
+# '''Extracting users from stream files, add index for id to avoid duplicated users'''
+sample_poi = db['user_sample']
+sample_poi.create_index("id", unique=True)
+track_poi = db['user_track']
+track_poi.create_index("id", unique=True)
 
 '''Get all documents in stream collections'''
 sample_user_list_all = sample.distinct('user.id')
@@ -42,12 +42,14 @@ track_scrapted_user_list = track_poi.distinct('id')
 sample_user_list = list(set(sample_user_list_all) - set(sample_scrapted_user_list))
 track_user_list = list(set(track_user_list_all) - set(track_scrapted_user_list))
 
+
+
 def handle_rate_limiting():
     global twitter
     global app_id
     while True:
         try:
-            rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
+            rate_limit_status = twitter.get_application_rate_limit_status(resources=['users'])
         except TwythonRateLimitError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
             twutil.release_app(app_id)
@@ -67,18 +69,23 @@ def handle_rate_limiting():
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
                 exit(1)
 
-        reset = float(rate_limit_status['resources']['statuses']['/statuses/lookup']['reset'])
-        remaining = int(rate_limit_status['resources']['statuses']['/statuses/lookup']['remaining'])
-        # print 'user calls reset at ' + str(reset)
-        # print 'user calls remaining ' + str(remaining)
+        reset = float(rate_limit_status['resources']['users']['/users/lookup']['reset'])
+        remaining = int(rate_limit_status['resources']['users']['/users/lookup']['remaining'])
+        print 'user calls reset at ' + str(reset)
+        print 'user calls remaining ' + str(remaining)
         if remaining == 0:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Need to wait till next reset time'
-            wait = max(reset - time.time(), 0) + 10
-            time.sleep(wait)
+            wait = max(reset - time.time(), 0)
+            if wait < 10:
+                time.sleep(wait)
+            else:
+                twutil.release_app(app_id)
+                app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             break
+
 
 def get_user_info(stream_user_list, user_info):
     global twitter
@@ -105,8 +112,10 @@ def get_user_info(stream_user_list, user_info):
             #     continue
         list_size = len(stream_user_list)
 
-print 'extract users from sample streams'
-get_user_info(sample_user_list, sample_poi)
 
-print 'extract users from track streams'
-get_user_info(track_user_list, track_poi)
+if __name__ == '__main__':
+    print 'extract users from sample streams'
+    get_user_info(sample_user_list, sample_poi)
+
+    print 'extract users from track streams'
+    get_user_info(track_user_list, track_poi)

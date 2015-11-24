@@ -30,13 +30,13 @@ sample_network.create_index([("id0", pymongo.ASCENDING),
                              ("id1", pymongo.ASCENDING),
                              ("relationship", pymongo.ASCENDING),
                              ("statusid", pymongo.ASCENDING)],
-                            unique=False)
+                            unique=True)
 track_network = db['net_track']
 track_network.create_index([("id0", pymongo.ASCENDING),
                             ("id1", pymongo.ASCENDING),
                             ("relationship", pymongo.ASCENDING),
                             ("statusid", pymongo.ASCENDING)],
-                           unique=False)
+                           unique=True)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
 
 

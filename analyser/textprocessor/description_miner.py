@@ -81,7 +81,7 @@ def getVersion():
     return VERSION
 
 
-def identifyManualRetweet(text):
+def identify_manual_retweet(text):
     #r'\b(?:#|@|)[0-9]*%s[0-9]*\b'
     pattern = re.compile('\s*(RT|retweet|MT|via)\s*@', re.IGNORECASE)
     match = pattern.search(text)
@@ -90,17 +90,17 @@ def identifyManualRetweet(text):
     else:
         return True
 
-def identifyRetweet(tweet):
+def identify_retweet(tweet):
 # if its an official retweet ignore the tweet itself
     try:
         orig = tweet['interaction']['twitter']['retweeted_status']
         return True
     except Exception:
         # remember it may still be a manual retweet so look out for that in mineTweetText!!
-        return identifyManualRetweet(tweet['interaction']['twitter']['text'])
+        return identify_manual_retweet(tweet['interaction']['twitter']['text'])
 
 
-def getAge(text):
+def get_age(text):
     # This assumes they are between the age of 10 and 89
     pattern = re.compile("(?P<age>[1-8][0-9])\syear", re.IGNORECASE)
     match = pattern.search(text)
@@ -133,7 +133,11 @@ def getAge(text):
         return match.group('age')
 
 
-def getHeight(text):
+def get_gender(text):
+#     TODO
+
+
+def get_height(text):
     #Height Matching
     pattern = re.compile("(?P<feet>[4-6])\s*('|f(oo)?t)\s*(?P<inches>1[0-1]|[0-9])?\s*(\"|in(ches)?)?", re.IGNORECASE)
     #pattern = re.compile("(?P<feet>[4-6])'\s*(?P<inches>[1-9]|1[0-2])\"?", re.IGNORECASE)
@@ -161,7 +165,7 @@ def getHeight(text):
                 return float(match.group('metres'))*100
 
 
-def getHighWeightKG(text):
+def get_high_weightKG(text):
     pattern = re.compile("hw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -203,7 +207,7 @@ def getHighWeightKG(text):
         return (None, None)
 
 
-def getLowWeightKG(text):
+def get_low_weight_KG(text):
     pattern = re.compile("lw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -245,7 +249,7 @@ def getLowWeightKG(text):
         return (None, None)
 
 
-def getCurrentWeightKG(text):
+def get_current_weight_KG(text):
     pattern = re.compile("cw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -288,7 +292,7 @@ def getCurrentWeightKG(text):
 
 
 
-def getGoalWeight(text):
+def get_goal_weight(text):
     pattern = re.compile("gw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.findall(text)
     if match:
@@ -360,27 +364,27 @@ def process_description(poi):
                 edword_count = sum(cnt.values())
                 poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':edword_count}})
 
-                gw, gw_ug = getGoalWeight(text)
+                gw, gw_ug = get_goal_weight(text)
                 if gw is not None:
                     poi.update({"id": user['id']}, {'$set':{'text_anal.gw.datetime':datetime.datetime.now(),'text_anal.gw.source':source, 'text_anal.gw.ug':gw_ug, 'text_anal.gw.value':gw}})
 
-                cw, cw_ug = getCurrentWeightKG(text)
+                cw, cw_ug = get_current_weight_KG(text)
                 if cw is not None:
                     poi.update({"id": user['id']}, {'$set':{'text_anal.cw.datetime':datetime.datetime.now(),'text_anal.cw.source':source, 'text_anal.cw.ug':cw_ug, 'text_anal.cw.value':cw}})
 
-                hw, hw_ug = getHighWeightKG(text)
+                hw, hw_ug = get_high_weightKG(text)
                 if hw is not None:
                     poi.update({ "id": user['id']}, {'$set':{'text_anal.hw.datetime':datetime.datetime.now(),'text_anal.hw.source':source, 'text_anal.hw.ug':hw_ug, 'text_anal.hw.value':hw}})
 
-                lw, lw_ug = getLowWeightKG(text)
+                lw, lw_ug = get_low_weight_KG(text)
                 if lw is not None:
                     poi.update({ "id": user['id']}, {'$set':{'text_anal.lw.datetime':datetime.datetime.now(),'text_anal.lw.source':source, 'text_anal.lw.ug':lw_ug, 'text_anal.lw.value':lw}})
 
-                h = getHeight(text)
+                h = get_height(text)
                 if h is not None:
                     poi.update({ "id": user['id']}, {'$set':{'text_anal.h.datetime':datetime.datetime.now(),'text_anal.h.source':source, 'text_anal.h.value':h}})
 
-                a = getAge(text)
+                a = get_age(text)
                 if a is not None:
                     poi.update({ "id": user['id']}, {'$set':{'text_anal.a.datetime':datetime.datetime.now(),'text_anal.a.source':source, 'text_anal.a.value':a}})
             except Exception as detail:

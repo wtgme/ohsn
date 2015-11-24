@@ -116,8 +116,12 @@ def handle_rate_limiting():
         # print 'user calls remaining ' + str(remaining)
         if remaining == 0:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Need to wait till next reset time'
-            wait = max(reset - time.time(), 0) + 10
-            time.sleep(wait)
+            wait = max(reset - time.time(), 0)
+            if wait < 10:
+                time.sleep(wait)
+            else:
+                twutil.release_app(app_id)
+                app_id, twitter = twutil.twitter_change_auth(app_id)
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             break
