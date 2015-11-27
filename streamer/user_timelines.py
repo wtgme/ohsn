@@ -39,6 +39,7 @@ import pymongo
 db = dbutil.db_connect_no_auth('stream')
 sample_user = db['poi_sample']
 track_user = db['poi_track']
+
 sample_user.create_index([('timeline_count', pymongo.ASCENDING),
                          ('timeline_auth_error_flag', pymongo.DESCENDING),
                           ('timeline_scraped_times', pymongo.ASCENDING)])
@@ -46,34 +47,46 @@ track_user.create_index([('timeline_count', pymongo.ASCENDING),
                          ('timeline_auth_error_flag', pymongo.DESCENDING),
                          ('timeline_scraped_times', pymongo.ASCENDING)])
 
+sample_user.create_index([('timeline_scraped_times', pymongo.ASCENDING),
+                          ('protected', pymongo.ASCENDING),
+                          ('timeline_auth_error_flag', pymongo.ASCENDING),
+                          ('level', pymongo.ASCENDING)])
+track_user.create_index([('timeline_scraped_times', pymongo.ASCENDING),
+                         ('protected', pymongo.ASCENDING),
+                         ('timeline_auth_error_flag', pymongo.ASCENDING),
+                         ('level', pymongo.ASCENDING)])
+
 
 # set every poi user default flags
-temp = sample_user.find_one({})
-if 'timeline_count' not in temp:
-    print '----------------first time indexing--------------------'
-    sample_user.update({},{'$set':{"timeline_scraped_times": 0,
-                                   "timeline_auth_error_flag" : False,
-                                   "datetime_last_timeline_scrape": None,
-                                   "timeline_count": 0}},
-                       multi=True)
-    track_user.update({},{'$set':{"timeline_scraped_times": 0,
-                                  "timeline_auth_error_flag" : False,
-                                  "datetime_last_timeline_scrape" : None,
-                                  "timeline_count": 0}},
-                      multi=True)
+# temp = sample_user.find_one({})
+# if 'timeline_count' not in temp:
+#     print '----------------first time indexing--------------------'
+#     sample_user.update({},{'$set':{"timeline_scraped_times": 0,
+#                                    "timeline_auth_error_flag" : False,
+#                                    "datetime_last_timeline_scrape": None,
+#                                    "timeline_count": 0}},
+#                        multi=True)
+#     track_user.update({},{'$set':{"timeline_scraped_times": 0,
+#                                   "timeline_auth_error_flag" : False,
+#                                   "datetime_last_timeline_scrape" : None,
+#                                   "timeline_count": 0}},
+#                       multi=True)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 sample_time = db['timeline_sample']
 track_time = db['timeline_track']
+
 sample_time.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
+sample_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 track_time.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
+track_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" +  'Connecting timeline dbs well'
 
 '''Auth twitter API'''
-app_id = 4
+app_id = 0
 twitter = twutil.twitter_auth(app_id)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect Twitter.com'
@@ -91,7 +104,10 @@ def store_tweets(tweets_to_save, collection):
     #        if GET_TIMELINE_IMAGES:
     #            get_pictures(tw)
     # print("storing tweets")
-    collection.insert(tweets_to_save)
+    try:
+        collection.insert(tweets_to_save)
+    except pymongo.errors.DuplicateKeyError:
+            pass
 
 # Test rate_limit is OK? If not, sleep till to next reset time
 def handle_rate_limiting():
@@ -128,16 +144,17 @@ def handle_rate_limiting():
         if remaining == 0:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Need to wait till next reset time'
             wait = max(reset - time.time(), 0)
-            if wait < 10:
+            if wait < 20:
                 time.sleep(wait)
             else:
                 twutil.release_app(app_id)
                 app_id, twitter = twutil.twitter_change_auth(app_id)
+            continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             break
 
-def get_user_timeline(user_id, user_collection, timeline_collection, scrapt_times):
+def get_user_timeline(user_id, user_collection, timeline_collection):
     global reset
     global remaining
     # Get latest tweet ID scraped in db collection
@@ -154,70 +171,55 @@ def get_user_timeline(user_id, user_collection, timeline_collection, scrapt_time
 
     #  loop to get the timelines of user, and update the reset and remaining
     while True:
-        newest = None
+        # newest = None
         params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
         handle_rate_limiting()
         try:
             timelines = twitter.get_user_timeline(**params)
         except TwythonAuthError:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users'
-            count_scraped = timeline_collection.count({'user.id':user_id})
+            # count_scraped = timeline_collection.count({'user.id':user_id})
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'stored user ' + str(user_id) + ' tweet number: ' + str(count_scraped)
             # Scrapt_flag = False
             # if count_scraped > 0:
             #     Scrapt_flag = True
             user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
-                                                             'timeline_auth_error_flag':True,
-                                                             "timeline_scraped_times": scrapt_times+1,
-                                                             'timeline_count': count_scraped}},
+                                                             'timeline_auth_error_flag': True}},
                                    upsert=False)
             return False
         if timelines:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
             while timelines:
                 store_tweets(timelines, timeline_collection)
-                if newest is None:
-                    newest = True
-                    # The largest id in the first timeline
-                    latest = timelines[0]['id']
+                # if newest is None:
+                #     newest = True
+                #     # The largest id in the first timeline
+                #     latest = timelines[0]['id']
                 params['max_id'] = timelines[-1]['id'] - 1
-                handle_rate_limiting()
+
                 while True:
                     try:
+                        handle_rate_limiting()
                         timelines = twitter.get_user_timeline(**params)
                         break
                     except TwythonError as detail:
                         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(detail) + ' sleep 20 Sec'
                         time.sleep(20)
                         continue
-            count_scraped = timeline_collection.count({'user.id':user_id})
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get user ' + str(user_id) + ' tweet number: ' + str(count_scraped)
+            # count_scraped = timeline_collection.count({'user.id':user_id})
+            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get user ' + str(user_id) + ' tweet number: ' + str(count_scraped)
             ### First Flag is for having scrapted some timelines; Second Flag is for having timeline more than 3000
-            if count_scraped >= 3000:
-                user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
-                                                                 'timeline_auth_error_flag':False,
-                                                                 "timeline_scraped_times": scrapt_times+1,
-                                                                 'timeline_count': count_scraped}},
-                                       upsert=False)
-                return True
-            else:
-                user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
-                                                                 'timeline_auth_error_flag':False,
-                                                                 "timeline_scraped_times": scrapt_times+1,
-                                                                 'timeline_count': count_scraped}},
-                                       upsert=False)
-                return True
+            user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
+                                                             'timeline_auth_error_flag': False}},
+                                   upsert=False)
+            return True
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + str(user_id)
-            count_scraped = timeline_collection.count({'user.id':user_id})
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'stored user ' + str(user_id) + ' tweet number: ' + str(count_scraped)
-            Scrapt_flag = False
-            if count_scraped > 0:
-                Scrapt_flag = True
+            # count_scraped = timeline_collection.count({'user.id':user_id})
+            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'stored user ' + str(user_id) + ' tweet number: ' + str(count_scraped)
+            # Scrapt_flag = False
             user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
-                                                             'timeline_auth_error_flag':True,
-                                                             "timeline_scraped_times": scrapt_times+1,
-                                                             'timeline_count': count_scraped}},
+                                                             'timeline_auth_error_flag': False}},
                                    upsert=False)
             return False
 
@@ -254,25 +256,35 @@ def get_user_timeline(user_id, user_collection, timeline_collection, scrapt_time
 #         else:
 #             return
 
-def stream_timeline(user_collection, timeline_collection, scrapt_times):
-    users = user_collection.find({"timeline_count": 0,
-                                  'timeline_auth_error_flag': False,
-                                  'timeline_scraped_times': scrapt_times,
-                                  'level':{'$'}},
-                                 {'id':1})
-    print user_collection.count({"timeline_count": 0,
-                                 'timeline_auth_error_flag': False, 'timeline_scraped_times': scrapt_times})
-    for user in users:
-        print user['id']
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
-        get_user_timeline(user['id'], user_collection, timeline_collection, scrapt_times)
-        count = user_collection.count({"timeline_count": {'$gt': 3000}})
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
+def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
+    while True:
+        count = user_collection.count({'$or':[{'protected': False, 'timeline_scraped_times': {'$exists': False}, 'level': {'$lte': level}},
+                                             {'protected': False, 'timeline_scraped_times': {'$lt': scrapt_times}, 'level': {'$lte': level}, 'timeline_auth_error_flag': False}]})
+        if count == 0:
+            break
+        else:
+            users = user_collection.find({'$or':[{'protected': False, 'timeline_scraped_times': {'$exists': False}, 'level': {'$lte': level}},
+                                             {'protected': False, 'timeline_scraped_times': {'$lt': scrapt_times}, 'level': {'$lte': level}, 'timeline_auth_error_flag': False}]},
+                                     {'id': 1}).limit(200)
+            for user in users:
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
+                get_user_timeline(user['id'], user_collection, timeline_collection)
+                count = user_collection.count({"timeline_count": {'$gt': 3000}})
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
+
+                # update timeline_scrapted_times and timeline_count fields
+                count_scraped = timeline_collection.count({'user.id': user['id']})
+                timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
+                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
+                                                             'timeline_scraped_times': timeline_scraped_times}},
+                                   upsert=False)
+
+
 
 
 # p1 = Process(target=stream_timeline, args=(sample_user, sample_time)).start()
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
 
 print 'Job starts.......'
-stream_timeline(sample_user, sample_time, 0)
-stream_timeline(track_user, track_time, 0)
+stream_timeline(sample_user, sample_time, 1, 1)
+stream_timeline(track_user, track_time, 1, 1)
