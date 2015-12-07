@@ -35,7 +35,7 @@ track_network = db['net_track']
 track_network.create_index([("id0", pymongo.ASCENDING),
                             ("id1", pymongo.ASCENDING),
                             ("relationship", pymongo.ASCENDING),
-                            ("statusid", pymongo.ASCENDING)],
+                             ("statusid", pymongo.ASCENDING)],
                            unique=True)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
 
@@ -130,24 +130,22 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
         #exit()
 
 
-def network_mining(poi, timelines, network):
+def network_mining(poi, timelines, network, level):
     # set every poi to have not been analysed.
-    poi.update({}, {'$set': {"net_anal.tnmined": False}}, multi=True)
+    # poi.update({}, {'$set': {"net_anal.tnmined": False}}, multi=True)
     poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('net_anal.tnmined', pymongo.ASCENDING)], unique=False)
+                      ('net_anal.tnmined', pymongo.ASCENDING),
+                      ('level', pymongo.ASCENDING)], unique=False)
 
     #### Start to mining relationship network from users' timelines
     while True:
-        count = poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": False}).count()
+        count = poi.count({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False}, 'level': {'$lte': level}})
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": False}).limit(500):
-            #progcounter += 1
-            #if progcounter%1000 == 0:
-            #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
+        for user in poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False}, 'level': {'$lte': level}}, {'id': 1}).limit(250):
 
             for tweet in timelines.find({'user.id': user['id']}):
                 # parse the tweet for mrr edges:
@@ -171,5 +169,5 @@ def network_mining(poi, timelines, network):
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
 
 
-network_mining(sample_poi, sample_time, sample_network)
-network_mining(track_poi, track_time, track_network)
+network_mining(sample_poi, sample_time, sample_network, 2)
+# network_mining(track_poi, track_time, track_network, 1)

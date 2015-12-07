@@ -25,8 +25,8 @@ track_time = db['timeline_track']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
 
 '''Counting the number of users whose timelines have been processed by LIWC'''
-print 'LIWC mined user in Sample Col: ' + str(sample_poi.find({"liwc_anal.mined": True}).count())
-print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": True}).count())
+print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
+print 'LIWC mined user in Track Col: ' + str(track_poi.count({'liwc_anal.mined': {'$exists': False}}))
 
 
 # set every poi to have not been analysed.
@@ -36,20 +36,21 @@ print 'LIWC mined user in Track Col: ' + str(track_poi.find({"liwc_anal.mined": 
 '''Process the timelines of users in POI'''
 
 
-def process(poi, timelines):
-    poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
+def process(poi, timelines, level):
+    # poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
     poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('liwc_anal.mined', pymongo.ASCENDING)])
+                      ('liwc_anal.mined', pymongo.ASCENDING),
+                      ('level', pymongo.ASCENDING)])
 
     while True:
         # How many users whose timelines have not been processed by LIWC
-        count = poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).count()
+        count = poi.count({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False}, 'level': {'$lte': level}})
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, "liwc_anal.mined": False}).limit(250):
+        for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False}, 'level': {'$lte': level}}, {'id': 1}).limit(250):
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
@@ -71,5 +72,5 @@ def process(poi, timelines):
 
 
 if __name__ == '__main__':
-    process(sample_poi, sample_time)
-    process(track_poi, track_time)
+    process(sample_poi, sample_time, 2)
+    # process(track_poi, track_time, 2)

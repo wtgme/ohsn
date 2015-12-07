@@ -39,13 +39,13 @@ def trans_user_2_seed(user_db, seed_db):
                         # 'statuses_count':{},
                         })
     print 'Satisfied user number', count
-    rate = count/100.0
+    rate = count/20.0
     num = 0
     index = 0
     while True:
         for user in target_user_list:
             index += 1
-            if num < 100:
+            if num < 20:
                 rand = random.uniform(0, rate)
                 # print rand
                 if rand < 1:

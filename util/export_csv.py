@@ -21,6 +21,7 @@ def csv_output(fields, file_name, data):
                     levels = field.split('.')
                     t = x.get(levels[0])
                     for level in levels[1:]:
+                        # print t
                         t = t.get(level)
                         if t == None:
                             break
@@ -34,7 +35,7 @@ def csv_output(fields, file_name, data):
             writer.writerow(proce_values)
 
 
-def export_poi(dbname, colname, file_name):
+def export_poi(dbname, colname, file_name, lev):
     db = dbutil.db_connect_no_auth(dbname)
     poidb = db[colname]
     fields = ['id',
@@ -45,6 +46,7 @@ def export_poi(dbname, colname, file_name):
               'lang',
               'location',
               'ds_gender',
+              'level',
               'text_anal.gw.value',
               'text_anal.cw.value',
               'text_anal.edword_count.value',
@@ -133,17 +135,66 @@ def export_poi(dbname, colname, file_name):
               'liwc_anal.result.Parenth',
               'liwc_anal.result.OtherP',
               'liwc_anal.result.AllPct']
-    cursor = poidb.find({"timeline_count": {'$gte': 3000}}, projection=fields)
-    csv_output(fields, file_name, cursor)
-
+    # cursor = poidb.find({'net_anal.tnmined': True}, projection=fields)
+    # csv_output(fields, file_name, cursor)
+    with open(file_name+'.csv', 'wb') as csv_file:
+        # fields = ['screen_name', 'datetime_joined_twitter', 'text_anal.gw.value']
+        writer = csv.writer(csv_file)
+        writer.writerow(fields)
+        for x in poidb.find({"timeline_count": {'$gte': 3000}, 'net_anal.aggred': True, 'level': {'$lte': lev}}, projection=fields):
+            values = []
+            for field in fields:
+                if '.' in field:
+                    levels = field.split('.')
+                    t = x.get(levels[0])
+                    for level in levels[1:]:
+                        # print levels
+                        try:
+                            t = t.get(level)
+                        except Exception:
+                            print levels
+                        if t == None:
+                            break
+                    values.append(t)
+                else:
+                    values.append(x.get(field))
+            proce_values = []
+            for s in values:
+                s = unicode(s).encode("utf-8").replace('\t', ' ').replace(';', ' ').replace(',', ' ').replace('\n', ' ').replace('\r', ' ').replace('\r\n', ' ').replace('\n\r', ' ')
+                proce_values.append(s)
+            writer.writerow(proce_values)
 
 
 def export_net_agg(dbname, colname, file_name):
     db = dbutil.db_connect_no_auth(dbname)
     poidb = db[colname]
     fields = ['id0', 'id1', 'relationship', 'count']
-    cursor = poidb.find({"relationship": {'$in': ['mentioned', 'reply-to']}}, projection=fields)
-    csv_output(fields, file_name, cursor)
+    # cursor = poidb.find({"relationship": {'$in': ['mentioned', 'reply-to']}}, projection=fields)
+    # csv_output(fields, file_name, cursor)
+    with open(file_name+'.csv', 'wb') as csv_file:
+        # fields = ['screen_name', 'datetime_joined_twitter', 'text_anal.gw.value']
+        writer = csv.writer(csv_file)
+        writer.writerow(fields)
+        for x in poidb.find({"relationship": {'$in': ['mentioned', 'reply-to']}}, projection=fields):
+            values = []
+            for field in fields:
+                if '.' in field:
+                    levels = field.split('.')
+                    t = x.get(levels[0])
+                    for level in levels[1:]:
+                        # print t
+                        t = t.get(level)
+                        if t == None:
+                            break
+                    values.append(t)
+                else:
+                    values.append(x.get(field))
+            proce_values = []
+            for s in values:
+                s = unicode(s).encode("utf-8").replace('\t', ' ').replace(';', ' ').replace(',', ' ').replace('\n', ' ').replace('\r', ' ').replace('\r\n', ' ').replace('\n\r', ' ')
+                proce_values.append(s)
+            writer.writerow(proce_values)
+
 
 def export_poi_echelon(dbname,colname, file_name):
     db = dbutil.db_connect_no_auth(dbname)
@@ -251,13 +302,13 @@ def export_poi_echelon(dbname,colname, file_name):
 
 
 
-export_poi_echelon('echelon', 'poi', 're_echelon_poi')
-export_poi('stream', 'poi_sample', 'sample_poi')
-export_poi('stream', 'poi_track', 'track_poi')
+# export_poi_echelon('echelon', 'poi', 're_echelon_poi')
+export_poi('stream', 'poi_sample', 'sample_poi', 2)
+# export_poi('stream', 'poi_track', 'track_poi')
 
-export_net_agg('echelon', 'mrredges_aggregated', 're_echelon_reply_mention')
+# export_net_agg('echelon', 'mrredges_aggregated', 're_echelon_reply_mention')
 export_net_agg('stream', 'net_sample_aggregated', 'sample_reply_mention')
-export_net_agg('stream', 'net_track_aggregated', 'track_reply_mention')
+# export_net_agg('stream', 'net_track_aggregated', 'track_reply_mention')
 
 
 

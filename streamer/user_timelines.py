@@ -187,6 +187,12 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                                                              'timeline_auth_error_flag': True}},
                                    upsert=False)
             return False
+        except TwythonError:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Response was not valid JSON'
+            user_collection.update({'id': user_id}, {'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(),
+                                                             'timeline_auth_error_flag': True}},
+                                   upsert=False)
+            return False
         if timelines:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
             while timelines:
@@ -286,5 +292,6 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
 
 print 'Job starts.......'
-stream_timeline(sample_user, sample_time, 1, 1)
-stream_timeline(track_user, track_time, 1, 1)
+stream_timeline(sample_user, sample_time, 1, 2)
+print 'finish timeline for sample users'
+# stream_timeline(track_user, track_time, 1, 2)

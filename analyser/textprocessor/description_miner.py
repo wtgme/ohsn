@@ -133,7 +133,7 @@ def get_age(text):
         return match.group('age')
 
 
-def get_gender(text):
+# def get_gender(text):
 #     TODO
 
 
@@ -342,10 +342,13 @@ def get_goal_weight(text):
         return (None,None)
 
 
-def process_description(poi):
+def process_description(poi, level):
     poi.update({}, {'$set': {"text_anal.mined": False}}, multi=True)
     while True:
         count = poi.count({"text_anal.mined": False})
+        # count({'$or':[{'protected': False, 'text_anal.mined': {'$exists': False}, 'level': {'$lte': level}},
+        #                                      {'protected': False, 'text_anal.mined': {'$lt': scrapt_times}, 'level': {'$lte': level}}]})
+
         if count == 0:
             break
         else:
@@ -392,5 +395,5 @@ def process_description(poi):
 
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
-process_description(sample_poi)
-process_description(track_poi)
+process_description(sample_poi, 2)
+# process_description(track_poi, 1)
