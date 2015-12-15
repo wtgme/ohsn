@@ -35,7 +35,7 @@ def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=30)
+        bins = np.linspace(xmin, xmax, num=100)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(
@@ -49,20 +49,25 @@ def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
                     np.logspace(
                         log_min_size, log_max_size, num=number_of_bins)))
     hist, edges = np.histogram(data, bins, density=True)
+    # print np.sum(hist*np.diff(edges))
+    # hist = hist / hist.sum()
     bin_centers = (edges[1:]+edges[:-1])/2.0
     new_x, new_y = [], []
+    filter_limit = np.amax(hist) * 0.01
     for index in xrange(len(hist)):
-        if hist[index] != 0:
+        if hist[index] >= filter_limit:
             new_x.append(bin_centers[index])
             new_y.append(hist[index])
     return new_x, new_y
 
 def plot_pdf(lista, listb, field):
-    list_x, list_y = pdf(lista, linear_bins=True)
-    plt.plot(list_x, list_y, 'b', label='Echelon')
+    min_x = min(np.amin(lista), np.amin(listb))
+    max_x = max(np.amax(lista), np.amax(listb))
+    list_x, list_y = pdf(lista, xmin=min_x, xmax=max_x, linear_bins=True)
+    plt.plot(list_x, list_y, '--bo', label='Echelon')
     ax = plt.gca()
-    list_x, list_y = pdf(listb, linear_bins=True)
-    ax.plot(list_x, list_y, 'r', label='Sample')
+    list_x, list_y = pdf(listb, xmin=min_x, xmax=max_x, linear_bins=True)
+    ax.plot(list_x, list_y, '--r*', label='Sample')
     ax.set_xlabel('x')
     ax.set_ylabel('p(x)')
     # ax.set_xlim(xmin=1)
@@ -71,8 +76,10 @@ def plot_pdf(lista, listb, field):
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
-    # plt.savefig('echelon-smaple-'+field+'.eps')
-    plt.show()
+    ax.set_autoscale_on(True)
+    plt.savefig('echelon-smaple-'+field+'.eps')
+    plt.clf()
+    # plt.show()
 #     echelon-smaple-field.eps
 
 
