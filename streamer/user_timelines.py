@@ -292,6 +292,6 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
 # p2 = Process(target=stream_timeline, args=(track_user, track_time)).start()
 
 print 'Job starts.......'
-stream_timeline(sample_user, sample_time, 1, 2)
+# stream_timeline(sample_user, sample_time, 1, 2)
 print 'finish timeline for sample users'
-# stream_timeline(track_user, track_time, 1, 2)
+stream_timeline(track_user, track_time, 1, 1)
