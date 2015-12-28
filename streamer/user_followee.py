@@ -36,9 +36,9 @@ track_poi.create_index("id", unique=True)
 sample_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
 track_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
 
+
 def trans_seed_to_poi(seed_db, poi_db):
-    seed_user = seed_db.find({})
-    for user in seed_user:
+    for user in seed_db.find({}):
         user['pre_level_node'] = None
         user['level'] = 0
         try:

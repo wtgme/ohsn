@@ -26,12 +26,6 @@ track_seed.create_index('id', unique=True)
 
 def trans_user_2_seed(user_db, seed_db):
     seed_db.remove({})
-    target_user_list = user_db.find({'geo_enabled': True,
-                                    'protected': False,
-                                    'verified': False,
-                                    'status.created_at': {'$gte': datetime.date(2015, 10, 15).isoformat()}
-                                    # 'statuses_count':{},
-                                    })
     count = user_db.count({'geo_enabled': True,
                         'protected': False,
                         'verified': False,
@@ -43,7 +37,12 @@ def trans_user_2_seed(user_db, seed_db):
     num = 0
     index = 0
     while True:
-        for user in target_user_list:
+        for user in user_db.find({'geo_enabled': True,
+                                    'protected': False,
+                                    'verified': False,
+                                    'status.created_at': {'$gte': datetime.date(2015, 10, 15).isoformat()}
+                                    # 'statuses_count':{},
+                                    }):
             index += 1
             if num < 20:
                 rand = random.uniform(0, rate)
@@ -55,5 +54,5 @@ def trans_user_2_seed(user_db, seed_db):
             else:
                 return
 
-trans_user_2_seed(sample_user, sample_seed)
+# trans_user_2_seed(sample_user, sample_seed)
 trans_user_2_seed(track_user, track_seed)
