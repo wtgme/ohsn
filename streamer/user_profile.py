@@ -114,8 +114,8 @@ def get_user_info(stream_user_list, user_info):
 
 
 if __name__ == '__main__':
-    print 'extract users from sample streams'
-    get_user_info(sample_user_list, sample_poi)
+    # print 'extract users from sample streams'
+    # get_user_info(sample_user_list, sample_poi)
 
     print 'extract users from track streams'
     get_user_info(track_user_list, track_poi)
