@@ -11,7 +11,7 @@ import sys
 sys.path.append('..')
 import util.db_util as dbutil
 import datetime
-import pymongo
+
 
 '''Connecting db and collections'''
 db = dbutil.db_connect_no_auth('stream')
@@ -68,7 +68,7 @@ def set_flag_poi_with_timeline(poidb, timelinedb):
                 else:
                     poidb.update({'id': user_id}, {'$set':{'set_flags': True}}, upsert=False)
 
-print 'Start to process'
-set_flag_poi_with_timeline(sample_poi, sample_time)
+# print 'Start to process'
+# set_flag_poi_with_timeline(sample_poi, sample_time)
 print 'Start to process'
 set_flag_poi_with_timeline(track_poi, track_time)

@@ -267,6 +267,7 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
         count = user_collection.count({'$or':[{'protected': False, 'timeline_scraped_times': {'$exists': False}, 'level': {'$lte': level}},
                                              {'protected': False, 'timeline_scraped_times': {'$lt': scrapt_times}, 'level': {'$lte': level}, 'timeline_auth_error_flag': False}]})
         if count == 0:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'finished'
             break
         else:
             users = user_collection.find({'$or':[{'protected': False, 'timeline_scraped_times': {'$exists': False}, 'level': {'$lte': level}},
