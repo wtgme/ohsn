@@ -60,7 +60,8 @@ def process(poi, timelines, level):
                 # text = re.sub(r"http\S+", "", text) # this doesn't do anything
                 textmass = textmass + " " + text
 
-            textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", textmass).split())
+            # textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", textmass).split())
+            textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ", textmass).split())
             textmass.lower()
             result = Liwc.summarize_document(liwc, textmass)
             # print result
@@ -72,5 +73,5 @@ def process(poi, timelines, level):
 
 
 if __name__ == '__main__':
-    process(sample_poi, sample_time, 2)
-    # process(track_poi, track_time, 2)
+    # process(sample_poi, sample_time, 2)
+    process(track_poi, track_time, 2)

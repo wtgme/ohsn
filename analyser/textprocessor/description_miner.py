@@ -395,5 +395,5 @@ def process_description(poi, level):
 
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
-process_description(sample_poi, 2)
-# process_description(track_poi, 1)
+# process_description(sample_poi, 2)
+process_description(track_poi, 2)

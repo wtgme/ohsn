@@ -169,5 +169,5 @@ def network_mining(poi, timelines, network, level):
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
 
 
-network_mining(sample_poi, sample_time, sample_network, 2)
-# network_mining(track_poi, track_time, track_network, 1)
+# network_mining(sample_poi, sample_time, sample_network, 2)
+network_mining(track_poi, track_time, track_network, 1)
