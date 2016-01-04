@@ -114,10 +114,10 @@ def aggregate(poidb, netdb, aggnetdb, level):
 
 
 # print sample_network.count({'id0': 50883209, 'id1': 45112524, 'relationship': 'mentioned'})
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), '--------------sample--------------'
-aggregate(sample_poi, sample_network, sample_network_agg, 2)
-# print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), '--------------track--------------'
-# aggregate(track_poi, track_network, track_network_agg, 1)
+# print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), '--------------sample--------------'
+# aggregate(sample_poi, sample_network, sample_network_agg, 2)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), '--------------track--------------'
+aggregate(track_poi, track_network, track_network_agg, 1)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), '--------------finish--------------'
 
