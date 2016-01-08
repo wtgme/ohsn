@@ -303,11 +303,11 @@ def export_poi_echelon(dbname,colname, file_name):
 
 
 # export_poi_echelon('echelon', 'poi', 're_echelon_poi')
-export_poi('stream', 'poi_sample', 'sample_poi', 2)
+export_poi('stream', 'poi_track', 'track_poi', 2)
 # export_poi('stream', 'poi_track', 'track_poi')
 
 # export_net_agg('echelon', 'mrredges_aggregated', 're_echelon_reply_mention')
-export_net_agg('stream', 'net_sample_aggregated', 'sample_reply_mention')
+export_net_agg('stream', 'net_track_aggregated', 'track_reply_mention')
 # export_net_agg('stream', 'net_track_aggregated', 'track_reply_mention')
 
 
