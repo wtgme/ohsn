@@ -8,6 +8,7 @@ https://dev.twitter.com/rest/reference/get/users/lookup
 users/lookup :This method is especially useful when used in conjunction with collections of user IDs returned from GET friends / ids and GET followers / ids.
 
 
+
 @author: wt
 """
 
@@ -40,9 +41,9 @@ track_poi.create_index("id", unique=True)
 sample_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
 track_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
 
+
 def trans_seed_to_poi(seed_db, poi_db):
-    seed_user = seed_db.find({})
-    for user in seed_user:
+    for user in seed_db.find({}):
         user['pre_level_node'] = None
         user['level'] = 0
         try:
@@ -162,7 +163,7 @@ def handle_following_rate_limiting():
             break
 
 
-def snowball_follower(poi_db, level):
+def snowball_following(poi_db, level):
     global twitter_friend
     global app_id_friend
     start_level = level - 1
@@ -175,11 +176,11 @@ def snowball_follower(poi_db, level):
             for user in start_user_list:
                 # print user['id_str']
                 params = {'cursor': -1, 'user_id': user['id_str'], 'count': 5000}
-                # followee getting
                 while True:
+                    # followee getting
                     handle_following_rate_limiting()
                     try:
-                        followers = twitter_friend.get_friends_ids(**params)
+                        followees = twitter_friend.get_friends_ids(**params)
                         # print followees
                     except TwythonAuthError as detail:
                         # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
@@ -191,17 +192,17 @@ def snowball_follower(poi_db, level):
                     except Exception as detail:
                         print str(detail)
 
-                    # Eliminate the users that have been scraped
+                    # # Eliminate the users that have been scraped
                     # '''Get all documents in stream collections'''
                     # user_list_all = poi_db.distinct('id', {'level': start_level+1, 'pre_level_node': user['id_str']})
-                    follower_ids = followers['ids']
+                    followee_ids = followees['ids']
                     # '''Eliminate the users that have been scraped'''
                     # process_user_list = list(set(followee_ids) - set(user_list_all))
                     # print len(followee_ids), len(process_user_list)
                     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process', len(process_user_list), 'in', len(followee_ids), 'friends of user', user['id_str'], 'where', len(user_list_all), 'have been processed'
-                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process follower', len(follower_ids)
-                    if follower_ids:
-                        profiles = get_users_info(follower_ids)
+                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', len(followee_ids)
+                    if followee_ids:
+                        profiles = get_users_info(followee_ids)
                         for profile in profiles:
                             if profile['lang'] == 'en':
                                 profile['pre_level_node'] = user['id_str']
@@ -211,9 +212,9 @@ def snowball_follower(poi_db, level):
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
                     # prepare for next iterator
-                    next_cursor = followers['next_cursor']
+                    next_cursor = followees['next_cursor']
                     if next_cursor:
-                        params['cursor'] = followers['next_cursor']
+                        params['cursor'] = followees['next_cursor']
                     else:
                         break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"friend_scrape_flag": True
@@ -224,23 +225,23 @@ trans_seed_to_poi(sample_seed, sample_poi)
 trans_seed_to_poi(track_seed, track_poi)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
-snowball_follower(sample_poi, 1)
+snowball_following(sample_poi, 1)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for track db'
-snowball_follower(track_poi, 1)
+snowball_following(track_poi, 1)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 2)
+snowball_following(sample_poi, 2)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 2)
+snowball_following(track_poi, 2)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 3)
+snowball_following(sample_poi, 3)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 3)
+snowball_following(track_poi, 3)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 4)
+snowball_following(sample_poi, 4)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 4)
+snowball_following(track_poi, 5)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'

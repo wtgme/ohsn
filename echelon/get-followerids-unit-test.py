@@ -40,7 +40,7 @@ OAUTH_TOKEN_SECRET = 'Junk'
 # Not implemented yet...
 FOLLOWER_POI_CLASSIFICATION_THRESHOLD = -1
 
-# only check the follower/followee network at most every 1 weeks...
+# only check the echelon/followee network at most every 1 weeks...
 # we have data limits after-all
 MIN_RESOLUTION = timedelta(1*604800)
 
@@ -181,7 +181,7 @@ def getfollowersids(userid, hop=0, maxhop=2, maxfollowers=5000, nodes=nodes, edg
                 next_cursor = response['next_cursor']                
                 
                 for follower in response['ids']:
-                # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+                # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                     edge = {}
                     edge['v0'] = follower
                     edge['v1'] = userid

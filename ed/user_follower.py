@@ -29,27 +29,34 @@ twitter_friend = twutil.twitter_auth(app_id_friend)
 
 
 # '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('stream')
-sample_seed = db['seed_sample']
-track_seed = db['seed_track']
+db = dbt.db_connect_no_auth('ed')
 
-sample_poi = db['poi_sample']
-sample_poi.create_index("id", unique=True)
-track_poi = db['poi_track']
-track_poi.create_index("id", unique=True)
-sample_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
-track_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
+ed_poi = db['poi_ed']
+ed_net = db['net_ed']
 
-def trans_seed_to_poi(seed_db, poi_db):
-    seed_user = seed_db.find({})
-    for user in seed_user:
-        user['pre_level_node'] = None
-        user['level'] = 0
-        try:
-            poi_db.insert(user)
-        except pymongo.errors.DuplicateKeyError:
-            pass
+ed_poi.create_index("id", unique=True)
+ed_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
 
+ed_net.create_index([("user", pymongo.ASCENDING),
+                    ("follower", pymongo.ASCENDING)],
+                            unique=True)
+
+def trans_seed_to_poi(seed_list, poi_db):
+    infos = []
+    try:
+        infos = twitter_look.lookup_user(screen_name=seed_list)
+    except TwythonError as detail:
+        if 'No user matches for specified terms' in detail:
+            print seed_list
+    for profile in infos:
+        print profile
+        if profile['lang'] == 'en':
+            profile['pre_level_node'] = None
+            profile['level'] = 1
+            try:
+                poi_db.insert(profile)
+            except pymongo.errors.DuplicateKeyError:
+                pass
 
 def handle_lookup_rate_limiting():
     global twitter_look
@@ -162,16 +169,24 @@ def handle_following_rate_limiting():
             break
 
 
+def add_edge(userid, follower):
+    edge = {'user': userid, 'follower': follower,
+            'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}
+    try:
+        ed_net.insert(edge)
+    except pymongo.errors.DuplicateKeyError:
+        pass
+
 def snowball_follower(poi_db, level):
     global twitter_friend
     global app_id_friend
-    start_level = level - 1
+    start_level = level
     while True:
-        count = poi_db.count({'level': start_level, 'protected': False, 'friend_scrape_flag': {'$exists': False}})
+        count = poi_db.count({'level': start_level, 'protected': False, 'follower_scrape_flag': {'$exists': False}})
         if count == 0:
             break
         else:
-            start_user_list = poi_db.find({'level': start_level, 'protected': False, 'friend_scrape_flag': {'$exists': False}}, ['id_str']).limit(min(200, count))
+            start_user_list = poi_db.find({'level': start_level, 'protected': False, 'follower_scrape_flag': {'$exists': False}}, ['id_str']).limit(min(200, count))
             for user in start_user_list:
                 # print user['id_str']
                 params = {'cursor': -1, 'user_id': user['id_str'], 'count': 5000}
@@ -210,37 +225,24 @@ def snowball_follower(poi_db, level):
                                     poi_db.insert(profile)
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
-                    # prepare for next iterator
-                    next_cursor = followers['next_cursor']
-                    if next_cursor:
-                        params['cursor'] = followers['next_cursor']
+                                add_edge(user['id_str'], profile['id_str'])
+
+                        # prepare for next iterator
+                        next_cursor = followers['next_cursor']
+                        if next_cursor:
+                            params['cursor'] = followers['next_cursor']
+                        else:
+                            break
                     else:
                         break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"friend_scrape_flag": True
                                                     }}, upsert=False)
 
+ed_seed = ['QuibellPaul']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
-trans_seed_to_poi(sample_seed, sample_poi)
-trans_seed_to_poi(track_seed, track_poi)
+trans_seed_to_poi(ed_seed, ed_poi)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
-snowball_follower(sample_poi, 1)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for track db'
-snowball_follower(track_poi, 1)
-
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 2)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 2)
-
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 3)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 3)
-
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for sample db'
-snowball_follower(sample_poi, 4)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of followees for track db'
-snowball_follower(track_poi, 4)
+snowball_follower(ed_poi, 1)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'

@@ -33,11 +33,11 @@ OAUTH_TOKEN_SECRET = '2ICnWiz79ejyhrFk8wjW5bY0ovU7R3biw3okmXSOfpHON'
 FOLLOWER_POI_CLASSIFICATION_THRESHOLD = 1
 
 # Futurework:
-# if set to true we will get data for the follower nodes that we find...
+# if set to true we will get data for the echelon nodes that we find...
 # this is dangerous wrt the rate-limit and can explode rapidly.
 # GET_FOLLOWER_NODE_DATA = False
 
-# only check the follower/followee network at most every 1 weeks...
+# only check the echelon/followee network at most every 1 weeks...
 # we have data limits after-all
 MIN_RESOLUTION = datetime.timedelta(seconds=1*604800)
 
@@ -125,14 +125,14 @@ def handle_friend_rate_limiting():
             wait = max(app_status['reset'] - time.time(), 0) + 10
             time.sleep(wait)
             
-#def store_follower(follower, collection=nodes):
-#    follower['created_at'] = datetime.datetime.strptime(follower['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-#    collection.insert(follower)
+#def store_follower(echelon, collection=nodes):
+#    echelon['created_at'] = datetime.datetime.strptime(echelon['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+#    collection.insert(echelon)
 
 
 #def store_followers(followers, collection=nodes):
-#     for follower in followers:
-#         store_follower(follower)
+#     for echelon in followers:
+#         store_follower(echelon)
   
 #def getUserDetails(ids):
 #    userDetails = []
@@ -159,18 +159,18 @@ def getfollowersids(userid, maxfollowers=5000, edges=followeredges):
             next_cursor = response['next_cursor']                
             
             for follower in response['ids']:
-            # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+            # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                 edge = {}
                 edge['id0'] = follower['id'] 
                 # edge['screen_name_0'] = 
                 edge['id1'] = userid
                 # edge['screen_name_1'] = 
-                edge['relationship'] = 'follower'
+                edge['relationship'] = 'echelon'
                 # this is an observation we can merge observations into weighted and time period later.
                 edge['last-date'] = datetime.datetime.now()
                 edge['first-date'] = datetime.datetime.now()
 
-                # N/A don;t have a status if its a follower lookup                    
+                # N/A don;t have a status if its a echelon lookup
                 # a copy of the status that established it: this will contain all that is needed for export to NodeXL or otherwise.
                 # edge['status'] = 
                 try:
@@ -215,7 +215,7 @@ def getfriendsids(userid, maxfollowers=5000, edges=followeredges):
             next_cursor = response['next_cursor']                
             
             for follower in response['ids']:
-            # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+            # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                 edge = {}
                 edge['id0'] = userid
                 # edge['screen_name_0'] = 
@@ -226,7 +226,7 @@ def getfriendsids(userid, maxfollowers=5000, edges=followeredges):
                 edge['last-date'] = datetime.datetime.now()
                 edge['first-date'] = datetime.datetime.now()
 
-                # N/A don;t have a status if its a follower lookup                    
+                # N/A don;t have a status if its a echelon lookup
                 # a copy of the status that established it: this will contain all that is needed for export to NodeXL or otherwise.
                 # edge['status'] = 
                 try:
@@ -277,23 +277,23 @@ def getfriendsids(userid, maxfollowers=5000, edges=followeredges):
 #                # store_followers(response['ids'])
 #                next_cursor = response['next_cursor']                
 #                
-#                for follower in response['ids']:
-#                # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+#                for echelon in response['ids']:
+#                # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
 #                    edge = {}
-#                    edge['id0'] = follower['id'] 
+#                    edge['id0'] = echelon['id']
 #                    # edge['screen_name_0'] = 
 #                    edge['id1'] = userid
 #                    # edge['screen_name_1'] = 
-#                    edge['relationship'] = 'follower'
+#                    edge['relationship'] = 'echelon'
 #                    # this is an observation we can merge observations into weighted and time period later.
 #                    edge['date'] = datetime.datetime.now()
 #
-#                    # N/A don;t have a status if its a follower lookup                    
+#                    # N/A don;t have a status if its a echelon lookup
 #                    # a copy of the status that established it: this will contain all that is needed for export to NodeXL or otherwise.
 #                    # edge['status'] = 
 #                    collection.insert(edge)
 #
-#                    getfollowersids(follower, hop, maxhop, maxfollowers, nodes, edges)
+#                    getfollowersids(echelon, hop, maxhop, maxfollowers, nodes, edges)
 #
 #            except TwythonRateLimitError:
 #                print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"

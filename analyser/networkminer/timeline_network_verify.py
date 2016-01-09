@@ -14,8 +14,9 @@ import pymongo
 
 #### Connecting db and collections
 db = dbutil.db_connect_no_auth('stream')
-sample_poi = db['poi_sample']
-sample_network = db['net_sample']
+sample_poi = db['poi_track']
+sample_network = db['net_track']
+print 'successfully connected'
 
 for relation in sample_network.find({'relationship': 'mentioned'}, {'_id':0, 'id0':1, 'id1':1, 'relationship':1}):
     user0_id = relation['id0']

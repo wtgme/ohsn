@@ -93,7 +93,7 @@ class TAPI_FollowerNetworkHarvester_Config(object):
     Config_COL = 'config_col'
     POI_COL = 'poi_col'
     
-    print "TODO: get follower app key"    
+    print "TODO: get echelon app key"
     
     # get these by registering an application with twitter
     APP_KEY    = config.get('credentials','app_key')
@@ -106,7 +106,7 @@ class TAPI_FollowerNetworkHarvester_Config(object):
     # Not implemented yet...
     follower_poi_classification_threshold = -1
 
-    # only check the follower/followee network at most every 1 weeks...
+    # only check the echelon/followee network at most every 1 weeks...
     # we have data limits after-all
     min_resolution = timedelta(1*604800)
 

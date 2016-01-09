@@ -124,7 +124,7 @@ def getfollowers(name, hop=0, maxhop=2, maxfollowers=200, nodes=nodes, edges=edg
                 store_followers(followers)
                                 
                 for follower in followers['users']:
-                # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+                # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                     edge = {}
                     edge['v0'] = follower['screen_name']
                     edge['v1'] = name

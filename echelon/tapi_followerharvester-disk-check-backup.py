@@ -80,8 +80,8 @@ while True:
         followercall_reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])
         print "friend calls reset at " + str(friendcall_reset)
         print "friend calls remaining " +str(friendcall_remaining)
-        print "follower calls reset at " + str(followercall_reset)
-        print "follower calls remaining " +str(followercall_remaining)   
+        print "echelon calls reset at " + str(followercall_reset)
+        print "echelon calls remaining " +str(followercall_remaining)
         break
     except TwythonError, e:
         error = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "TWYTHONERROR getting rate-limit-status\t" + str(e.__class__) +"\t" + str(e) + " Non rate-limit exception encountered. Sleeping for " + str(ON_EXCEPTION_WAIT) + " before retrying\n" 
@@ -125,19 +125,19 @@ def  get_user_followers(userid, maxfollowers=5000):
             next_cursor = response['next_cursor']        
             
             for follower in response['ids']:
-            # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+            # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                 edge = {}
                 edge['id0'] = userid
                 # edge['screen_name_0'] = 
                 edge['id1'] = follower
                 # edge['screen_name_1'] = 
-                edge['relationship'] = 'follower'
+                edge['relationship'] = 'echelon'
                 # edge['relationship'] = 'friend'
                 # this is an observation we can merge observations into weighted and time period later.
                 edge['last-date'] = datetime.datetime.now()
                 edge['first-date'] = datetime.datetime.now()
 
-                # N/A don;t have a status if its a follower lookup                    
+                # N/A don;t have a status if its a echelon lookup
                 # a copy of the status that established it: this will contain all that is needed for export to NodeXL or otherwise.
                 # edge['status'] = 
                 try:
@@ -159,8 +159,8 @@ def  get_user_followers(userid, maxfollowers=5000):
                         print "rate_limit_status returned..."                                                
                         followercall_remaining = int(rate_limit_status['resources']['followers']['/followers/ids']['remaining'])
                         followercall_reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])        
-                        print "rate_limit_status: follower reset at " + str(followercall_reset)
-                        print "rate_limit_status: follower remaining = " + str(followercall_remaining)
+                        print "rate_limit_status: echelon reset at " + str(followercall_reset)
+                        print "rate_limit_status: echelon remaining = " + str(followercall_remaining)
                         break
                     except TwythonError, e:
                         error = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "TWYTHONERROR getting rate_limit_status\t" + str(e.__class__) +"\t" + str(e) + " Non rate-limit exception encountered. Sleeping for " + str(ON_EXCEPTION_WAIT) + " before retrying\n" 
@@ -228,19 +228,19 @@ def  get_user_followers(userid, maxfollowers=5000):
             next_cursor = response['next_cursor']                
             
             for follower in response['ids']:
-            # print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
+            # print echelon['screen_name'] +"\t"+ echelon['description'].encode('utf-8').replace('\n', ' ')
                 edge = {}
                 edge['id0'] = userid
                 # edge['screen_name_0'] = 
                 edge['id1'] = follower
                 # edge['screen_name_1'] = 
-                # edge['relationship'] = 'follower'
+                # edge['relationship'] = 'echelon'
                 edge['relationship'] = 'friend'
                 # this is an observation we can merge observations into weighted and time period later.
                 edge['last-date'] = datetime.datetime.now()
                 edge['first-date'] = datetime.datetime.now()
 
-                # N/A don;t have a status if its a follower lookup                    
+                # N/A don;t have a status if its a echelon lookup
                 # a copy of the status that established it: this will contain all that is needed for export to NodeXL or otherwise.
                 # edge['status'] = 
                 try:

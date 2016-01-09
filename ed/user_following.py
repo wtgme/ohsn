@@ -4,6 +4,11 @@ Created on 12:33, 24/11/15
 1. Transform users in seed dbs to poi dbs, and set level = 0
 2. Snowball users based on users's following (In Twitter API denoted as friends: https://dev.twitter.com/rest/reference/get/friends/ids)
 
+https://dev.twitter.com/rest/reference/get/users/lookup
+users/lookup :This method is especially useful when used in conjunction with collections of user IDs returned from GET friends / ids and GET followers / ids.
+
+
+
 @author: wt
 """
 
@@ -171,39 +176,47 @@ def snowball_following(poi_db, level):
             for user in start_user_list:
                 # print user['id_str']
                 params = {'cursor': -1, 'user_id': user['id_str'], 'count': 5000}
-                # followee getting
-                handle_following_rate_limiting()
-                try:
-                    followees = twitter_friend.get_friends_ids(**params)
-                    # print followees
-                except TwythonAuthError as detail:
-                    # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                    if 'Twitter API returned a 401' in detail:
-                        continue
-                except TwythonError as detail:
-                    if 'Received response with content-encoding: gzip' in detail:
-                        continue
-                except Exception as detail:
-                    print str(detail)
+                while True:
+                    # followee getting
+                    handle_following_rate_limiting()
+                    try:
+                        followees = twitter_friend.get_friends_ids(**params)
+                        # print followees
+                    except TwythonAuthError as detail:
+                        # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
+                        if 'Twitter API returned a 401' in detail:
+                            continue
+                    except TwythonError as detail:
+                        if 'Received response with content-encoding: gzip' in detail:
+                            continue
+                    except Exception as detail:
+                        print str(detail)
 
-                # Eliminate the users that have been scraped
-                '''Get all documents in stream collections'''
-                user_list_all = poi_db.distinct('id', {'level': start_level+1, 'pre_level_node': user['id_str']})
-                followee_ids = followees['ids']
-                '''Eliminate the users that have been scraped'''
-                process_user_list = list(set(followee_ids) - set(user_list_all))
-                # print len(followee_ids), len(process_user_list)
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process', len(process_user_list), 'in', len(followee_ids), 'friends of user', user['id_str'], 'where', len(user_list_all), 'have been processed'
-                if process_user_list:
-                    profiles = get_users_info(process_user_list)
-                    for profile in profiles:
-                        if profile['lang'] == 'en':
-                            profile['pre_level_node'] = user['id_str']
-                            profile['level'] = start_level+1
-                            try:
-                                poi_db.insert(profile)
-                            except pymongo.errors.DuplicateKeyError:
-                                pass
+                    # # Eliminate the users that have been scraped
+                    # '''Get all documents in stream collections'''
+                    # user_list_all = poi_db.distinct('id', {'level': start_level+1, 'pre_level_node': user['id_str']})
+                    followee_ids = followees['ids']
+                    # '''Eliminate the users that have been scraped'''
+                    # process_user_list = list(set(followee_ids) - set(user_list_all))
+                    # print len(followee_ids), len(process_user_list)
+                    # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process', len(process_user_list), 'in', len(followee_ids), 'friends of user', user['id_str'], 'where', len(user_list_all), 'have been processed'
+                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', len(followee_ids)
+                    if followee_ids:
+                        profiles = get_users_info(followee_ids)
+                        for profile in profiles:
+                            if profile['lang'] == 'en':
+                                profile['pre_level_node'] = user['id_str']
+                                profile['level'] = start_level+1
+                                try:
+                                    poi_db.insert(profile)
+                                except pymongo.errors.DuplicateKeyError:
+                                    pass
+                    # prepare for next iterator
+                    next_cursor = followees['next_cursor']
+                    if next_cursor:
+                        params['cursor'] = followees['next_cursor']
+                    else:
+                        break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"friend_scrape_flag": True
                                                     }}, upsert=False)
 
