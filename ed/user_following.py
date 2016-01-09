@@ -36,7 +36,9 @@ db = dbt.db_connect_no_auth('ed')
 ed_poi = db['poi_ed']
 ed_net = db['net_ed']
 ed_poi.create_index("id", unique=True)
-ed_poi.create_index([('level', pymongo.ASCENDING), ('following_prelevel_node', pymongo.ASCENDING)], unique=False)
+ed_poi.create_index([('level', pymongo.ASCENDING),
+                     ('following_prelevel_node', pymongo.ASCENDING)],
+                    unique=False)
 
 ed_net.create_index([("user", pymongo.ASCENDING),
                     ("follower", pymongo.ASCENDING)],
@@ -49,17 +51,16 @@ def trans_seed_to_poi(seed_list, poi_db):
         infos = twitter_look.lookup_user(screen_name=seed_list)
     except TwythonError as detail:
         if 'No user matches for specified terms' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), seed_list
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
+                seed_list
         else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), str(detail)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
+                str(detail)
     for profile in infos:
         if profile['lang'] == 'en':
             profile['following_prelevel_node'] = None
             profile['level'] = 1
-            try:
-                poi_db.insert(profile)
-            except pymongo.errors.DuplicateKeyError:
-                pass
+            poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
 
 
 def handle_lookup_rate_limiting():
@@ -70,22 +71,26 @@ def handle_lookup_rate_limiting():
         try:
             rate_limit_status = twitter_look.get_application_rate_limit_status(resources=['users'])
         except TwythonRateLimitError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Cannot test due to last incorrect connection, change Twitter APP ID'
             twutil.release_app(app_id_look)
             app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
             continue
         except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Author Error, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Author Error, change Twitter APP ID'
             twutil.release_app(app_id_look)
             app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
             continue
         except TwythonError as detail:
             if 'Twitter API returned a 503' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                      '503 ERROE, sleep 30 Sec'
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                      'Unhandled ERROR, EXIT()'
                 exit(1)
 
         reset = float(rate_limit_status['resources']['users']['/users/lookup']['reset'])
@@ -117,12 +122,12 @@ def get_users_info(stream_user_list):
             return infos
         except TwythonError as detail:
             if 'No user matches for specified terms' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t cannot get user profiles for" , stream_user_list
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
+                      "\t cannot get user profiles for" , stream_user_list
                 break
             else:
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception', str(detail)
                 break
-
 
 
 def handle_following_rate_limiting():
@@ -133,22 +138,26 @@ def handle_following_rate_limiting():
         try:
             rate_limit_status = twitter_friend.get_application_rate_limit_status(resources=['friends'])
         except TwythonRateLimitError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Cannot test due to last incorrect connection, change Twitter APP ID'
             twutil.release_app(app_id_friend)
             app_id_friend, twitter_friend = twutil.twitter_change_auth(app_id_friend)
             continue
         except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Author Error, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Author Error, change Twitter APP ID'
             twutil.release_app(app_id_friend)
             app_id_friend, twitter_friend = twutil.twitter_change_auth(app_id_friend)
             continue
         except TwythonError as detail:
             if 'Twitter API returned a 503' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                      '503 ERROE, sleep 30 Sec'
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                      'Unhandled ERROR, EXIT()'
                 exit(1)
 
         reset = float(rate_limit_status['resources']['friends']['/friends/ids']['reset'])
@@ -230,20 +239,18 @@ def snowball_following(poi_db, net_db, level):
                             if profile['lang'] == 'en':
                                 profile['following_prelevel_node'] = user['id_str']
                                 profile['level'] = start_level+1
-                                try:
-                                    poi_db.insert(profile)
-                                    net_db.insert({'user': profile['id_str'], 'follower': user['id_str'],
-                                                'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
-                                except pymongo.errors.DuplicateKeyError:
-                                    pass
+                                poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+                                net_db.update({'user': int(profile['id_str']), 'follower': int(user['id_str'])},
+                                              {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
+                                              upsert=True)
                     # prepare for next iterator
                     next_cursor = followees['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
-ed_seed = ['QuibellPaul']
+ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
 trans_seed_to_poi(ed_seed, ed_poi)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db'
 snowball_following(ed_poi, ed_net, 1)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'

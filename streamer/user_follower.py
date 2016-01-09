@@ -24,8 +24,8 @@ import time
 app_id_look = 4
 twitter_look = twutil.twitter_auth(app_id_look)
 
-app_id_friend = 0
-twitter_friend = twutil.twitter_auth(app_id_friend)
+app_id_follower = 0
+twitter_follower = twutil.twitter_auth(app_id_follower)
 
 
 # '''Connect db and stream collections'''
@@ -118,8 +118,8 @@ def get_users_info(stream_user_list):
 
 
 def handle_following_rate_limiting():
-    global twitter_friend
-    global app_id_friend
+    global twitter_follower
+    global app_id_follower
     while True:
         # print '---------friends rate handle------------------'
         try:
@@ -163,8 +163,8 @@ def handle_following_rate_limiting():
 
 
 def snowball_follower(poi_db, level):
-    global twitter_friend
-    global app_id_friend
+    global twitter_follower
+    global app_id_follower
     start_level = level - 1
     while True:
         count = poi_db.count({'level': start_level, 'protected': False, 'friend_scrape_flag': {'$exists': False}})
