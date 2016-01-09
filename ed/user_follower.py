@@ -189,22 +189,27 @@ def snowball_follower(poi_db, level):
             start_user_list = poi_db.find({'level': start_level, 'protected': False, 'follower_scrape_flag': {'$exists': False}}, ['id_str']).limit(min(200, count))
             for user in start_user_list:
                 # print user['id_str']
-                params = {'cursor': -1, 'user_id': user['id_str'], 'count': 5000}
+                next_cursor = -1
+                params = {'user_id': user['id_str'], 'count': 5000}
                 # followee getting
-                while True:
-                    handle_following_rate_limiting()
-                    try:
-                        followers = twitter_friend.get_friends_ids(**params)
-                        # print followees
-                    except TwythonAuthError as detail:
-                        # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                        if 'Twitter API returned a 401' in detail:
-                            continue
-                    except TwythonError as detail:
-                        if 'Received response with content-encoding: gzip' in detail:
-                            continue
-                    except Exception as detail:
-                        print str(detail)
+                while next_cursor != 0:
+                    params['cursor'] = next_cursor
+                    while True:
+                        handle_following_rate_limiting()
+                        try:
+                            followers = twitter_friend.get_friends_ids(**params)
+                            break
+                            # print followees
+                        except TwythonAuthError as detail:
+                            # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
+                            if 'Twitter API returned a 401' in detail:
+                                continue
+                        except TwythonError as detail:
+                            if 'Received response with content-encoding: gzip' in detail:
+                                continue
+                        except Exception as detail:
+                            print str(detail)
+                            break
 
                     # Eliminate the users that have been scraped
                     # '''Get all documents in stream collections'''
@@ -226,15 +231,9 @@ def snowball_follower(poi_db, level):
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
                                 add_edge(user['id_str'], profile['id_str'])
+                    # prepare for next iterator
+                    next_cursor = followers['next_cursor']
 
-                        # prepare for next iterator
-                        next_cursor = followers['next_cursor']
-                        if next_cursor:
-                            params['cursor'] = followers['next_cursor']
-                        else:
-                            break
-                    else:
-                        break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"friend_scrape_flag": True
                                                     }}, upsert=False)
 
