@@ -35,7 +35,7 @@ ed_poi = db['poi_ed']
 ed_net = db['net_ed']
 
 ed_poi.create_index("id", unique=True)
-ed_poi.create_index([('level', pymongo.ASCENDING), ('pre_level_node', pymongo.ASCENDING)], unique=False)
+ed_poi.create_index([('level', pymongo.ASCENDING), ('follower_prelevel_node', pymongo.ASCENDING)], unique=False)
 
 ed_net.create_index([("user", pymongo.ASCENDING),
                     ("follower", pymongo.ASCENDING)],
@@ -44,14 +44,16 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 def trans_seed_to_poi(seed_list, poi_db):
     infos = []
     try:
+        handle_lookup_rate_limiting()
         infos = twitter_look.lookup_user(screen_name=seed_list)
     except TwythonError as detail:
-        if 'No user matches for specified terms' in detail:
+        if 'No user matches for specified terms' in str(detail):
             print seed_list
+        else:
+            print str(detail)
     for profile in infos:
-        print profile
         if profile['lang'] == 'en':
-            profile['pre_level_node'] = None
+            profile['follower_prelevel_node'] = None
             profile['level'] = 1
             try:
                 poi_db.insert(profile)
@@ -106,22 +108,18 @@ def handle_lookup_rate_limiting():
 def get_users_info(stream_user_list):
     global twitter_look
     global app_id_look
-    list_size = len(stream_user_list)
-    while list_size:
-        user_ids = []
-        for i in xrange(min(100, list_size)):
-            user_id = stream_user_list[0]
-            user_ids.append(user_id)
-            stream_user_list.remove(user_id)
+    while True:
         handle_lookup_rate_limiting()
-        infos = []
         try:
-            infos = twitter_look.lookup_user(user_id=user_ids)
+            infos = twitter_look.lookup_user(user_id=stream_user_list)
+            return infos
         except TwythonError as detail:
-            if 'No user matches for specified terms' in detail:
-                print user_ids
-        list_size = len(stream_user_list)
-    return infos
+            if 'No user matches for specified terms' in str(detail):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t cannot get user profiles for" + stream_user_list
+                break
+            else:
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception', str(detail)
+                break
 
 
 def handle_following_rate_limiting():
@@ -169,26 +167,20 @@ def handle_following_rate_limiting():
             break
 
 
-def add_edge(userid, follower):
-    edge = {'user': userid, 'follower': follower,
-            'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}
-    try:
-        ed_net.insert(edge)
-    except pymongo.errors.DuplicateKeyError:
-        pass
-
-def snowball_follower(poi_db, level):
+def snowball_follower(poi_db, net_db, level):
     global twitter_friend
     global app_id_friend
     start_level = level
     while True:
-        count = poi_db.count({'level': start_level, 'protected': False, 'follower_scrape_flag': {'$exists': False}})
+        count = poi_db.count({'level': start_level,
+                              'protected': False,
+                              'follower_scrape_flag': {'$exists': False}})
         if count == 0:
             break
         else:
-            start_user_list = poi_db.find({'level': start_level, 'protected': False, 'follower_scrape_flag': {'$exists': False}}, ['id_str']).limit(min(200, count))
-            for user in start_user_list:
-                # print user['id_str']
+            for user in poi_db.find({'level': start_level, 'protected': False,
+                                     'follower_scrape_flag': {'$exists': False}},
+                                    ['id_str']).limit(min(200, count)):
                 next_cursor = -1
                 params = {'user_id': user['id_str'], 'count': 5000}
                 # followee getting
@@ -199,7 +191,6 @@ def snowball_follower(poi_db, level):
                         try:
                             followers = twitter_friend.get_friends_ids(**params)
                             break
-                            # print followees
                         except TwythonAuthError as detail:
                             # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
                             if 'Twitter API returned a 401' in detail:
@@ -213,28 +204,40 @@ def snowball_follower(poi_db, level):
 
                     # Eliminate the users that have been scraped
                     # '''Get all documents in stream collections'''
-                    # user_list_all = poi_db.distinct('id', {'level': start_level+1, 'pre_level_node': user['id_str']})
+                    # user_list_all = poi_db.distinct('id', {'level': start_level+1, 'follower_prelevel_node': user['id_str']})
                     follower_ids = followers['ids']
                     # '''Eliminate the users that have been scraped'''
                     # process_user_list = list(set(followee_ids) - set(user_list_all))
                     # print len(followee_ids), len(process_user_list)
                     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process', len(process_user_list), 'in', len(followee_ids), 'friends of user', user['id_str'], 'where', len(user_list_all), 'have been processed'
-                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process follower', len(follower_ids)
-                    if follower_ids:
-                        profiles = get_users_info(follower_ids)
+                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followers', len(follower_ids), 'for user', user['id_str']
+                    list_size = len(follower_ids)
+                    index = 1
+                    while list_size:
+                        user_ids = []
+                        for i in xrange(min(100, list_size)):
+                            user_id = follower_ids[0]
+                            user_ids.append(user_id)
+                            follower_ids.remove(user_id)
+                        profiles = get_users_info(user_ids)
+                        # print 'user profile:', index, len(profiles)
                         for profile in profiles:
                             if profile['lang'] == 'en':
-                                profile['pre_level_node'] = user['id_str']
+                                profile['follower_prelevel_node'] = user['id_str']
                                 profile['level'] = start_level+1
                                 try:
                                     poi_db.insert(profile)
+                                    net_db.insert({'user': user['id_str'], 'follower': profile['id_str'],
+                                                'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
-                                add_edge(user['id_str'], profile['id_str'])
+                        list_size = len(follower_ids)
+                        index += 1
                     # prepare for next iterator
                     next_cursor = followers['next_cursor']
 
-                poi_db.update({'id': int(user['id_str'])}, {'$set':{"friend_scrape_flag": True
+
+                poi_db.update({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
                                                     }}, upsert=False)
 
 ed_seed = ['QuibellPaul']
@@ -242,6 +245,6 @@ print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to 
 trans_seed_to_poi(ed_seed, ed_poi)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
-snowball_follower(ed_poi, 1)
+snowball_follower(ed_poi, ed_net, 1)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'
