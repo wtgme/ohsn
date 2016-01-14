@@ -23,7 +23,7 @@ import time
 import math
 
 
-app_id_look = 4
+app_id_look = 27
 twitter_look = twutil.twitter_auth(app_id_look)
 
 app_id_friend = 0
@@ -31,7 +31,7 @@ twitter_friend = twutil.twitter_auth(app_id_friend)
 
 
 # '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('ed')
+db = dbt.db_connect_no_auth('comm')
 
 ed_poi = db['poi_ed']
 ed_net = db['net_ed']
@@ -247,9 +247,25 @@ def snowball_following(poi_db, net_db, level):
                     next_cursor = followees['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
-ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
-trans_seed_to_poi(ed_seed, ed_poi)
+# ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
+
+# db1 = dbt.db_connect_no_auth('echelon')
+# ed_seed = db1['poi']
+# cursor = ed_seed.find()
+#
+# batch = ['']*100
+# i = 0
+# while cursor.alive:
+#     if i == 100:
+#         trans_seed_to_poi(batch, ed_poi)
+#         i = 0
+#     else:
+#         # print cursor.next()['screen_name']
+#         batch[i] = cursor.next()['screen_name']
+#         i += 1
+
+# print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
+# trans_seed_to_poi(ed_seed, ed_poi)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db'
 snowball_following(ed_poi, ed_net, 1)
 

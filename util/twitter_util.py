@@ -12,7 +12,9 @@ import time
 from multiprocessing import Array
 import datetime
 
-flags = Array('i', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+flags = Array('i', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
 def twitter_auth(app_id=0):
     global flags
