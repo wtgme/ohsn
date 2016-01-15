@@ -7,7 +7,12 @@ Created on 12:33, 24/11/15
 https://dev.twitter.com/rest/reference/get/users/lookup
 users/lookup :This method is especially useful when used in conjunction with collections of user IDs returned from GET friends / ids and GET followers / ids.
 
-
+net_db:
+    user:
+    follower:
+    type:
+        0: following
+        1: follower.
 
 @author: wt
 """
@@ -41,7 +46,8 @@ ed_poi.create_index([('level', pymongo.ASCENDING),
                     unique=False)
 
 ed_net.create_index([("user", pymongo.ASCENDING),
-                    ("follower", pymongo.ASCENDING)],
+                    ("follower", pymongo.ASCENDING),
+                     ("type", pymongo.ASCENDING)],
                             unique=True)
 
 def trans_seed_to_poi(seed_list, poi_db):
@@ -60,7 +66,11 @@ def trans_seed_to_poi(seed_list, poi_db):
         if profile['lang'] == 'en':
             profile['following_prelevel_node'] = None
             profile['level'] = 1
-            poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+            # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+            try:
+                poi_db.insert(profile)
+            except pymongo.errors.DuplicateKeyError:
+                pass
 
 
 def handle_lookup_rate_limiting():
@@ -239,30 +249,39 @@ def snowball_following(poi_db, net_db, level):
                             if profile['lang'] == 'en':
                                 profile['following_prelevel_node'] = user['id_str']
                                 profile['level'] = start_level+1
-                                poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
-                                net_db.update({'user': int(profile['id_str']), 'follower': int(user['id_str'])},
-                                              {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
-                                              upsert=True)
+                                try:
+                                    poi_db.insert(profile)
+                                except pymongo.errors.DuplicateKeyError:
+                                    pass
+                                net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
+                                               'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+                                # net_db.update({'user': int(profile['id_str']), 'follower': int(user['id_str'])},
+                                #               {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
+                                #               upsert=True)
                     # prepare for next iterator
                     next_cursor = followees['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
 # ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 
-# db1 = dbt.db_connect_no_auth('echelon')
-# ed_seed = db1['poi']
-# cursor = ed_seed.find()
-#
-# batch = ['']*100
-# i = 0
-# while cursor.alive:
-#     if i == 100:
-#         trans_seed_to_poi(batch, ed_poi)
-#         i = 0
-#     else:
-#         # print cursor.next()['screen_name']
-#         batch[i] = cursor.next()['screen_name']
-#         i += 1
+db1 = dbt.db_connect_no_auth('echelon')
+ed_seed = db1['poi']
+cursor = ed_seed.find()
+
+batch = ['']*100
+i = 0
+index = 0
+while cursor.alive:
+    if i == 100:
+        trans_seed_to_poi(batch, ed_poi)
+        i = 0
+    else:
+        # print cursor.next()['screen_name']
+        batch[i] = cursor.next()['screen_name']
+        i += 1
+        index += 1
+        print index
 
 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
 # trans_seed_to_poi(ed_seed, ed_poi)

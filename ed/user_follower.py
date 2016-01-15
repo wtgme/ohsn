@@ -7,6 +7,12 @@ Created on 12:33, 24/11/15
 https://dev.twitter.com/rest/reference/get/users/lookup
 users/lookup :This method is especially useful when used in conjunction with collections of user IDs returned from GET friends / ids and GET followers / ids.
 
+net_db:
+    user:
+    follower:
+    type:
+        0: following
+        1: follower.
 
 @author: wt
 """
@@ -41,7 +47,8 @@ ed_poi.create_index([('level', pymongo.ASCENDING),
                     unique=False)
 
 ed_net.create_index([("user", pymongo.ASCENDING),
-                    ("follower", pymongo.ASCENDING)],
+                    ("follower", pymongo.ASCENDING),
+                     ("type", pymongo.ASCENDING)],
                             unique=True)
 
 def trans_seed_to_poi(seed_list, poi_db):
@@ -60,7 +67,11 @@ def trans_seed_to_poi(seed_list, poi_db):
         if profile['lang'] == 'en':
             profile['follower_prelevel_node'] = None
             profile['level'] = 1
-            poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+            try:
+                poi_db.insert(profile)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+            # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
 
 def handle_lookup_rate_limiting():
     global twitter_look
@@ -225,10 +236,17 @@ def snowball_follower(poi_db, net_db, level):
                             if profile['lang'] == 'en':
                                 profile['follower_prelevel_node'] = user['id_str']
                                 profile['level'] = start_level+1
-                                poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
-                                net_db.update({'user': int(user['id_str']), 'follower': int(profile['id_str'])},
-                                              {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
-                                              upsert=True)
+                                try:
+                                    poi_db.insert(profile)
+                                except pymongo.errors.DuplicateKeyError:
+                                    pass
+                                net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']), 'type': 1,
+                                               'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+
+                                # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+                                # net_db.update({'user': int(user['id_str']), 'follower': int(profile['id_str'])},
+                                #               {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
+                                #               upsert=True)
                     # prepare for next iterator
                     next_cursor = followers['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
