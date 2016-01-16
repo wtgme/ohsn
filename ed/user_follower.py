@@ -121,6 +121,7 @@ def handle_lookup_rate_limiting():
 def get_users_info(stream_user_list):
     global twitter_look
     global app_id_look
+    infos = []
     while True:
         handle_lookup_rate_limiting()
         try:
@@ -240,9 +241,11 @@ def snowball_follower(poi_db, net_db, level):
                                     poi_db.insert(profile)
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
-                                net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']), 'type': 1,
+                                try:
+                                    net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']), 'type': 1,
                                                'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
-
+                                except pymongo.errors.DuplicateKeyError:
+                                    pass
                                 # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
                                 # net_db.update({'user': int(user['id_str']), 'follower': int(profile['id_str'])},
                                 #               {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},

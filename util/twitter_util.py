@@ -40,6 +40,11 @@ def twitter_auth(app_id=0):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Sleep 30 sec for next connection'
             time.sleep(30)
             continue
+        except TwythonError as e:
+            if '443' in str(e):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '443 ERROR: Sleep 30 sec for next connection'
+                time.sleep(30)
+                continue
         except TwythonAuthError as e:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth Unsucessful'
             exit(1)

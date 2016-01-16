@@ -125,6 +125,7 @@ def handle_lookup_rate_limiting():
 def get_users_info(stream_user_list):
     global twitter_look
     global app_id_look
+    infos = []
     while True:
         handle_lookup_rate_limiting()
         try:
@@ -253,8 +254,11 @@ def snowball_following(poi_db, net_db, level):
                                     poi_db.insert(profile)
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
-                                net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
+                                try:
+                                    net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
                                                'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                except pymongo.errors.DuplicateKeyError:
+                                    pass
                                 # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
                                 # net_db.update({'user': int(profile['id_str']), 'follower': int(user['id_str'])},
                                 #               {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
@@ -265,23 +269,23 @@ def snowball_following(poi_db, net_db, level):
                                                     }}, upsert=False)
 # ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 
-db1 = dbt.db_connect_no_auth('echelon')
-ed_seed = db1['poi']
-cursor = ed_seed.find()
-
-batch = ['']*100
-i = 0
-index = 0
-while cursor.alive:
-    if i == 100:
-        trans_seed_to_poi(batch, ed_poi)
-        i = 0
-    else:
-        # print cursor.next()['screen_name']
-        batch[i] = cursor.next()['screen_name']
-        i += 1
-        index += 1
-        print index
+# db1 = dbt.db_connect_no_auth('echelon')
+# ed_seed = db1['poi']
+# cursor = ed_seed.find()
+#
+# batch = ['']*100
+# i = 0
+# # index = 0
+# while cursor.alive:
+#     if i == 100:
+#         trans_seed_to_poi(batch, ed_poi)
+#         i = 0
+#     else:
+#         # print cursor.next()['screen_name']
+#         batch[i] = cursor.next()['screen_name']
+#         i += 1
+#         # index += 1
+#         # print index
 
 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
 # trans_seed_to_poi(ed_seed, ed_poi)
