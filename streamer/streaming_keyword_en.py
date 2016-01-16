@@ -48,17 +48,18 @@ tweets = db[COLLECTION]
 
 
 print("twitter connection and database connection configured")
-# logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
+logging.basicConfig(filename='streaming-warnings.log', level=logging.DEBUG)
 class MyStreamer(TwythonStreamer):
     def on_success(self, data):
         if 'warning' in data:
-            print (data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
+            logging.warning(data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
         if 'text' in data:
             store_tweet(data)
-            # print data['user']['screen_name'].encode('utf-8') + "\t" + data['text'].encode('utf-8').replace('\n', ' ') 
+            # print data['user']['screen_name'].encode('utf-8') + "\t" + data['text'].encode('utf-8').replace('\n', ' ')
 
     def on_error(self, status_code, data):
-        print (data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
+        print status_code
+        logging.error(data['warning']['code'] + "\t" + data['warning']['message'] + "\t percent_full=" + data['warning']['percent_full'] +"\n")
 
         # Want to stop trying to get data because of the error?
         # Uncomment the next line!
@@ -83,19 +84,37 @@ def store_tweet(tweet, collection=tweets, pictures=False):
     Simple wrapper to facilitate persisting tweets. Right now, the only
     pre-processing accomplished is coercing date values to datetime.
     """
+    print tweet
     tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     collection.insert(tweet)
+    # global location_name
+    # user = tweet.get('user', None)
+    # if user:
+    #     location = user['location']
+    #     if location:
+    #         location = location.lower()
+    #         if any(x in location for x in location_name):
+    #             print location
+    #             tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    #             tweet['user']['created_at'] = datetime.datetime.strptime(tweet['user']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    #             # get pictures in tweet...
+    #             if pictures:
+    #                 get_pictures(tweet)
+    #
+    #             #print "TODO: alter the schema of the tweet to match the edge network spec from the network miner..."
+    #             #print "TODO: make the tweet id a unique index to avoid duplicates... db.collection.createIndex( { a: 1 }, { unique: true } )"
+    #             collection.insert(tweet)
 
 
 while True:
     try:
         stream = MyStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-        # https://dev.twitter.com/streaming/overview/request-parameters                                 
+        # https://dev.twitter.com/streaming/overview/request-parameters
         # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])
-        track_list = ['proana', 'anamia', 'thinspo']
+        # track_list = []
         # with open('keyword.txt', 'r') as fo:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
-        stream.statuses.filter(language=['en'], track=','.join(track_list))
+        stream.statuses.filter(language=['en'], track=['proana', 'anamia', 'thinspo'])
     except Exception as detail:
         print str(detail)
