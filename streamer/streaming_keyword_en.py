@@ -84,7 +84,7 @@ def store_tweet(tweet, collection=tweets, pictures=False):
     Simple wrapper to facilitate persisting tweets. Right now, the only
     pre-processing accomplished is coercing date values to datetime.
     """
-    print tweet
+    # print tweet
     tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     collection.insert(tweet)
     # global location_name
@@ -115,6 +115,6 @@ while True:
         # with open('keyword.txt', 'r') as fo:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
-        stream.statuses.filter(language=['en'], track=['proana', 'anamia', 'thinspo'])
+        stream.statuses.filter(language=['en'], track=['proana', 'anamia', 'thinspo', 'EDProbs', 'askanamia'])
     except Exception as detail:
         print str(detail)
