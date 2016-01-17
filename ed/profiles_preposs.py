@@ -14,6 +14,7 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import re
 from collections import Counter
+from gensim import corpora, models, similarities
 
 
 stop = stopwords.words('english')
