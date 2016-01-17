@@ -23,7 +23,8 @@ dic = {}
 stop = stopwords.words('english')
 
 for user in ed_poi.find():
-    dscp = user['description'].strip().lower()
+    dscp = user['description']
+    decp = decp.strip().lower()
     dscp = re.sub(r"(?:\@|https?\://)\S+", "", dscp)
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(dscp)
