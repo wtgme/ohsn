@@ -115,6 +115,6 @@ while True:
         # with open('keyword.txt', 'r') as fo:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
-        stream.statuses.filter(language=['en'], track=['proana', 'anamia', 'thinspo', 'EDProbs', 'askanamia'])
+        stream.statuses.filter(language=['en'], track=['proana', 'anamia', 'thinspo', 'EDProbs', 'askanamia','bonespo','legspo'])
     except Exception as detail:
         print str(detail)
