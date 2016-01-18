@@ -20,7 +20,7 @@ from gensim import corpora, models, similarities
 db = dbt.db_connect_no_auth('ed')
 stream = db['stream']
 
-bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'lw'])
+bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw'])
 dio_list = set(['eating disorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'food', 'anorexia nervosa', 'mia', 'thinspo',
                 'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',

@@ -132,7 +132,10 @@ def get_users_info(stream_user_list):
             if 'No user matches for specified terms' in str(detail):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
                       "\t cannot get user profiles for" , stream_user_list
-                break
+                return infos
+            elif '500' in str(detail):
+                time.sleep(10)
+                continue
             else:
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception', str(detail)
                 break
@@ -260,12 +263,17 @@ def snowball_follower(poi_db, net_db, level):
 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
 # trans_seed_to_poi(ed_seed, ed_poi)
 
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db'
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 1'
 snowball_follower(ed_poi, ed_net, 1)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 2'
 snowball_follower(ed_poi, ed_net, 2)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 3'
 snowball_follower(ed_poi, ed_net, 3)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 4'
 snowball_follower(ed_poi, ed_net, 4)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 5'
 snowball_follower(ed_poi, ed_net, 5)
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db 6'
 snowball_follower(ed_poi, ed_net, 6)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Finish-------------------------'
