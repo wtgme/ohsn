@@ -109,6 +109,9 @@ def profile_pos(stream_db = stream):
     return [user for user in seed_user]
 
 
+print 's' in 'sds'
+print tokenizer_stoprm('''Bands•Blades•Suicidal•Depression•SelfHarm•EDNOS• Goal: 70/80 lbs''')
+
 # print 'harm' in dio_list
 # print profile_pos()
 # sentence = '''RT @sociopxthicmind: Lacey #thinspo #thinspiration #goals https://t.co/ZHnt3roe4r'''
