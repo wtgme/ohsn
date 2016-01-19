@@ -22,9 +22,9 @@ stream = db['stream']
 
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw'])
 dio_list = set(['eating disorder', 'anorexia', 'bulimia', 'anorexic',
-                'ana', 'bulimic', 'food', 'anorexia nervosa', 'mia', 'thinspo',
+                'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
                 'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
-                'ednos', 'edprobs', 'edprob', 'proana', 'anamia',
+                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'
                 'askanamia', 'bonespo', 'legspo'])
 
 stop = stopwords.words('english')
@@ -91,7 +91,7 @@ def profile_pos(stream_db = stream):
     for tweet in stream_db.find():
         user = tweet['user']
         profile = user['description']
-        if user['lang'] == 'en' and profile != None:
+        if user['lang'] == 'en' and user['protected']==False and profile != None:
             profile = profile.strip().lower().replace("-", "").replace('_', '')
             tokens = tokenizer_stoprm(profile)
             bio_flag, dio_flag = False, False

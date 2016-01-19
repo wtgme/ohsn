@@ -37,7 +37,7 @@ twitter_follower = twutil.twitter_auth(app_id_follower)
 
 
 # '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('ed')
+db = dbt.db_connect_no_auth('ed2')
 
 ed_poi = db['poi_ed']
 ed_net = db['net_ed']
@@ -133,7 +133,7 @@ def get_users_info(stream_user_list):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
                       "\t cannot get user profiles for" , stream_user_list
                 return infos
-            elif '500' in str(detail):
+            elif '50' in str(detail):
                 time.sleep(10)
                 continue
             else:

@@ -70,9 +70,8 @@ KEYWORDS = ['anorexic',
                     'clean',
                     'insomnia']
 
-db = dbutil.db_connect_no_auth('stream')
-sample_poi = db['poi_sample']
-track_poi = db['poi_track']
+db = dbutil.db_connect_no_auth('ed')
+sample_poi = db['poi_ed']
 
 VERSION = 0.01
 
@@ -342,10 +341,10 @@ def get_goal_weight(text):
         return (None,None)
 
 
-def process_description(poi, level):
-    poi.update({}, {'$set': {"text_anal.mined": False}}, multi=True)
+def process_description(poi):
+    # poi.update({}, {'$set': {"text_anal.mined": False}}, multi=True)
     while True:
-        count = poi.count({"text_anal.mined": False})
+        count = poi.count({"text_anal.mined": {'$exists': False}})
         # count({'$or':[{'protected': False, 'text_anal.mined': {'$exists': False}, 'level': {'$lte': level}},
         #                                      {'protected': False, 'text_anal.mined': {'$lt': scrapt_times}, 'level': {'$lte': level}}]})
 
@@ -353,7 +352,7 @@ def process_description(poi, level):
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
-        for user in poi.find({"text_anal.mined": False}).limit(500):
+        for user in poi.find({"text_anal.mined": {'$exists': False}}).limit(500):
             try:
                 text = user['description']
                 text = text.encode('utf-8').replace('\n', '')
@@ -396,4 +395,4 @@ def process_description(poi, level):
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
 # process_description(sample_poi, 2)
-process_description(track_poi, 2)
+process_description(sample_poi)
