@@ -85,6 +85,24 @@ def check_ed(user):
         else:
             return False
 
+def check_ed_profile(profile):
+    profile = profile.strip().lower().replace("-", "").replace('_', '')
+    tokens = tokenizer_stoprm(profile)
+    bio_flag, dio_flag = False, False
+    for token in tokens:
+        if token in bio_list:
+            bio_flag = True
+        if token in dio_list: # for single words
+            dio_flag = True
+    for dio in dio_list:
+        if ' ' in dio and dio in profile: # for phrases
+            dio_flag = True
+
+    if bio_flag and dio_flag:
+        return True
+    else:
+        return False
+
 
 def profile_pos(stream_db = stream):
     seed_user = set([])
@@ -109,8 +127,8 @@ def profile_pos(stream_db = stream):
     return [user for user in seed_user]
 
 
-print 's' in 'sds'
-print tokenizer_stoprm('''Bands•Blades•Suicidal•Depression•SelfHarm•EDNOS• Goal: 70/80 lbs''')
+# print 's' in 'sds'
+# print tokenizer_stoprm('''Bands•Blades•Suicidal•Depression•SelfHarm•EDNOS• Goal: 70/80 lbs''')
 
 # print 'harm' in dio_list
 # print profile_pos()
