@@ -273,7 +273,7 @@ def snowball_following(poi_db, net_db, level):
                                                     }}, upsert=False)
 # ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 
-# ed_seed = profiles_preposs.profile_pos()
+ed_seed = profiles_preposs.profile_pos()
 
 # db1 = dbt.db_connect_no_auth('echelon')
 # ed_seed = db1['poi']
@@ -294,7 +294,7 @@ def snowball_following(poi_db, net_db, level):
 #         # print index
 
 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Transform seed to poi'
-# trans_seed_to_poi(ed_seed, ed_poi)
+trans_seed_to_poi(ed_seed, ed_poi)
 
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db 1'
 snowball_following(ed_poi, ed_net, 1)

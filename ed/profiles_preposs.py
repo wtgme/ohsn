@@ -20,7 +20,7 @@ from gensim import corpora, models, similarities
 db = dbt.db_connect_no_auth('ed')
 stream = db['stream']
 
-bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw'])
+bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 dio_list = set(['eating disorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
                 'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
@@ -65,25 +65,7 @@ def tokenizer_stoprm(dscp):
 # from pprint import pprint   # pretty-printer
 # pprint(texts)
 
-def check_ed(user):
-    profile = user['description']
-    if user['lang'] == 'en' and user['protected']==False and profile != None:
-        profile = profile.strip().lower().replace("-", "").replace('_', '')
-        tokens = tokenizer_stoprm(profile)
-        bio_flag, dio_flag = False, False
-        for token in tokens:
-            if token in bio_list:
-                bio_flag = True
-            if token in dio_list: # for single words
-                dio_flag = True
-        for dio in dio_list:
-            if ' ' in dio and dio in profile: # for phrases
-                dio_flag = True
 
-        if bio_flag and dio_flag:
-            return True
-        else:
-            return False
 
 def check_ed_profile(profile):
     profile = profile.strip().lower().replace("-", "").replace('_', '')
@@ -104,26 +86,19 @@ def check_ed_profile(profile):
         return False
 
 
+def check_ed(user):
+    profile = user['description']
+    if user['lang'] == 'en' and user['protected']==False and profile != None:
+        return check_ed_profile(profile)
+    else:
+        return False
+
 def profile_pos(stream_db = stream):
     seed_user = set([])
     for tweet in stream_db.find():
         user = tweet['user']
-        profile = user['description']
-        if user['lang'] == 'en' and user['protected']==False and profile != None:
-            profile = profile.strip().lower().replace("-", "").replace('_', '')
-            tokens = tokenizer_stoprm(profile)
-            bio_flag, dio_flag = False, False
-            for token in tokens:
-                if token in bio_list:
-                    bio_flag = True
-                if token in dio_list: # for single words
-                    dio_flag = True
-            for dio in dio_list:
-                if ' ' in dio and dio in profile: # for phrases
-                    dio_flag = True
-
-            if bio_flag and dio_flag:
-                seed_user.add(user['screen_name'])
+        if check_ed(user):
+            seed_user.add(user['screen_name'])
     return [user for user in seed_user]
 
 
