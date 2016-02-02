@@ -19,6 +19,7 @@ from gensim import corpora, models, similarities
 
 db = dbt.db_connect_no_auth('ed')
 stream = db['stream']
+stream.create_index("id", unique=True)
 
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 dio_list = set(['eating disorder', 'anorexia', 'bulimia', 'anorexic',
@@ -95,10 +96,12 @@ def check_ed(user):
 
 def profile_pos(stream_db = stream):
     seed_user = set([])
-    for tweet in stream_db.find():
+    for tweet in stream_db.find({'checked':{'$exists': False}}).limit(1000):
         user = tweet['user']
         if check_ed(user):
             seed_user.add(user['screen_name'])
+        stream_db.update({'id': int(tweet['id_str'])},
+                         {'$set':{"checked": True}}, upsert=False)
     return [user for user in seed_user]
 
 

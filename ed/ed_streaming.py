@@ -120,11 +120,11 @@ while True:
             #                                            'EDProbs', 'askanamia', 'bonespo',
             #                                            'legspo'
             'eating disorder', 'anorexia', 'bulimia', 'anorexic',
-                'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
-                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
+                'bulimic', 'anorexia nervosa', 'thinspo',
+                'bulemia', 'bulimia nervosa',
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'
                 'askanamia', 'bonespo', 'legspo'
-                                                       ])
+                ])
 
     except Exception as detail:
         print str(detail)
