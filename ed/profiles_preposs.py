@@ -36,10 +36,12 @@ def tokenizer_stoprm(dscp):
     dscp = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", dscp) # replace RT @, @ and http://
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(dscp)
+    new_tokens = []
     for token in tokens:
-        if token in stop:
-            tokens.remove(token)
-    return tokens
+        token = re.sub(r'[\.0-9]', '', token) #remove all numbers
+        if token not in stop and token!='':
+            new_tokens.append(token)
+    return new_tokens
 
 
 # documents = ["Human machine interface for lab abc computer applications",
@@ -121,3 +123,6 @@ def profile_pos(stream_db = stream):
 # sentence = '''RT @deathbeana @jijio @fjaifjeioj: #thinspo Good morn_ing, thins. Time to starve another day. Prepare yourself to be completely pure and skinny. Starve. https://dafds…'''
 # print sentence
 # print tokenizer_stoprm(sentence)
+
+# print check_ed_profile('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')
+# print tokenizer_stoprm('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')

@@ -96,8 +96,13 @@ def handle_lookup_rate_limiting():
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
                 time.sleep(30)
                 continue
+        except Exception as detail:
+            if '110' in str(detail) or '104' in str(detail):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
+                time.sleep(30)
+                continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'user lookup in follower snowball Unhandled ERROR, EXIT()', str(detail)
                 exit(1)
 
         reset = float(rate_limit_status['resources']['users']['/users/lookup']['reset'])
@@ -163,8 +168,13 @@ def handle_follower_rate_limiting():
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
                 time.sleep(30)
                 continue
+        except Exception as detail:
+            if '110' in str(detail) or '104' in str(detail):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
+                time.sleep(30)
+                continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
                 exit(1)
 
         reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])
