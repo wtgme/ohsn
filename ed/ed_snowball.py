@@ -36,7 +36,7 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 while True:
     ed_seed = profiles_preposs.profile_pos()
     ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
-    level = 3
+    level = 1
     while True:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
         following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
@@ -49,5 +49,5 @@ while True:
             continue
     if level == 1:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'No new seed users, sleep 15 mins'
-        time.sleep(15)
+        time.sleep(15*60)
     continue

@@ -14,8 +14,8 @@ import util.db_util as dbutil
 import util.plot_util as plot
 
 
-db = dbutil.db_connect_no_auth('echelon')
-ed_poi = db['poi']
+db = dbutil.db_connect_no_auth('ed')
+ed_poi = db['poi_ed']
 
 biolist =   ['text_anal.gw.value',
               'text_anal.cw.value',
@@ -36,6 +36,8 @@ for user in ed_poi.find({'text_anal.gw.value':{'$exists': True},
                          'text_anal.cw.value':{'$exists': True}}):
     gws.append(user['text_anal']['gw']['value'])
     cws.append(user['text_anal']['cw']['value'])
+    print user['description'], '-------------------------------------'
+    print user['text_anal']['cw']['value'], user['text_anal']['gw']['value']
 
 #
 # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
@@ -43,6 +45,6 @@ for user in ed_poi.find({'text_anal.gw.value':{'$exists': True},
 
 print min(gws), max(gws), len(gws)
 print min(cws), max(cws), len(cws)
-# plot.pdf_plot_one_data(gws, 'gw', 1, 1)
-plot.pdf_plot_one_data(cws, 'cw', 1, 1)
-# plot.plot_pdf_two_data(gws, cws, 'weight')
+# plot.pdf_plot_one_data(gws, 'gw', 20, 200)
+# plot.pdf_plot_one_data(cws, 'cw', 20, 200)
+plot.plot_pdf_two_data(gws, cws, 20, 200, 'gw', 'cw')

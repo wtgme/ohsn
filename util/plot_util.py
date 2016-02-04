@@ -172,14 +172,18 @@ def rmse(predict, truth):
 
 
 '''Plot PDF'''
-def pdf_plot_one_data(data, name, fit_start, fit_end):
+def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     data = drop_zeros(data)
     # plt.gcf()
     # data = outstrength
-    list_x, list_y = pdf_ada_bin(data, linear_bins=True)
+    if not xmax:
+        xmax = max(data)
+    if not xmin:
+        xmin = min(data)
+    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
     plt.plot(list_x, list_y, 'r+', label='Raw '+name)
     ax = plt.gca()
-    list_x, list_y = pdf_ada_bin(data)
+    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
     # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
     # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
@@ -213,7 +217,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=100)
+        bins = np.linspace(xmin, xmax, num=30)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(
@@ -239,16 +243,18 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def plot_pdf_two_data(lista, listb, field):
-    # lista = drop_zeros(lista)
-    # listb = drop_zeros(listb)
-    min_x = min(np.amin(lista), np.amin(listb))
-    max_x = max(np.amax(lista), np.amax(listb))
+def plot_pdf_two_data(lista, listb, min_x=None, max_x=None, label1='x_1', label2='x_2'):
+    lista = drop_zeros(lista)
+    listb = drop_zeros(listb)
+    if not max_x:
+        max_x = max(np.amax(lista), np.amax(listb))
+    if not min_x:
+        min_x = min(np.amin(lista), np.amin(listb))
     list_x, list_y = pdf_fix_bin(lista, xmin=min_x, xmax=max_x, linear_bins=True)
-    plt.plot(list_x, list_y, '--bo', label='Echelon')
+    plt.plot(list_x, list_y, '--bo', label=label1)
     ax = plt.gca()
     list_x, list_y = pdf_fix_bin(listb, xmin=min_x, xmax=max_x, linear_bins=True)
-    ax.plot(list_x, list_y, '--r*', label='Sample')
+    ax.plot(list_x, list_y, '--r*', label=label2)
     ax.set_xlabel('x')
     ax.set_ylabel('p(x)')
     # ax.set_xlim(xmin=1)

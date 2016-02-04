@@ -22,7 +22,7 @@ stream = db['stream']
 stream.create_index("id", unique=True)
 
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
-dio_list = set(['eating disorder', 'anorexia', 'bulimia', 'anorexic',
+dio_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
                 'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'

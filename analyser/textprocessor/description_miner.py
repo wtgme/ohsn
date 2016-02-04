@@ -268,11 +268,11 @@ def get_current_weight_KG(text):
             match = pattern.search(text)
             if match is not None:
                  if match.group(0) in ("lb","lbs","pounds"):
-                        weight_kg = mass * 0.453592
-                        unitsguessed = True
+                     weight_kg = mass * 0.453592
+                     unitsguessed = True
                  else: # i.e. it matches kilos
-                        weight_kg = mass
-                        unitsguessed = True
+                     weight_kg = mass
+                     unitsguessed = True
                 #print mass + match.group(0) + "(Unit Deduction)"
             #Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
@@ -293,52 +293,86 @@ def get_current_weight_KG(text):
 
 def get_goal_weight(text):
     pattern = re.compile("gw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
-    match = pattern.findall(text)
-    if match:
-        weight_gw_kg = []
-        for m in match:
-            mass = float(m[0]) #print m[0] +":"+ m[1] #user_stats[
-            # print m
-            if m[1] is not u'':
-                if m[1] in ("lb","pounds"):
-                    weight_gw_kg.append((mass * 0.453592, False))
-                    #print "matched lb"
+    match = pattern.search(text)
+    if match is not None:
+        mass = float(match.group('mass'))
+        if match.group('units') is not None:
+            #print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb","pounds"):
+                weight_kg = mass * 0.453592
+                unitsguessed = False
                         #bmi = weight_kg/(height_cm^2)
-                else: # i.e. it matches kilos
-                    weight_gw_kg.append((mass, False))
-                    #print "matched kg (1)"
-            else:
-                # search for units elsewhere in the description
-                pattern = re.compile("(lb|lbs|kg|pounds)", re.IGNORECASE)
-                match = pattern.search(text)
-                if match is not None:
-                    if match.group(0) in ("lb","lbs","pounds"):
-                            weight_gw_kg.append((mass * 0.453592, True))
-                            #print "guessing pounds based on units elsewhere"
-                    else: # i.e. it matches kilos
-                            weight_gw_kg.append((mass, True))
-                            #print "guessing kgs based on units elsewhere"
-                elif float(mass) < 70:
-                   weight_gw_kg.append((mass,True))
-                   #print "guessing kilos based on magnitude"
-                else: # if in doubt guess lbs?
-                   weight_gw_kg.append((mass * 0.453592, True))
-                   #print "guessing pounds"
-            # print mass + "lb" + "(Unit Guess)"
+            else: # i.e. it matches kilos
+                weight_kg = mass
+                unitsguessed = False
+        else:
+            # search for units elsewhere in the description
+            pattern = re.compile("(lb|lbs|kg|pounds)", re.IGNORECASE)
+            match = pattern.search(text)
+            if match is not None:
+                 if match.group(0) in ("lb","lbs","pounds"):
+                     weight_kg = mass * 0.453592
+                     unitsguessed = True
+                 else: # i.e. it matches kilos
+                     weight_kg = mass
+                     unitsguessed = True
+                #print mass + match.group(0) + "(Unit Deduction)"
+            #Lets assume that if the cw is greater than 70 then its in pounds.
+            elif float(mass) < 70:
+                weight_kg = mass
+                unitsguessed = True
+                # print mass + "kg" + "(Unit Probable)"
+            else: # if in doubt guess lbs?
+                weight_kg = mass * 0.453592
+                unitsguessed = True
+                #print mass + "lb" + "(Unit Guess)"
             # check location? i.e. USA = lbs, rest = kg
-            # print mass + match + "(GUESS)"
 
-        #sort the list of goal weights
-        weight_gw_kg = sorted(weight_gw_kg, key=itemgetter(0))
-        #select the lowest
-        if  len(weight_gw_kg) > 1:
-            if weight_gw_kg[0][0] == 0:
-                #print "RETURNING NEXT LOWEST GOAL WEIGHT LOWEST=0"
-                return (weight_gw_kg[1][0], weight_gw_kg[1][1] )
-
-        return (weight_gw_kg[0][0], weight_gw_kg[0][1])
+        return (weight_kg, unitsguessed)
     else:
-        return (None,None)
+        return (None, None)
+
+
+def get_ultimate_goal_weight(text):
+    pattern = re.compile("ugw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    match = pattern.search(text)
+    if match is not None:
+        mass = float(match.group('mass'))
+        if match.group('units') is not None:
+            #print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb","pounds"):
+                weight_kg = mass * 0.453592
+                unitsguessed = False
+                        #bmi = weight_kg/(height_cm^2)
+            else: # i.e. it matches kilos
+                weight_kg = mass
+                unitsguessed = False
+        else:
+            # search for units elsewhere in the description
+            pattern = re.compile("(lb|lbs|kg|pounds)", re.IGNORECASE)
+            match = pattern.search(text)
+            if match is not None:
+                 if match.group(0) in ("lb","lbs","pounds"):
+                     weight_kg = mass * 0.453592
+                     unitsguessed = True
+                 else: # i.e. it matches kilos
+                     weight_kg = mass
+                     unitsguessed = True
+                #print mass + match.group(0) + "(Unit Deduction)"
+            #Lets assume that if the cw is greater than 70 then its in pounds.
+            elif float(mass) < 70:
+                weight_kg = mass
+                unitsguessed = True
+                # print mass + "kg" + "(Unit Probable)"
+            else: # if in doubt guess lbs?
+                weight_kg = mass * 0.453592
+                unitsguessed = True
+                #print mass + "lb" + "(Unit Guess)"
+            # check location? i.e. USA = lbs, rest = kg
+
+        return (weight_kg, unitsguessed)
+    else:
+        return (None, None)
 
 
 def process_description(poi):
@@ -365,6 +399,10 @@ def process_description(poi):
                         cnt[word] += 1
                 edword_count = sum(cnt.values())
                 poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':edword_count}})
+
+                ugw, ugw_ug = get_ultimate_goal_weight(text)
+                if ugw is not None:
+                    poi.update({"id": user['id']}, {'$set':{'text_anal.ugw.datetime':datetime.datetime.now(),'text_anal.ugw.source':source, 'text_anal.ugw.ug':gw_ug, 'text_anal.ugw.value':gw}})
 
                 gw, gw_ug = get_goal_weight(text)
                 if gw is not None:
@@ -396,3 +434,6 @@ def process_description(poi):
 
 # process_description(sample_poi, 2)
 process_description(sample_poi)
+
+# print get_goal_weight('''H:5'4 CW:117 GW:110 UGW:99 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
+# ''')
