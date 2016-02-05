@@ -218,7 +218,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=30)
+        bins = np.linspace(xmin, xmax, num=40)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(

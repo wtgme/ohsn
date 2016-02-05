@@ -26,28 +26,32 @@ biolist =   ['text_anal.gw.value',
               'text_anal.hw.value']
 all_count = ed_poi.count({})
 
-
+print 'All count:', all_count
 for name in biolist:
-    print name ,ed_poi.count({name:{'$exists': True}}), ed_poi.count({name:{'$exists': True}})/float(all_count)
+    count = ed_poi.count({name:{'$exists': True}})
+    percent = float(count)/all_count
+    print ('%s, %d, %.2f' % (name, count, percent))
 
 gws = []
 cws = []
 for user in ed_poi.find({
-    # 'text_anal.gw.value':{'$exists': True},
-                         'text_anal.a.value':{'$exists': True}}):
-    # gws.append(user['text_anal']['gw']['value'])
-    cws.append(user['text_anal']['a']['value'])
+                         'text_anal.h.value':{'$exists': True},
+                         # 'text_anal.hw.value':{'$exists': True}
+                        }):
+    value = user['text_anal']['h']['value']
+    # value2 = user['text_anal']['hw']['value']
+    gws.append(value)
+    # cws.append(value2)
     print '-----------------------------------------------'
-    print user['description']
-    print 'a', user['text_anal']['a']['value']
+    print user['id'], user['description']
+    print 'h', value
 
 #
 # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
 #     gws.append(user['text_anal']['cw']['value'])
 
-# print min(gws), max(gws), len(gws)
-print min(cws), max(cws), len(cws)
-# plot.pdf_plot_one_data(gws, 'gw', 20, 200)
-print cws
-plot.pdf_plot_one_data(cws, 'a', 1, 67)
-# plot.plot_pdf_two_data(gws, cws, 20, 200, 'gw', 'cw')
+print min(gws), max(gws), len(gws)
+# print min(cws), max(cws), len(cws)
+plot.pdf_plot_one_data(gws, 'height', 100, 200)
+# plot.pdf_plot_one_data(cws, 'hw', 20, 200)
+# plot.plot_pdf_two_data(gws, cws, 25, 200, 'lw', 'hw')

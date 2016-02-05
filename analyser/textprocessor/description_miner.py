@@ -125,7 +125,7 @@ def get_age(text):
         #print match.group('age') +"\t"+ text
         return match.group('age')
 
-    pattern = re.compile("^(?P<age>[1-8][0-9])\s*[,\:;\s-]", re.IGNORECASE)
+    pattern = re.compile("^(?P<age>[1-8][0-9])\s*[,\./\\\:;\s-]", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         #print match.group('age') +"\t"+ text
@@ -447,5 +447,5 @@ def process_description(poi):
 # process_description(sample_poi, 2)
 process_description(sample_poi)
 
-# print get_low_weight_KG('''H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
-# # ''')
+# print get_age('''15; H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
+# # # ''')

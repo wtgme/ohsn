@@ -37,20 +37,24 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 
 
 while True:
-    ed_seed = profiles_preposs.seed_all_profile()
-    ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
-    level = 1
-    while True:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-        following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = ed_follower_snowball.snowball_follower(ed_poi, ed_net, level)
-        if following_flag==False and follower_flag==False:
-            break
-        else:
-            level += 1
-            continue
-    if level == 1:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'No new seed users, sleep 15 mins'
-        time.sleep(15*60)
-    continue
+    try:
+        ed_seed = profiles_preposs.seed_all_profile()
+        ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
+        level = 1
+        while True:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+            following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+            follower_flag = ed_follower_snowball.snowball_follower(ed_poi, ed_net, level)
+            if following_flag==False and follower_flag==False:
+                break
+            else:
+                level += 1
+                continue
+        if level == 1:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'No new seed users, sleep 15 mins'
+            time.sleep(15*60)
+        continue
+    except Exception as details:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception stop, re-run'
+        continue
