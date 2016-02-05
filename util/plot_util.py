@@ -173,6 +173,7 @@ def rmse(predict, truth):
 
 '''Plot PDF'''
 def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
+
     data = drop_zeros(data)
     # plt.gcf()
     # data = outstrength

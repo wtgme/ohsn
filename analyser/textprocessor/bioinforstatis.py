@@ -49,5 +49,5 @@ for user in ed_poi.find({
 print min(cws), max(cws), len(cws)
 # plot.pdf_plot_one_data(gws, 'gw', 20, 200)
 print cws
-plot.pdf_plot_one_data(cws, 'a', 10, 67)
+plot.pdf_plot_one_data(cws, 'a', 1, 67)
 # plot.plot_pdf_two_data(gws, cws, 20, 200, 'gw', 'cw')

@@ -410,7 +410,7 @@ def process_description(poi):
                     if word in KEYWORDS:
                         cnt[word] += 1
                 edword_count = sum(cnt.values())
-                poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':edword_count}})
+                poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':int(edword_count)}})
 
                 # ugw, ugw_ug = get_ultimate_goal_weight(text)
                 # if ugw is not None:
@@ -418,27 +418,27 @@ def process_description(poi):
 
                 gw, gw_ug = get_goal_weight(text)
                 if gw is not None:
-                    poi.update({"id": user['id']}, {'$set':{'text_anal.gw.datetime':datetime.datetime.now(),'text_anal.gw.source':source, 'text_anal.gw.ug':gw_ug, 'text_anal.gw.value':gw}})
+                    poi.update({"id": user['id']}, {'$set':{'text_anal.gw.datetime':datetime.datetime.now(),'text_anal.gw.source':source, 'text_anal.gw.ug':gw_ug, 'text_anal.gw.value':float(gw)}})
 
                 cw, cw_ug = get_current_weight_KG(text)
                 if cw is not None:
-                    poi.update({"id": user['id']}, {'$set':{'text_anal.cw.datetime':datetime.datetime.now(),'text_anal.cw.source':source, 'text_anal.cw.ug':cw_ug, 'text_anal.cw.value':cw}})
+                    poi.update({"id": user['id']}, {'$set':{'text_anal.cw.datetime':datetime.datetime.now(),'text_anal.cw.source':source, 'text_anal.cw.ug':cw_ug, 'text_anal.cw.value':float(cw)}})
 
                 hw, hw_ug = get_high_weightKG(text)
                 if hw is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.hw.datetime':datetime.datetime.now(),'text_anal.hw.source':source, 'text_anal.hw.ug':hw_ug, 'text_anal.hw.value':hw}})
+                    poi.update({ "id": user['id']}, {'$set':{'text_anal.hw.datetime':datetime.datetime.now(),'text_anal.hw.source':source, 'text_anal.hw.ug':hw_ug, 'text_anal.hw.value':float(hw)}})
 
                 lw, lw_ug = get_low_weight_KG(text)
                 if lw is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.lw.datetime':datetime.datetime.now(),'text_anal.lw.source':source, 'text_anal.lw.ug':lw_ug, 'text_anal.lw.value':lw}})
+                    poi.update({ "id": user['id']}, {'$set':{'text_anal.lw.datetime':datetime.datetime.now(),'text_anal.lw.source':source, 'text_anal.lw.ug':lw_ug, 'text_anal.lw.value':float(lw)}})
 
                 h = get_height(text)
                 if h is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.h.datetime':datetime.datetime.now(),'text_anal.h.source':source, 'text_anal.h.value':h}})
+                    poi.update({ "id": user['id']}, {'$set':{'text_anal.h.datetime':datetime.datetime.now(),'text_anal.h.source':source, 'text_anal.h.value':float(h)}})
 
                 a = get_age(text)
                 if a is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.a.datetime':datetime.datetime.now(),'text_anal.a.source':source, 'text_anal.a.value':a}})
+                    poi.update({ "id": user['id']}, {'$set':{'text_anal.a.datetime':datetime.datetime.now(),'text_anal.a.source':source, 'text_anal.a.value':int(a)}})
             except Exception as detail:
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), str(detail), 'miss user description'
 
