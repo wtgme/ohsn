@@ -17,9 +17,6 @@ import re
 from collections import Counter
 from gensim import corpora, models, similarities
 
-db = dbt.db_connect_no_auth('ed')
-stream = db['stream']
-stream.create_index("id", unique=True)
 
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 dio_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
@@ -96,7 +93,11 @@ def check_ed(user):
     else:
         return False
 
-def profile_pos(stream_db = stream):
+def profile_pos():
+    db = dbt.db_connect_no_auth('ed')
+    stream_db = db['stream']
+    stream_db.create_index("id", unique=True)
+
     seed_user = set([])
     for tweet in stream_db.find({'checked':{'$exists': False}}).limit(1000):
         user = tweet['user']
@@ -105,6 +106,18 @@ def profile_pos(stream_db = stream):
         stream_db.update({'id': int(tweet['id_str'])},
                          {'$set':{"checked": True}}, upsert=False)
     return [user for user in seed_user]
+
+
+def seed_all_profile():
+    db = dbt.db_connect_no_auth('ed')
+    stream_db = db['stream_users']
+    seed_user = []
+    for user in stream_db.find({'seeded':{'$exists': False}}).limit(100):
+        if user['lang'] == 'en' and user['protected']==False:
+            seed_user.append(user)
+        stream_db.update({'id': int(user['id_str'])},
+                         {'$set':{"seeded": True}}, upsert=False)
+    return seed_user
 
 
 # print 's' in 'sds'

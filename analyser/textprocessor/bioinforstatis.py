@@ -14,7 +14,7 @@ import util.db_util as dbutil
 import util.plot_util as plot
 
 
-db = dbutil.db_connect_no_auth('ed')
+db = dbutil.db_connect_no_auth('ed2')
 ed_poi = db['poi_ed']
 
 biolist =   ['text_anal.gw.value',
@@ -32,19 +32,22 @@ for name in biolist:
 
 gws = []
 cws = []
-for user in ed_poi.find({'text_anal.gw.value':{'$exists': True},
-                         'text_anal.cw.value':{'$exists': True}}):
-    gws.append(user['text_anal']['gw']['value'])
-    cws.append(user['text_anal']['cw']['value'])
-    print user['description'], '-------------------------------------'
-    print user['text_anal']['cw']['value'], user['text_anal']['gw']['value']
+for user in ed_poi.find({
+    # 'text_anal.gw.value':{'$exists': True},
+                         'text_anal.a.value':{'$exists': True}}):
+    # gws.append(user['text_anal']['gw']['value'])
+    cws.append(user['text_anal']['a']['value'])
+    print '-----------------------------------------------'
+    print user['description']
+    print 'a', user['text_anal']['a']['value']
 
 #
 # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
 #     gws.append(user['text_anal']['cw']['value'])
 
-print min(gws), max(gws), len(gws)
+# print min(gws), max(gws), len(gws)
 print min(cws), max(cws), len(cws)
 # plot.pdf_plot_one_data(gws, 'gw', 20, 200)
-# plot.pdf_plot_one_data(cws, 'cw', 20, 200)
-plot.plot_pdf_two_data(gws, cws, 20, 200, 'gw', 'cw')
+print cws
+plot.pdf_plot_one_data(cws, 'a', 10, 67)
+# plot.plot_pdf_two_data(gws, cws, 20, 200, 'gw', 'cw')

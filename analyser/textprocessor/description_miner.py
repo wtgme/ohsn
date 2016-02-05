@@ -70,7 +70,7 @@ KEYWORDS = ['anorexic',
                     'clean',
                     'insomnia']
 
-db = dbutil.db_connect_no_auth('ed')
+db = dbutil.db_connect_no_auth('ed2')
 sample_poi = db['poi_ed']
 
 VERSION = 0.01
@@ -131,6 +131,18 @@ def get_age(text):
         #print match.group('age') +"\t"+ text
         return match.group('age')
 
+    pattern = re.compile("(?P<age>[1-8][0-9])\s*yrs", re.IGNORECASE)
+    match = pattern.search(text)
+    if match is not None:
+        #print match.group('age') +"\t"+ text
+        return match.group('age')
+
+    pattern = re.compile("age[:;=\s-]+(?P<age>[1-8][0-9])", re.IGNORECASE)
+    match = pattern.search(text)
+    if match is not None:
+        #print match.group('age') +"\t"+ text
+        return match.group('age')
+
 
 # def get_gender(text):
 #     TODO
@@ -165,7 +177,7 @@ def get_height(text):
 
 
 def get_high_weightKG(text):
-    pattern = re.compile("[^a-z]hw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("hw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -207,7 +219,7 @@ def get_high_weightKG(text):
 
 
 def get_low_weight_KG(text):
-    pattern = re.compile("[^a-z]lw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("lw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -249,7 +261,7 @@ def get_low_weight_KG(text):
 
 
 def get_current_weight_KG(text):
-    pattern = re.compile("[^a-z]cw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("cw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -292,7 +304,7 @@ def get_current_weight_KG(text):
 
 
 def get_goal_weight(text):
-    pattern = re.compile("[^a-z]gw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("gw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -334,7 +346,7 @@ def get_goal_weight(text):
 
 
 def get_ultimate_goal_weight(text):
-    pattern = re.compile("[^a-z]ugw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("ugw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -400,9 +412,9 @@ def process_description(poi):
                 edword_count = sum(cnt.values())
                 poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':edword_count}})
 
-                ugw, ugw_ug = get_ultimate_goal_weight(text)
-                if ugw is not None:
-                    poi.update({"id": user['id']}, {'$set':{'text_anal.ugw.datetime':datetime.datetime.now(),'text_anal.ugw.source':source, 'text_anal.ugw.ug':gw_ug, 'text_anal.ugw.value':gw}})
+                # ugw, ugw_ug = get_ultimate_goal_weight(text)
+                # if ugw is not None:
+                #     poi.update({"id": user['id']}, {'$set':{'text_anal.ugw.datetime':datetime.datetime.now(),'text_anal.ugw.source':source, 'text_anal.ugw.ug':gw_ug, 'text_anal.ugw.value':gw}})
 
                 gw, gw_ug = get_goal_weight(text)
                 if gw is not None:
@@ -433,7 +445,7 @@ def process_description(poi):
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
 # process_description(sample_poi, 2)
-# process_description(sample_poi)
+process_description(sample_poi)
 
-print get_goal_weight('''H:5'4 CW:117 UGW:99 GW:110 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
-# ''')
+# print get_low_weight_KG('''H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
+# # ''')

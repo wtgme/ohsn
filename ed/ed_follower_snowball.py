@@ -62,7 +62,7 @@ def trans_seed_to_poi(seed_list, poi_db):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
                 'No user matches for specified terms', seed_list
         else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'trans_seed_to_poi',\
                 str(detail)
     for profile in infos:
         if profiles_preposs.check_ed(profile):
@@ -141,8 +141,12 @@ def get_users_info(stream_user_list):
             elif '50' in str(detail):
                 time.sleep(10)
                 continue
+        except Exception as detail:
+            if '443' in str(detail):
+                time.sleep(30)
+                continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception', str(detail)
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'get_users_info_exception', str(detail)
                 break
 
 
@@ -174,7 +178,7 @@ def handle_follower_rate_limiting():
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'handle_follower_rate_limiting Unhandled ERROR, EXIT()', str(detail)
                 exit(1)
 
         reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])
@@ -228,7 +232,7 @@ def snowball_follower(poi_db, net_db, level):
                             if 'Received response with content-encoding: gzip' in detail:
                                 continue
                         except Exception as detail:
-                            print str(detail)
+                            print 'snowball_follower unhandled expcetions', str(detail)
                             break
 
                     # Eliminate the users that have been scraped

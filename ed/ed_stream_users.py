@@ -116,8 +116,8 @@ def extract_users(stream, user_info):
     while True:
         count = stream.count({'user_extracted': {'$exists': False}})
         if count == 0:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no new stream, sleep 1 hour'
-            time.sleep(60*60)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no new stream, sleep 2 hours'
+            time.sleep(2*60*60)
             continue
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from stream amount:', count
