@@ -39,6 +39,7 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 while True:
     try:
         ed_seed = profiles_preposs.seed_all_profile()
+        # print ed_seed
         ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
         level = 1
         while True:

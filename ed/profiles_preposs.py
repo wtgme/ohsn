@@ -114,7 +114,7 @@ def seed_all_profile():
     seed_user = []
     for user in stream_db.find({'seeded':{'$exists': False}}).limit(100):
         if user['lang'] == 'en' and user['protected']==False:
-            seed_user.append(user)
+            seed_user.append(user['screen_name'])
         stream_db.update({'id': int(user['id_str'])},
                          {'$set':{"seeded": True}}, upsert=False)
     return seed_user

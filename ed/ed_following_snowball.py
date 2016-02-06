@@ -54,8 +54,10 @@ twitter_friend = twutil.twitter_auth(app_id_friend)
 def trans_seed_to_poi(seed_list, poi_db):
     infos = []
     try:
+        # print seed_list
         handle_lookup_rate_limiting()
         infos = twitter_look.lookup_user(screen_name=seed_list)
+        # print infos
     except TwythonError as detail:
         if 'No user matches for specified terms' in str(detail):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
