@@ -182,7 +182,7 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     if not xmin:
         xmin = min(data)
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
-    plt.plot(list_x, list_y, 'r+', label='Raw '+name)
+    plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
@@ -190,7 +190,7 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
     if fit_start!=fit_end:
         list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
-        ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted '+name)
+        ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
     # data = outstrength
     # list_x, list_y = pdf(data, linear_bins=True)
     # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')

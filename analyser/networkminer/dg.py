@@ -88,7 +88,7 @@ def neibors_static(DG, node, neib='pre', direct='in', weight=False):
 
 
 # network analysis
-DG = load_network('ed', 'net_ed')
+DG = load_network('ed2', 'net_ed')
 print 'The number of nodes: %d' %(DG.order())
 print 'The number of nodes: %d' %(DG.__len__())
 print 'The number of nodes: %d' %(DG.number_of_nodes())
@@ -136,6 +136,7 @@ for node in DG.nodes():
         pre_out_s.append(neibors_static(DG, node, 'pre', 'out', True))
 
 # plot.pdf_plot(indegree, 'indegree', 100, 1000)
+# plot.pdf_plot_one_data(indegree, 'indegree', min(indegree), max(indegree))
 
 # plot.dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 1, 300)
 # plot.dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')

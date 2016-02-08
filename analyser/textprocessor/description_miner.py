@@ -445,7 +445,7 @@ def process_description(poi):
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
 # process_description(sample_poi, 2)
-process_description(sample_poi)
+# process_description(sample_poi)
 
-# print get_age('''15; H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
+# print get_goal_weight('''15; H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
 # # # ''')
