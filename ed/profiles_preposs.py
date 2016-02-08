@@ -108,12 +108,13 @@ def profile_pos():
     return [user for user in seed_user]
 
 
-def seed_all_profile(stream_db):
-    # db = dbt.db_connect_no_auth('ed')
-    # stream_db = db['stream_users']
+def seed_all_profile():
+    db = dbt.db_connect_no_auth('ed')
+    stream_db = db['stream_users']
     seed_user = []
     for user in stream_db.find({'seeded':{'$exists': False}}).limit(100):
-        seed_user.append(user['screen_name'])
+        if user['lang'] == 'en' and user['protected']==False:
+            seed_user.append(user['screen_name'])
         stream_db.update({'id': int(user['id_str'])},
                          {'$set':{"seeded": True}}, upsert=False)
     return seed_user
@@ -136,5 +137,5 @@ def seed_all_profile(stream_db):
 # print sentence
 # print tokenizer_stoprm(sentence)
 
-# print check_ed_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
+# print check_ed_profile('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')
 # print tokenizer_stoprm('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')

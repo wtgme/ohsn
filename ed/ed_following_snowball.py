@@ -68,13 +68,12 @@ def trans_seed_to_poi(seed_list, poi_db):
     for profile in infos:
         # if profiles_preposs.check_ed(profile):
             # profile['following_prelevel_node'] = None
-        if profile['lang'] == 'en' and profile['protected']==False:
-            profile['level'] = 1
-            # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
-            try:
-                poi_db.insert(profile)
-            except pymongo.errors.DuplicateKeyError:
-                pass
+        profile['level'] = 1
+        # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
+        try:
+            poi_db.insert(profile)
+        except pymongo.errors.DuplicateKeyError:
+            pass
 
 
 def handle_lookup_rate_limiting():

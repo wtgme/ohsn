@@ -21,10 +21,7 @@ db = dbt.db_connect_no_auth('ed')
 
 ed_poi = db['poi_ed_all']
 ed_net = db['net_ed_all']
-stream_users = db['stream-users']
-# echelon = dbt.db_connect_no_auth('echelon')
-# echelon_poi = echelon['poi']
-
+# stream_users = db['stream-users']
 ed_poi.create_index("id", unique=True)
 ed_poi.create_index([('level', pymongo.ASCENDING),
                      ('following_prelevel_node', pymongo.ASCENDING)],
@@ -41,7 +38,7 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 
 while True:
     try:
-        ed_seed = profiles_preposs.seed_all_profile(stream_users)
+        ed_seed = profiles_preposs.seed_all_profile()
         # print ed_seed
         ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
         level = 1
