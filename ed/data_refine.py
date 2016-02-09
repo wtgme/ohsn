@@ -12,10 +12,7 @@ import datetime
 import time
 import pymongo
 
-db = dbt.db_connect_no_auth('ed')
 
-ed_poi = db['poi_ed_all']
-ed_net = db['net_ed_all']
 
 def eliminate_non_ed(poidb, netdb):
     for user in poidb.find({'level':1}):
@@ -34,4 +31,20 @@ def count_eds(poidb):
             count += 1
     print count
 
-count_eds(ed_poi)
+
+def trans(db1, db2):
+    db2.create_index("id", unique=True)
+    for user in db1.find({}):
+        if profiles_preposs.check_ed(user):
+            try:
+                db2.insert(user)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+
+db = dbt.db_connect_no_auth('ed')
+ed_poi1 = db['poi']
+
+db2 = dbt.db_connect_no_auth('fed')
+ed_poi2 = db2['poi']
+trans(ed_poi1, ed_poi2)
+# ed_net = db['net_ed_all']
