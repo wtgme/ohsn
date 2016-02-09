@@ -175,7 +175,7 @@ def get_height(text):
 
 
 def get_high_weightKG(text):
-    pattern = re.compile("hw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("[(\[{]?(hw|high weight|high)[)\]}]?([.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -217,7 +217,7 @@ def get_high_weightKG(text):
 
 
 def get_low_weight_KG(text):
-    pattern = re.compile("lw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("[(\[{]?(lw|low weight|low)[)\]}]?([.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -259,7 +259,7 @@ def get_low_weight_KG(text):
 
 
 def get_current_weight_KG(text):
-    pattern = re.compile("cw[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("[(\[{]?(cw|current weight|current(ly)?)[)\]}]?([.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -302,12 +302,12 @@ def get_current_weight_KG(text):
 
 
 def get_goal_weight(text):
-    pattern = re.compile("gw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile("[(\[{]?(gw|goal weight|goal)\(?\w?\)?[)\]}]?([.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
+            # print match.group('mass') + match.group('units') #user_stats[
             if match.group('units') in ("lb","pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
@@ -400,6 +400,7 @@ def process_description(poi):
             try:
                 text = user['description']
                 text = text.encode('utf-8').replace('\n', '')
+                text = text.lower()
                 source = 'description'
 
                 cnt = Counter()
@@ -442,10 +443,12 @@ def process_description(poi):
 
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
-# process_description(sample_poi, 2)
 db = dbutil.db_connect_no_auth('fed')
 sample_poi = db['poi']
 process_description(sample_poi)
 
-# print get_goal_weight('''15; H:5'4 CW:117 UGW:99 GW:110 HW:342 Just a struggling anorexic/bulimic girl looking for some thinspo along the way. Fighting for a year and a half.
-# # # ''')
+# text =  '''I was diagnosed anorexic when I was 14 and I.am now 20. my hw was 195 lw was 105 and my cw is 140. my gw is 93 and my goal is to be that by christmas!
+# '''.lower()
+# print get_low_weight_KG(text)
+
+# ,

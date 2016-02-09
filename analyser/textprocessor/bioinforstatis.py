@@ -41,29 +41,28 @@ count = ed_poi.count({"$or":[{biolist[0]:{'$exists': True}},
 percent = float(count)/all_count
 print ('Have any information, %d, %.2f' % (count, percent))
 
-for user in ed_poi.find({"$and":[{biolist[0]:{'$exists': False}},
-                     {biolist[1]:{'$exists': False}},
-                     {biolist[2]:{'$exists': False}},
-                     {biolist[3]:{'$exists': False}},
-                     {biolist[4]:{'$exists': False}},
-                     {biolist[5]:{'$exists': False}}]}):
-    print '----------------------------------------------'
-    print user['id'], user['screen_name'], user['description']
+# for user in ed_poi.find({"$and":[{biolist[0]:{'$exists': False}},
+#                      {biolist[1]:{'$exists': False}},
+#                      {biolist[2]:{'$exists': False}},
+#                      {biolist[3]:{'$exists': False}},
+#                      {biolist[4]:{'$exists': False}},
+#                      {biolist[5]:{'$exists': False}}]}):
+#     print '----------------------------------------------'
+#     print user['id'], user['screen_name'], user['description']
 
 gws = []
 cws = []
-# for user in ed_poi.find({
-#                          'text_anal.gw.value':{'$exists': False},
-#                          # 'text_anal.hw.value':{'$exists': True}
-#                         }):
-    # value = user['text_anal']['gw']['value']
+for user in ed_poi.find({
+                         'text_anal.lw.value':{'$exists': False},
+                         # 'text_anal.hw.value':{'$exists': True}
+                        }):
+    # value = user['text_anal']['lw']['value']
     # # value2 = user['text_anal']['hw']['value']
     # gws.append(value)
     # # cws.append(value2)
-    # print '-----------------------------------------------'
-    # print user['id'], user['screen_name'], user['description']
-    # print 'gw', value
-    # print user['id'], user['screen_name'], user['description']
+    print '-----------------------------------------------'
+    print user['id'], user['screen_name'], user['description']
+    # print '----', value
 
 #
 # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
