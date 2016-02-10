@@ -7,9 +7,12 @@ Created on Wed Jun 17 10:56:50 2015
 
 # datasift-collection-processor
 import datetime
-import pymongo
 import urllib
-import textprocessor
+
+import pymongo
+
+from echelon.datasift import textprocessor
+
 # import networkminer
 # import poiclassifier
 

@@ -53,16 +53,16 @@ print ('Have any information, %d, %.2f' % (count, percent))
 gws = []
 cws = []
 for user in ed_poi.find({
-                         'text_anal.hw.value':{'$exists': True},
+                         'text_anal.a.value':{'$exists': True},
                          # 'text_anal.hw.value':{'$exists': True}
                         }):
-    value = user['text_anal']['hw']['value']
+    value = user['text_anal']['a']['value']
     # # value2 = user['text_anal']['hw']['value']
     # gws.append(value)
     # # cws.append(value2)
     print '-----------------------------------------------'
     print  user['description']
-    print 'hw', value
+    print 'age', value
 
 #
 # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
