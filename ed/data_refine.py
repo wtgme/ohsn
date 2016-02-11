@@ -35,14 +35,15 @@ def count_eds(poidb):
 def trans(db1, db2):
     db2.create_index("id", unique=True)
     for user in db1.find({}):
-        if profiles_preposs.check_ed(user):
+        if profiles_preposs.check_ed(user) == True:
             try:
                 db2.insert(user)
             except pymongo.errors.DuplicateKeyError:
                 pass
 
-db = dbt.db_connect_no_auth('ed')
-ed_poi1 = db['poi']
+
+db = dbt.db_connect_no_auth('ed2')
+ed_poi1 = db['poi_ed']
 
 db2 = dbt.db_connect_no_auth('fed')
 ed_poi2 = db2['poi']

@@ -13,28 +13,29 @@ import util.db_util as dbt
 import util.twitter_util as twutil
 import pymongo
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
+import profiles_preposs
 import datetime
 import time
 
 # '''Connect db and stream collections'''
 db = dbt.db_connect_no_auth('ed')
 sample = db['stream']
-
-# '''Connect to Twitter.com'''
-app_id_look = 0
-twitter_look = twutil.twitter_auth(app_id_look)
-
-# '''Extracting users from stream files, add index for id to avoid duplicated users'''
+# Extracting users from stream files, add index for id to avoid duplicated users
 sample_poi = db['stream_users']
 sample_poi.create_index("id", unique=True)
 
-# '''Get all documents in stream collections'''
+'''
+# Connect to Twitter.com
+app_id_look = 0
+twitter_look = twutil.twitter_auth(app_id_look)
+
+# Get all documents in stream collections
 # sample_user_list_all = sample.distinct('user.id')
 #
-# '''Get all users that have been scraped'''
+# Get all users that have been scraped
 # sample_scrapted_user_list = sample_poi.distinct('id')
 #
-# '''Eliminate the users that have been scraped'''
+# Eliminate the users that have been scraped
 # sample_user_list = list(set(sample_user_list_all) - set(sample_scrapted_user_list))
 
 
@@ -134,8 +135,29 @@ def extract_users(stream, user_info):
                     user_info.insert(profile)
                 except pymongo.errors.DuplicateKeyError:
                     pass
+'''
+
+def check_users(stream, user_info):
+    while True:
+        count = stream.count({'user_extracted': {'$exists': False}})
+        if count == 0:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no new stream, sleep 2 hours'
+            time.sleep(2*60*60)
+            continue
+        else:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from stream amount:', count
+            for tweet in stream.find({'user_extracted':{'$exists': False}},
+                                    ['id_str', 'user']).limit(min(100, count)):
+                user = tweet['user']
+                if profiles_preposs.check_ed(user) == True:
+                    try:
+                        user_info.insert(user)
+                    except pymongo.errors.DuplicateKeyError:
+                        pass
+                stream.update({'id': int(tweet['id_str'])}, {'$set':{"user_extracted": True
+                                                    }}, upsert=False)
 
 if __name__ == '__main__':
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from sample streams'
-    extract_users(sample, sample_poi)
+    check_users(sample, sample_poi)
 

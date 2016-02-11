@@ -21,7 +21,7 @@ from gensim import corpora, models, similarities
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 dio_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
-                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
+                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm',
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'
                 'askanamia', 'bonespo', 'legspo'])
 
@@ -89,6 +89,7 @@ def check_ed_profile(profile):
 def check_ed(user):
     profile = user['description']
     if user['lang'] == 'en' and user['protected']==False and profile != None:
+        # print check_ed_profile(profile)
         return check_ed_profile(profile)
     else:
         return False
@@ -136,5 +137,12 @@ def seed_all_profile(stream_db):
 # print sentence
 # print tokenizer_stoprm(sentence)
 
-# print check_ed_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
+# print check_ed_profile('''Louis Tomlinson ❤ 1D ❤ Seen 1D live X10 ❤ Always in my heart @onedirection ❤ Live life for the moment because everything else is uncertain ❤ Ed Sheeran ❤ Lew ❤''')
 # print tokenizer_stoprm('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')
+
+# db = dbt.db_connect_no_auth('ed')
+# poi = db['poi_ed_all']
+# user = poi.find({'id':251347773})[0]
+# print user['description']
+# print check_ed_profile(user['description'])
+# print check_ed(user)

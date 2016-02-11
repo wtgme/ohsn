@@ -46,12 +46,16 @@ while True:
             break
         else:
             ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
-            level = 1
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-            following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-            follower_flag = ed_follower_snowball.snowball_follower(ed_poi, ed_net, level)
             continue
     except Exception as details:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception stop, re-run'
         continue
+
+while True:
+    level = 1
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+    following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+    follower_flag = ed_follower_snowball.snowball_follower(ed_poi, ed_net, level)
+    if following_flag== False and follower_flag==False:
+        break
