@@ -34,6 +34,10 @@ from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import time
 import pymongo
 
+'''Auth twitter API'''
+app_id = 0
+twitter = twutil.twitter_auth(app_id)
+
 
 def store_tweets(tweets_to_save, collection):
     """
@@ -45,6 +49,7 @@ def store_tweets(tweets_to_save, collection):
         collection.insert(tweets_to_save)
     except pymongo.errors.DuplicateKeyError:
             pass
+
 
 # Test rate_limit is OK? If not, sleep till to next reset time
 def handle_rate_limiting():
@@ -90,6 +95,7 @@ def handle_rate_limiting():
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             break
+
 
 def get_user_timeline(user_id, user_collection, timeline_collection):
     global reset
@@ -172,25 +178,3 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times):
                                                              'timeline_scraped_times': timeline_scraped_times}},
                                    upsert=False)
 
-
-print 'Job starts.......'
-'''Connecting db and user collection'''
-db = dbutil.db_connect_no_auth('fed')
-sample_user = db['com']
-sample_time = db['timeline']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
-sample_user.create_index([('timeline_scraped_times', pymongo.ASCENDING)])
-sample_time.create_index([('user.id', pymongo.ASCENDING),
-                          ('id', pymongo.DESCENDING)])
-sample_time.create_index([('id', pymongo.ASCENDING)], unique=True)
-
-
-'''Auth twitter API'''
-app_id = 0
-twitter = twutil.twitter_auth(app_id)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect Twitter.com'
-
-
-# stream_timeline(sample_user, sample_time, 1, 2)
-stream_timeline(sample_user, sample_time, 1)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'

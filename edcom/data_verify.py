@@ -24,8 +24,9 @@ for up in poi.find({}, ['id', 'screen_name']):
     user = com.find_one({'id': uid})
     if user == None:
         count_none += 1
-        print up['screen_name']
+        print 'none user', up['screen_name']
     else:
         if user['level']!=1:
             count_hl += 1
+            print 'high level user', up['screen_name']
 print count_none, count_hl

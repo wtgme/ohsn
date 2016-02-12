@@ -21,8 +21,8 @@ from gensim import corpora, models, similarities
 bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 dio_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
-                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'ed',  'selfharm',
-                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'
+                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm',
+                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
 
 stop = stopwords.words('english')
@@ -86,11 +86,21 @@ def check_ed_profile(profile):
         return False
 
 
-def check_ed(user):
+def check_en(user):
     if user['lang'] == 'en' and user['protected']==False:
         return True
     else:
         return False
+
+
+def check_ed(user):
+    profile = user['description']
+    if user['lang'] == 'en' and user['protected']==False and profile != None:
+        # print check_ed_profile(profile)
+        return check_ed_profile(profile)
+    else:
+        return False
+
 
 def profile_pos():
     db = dbt.db_connect_no_auth('ed')
@@ -100,7 +110,7 @@ def profile_pos():
     seed_user = set([])
     for tweet in stream_db.find({'checked':{'$exists': False}}).limit(1000):
         user = tweet['user']
-        if check_ed(user):
+        if check_en(user):
             seed_user.add(user['screen_name'])
         stream_db.update({'id': int(tweet['id_str'])},
                          {'$set':{"checked": True}}, upsert=False)
