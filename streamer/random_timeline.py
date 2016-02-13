@@ -14,7 +14,7 @@ import util.db_util as dbt
 
 print 'Job starts.......'
 '''Connecting db and user collection'''
-db = dbt.db_connect_no_auth('fed')
+db = dbt.db_connect_no_auth('random')
 sample_user = db['com']
 sample_time = db['timeline']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'

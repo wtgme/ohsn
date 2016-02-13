@@ -122,7 +122,7 @@ while True:
             'eating disorder', 'anorexia', 'bulimia', 'anorexic',
                 'bulimic', 'anorexia nervosa', 'thinspo',
                 'bulemia', 'bulimia nervosa',
-                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia'
+                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'
                 ])
 

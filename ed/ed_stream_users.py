@@ -17,12 +17,7 @@ import profiles_preposs
 import datetime
 import time
 
-# '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('ed')
-sample = db['stream']
-# Extracting users from stream files, add index for id to avoid duplicated users
-sample_poi = db['stream_users']
-sample_poi.create_index("id", unique=True)
+
 
 '''
 # Connect to Twitter.com
@@ -157,7 +152,15 @@ def check_users(stream, user_info):
                 stream.update({'id': int(tweet['id_str'])}, {'$set':{"user_extracted": True
                                                     }}, upsert=False)
 
+
 if __name__ == '__main__':
+
+    # '''Connect db and stream collections'''
+    db = dbt.db_connect_no_auth('ed')
+    sample = db['stream']
+    # Extracting users from stream files, add index for id to avoid duplicated users
+    sample_poi = db['stream_users']
+    sample_poi.create_index("id", unique=True)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from sample streams'
     check_users(sample, sample_poi)
 

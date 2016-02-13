@@ -9,8 +9,8 @@ Created on 10:20, 02/02/16
 
 import datetime
 import pymongo
-from twittertools import following
-from twittertools import follower, profiles_check
+from api import following
+from api import follower, profiles_check
 import util.db_util as dbt
 
 db = dbt.db_connect_no_auth('fed')
@@ -33,18 +33,13 @@ ed_net.create_index([("user", pymongo.ASCENDING),
                      ("type", pymongo.ASCENDING)],
                             unique=True)
 
-
 while True:
-    try:
-        ed_seed = profiles_check.seed_all_profile(stream_users)
-        if len(ed_seed)==0:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
-            break
-        else:
-            following.trans_seed_to_poi(ed_seed, ed_poi)
-            continue
-    except Exception as details:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'exception stop, re-run'
+    ed_seed = profiles_check.seed_all_profile(stream_users)
+    if len(ed_seed)==0:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
+        break
+    else:
+        following.trans_seed_to_poi(ed_seed, ed_poi)
         continue
 
 while True:
@@ -53,5 +48,5 @@ while True:
     following_flag = following.snowball_following(ed_poi, ed_net, level)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
     follower_flag = follower.snowball_follower(ed_poi, ed_net, level)
-    if following_flag== False and follower_flag==False:
+    if following_flag == False and follower_flag == False:
         break
