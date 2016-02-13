@@ -116,7 +116,7 @@ while True:
         # with open('keyword.txt', 'r') as fo:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
-        stream.statuses.filter(language=['en'])
+        stream.statuses.sample(language=['en'])
 
     except Exception as detail:
         print str(detail)

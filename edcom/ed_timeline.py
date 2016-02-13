@@ -5,10 +5,10 @@ Created on 16:19, 12/02/16
 @author: wt
 """
 
+import sys
+sys.path.append('..')
 import datetime
-
 import pymongo
-
 from api import timelines
 import util.db_util as dbt
 

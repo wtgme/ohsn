@@ -7,6 +7,8 @@ Created on 10:20, 02/02/16
 2. Snowball friends and followers of seed users
 """
 
+import sys
+sys.path.append('..')
 import datetime
 import pymongo
 from api import following
