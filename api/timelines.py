@@ -27,16 +27,13 @@ Created on 20:34, 26/10/15
 
 import sys
 sys.path.append('..')
-import util.db_util as dbutil
 import util.twitter_util as twutil
 import datetime
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import time
 import pymongo
 
-'''Auth twitter API'''
-app_id = 0
-twitter = twutil.twitter_auth(app_id)
+app_id, twitter = twutil.twitter_auth()
 
 
 def store_tweets(tweets_to_save, collection):
@@ -52,11 +49,8 @@ def store_tweets(tweets_to_save, collection):
 
 
 # Test rate_limit is OK? If not, sleep till to next reset time
-def handle_rate_limiting():
-    global reset
-    global remaining
-    global twitter
-    global app_id
+def handle_timeline_rate_limiting():
+    global app_id, twitter
     while True:
         try:
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
@@ -76,8 +70,11 @@ def handle_rate_limiting():
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()'
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
                 exit(1)
+        except Exception as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
+            exit(2)
 
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
@@ -98,9 +95,7 @@ def handle_rate_limiting():
 
 
 def get_user_timeline(user_id, user_collection, timeline_collection):
-    global reset
-    global remaining
-    # Get latest tweet ID scraped in db collection
+    global app_id, twitter
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
         # crawl the recent timeline to the last stored timeline
@@ -116,7 +111,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     while True:
         # newest = None
         params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
-        handle_rate_limiting()
+        handle_timeline_rate_limiting()
         try:
             timelines = twitter.get_user_timeline(**params)
         except TwythonAuthError:
@@ -137,7 +132,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
 
                 while True:
                     try:
-                        handle_rate_limiting()
+                        handle_timeline_rate_limiting()
                         timelines = twitter.get_user_timeline(**params)
                         break
                     except TwythonError as detail:
@@ -154,18 +149,17 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             return False
 
 
-def stream_timeline(user_collection, timeline_collection, scrapt_times):
+def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
     while True:
-        count = user_collection.count({'$or':[{'timeline_scraped_times': {'$exists': False}},
-                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]})
+        count = user_collection.count({'$or':[{'level': {'$lt': level}, 'timeline_scraped_times': {'$exists': False}},
+                                             {'level': {'$lt': level}, 'timeline_scraped_times': {'$lt': scrapt_times}}]})
         if count == 0:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'finished'
             break
         else:
-            users = user_collection.find({'$or':[{'timeline_scraped_times': {'$exists': False}},
-                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]},
-                                     {'id': 1}).limit(200)
-            for user in users:
+            for user in user_collection.find({'$or':[{'level': {'$lt': level}, 'timeline_scraped_times': {'$exists': False}},
+                                             {'level': {'$lt': level}, 'timeline_scraped_times': {'$lt': scrapt_times}}]},
+                                     {'id': 1}).limit(200):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
                 get_user_timeline(user['id'], user_collection, timeline_collection)
                 # count = user_collection.count({"timeline_count": {'$gt': 3000}})

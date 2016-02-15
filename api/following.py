@@ -25,20 +25,18 @@ from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
 import time
 import math
-from api import profiles_check
+import profiles_check
+import lookup
 
-app_id_look = 27
-twitter_look = twutil.twitter_auth(app_id_look)
-
-app_id_friend = 0
-twitter_friend = twutil.twitter_auth(app_id_friend)
+app_id_friend, twitter_friend = twutil.twitter_auth()
 
 
 def trans_seed_to_poi(seed_list, poi_db):
+    global app_id_look, twitter_look
     infos = []
     try:
         # print seed_list
-        handle_lookup_rate_limiting()
+        lookup.handle_lookup_rate_limiting()
         infos = twitter_look.lookup_user(screen_name=seed_list)
         # print infos
     except TwythonError as detail:
@@ -62,88 +60,8 @@ def trans_seed_to_poi(seed_list, poi_db):
                                                     }}, upsert=False)
 
 
-def handle_lookup_rate_limiting():
-    global twitter_look
-    global app_id_look
-    while True:
-        # print '---------lookup rate handle------------------'
-        try:
-            rate_limit_status = twitter_look.get_application_rate_limit_status(resources=['users'])
-        except TwythonRateLimitError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Cannot test due to last incorrect connection, change Twitter APP ID'
-            twutil.release_app(app_id_look)
-            app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
-            continue
-        except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Author Error, change Twitter APP ID'
-            twutil.release_app(app_id_look)
-            app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
-            continue
-        except TwythonError as detail:
-            if 'Twitter API returned a 503' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                      '503 ERROE, sleep 30 Sec'
-                time.sleep(30)
-                continue
-        except Exception as detail:
-            if '110' in str(detail) or '104' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'user lookup in following snowball Unhandled ERROR, EXIT()', str(detail)
-                exit(1)
-
-        reset = float(rate_limit_status['resources']['users']['/users/lookup']['reset'])
-        remaining = int(rate_limit_status['resources']['users']['/users/lookup']['remaining'])
-        # print '------------------------lookup--------------------'
-        # print 'user calls reset at ' + str(reset)
-        # print 'user calls remaining ' + str(remaining)
-        if remaining == 0:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Need to wait till next reset time'
-            wait = max(reset - time.time(), 0)
-            if wait < 20:
-                time.sleep(wait)
-            else:
-                twutil.release_app(app_id_look)
-                app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
-            continue
-        else:
-            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
-            break
-
-
-def get_users_info(stream_user_list):
-    global twitter_look
-    global app_id_look
-    infos = []
-    while True:
-        handle_lookup_rate_limiting()
-        try:
-            infos = twitter_look.lookup_user(user_id=stream_user_list)
-            return infos
-        except TwythonError as detail:
-            if 'No user matches for specified terms' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
-                      "\t cannot get user profiles for" , stream_user_list
-                return infos
-            elif '50' in str(detail):
-                time.sleep(10)
-                continue
-        except Exception as detail:
-            if '443' in str(detail):
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'get_users_info_exception', str(detail)
-                break
-
-
 def handle_following_rate_limiting():
-    global twitter_friend
-    global app_id_friend
+    global app_id_friend, twitter_friend
     while True:
         # print '---------friends rate handle------------------'
         try:
@@ -166,14 +84,17 @@ def handle_following_rate_limiting():
                       '503 ERROE, sleep 30 Sec'
                 time.sleep(30)
                 continue
+            else:
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
+                exit(1)
         except Exception as detail:
             if '110' in str(detail) or '104' in str(detail):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'handle_following_rate_limiting Unhandled ERROR, EXIT()', str(detail)
-                exit(1)
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'handle_follower_rate_limiting Unhandled ERROR, EXIT()', str(detail)
+                exit(2)
 
         reset = float(rate_limit_status['resources']['friends']['/friends/ids']['reset'])
         remaining = int(rate_limit_status['resources']['friends']['/friends/ids']['remaining'])
@@ -195,8 +116,7 @@ def handle_following_rate_limiting():
 
 
 def snowball_following(poi_db, net_db, level):
-    global twitter_friend
-    global app_id_friend
+    global app_id_friend, twitter_friend
     start_level = level
     while True:
         count = poi_db.count({'level': start_level, 
@@ -248,7 +168,7 @@ def snowball_following(poi_db, net_db, level):
                     for index in xrange(length):
                         index_begin = index*100
                         index_end = min(list_size, index_begin+100)
-                        profiles = get_users_info(followee_ids[index_begin:index_end])
+                        profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
                         # print 'user profile:', index_begin, index_end, len(profiles)
                         for profile in profiles:
                             if profiles_check.check_en(profile):

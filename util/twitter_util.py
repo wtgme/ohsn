@@ -18,8 +18,12 @@ flags = Array('i', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1])
 
+
 def twitter_auth(app_id=0):
     global flags
+    while flags[app_id] == 0:
+        app_id += 1
+        app_id = app_id%len(flags)
     flags[app_id] = 0
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth with APP ID: ' + str(app_id)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Avaiable IDs: ' + str(flags[:])
@@ -37,7 +41,7 @@ def twitter_auth(app_id=0):
         try:
             twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
             twitter.verify_credentials()
-            return twitter
+            return app_id, twitter
         except TwythonRateLimitError as e:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Sleep 30 sec for next connection'
             time.sleep(30)
@@ -55,11 +59,7 @@ def twitter_change_auth(index):
     global flags
     index += 1
     index = index%len(flags)
-    while flags[index] == 0:
-        index += 1
-        index = index%len(flags)
-    flags[index] = 0
-    return (index, twitter_auth(index))
+    return twitter_auth(index)
 
 def release_app(index):
     global flags

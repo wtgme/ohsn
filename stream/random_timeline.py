@@ -29,5 +29,5 @@ print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect T
 
 
 # stream_timeline(sample_user, sample_time, 1, 2)
-timelines.stream_timeline(sample_user, sample_time, 1)
+timelines.stream_timeline(sample_user, sample_time, 1, 2)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
