@@ -8,14 +8,9 @@ Created on 5:56 PM, 11/4/15
 import sys
 sys.path.append('..')
 from networkx import *
-import math
 import matplotlib.pyplot as plt
-import numpy as np
 import csv
-from sklearn.metrics import mean_squared_error
-import os
 import util.db_util as dbt
-import util.plot_util as plot
 
 
 # load a network from file (directed weighted network)

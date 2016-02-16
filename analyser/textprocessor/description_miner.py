@@ -496,8 +496,8 @@ def process_description(poi):
 
             poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
 
-db = dbutil.db_connect_no_auth('fed')
-sample_poi = db['poi']
+db = dbutil.db_connect_no_auth('young')
+sample_poi = db['com']
 process_description(sample_poi)
 
 # text =  '''23, 5'4 EDNOS. starve, purge, dying. don't care.'''.lower()

@@ -15,30 +15,6 @@ import util.db_util as dbutil
 import datetime
 import pymongo
 
-#### Connecting db and collections
-db = dbutil.db_connect_no_auth('stream')
-sample_poi = db['poi_sample']
-track_poi = db['poi_track']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
-
-sample_time = db['timeline_sample']
-track_time = db['timeline_track']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
-
-sample_network = db['net_sample']
-sample_network.create_index([("id0", pymongo.ASCENDING),
-                             ("id1", pymongo.ASCENDING),
-                             ("relationship", pymongo.ASCENDING),
-                             ("statusid", pymongo.ASCENDING)],
-                            unique=True)
-track_network = db['net_track']
-track_network.create_index([("id0", pymongo.ASCENDING),
-                            ("id1", pymongo.ASCENDING),
-                            ("relationship", pymongo.ASCENDING),
-                             ("statusid", pymongo.ASCENDING)],
-                           unique=True)
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
-
 
 def add_tweet_edge(netdb, userid, createdat, statusid):
     edge = {}
@@ -133,9 +109,9 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
 def network_mining(poi, timelines, network, level):
     # set every poi to have not been analysed.
     # poi.update({}, {'$set': {"net_anal.tnmined": False}}, multi=True)
-    poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('net_anal.tnmined', pymongo.ASCENDING),
-                      ('level', pymongo.ASCENDING)], unique=False)
+    # poi.create_index([('timeline_count', pymongo.DESCENDING),
+    #                   ('net_anal.tnmined', pymongo.ASCENDING),
+    #                   ('level', pymongo.ASCENDING)], unique=False)
 
     #### Start to mining relationship network from users' timelines
     while True:
@@ -145,7 +121,8 @@ def network_mining(poi, timelines, network, level):
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False}, 'level': {'$lte': level}}, {'id': 1}).limit(250):
+        for user in poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False},
+                              'level': {'$lte': level}}, {'id': 1}).limit(250):
 
             for tweet in timelines.find({'user.id': user['id']}):
                 # parse the tweet for mrr edges:
@@ -169,5 +146,23 @@ def network_mining(poi, timelines, network, level):
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
 
 
-# network_mining(sample_poi, sample_time, sample_network, 2)
-network_mining(track_poi, track_time, track_network, 1)
+
+#### Connecting db and collections
+db = dbutil.db_connect_no_auth('fed')
+sample_poi = db['com']
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
+
+sample_time = db['timeline']
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
+
+sample_network = db['bnet']
+sample_network.create_index([("id0", pymongo.ASCENDING),
+                             ("id1", pymongo.ASCENDING),
+                             ("relationship", pymongo.ASCENDING),
+                             ("statusid", pymongo.ASCENDING),
+                             ('created_at', pymongo.ASCENDING)],
+                            unique=True)
+
+print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
+
+network_mining(sample_poi, sample_time, sample_network, 1)
