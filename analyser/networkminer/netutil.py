@@ -24,6 +24,21 @@ def load_network(db_name, collection):
     return DG
 
 
+def load_behavior_network(db_name, collection, type):
+    DG = DiGraph()
+    db = dbt.db_connect_no_auth(db_name)
+    cols = db[collection]
+    for row in cols.find({'relationship': type}):
+        n1 = row['id0']
+        n2 = row['id1']
+        weightv = 1
+        if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
+            DG[n1][n2]['weight'] += weightv
+        else:
+            DG.add_edge(n1, n2, weight=weightv)
+    return DG
+
+
 def get_gaint_comp(DG):
     G = DG.to_undirected()
     print 'Network is connected:', (nx.is_connected(G))

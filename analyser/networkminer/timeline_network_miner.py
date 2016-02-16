@@ -60,13 +60,36 @@ def add_reply_edge(netdb, userid, replied_to, createdat, statusid):
         #print "forming reply edge Duplicate Key ERROR! this shouldn't happen..."
         #print 'reply-to\t' + str(userid) +"\t"+ str(replied_to) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
-def add_mentions_edge(netdb, userid, mentioned, createdat, statusid):
+def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
     edge['id1'] = mentioned
     # edge['screen_name_1'] =
-    edge['relationship'] = 'mentioned'
+    edge['relationship'] = 'dmentioned'
+    # edge['relationship'] = 'friend'
+    # this is an observation we can merge observations into weighted and time period later.
+    edge['created_at'] = createdat
+    # edge['first-date'] = createdat
+    edge['statusid'] = statusid
+
+    #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
+
+    try:
+        netdb.insert(edge)
+    except pymongo.errors.DuplicateKeyError:
+        pass
+        #print "forming mentions edge Duplicate Key ERROR! this shouldn't happen..."
+        #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
+
+
+def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
+    edge = {}
+    edge['id0'] = userid
+    # edge['screen_name_0'] =
+    edge['id1'] = mentioned
+    # edge['screen_name_1'] =
+    edge['relationship'] = 'udmentioned'
     # edge['relationship'] = 'friend'
     # this is an observation we can merge observations into weighted and time period later.
     edge['created_at'] = createdat
@@ -135,14 +158,22 @@ def network_mining(poi, timelines, network, level):
                     add_tweet_edge(network, tweet['user']['id'], tweet['created_at'], tweet['id'])
 
                 else:
+                    udmention_list = []
+                    if len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                        for udmention in tweet['retweeted_status']['entities']['user_mentions']:
+                            udmention_list.append(udmention['id'])
                     for mention in tweet['entities']['user_mentions']:
-                        if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']):
+                        if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
                             add_reply_edge(network, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
 
-                        elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']):
+                        elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
                             add_retweet_edge(network, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
-                        else:
-                            add_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
+                        elif mention['id'] in udmention_list:  # mentions in Retweet content
+                            add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
+                        else: # original mentions
+                            add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
 
 

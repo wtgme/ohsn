@@ -11,6 +11,8 @@ Type field in net collection cases duplicated records
 import util.db_util as dbt
 import netutil
 import pymongo
+import util.plot_util as plot
+
 
 def extract_friend_subnetwork(db_name):
     db = dbt.db_connect_no_auth(db_name)
@@ -58,12 +60,37 @@ def extract_behavior_subnetwork(db_name):
                 except pymongo.errors.DuplicateKeyError:
                     pass
 
-# extract_friend_subnetwork('fed')
-extract_behavior_subnetwork('fed')
-DG = netutil.load_network('fed', 'sbnet')
-print DG.number_of_edges()
-print DG.number_of_nodes()
 
-DG = netutil.get_gaint_comp(DG)
-print DG.number_of_edges()
-print DG.number_of_nodes()
+def get_retweeted_tweet(db_name):
+    db = dbt.db_connect_no_auth(db_name)
+    bnet = db['sbnet']
+    timeline = db['timeline']
+    for net in bnet.find({}):
+        sid = net['statusid']
+        orig = timeline.find_one({'id': sid}, ['retweeted_status'])
+        oid = orig['retweeted_status']['id']
+        bnet.update({'statusid': sid}, {'$set': {"ostatusid": oid}})
+
+
+def tweet_ret_times(db_name):
+    count_list = []
+    db = dbt.db_connect_no_auth(db_name)
+    bnet = db['sbnet']
+    for tweet in bnet.distinct('ostatusid'):
+        count = bnet.count({'ostatusid': tweet})
+        count_list.append(count)
+    plot.pdf_plot_one_data(count_list, 'NO.RT', 1, 200, 1, 1)
+
+
+tweet_ret_times('fed')
+
+
+# extract_friend_subnetwork('fed')
+# extract_behavior_subnetwork('fed')
+# DG = netutil.load_network('fed', 'sbnet')
+# print DG.number_of_edges()
+# print DG.number_of_nodes()
+#
+# DG = netutil.get_gaint_comp(DG)
+# print DG.number_of_edges()
+# print DG.number_of_nodes()
