@@ -9,6 +9,7 @@ Created on 18:29, 01/02/16
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+from networkx import *
 from sklearn.metrics import mean_squared_error
 
 
@@ -173,7 +174,6 @@ def rmse(predict, truth):
 
 '''Plot PDF'''
 def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
-
     data = drop_zeros(data)
     # plt.gcf()
     # data = outstrength
@@ -204,7 +204,7 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
     ax.set_xlim(xmin=1)
-    ax.set_ylim(ymax=1)
+    ax.set_ylim(ymax=2)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
@@ -267,4 +267,15 @@ def plot_pdf_two_data(lista, listb, min_x=None, max_x=None, label1='x_1', label2
     ax.set_autoscale_on(True)
     # plt.savefig('echelon-smaple-'+field+'.eps')
     # plt.clf()
+    plt.show()
+
+def plot_whole_network(DG):
+    # pos = random_layout(DG)
+    # pos = shell_layout(DG)
+    pos = spring_layout(DG)
+    # pos = circular_layout(DG)
+    # pos = fruchterman_reingold_layout(DG)
+    # pos = spectral_layout(DG)
+    # plt.title('Plot of Network')
+    draw(DG, pos)
     plt.show()

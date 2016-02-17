@@ -172,7 +172,7 @@ def network_mining(poi, timelines, network, level):
                         elif mention['id'] in udmention_list:  # mentions in Retweet content
                             add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
 
-                        else: # original mentions
+                        else:  # original mentions
                             add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
 
