@@ -159,7 +159,7 @@ def network_mining(poi, timelines, network, level):
 
                 else:
                     udmention_list = []
-                    if len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                    if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
                         for udmention in tweet['retweeted_status']['entities']['user_mentions']:
                             udmention_list.append(udmention['id'])
                     for mention in tweet['entities']['user_mentions']:
@@ -179,7 +179,7 @@ def network_mining(poi, timelines, network, level):
 
 
 #### Connecting db and collections
-db = dbutil.db_connect_no_auth('fed')
+db = dbutil.db_connect_no_auth('young')
 sample_poi = db['com']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 

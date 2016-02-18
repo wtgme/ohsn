@@ -24,14 +24,14 @@ def extract_friend_subnetwork(db_name):
     db = dbt.db_connect_no_auth(db_name)
     poi = db['com']
     net = db['net']
-    tem = db['tmpt']
+    tem = db['snet']  # subset of friendship network
     tem.create_index([("user", pymongo.ASCENDING),
                     ("follower", pymongo.ASCENDING)],
                             unique=True)
-    index = 0
+    # index = 0
     for user in poi.find({'level': 1}, ['id']):
-        index += 1
-        print index
+        # index += 1
+        # print index
         for rel in net.find({'user': user['id']}):
             follower = rel['follower']
             count = poi.count({'id': follower, 'level':1})
@@ -42,22 +42,25 @@ def extract_friend_subnetwork(db_name):
                     pass
 
 
-def extract_behavior_subnetwork(db_name):
+def extract_behavior_subnetwork(db_name, relationship=None):
     db = dbt.db_connect_no_auth(db_name)
     poi = db['com']
     net = db['bnet']
-    tem = db['sbnet']
+    tem = db['sbnet']  # subset of behavior network
     tem.create_index([("id0", pymongo.ASCENDING),
                              ("id1", pymongo.ASCENDING),
                              ("relationship", pymongo.ASCENDING),
                              ("statusid", pymongo.ASCENDING),
                              ('created_at', pymongo.ASCENDING)],
                             unique=True)
-    index = 0
+    # index = 0
     for user in poi.find({'level': 1}, ['id']):
-        index += 1
-        print index
-        for rel in net.find({'id0': user['id'], 'relationship': 'retweet'}):
+        # index += 1
+        # print index
+        find_cri = {'id0': user['id']}
+        if relationship != None:
+            find_cri['relationship'] = relationship
+        for rel in net.find(find_cri):
             follower = rel['id1']
             count = poi.count({'id': follower, 'level':1})
             if count > 0:
@@ -99,8 +102,8 @@ def prune_bdg(BDG, FDG):
 
 
 def centrality(BDG, FDG, p, T):
-    db = dbt.db_connect_no_auth('fed')
-    poi = db['com']
+    # db = dbt.db_connect_no_auth('fed')
+    # poi = db['com']
     dic = {}
     length = nx.all_pairs_shortest_path_length(FDG, T)
     for node in BDG.nodes():
@@ -114,17 +117,18 @@ def centrality(BDG, FDG, p, T):
             if t!=-1 and t<=T:
                 ngv += BDG[sayer][node]['weight']*math.pow(p, t)
         dic[node] = (dcv, ngv)
-        user = poi.find_one({'id': node}, ['screen_name'])
-        print str(node) + ',' + user['screen_name']+ ',' + str(dcv) + ',' + str(ngv)
+        # user = poi.find_one({'id': node}, ['screen_name'])
+        # print str(node) + ',' + user['screen_name']+ ',' + str(dcv) + ',' + str(ngv)
+        print str(node) + ',' + str(dcv) + ',' + str(ngv)
     return dic
 
 
 # tweet_ret_times('fed')
-# extract_friend_subnetwork('fed')
-# extract_behavior_subnetwork('fed')
+extract_friend_subnetwork('random')
+extract_behavior_subnetwork('random')
 
 print 'original network'
-FDG = netutil.load_network('fed', 'tmpt')
+FDG = netutil.load_network('random', 'snet')
 print FDG.number_of_edges()
 print FDG.number_of_nodes()
 
@@ -134,20 +138,20 @@ print FDG.number_of_edges()
 print FDG.number_of_nodes()
 print nx.average_shortest_path_length(FDG)
 
-print 'original network'
-BDG = netutil.load_behavior_network('fed', 'sbnet')
-print BDG.number_of_edges()
-print BDG.number_of_nodes()
+# print 'original network'
+# BDG = netutil.load_behavior_network('fed', 'sbnet')
+# print BDG.number_of_edges()
+# print BDG.number_of_nodes()
+#
+# print 'get gaint_component of network'
+# BDG = netutil.get_gaint_comp(BDG)
+# print BDG.number_of_edges()
+# print BDG.number_of_nodes()
 
-print 'get gaint_component of network'
-BDG = netutil.get_gaint_comp(BDG)
-print BDG.number_of_edges()
-print BDG.number_of_nodes()
-
-print 'prune nodes not in friendship network'
-BDG = prune_bdg(BDG, FDG)
-print BDG.number_of_edges()
-print BDG.number_of_nodes()
+# print 'prune nodes not in friendship network'
+# BDG = prune_bdg(BDG, FDG)
+# print BDG.number_of_edges()
+# print BDG.number_of_nodes()
 # print nx.average_shortest_path_length(BDG)
 
-centrality(BDG, FDG, 0.2, 3)
+# centrality(BDG, FDG, 0.2, 3)

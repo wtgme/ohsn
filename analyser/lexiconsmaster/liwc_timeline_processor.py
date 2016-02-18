@@ -14,20 +14,6 @@ import re
 from lexicons.liwc import Liwc
 import pymongo
 
-'''Connecting db and collections'''
-db = dbutil.db_connect_no_auth('stream')
-sample_poi = db['poi_sample']
-track_poi = db['poi_track']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
-
-sample_time = db['timeline_sample']
-track_time = db['timeline_track']
-print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
-
-'''Counting the number of users whose timelines have been processed by LIWC'''
-print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
-print 'LIWC mined user in Track Col: ' + str(track_poi.count({'liwc_anal.mined': {'$exists': False}}))
-
 
 # set every poi to have not been analysed.
 # sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
@@ -41,6 +27,10 @@ def process(poi, timelines, level):
     poi.create_index([('timeline_count', pymongo.DESCENDING),
                       ('liwc_anal.mined', pymongo.ASCENDING),
                       ('level', pymongo.ASCENDING)])
+    rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
+    mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
+    hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
+    ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 
     while True:
         # How many users whose timelines have not been processed by LIWC
@@ -50,22 +40,23 @@ def process(poi, timelines, level):
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False}, 'level': {'$lte': level}}, {'id': 1}).limit(250):
+        for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False},
+                              'level': {'$lte': level}}, {'id': 1}).limit(250):
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
                 # is it a retweet?
                 # if not ('retweeted_status' in tweet):
                 text = tweet['text'].encode('utf8')
-                # text = re.sub(r"http\S+", "", text) # this doesn't do anything
-                textmass = textmass + " " + text
+                # replace RT, @, # and Http://
+                text = rtgrex.sub('', text)
+                text = mgrex.sub('', text)
+                text = hgrex.sub('', text)
+                text = ugrex.sub('', text)
+                textmass = textmass + " " + text.lower()
 
-            # textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", textmass).split())
-            textmass = ' '.join(re.sub("(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ", textmass).split())
-            textmass.lower()
-            result = Liwc.summarize_document(liwc, textmass)
+            result = Liwc.summarize_document(liwc, ' '.join(textmass.split()))
             # print result
-
             poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
             # progcounter += 1
             # if progcounter%1000 == 0:
@@ -73,5 +64,31 @@ def process(poi, timelines, level):
 
 
 if __name__ == '__main__':
-    # process(sample_poi, sample_time, 2)
-    process(track_poi, track_time, 2)
+    '''Connecting db and collections'''
+    db = dbutil.db_connect_no_auth('random')
+    sample_poi = db['com']
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
+
+    sample_time = db['timeline']
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
+
+    '''Counting the number of users whose timelines have been processed by LIWC'''
+    print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
+    process(sample_poi, sample_time, 1)
+
+    # rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')
+    # mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')
+    # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')
+    # ugrex = re.compile(r'(https?://[^\s]+)')
+    # text = '''RT @IAmAnaNervosa: Fatass, Go and lose some weight. https://t.co/lc98H7ANG9 RT @_cr_0sstheline_: @_cr_0sstheline_ Cross the line #fad if you're about ready #3_dfa_ to quit, but you know you can't. @faji RT @BoyAnorexic: http://t.co/lc98H7ANG9'''
+    # print text
+    # text = rtgrex.sub('', text)
+    # print text
+    # text = mgrex.sub('', text)
+    # print text
+    # text = hgrex.sub('', text)
+    # print text
+    # text = ugrex.sub('', text)
+    # print text
+    # print ' '.join(text.split())
+
