@@ -85,7 +85,8 @@ def tweet_ret_times(db_name):
     for tweet in bnet.distinct('ostatusid'):
         count = bnet.count({'ostatusid': tweet})
         count_list.append(count)
-        print tweet, count
+        # print tweet, count
+    print min(count_list), max(count_list), len(count_list)
     plot.pdf_plot_one_data(count_list, 'NO.RT')
 
 
@@ -98,22 +99,23 @@ def prune_bdg(BDG, FDG):
 
 
 def centrality(BDG, FDG, p, T):
+    db = dbt.db_connect_no_auth('fed')
+    poi = db['com']
     dic = {}
     length = nx.all_pairs_shortest_path_length(FDG, T)
     for node in BDG.nodes():
         dcv, ngv = 0.0, 0.0
         for hearer in BDG.successors(node):
-            # print '+++++++++++++++++', node, hearer
             t = length.get(node, {hearer: -1}).get(hearer, -1)
             if t!=-1 and t<=T:
                 dcv += BDG[node][hearer]['weight']*math.pow(p, t)
         for sayer in BDG.predecessors(node):
-            # print '=================', node, sayer
             t = length.get(sayer, {node: -1}).get(node, -1)
             if t!=-1 and t<=T:
                 ngv += BDG[sayer][node]['weight']*math.pow(p, t)
         dic[node] = (dcv, ngv)
-        print str(node) + ',' + str(dcv) + ',' + str(ngv)
+        user = poi.find_one({'id': node}, ['screen_name'])
+        print str(node) + ',' + user['screen_name']+ ',' + str(dcv) + ',' + str(ngv)
     return dic
 
 
@@ -148,4 +150,4 @@ print BDG.number_of_edges()
 print BDG.number_of_nodes()
 # print nx.average_shortest_path_length(BDG)
 
-print centrality(BDG, FDG, 0.2, 3)
+centrality(BDG, FDG, 0.2, 3)
