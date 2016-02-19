@@ -56,6 +56,7 @@ def pearson(x, y):
         ydiff2 += ydiff*ydiff
     return diffprod/math.sqrt(xdiff2*ydiff2)
 
+
 def mean_bin(list_x, list_y, linear_bins=False):
     # the returned values are raw values, not logarithmic values
     size = len(list_x)
@@ -172,7 +173,6 @@ def rmse(predict, truth):
     return RMSE
 
 
-'''Plot PDF'''
 def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     data = drop_zeros(data)
     # plt.gcf()
@@ -186,25 +186,15 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
-    # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
-    # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
     if fit_start!=fit_end:
         list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
         ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
-    # data = outstrength
-    # list_x, list_y = pdf(data, linear_bins=True)
-    # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
-    # ax = plt.gca()
-    # list_x, list_y = pdf(data)
-    # ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
-    # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
-    # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
     ax.set_xlim(xmin=1)
-    ax.set_ylim(ymax=2)
+    ax.set_ylim(ymax=1)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
@@ -218,7 +208,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=40)
+        bins = np.linspace(xmin, xmax, num=38)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(
@@ -268,6 +258,37 @@ def plot_pdf_two_data(lista, listb, min_x=None, max_x=None, label1='x_1', label2
     # plt.savefig('echelon-smaple-'+field+'.eps')
     # plt.clf()
     plt.show()
+
+
+def plot_pdf_mul_data(lists, denots, labels=None, min_x=None, max_x=None):
+    lists = [drop_zeros(a) for a in lists]
+    if labels is None:
+        labels = ['x'+str(i+1) for i in xrange(len(lists))]
+    if not max_x:
+        max_x = max([np.amax(lista) for lista in lists])
+    if not min_x:
+        min_x = min([np.amin(lista) for lista in lists])
+
+    list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=True)
+    plt.plot(list_x, list_y, denots[0], label=labels[0])
+
+    for i in xrange(len(lists[1:])):
+        ax = plt.gca()
+        list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=True)
+        ax.plot(list_x, list_y, denots[i+1], label=labels[i+1])
+    ax.set_xlabel('x')
+    ax.set_ylabel('p(x)')
+    # ax.set_xlim(xmin=1)
+    # ax.set_ylim(ymax=1)
+    # ax.set_title('Comparison of PDF of Echelon and Sample on '+field)
+    handles, labels = ax.get_legend_handles_labels()
+    leg = ax.legend(handles, labels, loc=0)
+    leg.draw_frame(True)
+    ax.set_autoscale_on(True)
+    # plt.savefig('echelon-smaple-'+field+'.eps')
+    # plt.clf()
+    plt.show()
+
 
 def plot_whole_network(DG):
     # pos = random_layout(DG)
