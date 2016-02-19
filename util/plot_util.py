@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from networkx import *
 from sklearn.metrics import mean_squared_error
+from matplotlib import cm
+import matplotlib as mpl
+import pandas as pd
 
 
 def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
@@ -299,4 +302,49 @@ def plot_whole_network(DG):
     # pos = spectral_layout(DG)
     # plt.title('Plot of Network')
     draw(DG, pos)
+    plt.show()
+
+
+def color_wheel():
+    fig = plt.figure()
+    display_axes = fig.add_axes([0.1,0.1,0.8,0.8], projection='polar')
+    display_axes._direction = 2*np.pi ## This is a nasty hack - using the hidden field to
+                                      ## multiply the values such that 1 become 2*pi
+                                      ## this field is supposed to take values 1 or -1 only!!
+    norm = mpl.colors.Normalize(0.0, 2*np.pi)
+    # Plot the colorbar onto the polar axis
+    # note - use orientation horizontal so that the gradient goes around
+    # the wheel rather than centre out
+    quant_steps = 2056
+    cb = mpl.colorbar.ColorbarBase(display_axes, cmap=cm.get_cmap('hsv',quant_steps),
+                                       norm=norm,
+                                       orientation='horizontal')
+    # aesthetics - get rid of border and axis labels
+    cb.outline.set_visible(False)
+    display_axes.set_axis_off()
+    display_axes.set_rlim([-1,1])
+    plt.show() # Replace with plt.savefig if you want to save a file
+
+
+def color_bars(colorlist, colorcounts):
+    countsum = 0.0
+    statis = [0.0]*len(colorlist)
+    for i in colorcounts:
+        countsum += 1
+        statis[i-1] += 1
+    list_y = np.array([value/countsum for value in statis])
+    list_x = np.array([i for i in xrange(len(colorlist))])
+    fig, ax = plt.subplots()
+    bars = ax.bar(list_x+0.1, list_y, 0.8)
+    for i in xrange(len(colorlist)):
+        bars[i].set_color(colorlist[i])
+        bars[i].set_linewidth(1)
+        bars[i].set_edgecolor('k')
+    ax.set_xticks(list_x + 0.5)
+    # plt.xticks(list_x + 0.5)
+    ax.set_xticklabels([str(i+1) for i in list_x], fontsize = 10, rotation=90)
+    #Set descriptions:
+    ax.set_title("Color Choice Preference( No." +str(len(colorcounts)) +')')
+    ax.set_ylabel('Color choice (%)')
+    ax.set_xlabel('Color ID')
     plt.show()

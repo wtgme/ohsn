@@ -122,13 +122,13 @@ def centrality(BDG, FDG, p, T):
         print str(node) + ',' + str(dcv) + ',' + str(ngv)
     return dic
 
-
+db_name = 'young'
 # tweet_ret_times('fed')
-extract_friend_subnetwork('random')
-extract_behavior_subnetwork('random')
+extract_friend_subnetwork(db_name)
+extract_behavior_subnetwork(db_name)
 
 print 'original network'
-FDG = netutil.load_network('random', 'snet')
+FDG = netutil.load_network(db_name, 'snet')
 print FDG.number_of_edges()
 print FDG.number_of_nodes()
 
@@ -139,7 +139,7 @@ print FDG.number_of_nodes()
 print nx.average_shortest_path_length(FDG)
 
 # print 'original network'
-# BDG = netutil.load_behavior_network('fed', 'sbnet')
+# BDG = netutil.load_behavior_network(db_name, 'sbnet')
 # print BDG.number_of_edges()
 # print BDG.number_of_nodes()
 #

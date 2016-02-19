@@ -15,9 +15,10 @@ import pymongo
 import networkx as nx
 import util.plot_util as plot
 import math
-from colormath.color_objects import LabColor, sRGBColor
+from colormath.color_objects import LabColor, sRGBColor, AdobeRGBColor
 from colormath.color_diff import delta_e_cie2000
 from colormath.color_conversions import convert_color
+import pickle
 
 
 def get_field_values(db_name, field):
@@ -62,20 +63,62 @@ def cate_color(colors, standards):
     return color_index
 
 
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
+
+def rgbstandards(standards):
+    rgblist = []
+    for lab in standards:
+        rgb = convert_color(lab, sRGBColor, target_illuminant='d50')
+        rgblist.append(rgb.get_rgb_hex())
+    return rgblist
+
+
+def rmdefault(clist):
+    return [co for co in clist if co!='C0DEED']
+
+
 def color_dis(dbname, colorname):
     background = get_field_values(dbname, colorname)
+    print most_common(background)
     standers = color_wheel()
     return cate_color(background, standers)
 
 
-randomc = color_dis('random', 'profile_background_color')
-youngc = color_dis('young', 'profile_background_color')
-fedc = color_dis('fed', 'profile_background_color')
-plot.plot_pdf_two_data(randomc, fedc)
+standers = color_wheel()
+# print cate_color(['C0DEED'], standers)
+rgbstan = rgbstandards(standers)
+rgbstan[-1] = '#FFFFFF'
+
+
+# randomc = get_field_values('random', 'profile_background_color')
+# youngc = get_field_values('young', 'profile_background_color')
+# fedc = get_field_values('fed', 'profile_background_color')
+# pickle.dump(randomc, open("randomc.p", "wb"))
+# pickle.dump(youngc, open("youngc.p", "wb"))
+# pickle.dump(fedc, open("fedc.p", "wb"))
+
+
+randomc = pickle.load(open("randomc.p", "rb"))
+youngc = pickle.load(open("youngc.p", "rb"))
+fedc = pickle.load(open("fedc.p", "rb"))
+
+randomc = rmdefault(randomc)
+youngc = rmdefault(youngc)
+fedc = rmdefault(fedc)
+
+randomci = cate_color(randomc, standers)
+youngci = cate_color(youngc, standers)
+fedci = cate_color(fedc, standers)
+
+# plot.color_bars(rgbstan, fedci)
+
+# plot.plot_pdf_two_data(randomc, fedc)
 
 # plot.plot_pdf_mul_data([randomc, youngc, fedc], ['--bo', '--r*', '--k+'], ['random', 'younger', 'ed'])
 
-http://stackoverflow.com/questions/14095849/calculating-the-analogous-color-with-python
+# http://stackoverflow.com/questions/14095849/calculating-the-analogous-color-with-python
     
 # get_field_values('fed', 'followers_count')
 # get_field_values('fed', 'friends_count')
