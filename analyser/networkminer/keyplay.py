@@ -29,14 +29,14 @@ def extract_friend_subnetwork(db_name):
                     ("follower", pymongo.ASCENDING)],
                             unique=True)
     # index = 0
+    userl1 = set([])
     for user in poi.find({'level': 1}, ['id']):
-        # index += 1
-        # print index
-        print user['id']
-        for rel in net.find({'user': user['id']}):
+        # print user['id']
+        userl1.add(user['id'])
+    for user in userl1:
+        for rel in net.find({'user': user}):
             follower = rel['follower']
-            count = poi.count({'id': follower, 'level':1})
-            if count > 0:
+            if follower in userl1:
                 try:
                     tem.insert(rel)
                 except pymongo.errors.DuplicateKeyError:
@@ -54,17 +54,17 @@ def extract_behavior_subnetwork(db_name, relationship=None):
                              ("statusid", pymongo.ASCENDING),
                              ('created_at', pymongo.ASCENDING)],
                             unique=True)
-    # index = 0
+    userl1 = set([])
     for user in poi.find({'level': 1}, ['id']):
-        # index += 1
-        # print index
-        find_cri = {'id0': user['id']}
-        if relationship != None:
+        userl1.add(user['id'])
+    find_cri = {}
+    if relationship != None:
             find_cri['relationship'] = relationship
+    for user in userl1:
+        find_cri['id0'] = user
         for rel in net.find(find_cri):
             follower = rel['id1']
-            count = poi.count({'id': follower, 'level':1})
-            if count > 0:
+            if follower in userl1:
                 try:
                     tem.insert(rel)
                 except pymongo.errors.DuplicateKeyError:
@@ -125,7 +125,7 @@ def centrality(BDG, FDG, p, T):
 
 db_name = 'young'
 # tweet_ret_times('fed')
-extract_friend_subnetwork(db_name)
+# extract_friend_subnetwork(db_name)
 extract_behavior_subnetwork(db_name)
 
 print 'original network'
