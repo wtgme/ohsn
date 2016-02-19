@@ -347,4 +347,6 @@ def color_bars(colorlist, colorcounts):
     ax.set_title("Color Choice Preference( No." +str(len(colorcounts)) +')')
     ax.set_ylabel('Color choice (%)')
     ax.set_xlabel('Color ID')
+    ax.set_xlim(xmax=len(colorlist))
+    ax.grid(True)
     plt.show()

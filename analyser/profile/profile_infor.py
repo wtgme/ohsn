@@ -5,6 +5,10 @@ Created on 13:56, 18/02/16
 @author: wt
 
 Compare the difference from their profile information
+
+
+Background color ----> "profile_background_color": "EBEBEB"
+Theme color ----> "profile_link_color": "990000"
 """
 
 import sys
@@ -76,7 +80,8 @@ def rgbstandards(standards):
 
 
 def rmdefault(clist):
-    return [co for co in clist if co!='C0DEED']
+    # Theme color: 0084B4 Background color: C0DEED
+    return [co for co in clist if co!='0084B4']
 
 
 def color_dis(dbname, colorname):
@@ -92,9 +97,9 @@ rgbstan = rgbstandards(standers)
 rgbstan[-1] = '#FFFFFF'
 
 
-# randomc = get_field_values('random', 'profile_background_color')
-# youngc = get_field_values('young', 'profile_background_color')
-# fedc = get_field_values('fed', 'profile_background_color')
+# randomc = get_field_values('random', 'profile_link_color')
+# youngc = get_field_values('young', 'profile_link_color')
+# fedc = get_field_values('fed', 'profile_link_color')
 # pickle.dump(randomc, open("randomc.p", "wb"))
 # pickle.dump(youngc, open("youngc.p", "wb"))
 # pickle.dump(fedc, open("fedc.p", "wb"))

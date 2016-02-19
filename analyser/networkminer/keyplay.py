@@ -32,6 +32,7 @@ def extract_friend_subnetwork(db_name):
     for user in poi.find({'level': 1}, ['id']):
         # index += 1
         # print index
+        print user['id']
         for rel in net.find({'user': user['id']}):
             follower = rel['follower']
             count = poi.count({'id': follower, 'level':1})
