@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 
 
 
-
 '''Connecting db and collections'''
 db1 = dbutil.db_connect_no_auth('stream')
 sample_poi = db1['poi_sample']

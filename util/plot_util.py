@@ -42,24 +42,6 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def pearson(x, y):
-    # calculate the pearson correlation of two list
-    n = len(x)
-    avg_x = float(sum(x))/n
-    avg_y = float(sum(y))/n
-    print 'The means of two lists:', avg_x, avg_y
-    diffprod = 0.0
-    xdiff2 = 0.0
-    ydiff2 = 0.0
-    for idx in range(n):
-        xdiff = x[idx] - avg_x
-        ydiff = y[idx] - avg_y
-        diffprod += xdiff*ydiff
-        xdiff2 += xdiff*xdiff
-        ydiff2 += ydiff*ydiff
-    return diffprod/math.sqrt(xdiff2*ydiff2)
-
-
 def mean_bin(list_x, list_y, linear_bins=False):
     # the returned values are raw values, not logarithmic values
     size = len(list_x)
