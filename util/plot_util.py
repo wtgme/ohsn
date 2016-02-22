@@ -16,32 +16,6 @@ import matplotlib as mpl
 import pandas as pd
 
 
-def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
-    if not xmax:
-        xmax = max(data)
-    if not xmin:
-        xmin = min(data)
-    if linear_bins:
-        bins = range(int(xmin), int(xmax))
-    else:
-        log_min_size = np.log10(xmin)
-        log_max_size = np.log10(xmax)
-        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
-        bins = np.unique(
-                np.floor(
-                    np.logspace(
-                        log_min_size, log_max_size, num=number_of_bins)))
-    hist, edges = np.histogram(data, bins, density=True)
-    bin_centers = (edges[1:]+edges[:-1])/2.0
-    new_x, new_y = [], []
-    # filter_limit = np.amax(hist) * 0.01
-    for index in xrange(len(hist)):
-        if hist[index] != 0:
-            new_x.append(bin_centers[index])
-            new_y.append(hist[index])
-    return new_x, new_y
-
-
 def mean_bin(list_x, list_y, linear_bins=False):
     # the returned values are raw values, not logarithmic values
     size = len(list_x)
@@ -158,6 +132,65 @@ def rmse(predict, truth):
     return RMSE
 
 
+def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
+    if not xmax:
+        xmax = max(data)
+    if not xmin:
+        xmin = min(data)
+    if linear_bins:
+        bins = range(int(xmin), int(xmax))
+    else:
+        log_min_size = np.log10(xmin)
+        log_max_size = np.log10(xmax)
+        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+        bins = np.unique(
+                np.floor(
+                    np.logspace(
+                        log_min_size, log_max_size, num=number_of_bins)))
+    hist, edges = np.histogram(data, bins, density=True)
+    bin_centers = (edges[1:]+edges[:-1])/2.0
+    new_x, new_y = [], []
+    # filter_limit = np.amax(hist) * 0.01
+    for index in xrange(len(hist)):
+        if hist[index] != 0:
+            new_x.append(bin_centers[index])
+            new_y.append(hist[index])
+    return new_x, new_y
+
+
+def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
+    if not xmax:
+        xmax = max(data)
+    if not xmin:
+        xmin = min(data)
+    if linear_bins:
+        # bins = range(int(xmin), int(xmax))
+        bins = np.linspace(xmin, xmax, num=50)
+        # bins = np.unique(
+        #         np.floor(
+        #             np.linspace(
+        #                 xmin, xmax, num=30)))
+    else:
+        log_min_size = np.log10(xmin)
+        log_max_size = np.log10(xmax)
+        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+        bins = np.unique(
+                np.floor(
+                    np.logspace(
+                        log_min_size, log_max_size, num=number_of_bins)))
+    hist, edges = np.histogram(data, bins, density=True)
+    # print np.sum(hist*np.diff(edges))
+    # hist = hist / hist.sum()
+    bin_centers = (edges[1:]+edges[:-1])/2.0
+    new_x, new_y = [], []
+    filter_limit = np.amax(hist) * 0.01
+    for index in xrange(len(hist)):
+        if hist[index] >= filter_limit:
+            new_x.append(bin_centers[index])
+            new_y.append(hist[index])
+    return new_x, new_y
+
+
 def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     data = drop_zeros(data)
     # plt.gcf()
@@ -184,39 +217,6 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
     plt.show()
-
-
-def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
-    if not xmax:
-        xmax = max(data)
-    if not xmin:
-        xmin = min(data)
-    if linear_bins:
-        # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=38)
-        # bins = np.unique(
-        #         np.floor(
-        #             np.linspace(
-        #                 xmin, xmax, num=30)))
-    else:
-        log_min_size = np.log10(xmin)
-        log_max_size = np.log10(xmax)
-        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
-        bins = np.unique(
-                np.floor(
-                    np.logspace(
-                        log_min_size, log_max_size, num=number_of_bins)))
-    hist, edges = np.histogram(data, bins, density=True)
-    # print np.sum(hist*np.diff(edges))
-    # hist = hist / hist.sum()
-    bin_centers = (edges[1:]+edges[:-1])/2.0
-    new_x, new_y = [], []
-    filter_limit = np.amax(hist) * 0.01
-    for index in xrange(len(hist)):
-        if hist[index] >= filter_limit:
-            new_x.append(bin_centers[index])
-            new_y.append(hist[index])
-    return new_x, new_y
 
 
 def plot_pdf_two_data(lista, listb, min_x=None, max_x=None, label1='x_1', label2='x_2'):
@@ -254,19 +254,19 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x
     if not min_x:
         min_x = min([np.amin(lista) for lista in lists])
 
-    list_x, list_y = pdf_ada_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
+    list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
 
     for i in xrange(len(lists[1:])):
         ax = plt.gca()
-        list_x, list_y = pdf_ada_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
+        list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
         ax.plot(list_x, list_y, denots[i+1], label=labels[i+1])
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+    # ax.set_xscale("log")
+    # ax.set_yscale("log")
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
-    ax.set_xlim(xmin=1)
-    ax.set_ylim(ymax=1)
+    # ax.set_xlim(xmin=1)
+    # ax.set_ylim(ymax=1)
     ax.set_title('Comparison of probability density function on '+field)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)

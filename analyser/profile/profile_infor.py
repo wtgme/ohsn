@@ -242,7 +242,7 @@ def feature_stat():
         print statis_util.z_test(randoms, feds)
         print statis_util.z_test(youngs, feds)
         print statis_util.z_test(youngs, randoms)
-        plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], False)
+        plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], True)
 
 feature_stat()
 

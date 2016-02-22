@@ -23,7 +23,7 @@ def z_test(list1, list2):
 
 def comm_stat(lista):
     # return the min, max, mean and std
-    return round(np.min(lista),2), round(np.max(lista),2), round(np.mean(lista), 2), round(np.std(lista),2)
+    return round(np.amin(lista), 2), round(np.amax(lista), 2), round(np.mean(lista), 2), round(np.std(lista),2)
 
 
 def mode(lst):
