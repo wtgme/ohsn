@@ -11,7 +11,8 @@ import math
 
 
 def z_test(list1, list2):
-    n1, n2 = list1.shape[0], list2.shape[0]
+    # z-test for two lists
+    n1, n2 = len(list1), len(list2)
     mu1, mu2 = np.mean(list1), np.mean(list2)
     s1, s2 = np.std(list1), np.std(list2)
     z = (mu1-mu2)/(np.sqrt(s1**2/n1 + s2**2/n2))
@@ -21,11 +22,12 @@ def z_test(list1, list2):
 
 
 def comm_stat(lista):
-    return np.min(lista), np.max(lista), np.mean(lista), np.std(lista)
+    # return the min, max, mean and std
+    return round(np.min(lista),2), round(np.max(lista),2), round(np.mean(lista), 2), round(np.std(lista),2)
 
 
-def most_common(lst):
-    # find the most common item in list
+def mode(lst):
+    # find the mode of a list
     return max(set(lst), key=lst.count)
 
 
@@ -34,7 +36,6 @@ def pearson(x, y):
     n = len(x)
     avg_x = float(sum(x))/n
     avg_y = float(sum(y))/n
-    print 'The means of two lists:', avg_x, avg_y
     diffprod = 0.0
     xdiff2 = 0.0
     ydiff2 = 0.0
