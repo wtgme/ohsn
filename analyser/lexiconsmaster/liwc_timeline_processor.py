@@ -53,8 +53,11 @@ def process(poi, timelines, level):
                 text = mgrex.sub('', text)
                 text = hgrex.sub('', text)
                 text = ugrex.sub('', text)
+                text = text.strip()
+                if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                    text += '.'
                 textmass = textmass + " " + text.lower()
-
+            # print ' '.join(textmass.split())
             result = Liwc.summarize_document(liwc, ' '.join(textmass.split()))
             # print result
             poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
@@ -65,7 +68,7 @@ def process(poi, timelines, level):
 
 if __name__ == '__main__':
     '''Connecting db and collections'''
-    db = dbutil.db_connect_no_auth('young')
+    db = dbutil.db_connect_no_auth('random')
     sample_poi = db['com']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 

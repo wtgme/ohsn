@@ -5,6 +5,7 @@ Created on 14:47, 09/02/16
 @author: wt
 
 This script is to stream all evens about a user
+Cannot detect the change of user. Disgard
 """
 
 from twython import TwythonStreamer
@@ -27,7 +28,7 @@ class user_stream(TwythonStreamer):
         print status_code
 
 
-def store_data(data, db):
+def store_data(data):
     # data['scrapted_at'] = datetime.datetime.strptime(datetime.datetime.now(), '%a %b %d %H:%M:%S +0000 %Y')
     # db.insert(data)
     print data
@@ -47,4 +48,4 @@ OAUTH_TOKEN_SECRET = config.get('credentials1', 'oath_token_secret')
 print('loaded configuation')
 
 stream = user_stream(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-stream.user(user_id=[4465792575])
+stream.user(user_id=4718137715)

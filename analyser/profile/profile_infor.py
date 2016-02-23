@@ -144,8 +144,8 @@ def color_compare():
     # http://stackoverflow.com/questions/14095849/calculating-the-analogous-color-with-python
 
 
-def feature_stat():
-    fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+def liwc_feature_stat():
+    # fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
     fields = ['liwc_anal.result.WC',
               'liwc_anal.result.WPS',
               'liwc_anal.result.Sixltr',
@@ -258,7 +258,155 @@ def feature_stat():
               + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], True)
 
-feature_stat()
+
+
+def liwc_feature_stat():
+    # fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+    fields = ['liwc_anal.result.WC',
+              'liwc_anal.result.WPS',
+              'liwc_anal.result.Sixltr',
+              'liwc_anal.result.Dic',
+              # 'liwc_anal.result.Numerals',
+              'liwc_anal.result.funct',
+              'liwc_anal.result.pronoun',
+              'liwc_anal.result.ppron',
+              'liwc_anal.result.i',
+              'liwc_anal.result.we',
+              'liwc_anal.result.you',
+              'liwc_anal.result.shehe',
+              'liwc_anal.result.they',
+              'liwc_anal.result.ipron',
+              'liwc_anal.result.article',
+              'liwc_anal.result.verb',
+              'liwc_anal.result.auxverb',
+              'liwc_anal.result.past',
+              'liwc_anal.result.present',
+              'liwc_anal.result.future',
+              'liwc_anal.result.adverb',
+              'liwc_anal.result.preps',
+              'liwc_anal.result.conj',
+              'liwc_anal.result.negate',
+              'liwc_anal.result.quant',
+              'liwc_anal.result.number',
+              'liwc_anal.result.swear',
+              'liwc_anal.result.social',
+              'liwc_anal.result.family',
+              'liwc_anal.result.friend',
+              'liwc_anal.result.humans',
+              'liwc_anal.result.affect',
+              'liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad',
+              'liwc_anal.result.cogmech',
+              'liwc_anal.result.insight',
+              'liwc_anal.result.cause',
+              'liwc_anal.result.discrep',
+              'liwc_anal.result.tentat',
+              'liwc_anal.result.certain',
+              'liwc_anal.result.inhib',
+              'liwc_anal.result.incl',
+              'liwc_anal.result.excl',
+              'liwc_anal.result.percept',
+              'liwc_anal.result.see',
+              'liwc_anal.result.hear',
+              'liwc_anal.result.feel',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.sexual',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.relativ',
+              'liwc_anal.result.motion',
+              'liwc_anal.result.space',
+              'liwc_anal.result.time',
+              'liwc_anal.result.work',
+              'liwc_anal.result.achieve',
+              'liwc_anal.result.leisure',
+              'liwc_anal.result.home',
+              'liwc_anal.result.money',
+              'liwc_anal.result.relig',
+              'liwc_anal.result.death',
+              'liwc_anal.result.assent',
+              'liwc_anal.result.nonfl',
+              'liwc_anal.result.filler',
+              'liwc_anal.result.Period',
+              'liwc_anal.result.Comma',
+              'liwc_anal.result.Colon',
+              'liwc_anal.result.SemiC',
+              'liwc_anal.result.QMark',
+              'liwc_anal.result.Exclam',
+              'liwc_anal.result.Dash',
+              'liwc_anal.result.Quote',
+              'liwc_anal.result.Apostro',
+              'liwc_anal.result.Parenth',
+              'liwc_anal.result.OtherP',
+              'liwc_anal.result.AllPct']
+    fedsa = get_mlvs_field_values('fed', 'liwc_anal.result.WC', 'liwc_anal.result')
+    randomsa = get_mlvs_field_values('random', 'liwc_anal.result.WC', 'liwc_anal.result')
+    youngsa = get_mlvs_field_values('young', 'liwc_anal.result.WC', 'liwc_anal.result')
+    for field in fields:
+        print '=====================', field
+        keys = field.split('.')
+        feds = get_sublevel_values(fedsa, keys[2])
+        randoms = get_sublevel_values(randomsa, keys[2])
+        youngs = get_sublevel_values(youngsa, keys[2])
+
+        comm = statis_util.comm_stat(feds)
+        print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3]) + '\\\\'
+        comm = statis_util.comm_stat(randoms)
+        print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        comm = statis_util.comm_stat(youngs)
+        print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+
+        z = statis_util.z_test(randoms, feds)
+        print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, feds)
+        print 'z-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, randoms)
+        print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], True)
+
+
+def profile_feature_stat():
+    fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+    for field in fields:
+        print '=====================', field
+        feds = get_field_values('fed', field)
+        randoms = get_field_values('random', field)
+        youngs = get_field_values('young', field)
+
+        comm = statis_util.comm_stat(feds)
+        print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3]) + '\\\\'
+        comm = statis_util.comm_stat(randoms)
+        print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        comm = statis_util.comm_stat(youngs)
+        print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+
+        z = statis_util.z_test(randoms, feds)
+        print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, feds)
+        print 'z-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, randoms)
+        print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], False)
+
+
+
+liwc_feature_stat()
 
 
 # get_field_values('fed', 'friends_count')
