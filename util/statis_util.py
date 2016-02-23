@@ -18,7 +18,7 @@ def z_test(list1, list2):
     z = (mu1-mu2)/(np.sqrt(s1**2/n1 + s2**2/n2))
     from scipy.stats import norm
     pval = 2*(1 - norm.cdf(abs(z)))
-    return round(z, 3), round(pval, 4)
+    return n1, n2, round(z, 3), round(pval, 4)
 
 
 def comm_stat(lista):

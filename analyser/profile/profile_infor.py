@@ -145,7 +145,7 @@ def color_compare():
 
 
 def feature_stat():
-    # fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+    fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
     fields = ['liwc_anal.result.WC',
               'liwc_anal.result.WPS',
               'liwc_anal.result.Sixltr',
@@ -236,12 +236,26 @@ def feature_stat():
         feds = get_sublevel_values(fedsa, keys[2])
         randoms = get_sublevel_values(randomsa, keys[2])
         youngs = get_sublevel_values(youngsa, keys[2])
-        print statis_util.comm_stat(feds)
-        print statis_util.comm_stat(randoms)
-        print statis_util.comm_stat(youngs)
-        print statis_util.z_test(randoms, feds)
-        print statis_util.z_test(youngs, feds)
-        print statis_util.z_test(youngs, randoms)
+
+        comm = statis_util.comm_stat(feds)
+        print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3]) + '\\\\'
+        comm = statis_util.comm_stat(randoms)
+        print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        comm = statis_util.comm_stat(youngs)
+        print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+
+        z = statis_util.z_test(randoms, feds)
+        print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, feds)
+        print 'z-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.z_test(youngs, randoms)
+        print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], True)
 
 feature_stat()
