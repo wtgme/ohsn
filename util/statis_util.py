@@ -8,6 +8,7 @@ The util for statistics
 """
 import numpy as np
 import math
+from scipy.stats import ks_2samp
 
 
 def z_test(list1, list2):
@@ -19,6 +20,11 @@ def z_test(list1, list2):
     from scipy.stats import norm
     pval = 2*(1 - norm.cdf(abs(z)))
     return n1, n2, round(z, 3), round(pval, 4)
+
+
+def ks_test(list1, list2):
+    d, p = ks_2samp(list1, list2)
+    return len(list1), len(list2), round(d, 3), round(p, 4)
 
 
 def comm_stat(lista):

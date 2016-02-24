@@ -32,7 +32,7 @@ app_id_friend, twitter_friend = twutil.twitter_auth()
 
 
 def trans_seed_to_poi(seed_list, poi_db):
-    global app_id_look, twitter_look
+    app_id_look, twitter_look = twutil.twitter_auth()
     infos = []
     try:
         # print seed_list
@@ -55,9 +55,11 @@ def trans_seed_to_poi(seed_list, poi_db):
             try:
                 poi_db.insert(profile)
             except pymongo.errors.DuplicateKeyError:
-                print profile['id_str']
+                # print profile['id_str']
                 poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
                                                     }}, upsert=False)
+        else:
+            print profile['screen_name'], 'disappeared'
 
 
 def handle_following_rate_limiting():

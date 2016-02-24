@@ -9,6 +9,8 @@ Compare the difference from their profile information
 
 Background color ----> "profile_background_color": "EBEBEB"
 Theme color ----> "profile_link_color": "990000"
+Profile image small block ----> profile_image_url
+Profile image top ----> "profile_banner_url"
 """
 
 import sys
@@ -362,6 +364,8 @@ def liwc_feature_stat():
         comm = statis_util.comm_stat(youngs)
         print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
               + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        print '\\hline'
+
 
         z = statis_util.z_test(randoms, feds)
         print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
@@ -372,6 +376,18 @@ def liwc_feature_stat():
         z = statis_util.z_test(youngs, randoms)
         print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+
+        print '\\hline'
+        z = statis_util.ks_test(randoms, feds)
+        print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, feds)
+        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, randoms)
+        print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+
         plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], True)
 
 
@@ -392,6 +408,8 @@ def profile_feature_stat():
         comm = statis_util.comm_stat(youngs)
         print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
               + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        print '\\hline'
+
 
         z = statis_util.z_test(randoms, feds)
         print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
@@ -402,11 +420,22 @@ def profile_feature_stat():
         z = statis_util.z_test(youngs, randoms)
         print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+
+        print '\\hline'
+        z = statis_util.ks_test(randoms, feds)
+        print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, feds)
+        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, randoms)
+        print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], False)
 
 
 
-liwc_feature_stat()
+profile_feature_stat()
 
 
 # get_field_values('fed', 'friends_count')
