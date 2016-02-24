@@ -22,6 +22,16 @@ def eliminate_non_ed(poidb, netdb):
             netdb.delete_many({'follower': user['id']})
 
 
+def tran_pro(poidb):
+    level1 = poidb.count({'level':1})
+    level2 = poidb.count({'level':2})
+    allsum = 0.0
+    for user in poidb.find({'level':1}):
+        allsum += user['followers_count']
+        allsum += user['friends_count']
+    return level2/allsum
+
+
 def count_eds(poidb):
     print 'start count'
     count = 0
@@ -42,10 +52,11 @@ def trans(db1, db2):
                 pass
 
 
-db = dbt.db_connect_no_auth('ed2')
+db = dbt.db_connect_no_auth('ed')
 ed_poi1 = db['poi_ed']
-
-db2 = dbt.db_connect_no_auth('fed')
-ed_poi2 = db2['poi']
-trans(ed_poi1, ed_poi2)
+print tran_pro(ed_poi1)
+# db2 = dbt.db_connect_no_auth('fed')
+# ed_poi2 = db2['poi']
+# trans(ed_poi1, ed_poi2)
 # ed_net = db['net_ed_all']
+

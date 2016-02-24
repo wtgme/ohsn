@@ -117,7 +117,7 @@ def handle_following_rate_limiting():
             break
 
 
-def snowball_following(poi_db, net_db, level):
+def snowball_following(poi_db, net_db, level, check='N'):
     global app_id_friend, twitter_friend
     start_level = level
     while True:
@@ -173,7 +173,17 @@ def snowball_following(poi_db, net_db, level):
                         profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
                         # print 'user profile:', index_begin, index_end, len(profiles)
                         for profile in profiles:
-                            if profiles_check.check_en(profile):
+                            if check is 'ED':
+                                check_flag = profiles_check.check_ed(profile)
+                            elif check is 'YG':
+                                check_flag = profiles_check.check_girl(profile)
+                            elif check is 'DP':
+                                check_flag = profiles_check.check_depression(profile)
+                            elif check is 'RD':
+                                check_flag = profiles_check.check_random()
+                            else:
+                                check_flag = profiles_check.check_en(profile)
+                            if check_flag:
                                 profile['following_prelevel_node'] = user['id_str']
                                 profile['level'] = start_level+1
                                 try:

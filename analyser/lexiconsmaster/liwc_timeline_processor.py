@@ -68,7 +68,7 @@ def process(poi, timelines, level):
 
 if __name__ == '__main__':
     '''Connecting db and collections'''
-    db = dbutil.db_connect_no_auth('random')
+    db = dbutil.db_connect_no_auth('fed')
     sample_poi = db['com']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 

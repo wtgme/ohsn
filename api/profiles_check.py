@@ -14,18 +14,25 @@ import util.db_util as dbt
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import re
-from collections import Counter
-from gensim import corpora, models, similarities
+import random, time
 
 
-bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
-dio_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
+ed_bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
+ed_keywords_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
                 'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm',
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
 
+young_bio_list = set(['year', 'yrs', 'years'])
+young_list = set(['girl', 'girls'])
+
+depression_list = set(['depression', 'depressed', 'depressing', 'suicide', 'sadness', 'suicidal',
+                      'anxiety', 'death', 'angry', 'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'])
+
+
 stop = stopwords.words('english')
+random.seed(time.time())
 
 def tokenizer_stoprm(dscp):
     dscp = dscp.strip().lower()
@@ -41,42 +48,16 @@ def tokenizer_stoprm(dscp):
     return new_tokens
 
 
-# documents = ["Human machine interface for lab abc computer applications",
-#                  "A survey of user opinion of computer system response time",
-#                  "The EPS user interface management system",
-#                  "System and human system engineering testing of EPS",
-#                  "Relation of user perceived response time to error measurement",
-#                  "The generation of random binary unordered trees",
-#                  "The intersection graph of paths in trees",
-#                  "Graph minors IV Widths of trees and well quasi ordering",
-#                  "Graph minors A survey"]
-# stoplist = set('for a of the and to in'.split())
-# texts = [[word for word in document.lower().split() if word not in stoplist]
-#              for document in documents]
-# from collections import defaultdict
-# frequency = defaultdict(int)
-# for text in texts:
-#     for token in text:
-#         frequency[token] += 1
-#
-# texts = [[token for token in text if frequency[token] > 1]
-#          for text in texts]
-#
-# from pprint import pprint   # pretty-printer
-# pprint(texts)
-
-
-
 def check_ed_profile(profile):
     profile = profile.strip().lower().replace("-", "").replace('_', '')
     tokens = tokenizer_stoprm(profile)
     bio_flag, dio_flag = False, False
     for token in tokens:
-        if token in bio_list:
+        if token in ed_bio_list:
             bio_flag = True
-        if token in dio_list: # for single words
+        if token in ed_keywords_list: # for single words
             dio_flag = True
-    for dio in dio_list:
+    for dio in ed_keywords_list:
         if ' ' in dio and dio in profile: # for phrases
             dio_flag = True
 
@@ -84,6 +65,38 @@ def check_ed_profile(profile):
         return True
     else:
         return False
+
+
+def check_young_profile(profile):
+    profile = profile.strip().lower().replace("-", "").replace('_', '')
+    tokens = tokenizer_stoprm(profile)
+    bio_flag, dio_flag = False, False
+    for token in tokens:
+        if token in young_bio_list:
+            bio_flag = True
+        if token in young_list: # for single words
+            dio_flag = True
+    for dio in young_list:
+        if ' ' in dio and dio in profile: # for phrases
+            dio_flag = True
+
+    if bio_flag and dio_flag:
+        return True
+    else:
+        return False
+
+
+def check_depression_profile(profile):
+    profile = profile.strip().lower().replace("-", "").replace('_', '')
+    tokens = tokenizer_stoprm(profile)
+    dio_flag = False
+    for token in tokens:
+        if token in depression_list: # for single words
+            dio_flag = True
+    for dio in depression_list:
+        if ' ' in dio and dio in profile: # for phrases
+            dio_flag = True
+    return dio_flag
 
 
 def check_en(user):
@@ -98,6 +111,31 @@ def check_ed(user):
     if user['lang'] == 'en' and user['protected']==False and profile != None:
         # print check_ed_profile(profile)
         return check_ed_profile(profile)
+    else:
+        return False
+
+
+def check_girl(user):
+    profile = user['description']
+    if user['lang'] == 'en' and user['protected']==False and profile != None:
+        # print check_ed_profile(profile)
+        return check_young_profile(profile)
+    else:
+        return False
+
+
+def check_random():
+    # probability of level 1 to level 2 is 0.0162914951388, see data_refine.py in ed
+    if random.random() <= 0.0162914951388:
+        return True
+    else:
+        return False
+
+def check_depression(user):
+    profile = user['description']
+    if user['lang'] == 'en' and user['protected']==False and profile != None:
+        # print check_ed_profile(profile)
+        return check_depression_profile(profile)
     else:
         return False
 
@@ -129,7 +167,8 @@ def seed_all_profile(stream_db):
 
 
 # print 's' in 'sds'
-# print tokenizer_stoprm('''Bands•Blades•Suicidal•Depression•SelfHarm•EDNOS• Goal: 70/80 lbs''')
+# print stop
+# print tokenizer_stoprm('''RT @sociopxthicmind: Lacey #thinspo #thinspiration #goals I am https://t.co/ZHnt3roe4r''')
 
 # print 'harm' in dio_list
 # print profile_pos()
@@ -145,5 +184,5 @@ def seed_all_profile(stream_db):
 # print sentence
 # print tokenizer_stoprm(sentence)
 
-# print check_ed_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
+print check_random_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
 # print tokenizer_stoprm('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')

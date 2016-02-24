@@ -53,3 +53,6 @@ def pearson(x, y):
         ydiff2 += ydiff*ydiff
     return diffprod/math.sqrt(xdiff2*ydiff2)
 
+
+# print z_test([1,2,6,7,8,10,3,4,5,9], [1,2,3,4,5,6,7,8,9,10])
+# print ks_test([1,2,6,7,8,10,3,4,5,9], [1,2,3,4,5,6,7,8,9,10])

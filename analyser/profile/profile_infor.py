@@ -17,10 +17,7 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import util.db_util as dbt
-import pymongo
-import networkx as nx
 import util.plot_util as plot
-import math
 from colormath.color_objects import LabColor, sRGBColor, AdobeRGBColor
 from colormath.color_diff import delta_e_cie2000
 from colormath.color_conversions import convert_color
