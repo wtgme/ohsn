@@ -32,7 +32,6 @@ app_id_friend, twitter_friend = twutil.twitter_auth()
 
 
 def trans_seed_to_poi(seed_list, poi_db):
-    print len(seed_list)
     app_id_look, twitter_look = twutil.twitter_auth()
     infos = []
     try:
@@ -47,7 +46,6 @@ def trans_seed_to_poi(seed_list, poi_db):
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'trans_seed_to_poi',\
                 str(detail)
-    print len(infos)
     for profile in infos:
         # if profiles_preposs.check_ed(profile):
             # profile['following_prelevel_node'] = None
@@ -56,13 +54,14 @@ def trans_seed_to_poi(seed_list, poi_db):
             # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
             try:
                 poi_db.insert(profile)
+                seed_list.remove(profile['screen_name'])
             except pymongo.errors.DuplicateKeyError:
                 print profile['id_str']
                 poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
                                                     }}, upsert=False)
         else:
-            print profile['screen_name'], 'disappeared'
-
+            print profile['screen_name'], 'set protected from others'
+    print seed_list, 'deleted their accounts'
 
 def handle_following_rate_limiting():
     global app_id_friend, twitter_friend
@@ -178,11 +177,11 @@ def snowball_following(poi_db, net_db, level, check='N'):
                             if check is 'ED':
                                 check_flag = profiles_check.check_ed(profile)
                             elif check is 'YG':
-                                check_flag = profiles_check.check_girl(profile)
+                                check_flag = profiles_check.check_yg(profile)
                             elif check is 'DP':
                                 check_flag = profiles_check.check_depression(profile)
                             elif check is 'RD':
-                                check_flag = profiles_check.check_random(profile)
+                                check_flag = profiles_check.check_rd(profile)
                             else:
                                 check_flag = profiles_check.check_en(profile)
                             if check_flag:

@@ -128,7 +128,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
             while timelines:
                 store_tweets(timelines, timeline_collection)
-                params['max_id'] = timelines[-1]['id'] - 1
+                params['max_id'] = timelines[-1]['id']
 
                 while True:
                     try:

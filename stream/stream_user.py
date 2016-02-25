@@ -29,7 +29,7 @@ def extract_users(stream, user_info, size):
             for tweet in stream.find({'user_extracted':{'$exists': False}},
                                     ['id_str', 'user']).limit(min(1000, count, (size-csize))):
                 user = tweet['user']
-                if profiles_check.check_random(user) == True:
+                if profiles_check.check_rd(user) == True:
                     try:
                         user_info.insert(user)
                     except pymongo.errors.DuplicateKeyError:

@@ -35,6 +35,11 @@ ed_net.create_index([("user", pymongo.ASCENDING),
                             unique=True)
 
 
+# ed_seed = ['taylorswift13', 'ArianaGrande', 'Meghan_Trainor', 'selenagomez']
+# following.trans_seed_to_poi(ed_seed, ed_poi)
+
+# ed_seed = profiles_check.seed_all_profile(stream_users)
+# following.trans_seed_to_poi(ed_seed, ed_poi)
 
 while True:
     ed_seed = profiles_check.seed_all_profile(stream_users)
@@ -47,12 +52,15 @@ while True:
         following.trans_seed_to_poi(ed_seed, ed_poi)
         continue
 
-# while True:
-#     level = 1
-#     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-#     following_flag = following.snowball_following(ed_poi, ed_net, level, 'YG')
-#     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-#     follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'YG')
-#     count = ed_poi.count()
-#     if (following_flag == False and follower_flag == False) or count>3393:
-#         break
+level = 1
+while True:
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+    following_flag = following.snowball_following(ed_poi, ed_net, level, 'YG')
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+    follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'YG')
+    count = ed_poi.count()
+    if (following_flag == False and follower_flag == False) or count>3393:
+        break
+    else:
+        level += 1
+        continue

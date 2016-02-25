@@ -18,6 +18,23 @@ def eliminate_non_ed(poidb, netdb):
             netdb.delete_many({'follower': user['id']})
 
 
+def delete_user(poidb, netdb):
+    count = poidb.count()
+    for user in poidb.find({'level':3}).limit(count-3380):
+        poidb.delete_one({'id': user['id']})
+        netdb.delete_many({'user': user['id']})
+        netdb.delete_many({'follower': user['id']})
+
+
+def delete_net(poidb, netdb):
+    user_set = set()
+    for user in poidb.find():
+        user_set.add(user['id'])
+    for record in netdb.find():
+        if (record['user'] not in user_set) or (record['follower'] not in user_set):
+            netdb.delete_one({'_id': record['_id']})
+
+
 def tran_pro(poidb):
     level1 = poidb.count({'level':1})
     level2 = poidb.count({'level':2})
@@ -48,9 +65,10 @@ def trans(db1, db2):
                 pass
 
 
-db = dbt.db_connect_no_auth('ed')
-ed_poi1 = db['poi_ed']
-print tran_pro(ed_poi1)
+db = dbt.db_connect_no_auth('rd')
+ed_poi1 = db['com']
+netbd = db['net']
+delete_net(ed_poi1, netbd)
 # db2 = dbt.db_connect_no_auth('fed')
 # ed_poi2 = db2['poi']
 # trans(ed_poi1, ed_poi2)

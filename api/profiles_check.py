@@ -6,7 +6,7 @@ Created on 17:18, 09/01/16
 
 Analysis what terms are frequently used in EDs, their friends and followers
 The user information in tweet may be not the state-of-the-art.
-
+girl name: https://www.ssa.gov/oact/babynames/decades/names2000s.html
 """
 import sys
 sys.path.append('..')
@@ -14,7 +14,16 @@ import util.db_util as dbt
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import re
+import os
 import random, time
+
+def read_name():
+    names = set()
+    with open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'name.txt')) as fo:
+        for line in fo.readlines():
+            tokens = line.split('\t')
+            names.add(tokens[3].strip())
+    return names
 
 
 ed_bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
@@ -24,16 +33,18 @@ ed_keywords_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimi
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
 
-young_bio_list = set(['year', 'yrs', 'years'])
-young_list = set(['girl', 'girls'])
-
 depression_list = set(['depression', 'depressed', 'depressing', 'suicide',
                        'sadness', 'suicidal', 'anxiety', 'death', 'angry',
                        'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'])
 
+name_pat = re.compile('^(?P<first>[A-Z][a-z]+) (?P<second>[A-Z][a-z]+)$')
+age_pat = re.compile('(([1-2][0-9]\s*(year|y/o|yrs|yo))|(^[1-2][0-9]\D)|([;|,•=-]+\s*[1-2][0-9]\s*[;|,•=-]+))', re.IGNORECASE)
+#(?P<age>[1-2][0-9])\s*(year|y/o|yrs|yo)  "[;|,•=-]?\s*(?P<age>[1-2][0-9])\s*([;=|,•-]?)"  '(\D|^)(?P<age>[1-2][0-9])\D'
 
 stop = stopwords.words('english')
 random.seed(time.time())
+
+girl_names = read_name()
 
 def tokenizer_stoprm(dscp):
     dscp = dscp.strip().lower()
@@ -59,26 +70,6 @@ def check_ed_profile(profile):
         if token in ed_keywords_list: # for single words
             dio_flag = True
     for dio in ed_keywords_list:
-        if ' ' in dio and dio in profile: # for phrases
-            dio_flag = True
-
-    if bio_flag and dio_flag:
-        return True
-    else:
-        return False
-
-
-def check_young_profile(profile):
-    profile = profile.strip().lower().replace("-", "").replace('_', '')
-    tokens = tokenizer_stoprm(profile)
-    bio_flag, dio_flag = False, False
-    for token in tokens:
-        if token in young_bio_list:
-            bio_flag = True
-        if token in young_list: # for single words
-            dio_flag = True
-    bio_flag = True
-    for dio in young_list:
         if ' ' in dio and dio in profile: # for phrases
             dio_flag = True
 
@@ -117,22 +108,22 @@ def check_ed(user):
         return False
 
 
-def check_girl(user):
+def check_yg(user):
     profile = user['description']
-    if user['lang'] == 'en' and user['protected']==False and profile != None:
-        # print check_ed_profile(profile)
-        return check_young_profile(profile)
+    if user['lang'] == 'en' and user['protected']==False and user['verified']==False:
+        name_match = name_pat.search(user['name'].strip())
+        # age_match = age_pat.search(profile.strip())
+        if name_match and (name_match.group('first') in girl_names):
+            return True
     else:
         return False
 
 
-def check_random(user):
+def check_rd(user):
     if user['lang'] == 'en' and user['protected']==False:
     # probability of level 1 to level 2 is 0.0162914951388, see data_refine.py in ed
-        if random.random() <= 0.02:
+        if random.random() <= 0.0163:
             return True
-        else:
-            return False
     else:
         return False
 
@@ -171,6 +162,7 @@ def seed_all_profile(stream_db):
                          {'$set':{"seeded": True}}, upsert=False)
     return seed_user
 
+# print girl_names, len(girl_names)
 
 # print 's' in 'sds'
 # print stop

@@ -14,7 +14,7 @@ import util.db_util as dbt
 
 print 'Job starts.......'
 '''Connecting db and user collection'''
-db = dbt.db_connect_no_auth('fed')
+db = dbt.db_connect_no_auth('rd')
 sample_user = db['com']
 sample_time = db['timeline']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
@@ -30,5 +30,5 @@ print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connect T
 
 
 # stream_timeline(sample_user, sample_time, 1, 2)
-timelines.stream_timeline(sample_user, sample_time, 1, 3)
+timelines.stream_timeline(sample_user, sample_time, 1, 10000)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
