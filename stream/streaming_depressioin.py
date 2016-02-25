@@ -39,7 +39,7 @@ OAUTH_TOKEN_SECRET = config.get('credentials1', 'oath_token_secret')
 print('loaded configuation')
 
 # spin up database
-DBNAME = 'ed'
+DBNAME = 'dp'
 COLLECTION = 'stream'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
@@ -120,11 +120,8 @@ while True:
             # 'proana', 'anamia', 'thinspo',
             #                                            'EDProbs', 'askanamia', 'bonespo',
             #                                            'legspo'
-            'eating disorder', 'anorexia', 'bulimia', 'anorexic',
-                'bulimic', 'anorexia nervosa', 'thinspo',
-                'bulemia', 'bulimia nervosa',
-                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
-                'askanamia', 'bonespo', 'legspo'
+            'depression', 'anxiety', 'paranoia',
+            'ocd', 'ptsd'
                 ])
 
     except Exception as detail:

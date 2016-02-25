@@ -7,11 +7,8 @@ Created on 10:20, 02/02/16
 2. Snowball friends and followers of seed users
 """
 
-import profiles_preposs
-import ed_following_snowball
-import ed_follower_snowball
+from api import follower, following, profiles_check
 import util.db_util as dbt
-import util.twitter_util as twutil
 import datetime
 import time
 import pymongo
@@ -41,15 +38,15 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 
 while True:
     try:
-        ed_seed = profiles_preposs.seed_all_profile(echelon_poi)
+        ed_seed = profiles_check.seed_all_profile(echelon_poi)
         # print ed_seed
-        ed_following_snowball.trans_seed_to_poi(ed_seed, ed_poi)
+        following.trans_seed_to_poi(ed_seed, ed_poi)
         level = 1
         while True:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-            following_flag = ed_following_snowball.snowball_following(ed_poi, ed_net, level)
+            following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-            follower_flag = ed_follower_snowball.snowball_follower(ed_poi, ed_net, level)
+            follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
             if following_flag==False and follower_flag==False:
                 break
             else:

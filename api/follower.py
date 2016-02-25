@@ -142,7 +142,7 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                             elif check is 'DP':
                                 check_flag = profiles_check.check_depression(profile)
                             elif check is 'RD':
-                                check_flag = profiles_check.check_random()
+                                check_flag = profiles_check.check_random(profile)
                             else:
                                 check_flag = profiles_check.check_en(profile)
                             if check_flag:

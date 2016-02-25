@@ -5,18 +5,14 @@ Created on 12:10 AM, 2/7/16
 @author: tw
 """
 
-import profiles_preposs
+from api import profiles_check
 import util.db_util as dbt
-# import util.twitter_util as twutil
-import datetime
-import time
 import pymongo
-
 
 
 def eliminate_non_ed(poidb, netdb):
     for user in poidb.find({'level':1}):
-        if not profiles_preposs.check_ed(user):
+        if not profiles_check.check_ed(user):
             poidb.delete_one({'id': user['id']})
             netdb.delete_many({'user': user['id']})
             netdb.delete_many({'follower': user['id']})
@@ -36,7 +32,7 @@ def count_eds(poidb):
     print 'start count'
     count = 0
     for user in poidb.find({}):
-        if profiles_preposs.check_ed(user):
+        if profiles_check.check_ed(user):
             print user['screen_name']
             count += 1
     print count
@@ -45,7 +41,7 @@ def count_eds(poidb):
 def trans(db1, db2):
     db2.create_index("id", unique=True)
     for user in db1.find({}):
-        if profiles_preposs.check_ed(user) == True:
+        if profiles_check.check_ed(user) == True:
             try:
                 db2.insert(user)
             except pymongo.errors.DuplicateKeyError:

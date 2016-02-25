@@ -254,19 +254,19 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x
     if not min_x:
         min_x = min([np.amin(lista) for lista in lists])
 
-    list_x, list_y = pdf_ada_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
+    list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
 
     for i in xrange(len(lists[1:])):
         ax = plt.gca()
-        list_x, list_y = pdf_ada_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
+        list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
         ax.plot(list_x, list_y, denots[i+1], label=labels[i+1])
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+    # ax.set_xscale("log")
+    # ax.set_yscale("log")
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
-    ax.set_xlim(xmin=1)
-    ax.set_ylim(ymax=1)
+    # ax.set_xlim(xmin=1)
+    # ax.set_ylim(ymax=1)
     ax.set_title('Comparison of probability density function on '+field)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)

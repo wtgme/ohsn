@@ -13,7 +13,7 @@ import util.db_util as dbt
 import util.twitter_util as twutil
 import pymongo
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
-import profiles_preposs
+from api import profiles_check
 import datetime
 import time
 
@@ -144,7 +144,7 @@ def check_users(stream, user_info):
             for tweet in stream.find({'user_extracted':{'$exists': False}},
                                     ['id_str', 'user']).limit(min(100, count)):
                 user = tweet['user']
-                if profiles_preposs.check_ed(user) == True:
+                if profiles_check.check_ed(user) == True:
                     try:
                         user_info.insert(user)
                     except pymongo.errors.DuplicateKeyError:

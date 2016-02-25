@@ -27,8 +27,9 @@ ed_keywords_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimi
 young_bio_list = set(['year', 'yrs', 'years'])
 young_list = set(['girl', 'girls'])
 
-depression_list = set(['depression', 'depressed', 'depressing', 'suicide', 'sadness', 'suicidal',
-                      'anxiety', 'death', 'angry', 'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'])
+depression_list = set(['depression', 'depressed', 'depressing', 'suicide',
+                       'sadness', 'suicidal', 'anxiety', 'death', 'angry',
+                       'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'])
 
 
 stop = stopwords.words('english')
@@ -76,6 +77,7 @@ def check_young_profile(profile):
             bio_flag = True
         if token in young_list: # for single words
             dio_flag = True
+    bio_flag = True
     for dio in young_list:
         if ' ' in dio and dio in profile: # for phrases
             dio_flag = True
@@ -124,12 +126,16 @@ def check_girl(user):
         return False
 
 
-def check_random():
+def check_random(user):
+    if user['lang'] == 'en' and user['protected']==False:
     # probability of level 1 to level 2 is 0.0162914951388, see data_refine.py in ed
-    if random.random() <= 0.0162914951388:
-        return True
+        if random.random() <= 0.02:
+            return True
+        else:
+            return False
     else:
         return False
+
 
 def check_depression(user):
     profile = user['description']
@@ -184,5 +190,5 @@ def seed_all_profile(stream_db):
 # print sentence
 # print tokenizer_stoprm(sentence)
 
-print check_random_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
+# print check_random_profile('''anorexic//borderline//fairytales//disney lover//current weight: 54.1kg//height: 163cm//diet coke and cigarettes''')
 # print tokenizer_stoprm('''16, ana, mia, self harm, OCD. CW 100 GW 100 UGW 95. LW 94 HW 110 height 5'3. I will help you reach your goal. DM me to chat about EDs or self harm''')

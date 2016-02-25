@@ -9,13 +9,7 @@ Compare the common users in Echelon and Ed data set
 import sys
 sys.path.append('..')
 import util.db_util as dbt
-import util.twitter_util as twutil
-import pymongo
-from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
-import datetime
-import time
-import math
-import profiles_preposs
+from api import profiles_check
 
 db = dbt.db_connect_no_auth('ed')
 ed_poi = db['poi_ed']
@@ -36,7 +30,7 @@ ech_poi = db['poi_ed_all']
 index = 1
 for poi in ech_poi.find({}):
     poi_id = poi['id']
-    if profiles_preposs.check_ed(poi):
+    if profiles_check.check_ed(poi):
         count = ed_poi.count({'id':poi_id})
         if count < 1:
             print index, poi_id, poi['screen_name']

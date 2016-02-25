@@ -29,7 +29,7 @@ def extract_users(stream, user_info, size):
             for tweet in stream.find({'user_extracted':{'$exists': False}},
                                     ['id_str', 'user']).limit(min(1000, count, (size-csize))):
                 user = tweet['user']
-                if profiles_check.check_en(user) == True:
+                if profiles_check.check_random(user) == True:
                     try:
                         user_info.insert(user)
                     except pymongo.errors.DuplicateKeyError:
@@ -40,11 +40,12 @@ def extract_users(stream, user_info, size):
 
 
 # '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('young')
+db = dbt.db_connect_no_auth('random')
 stream = db['stream']
 # Extracting users from stream files, add index for id to avoid duplicated users
+db = dbt.db_connect_no_auth('rd')
 user_info = db['poi']
 user_info.create_index("id", unique=True)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from sample streams'
 
-extract_users(stream, user_info, 3393)
+extract_users(stream, user_info, 33)

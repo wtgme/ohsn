@@ -432,7 +432,7 @@ def profile_feature_stat():
 
 
 
-profile_feature_stat()
+liwc_feature_stat()
 
 
 # get_field_values('fed', 'friends_count')
