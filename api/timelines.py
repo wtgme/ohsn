@@ -153,7 +153,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                         break
                     except TwythonError as detail:
                         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(detail) + ' sleep 20 Sec'
-                        time.sleep(20)
+                        timeline_remain = handle_timeline_rate_limiting()
                         continue
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
