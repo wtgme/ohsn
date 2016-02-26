@@ -71,20 +71,20 @@ def handle_following_rate_limiting():
             rate_limit_status = twitter_friend.get_application_rate_limit_status(resources=['friends'])
         except TwythonRateLimitError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Cannot test due to last incorrect connection, change Twitter APP ID'
+                  'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_friend)
             app_id_friend, twitter_friend = twutil.twitter_change_auth(app_id_friend)
             continue
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Author Error, change Twitter APP ID'
+                  'Author Error, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_friend)
             app_id_friend, twitter_friend = twutil.twitter_change_auth(app_id_friend)
             continue
         except TwythonError as detail:
             # if 'Twitter API returned a 503' in str(detail):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  '503 ERROE, sleep 30 Sec'
+                  '503 ERROE, sleep 30 Sec', str(detail)
             time.sleep(30)
             continue
             # else:
@@ -92,7 +92,8 @@ def handle_following_rate_limiting():
             #     exit(1)
         except Exception as detail:
             # if '110' in str(detail) or '104' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec' + str(detail)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Connection timed out, sleep 30 Sec' + str(detail)
             time.sleep(30)
             continue
             # else:
@@ -148,6 +149,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                         except TwythonAuthError as detail:
                             # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
                             # if 'Twitter API returned a 401' in detail:
+                            print 'snowball_following TwythonAuthError unhandled exception', str(detail)
                             time.sleep(20)
                             continue
                         except TwythonError as detail:

@@ -58,25 +58,29 @@ def handle_timeline_rate_limiting():
         try:
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
         except TwythonRateLimitError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
         except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Author Error, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Author Error, change Twitter APP ID', str(detail)
             twutil.release_app(app_id)
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
         except TwythonError as detail:
             # if 'Twitter API returned a 503' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec' + str(detail)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  '503 ERROE, sleep 30 Sec' + str(detail)
             time.sleep(30)
             continue
             # else:
             #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
             #     exit(1)
         except Exception as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Timeline Unhandled ERROR, EXIT()', str(detail)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Timeline Unhandled ERROR, EXIT()', str(detail)
             time.sleep(30)
             continue
             # exit(2)
@@ -109,7 +113,8 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
             latest = last_tweet['id']
     except IndexError as detail:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+              'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
         pass
 
     #  loop to get the timelines of user, and update the reset and remaining

@@ -87,5 +87,6 @@ def get_users_info(stream_user_list):
                 time.sleep(30)
                 continue
             else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'get_users_info_exception', str(detail)
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
+                    'get_users_info_exception', str(detail)
                 break

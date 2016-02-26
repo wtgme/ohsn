@@ -40,18 +40,21 @@ def handle_follower_rate_limiting():
         try:
             rate_limit_status = twitter_follower.get_application_rate_limit_status(resources=['followers'])
         except TwythonRateLimitError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot test due to last incorrect connection, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_follower)
             app_id_follower, twitter_follower = twutil.twitter_change_auth(app_id_follower)
             continue
         except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Author Error, change Twitter APP ID'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Author Error, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_follower)
             app_id_follower, twitter_follower = twutil.twitter_change_auth(app_id_follower)
             continue
         except TwythonError as detail:
             # if 'Twitter API returned a 503' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  '503 ERROE, sleep 30 Sec', str(detail)
             time.sleep(30)
             continue
             # else:
@@ -59,7 +62,8 @@ def handle_follower_rate_limiting():
             #     exit(1)
         except Exception as detail:
             # if '110' in str(detail) or '104' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Connection timed out, sleep 30 Sec', str(detail)
             time.sleep(30)
             continue
             # else:

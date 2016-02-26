@@ -22,13 +22,13 @@ def handle_friendship_rate_limiting():
             rate_limit_status = twitter_friendship.get_application_rate_limit_status(resources=['friendships'])
         except TwythonRateLimitError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Cannot test due to last incorrect connection, change Twitter APP ID'
+                  'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_friendship)
             app_id_friendship, twitter_friendship = twutil.twitter_change_auth(app_id_friendship)
             continue
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Author Error, change Twitter APP ID'
+                  'Author Error, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_friendship)
             app_id_friendship, twitter_friendship = twutil.twitter_change_auth(app_id_friendship)
             continue
@@ -40,7 +40,8 @@ def handle_friendship_rate_limiting():
                 continue
         except Exception as detail:
             # if '110' in str(detail) or '104' in str(detail):
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec' + str(detail)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Connection timed out, sleep 30 Sec' + str(detail)
             time.sleep(30)
             continue
             # else:
@@ -87,16 +88,19 @@ def get_friendship_info(user1, user2):
 
 
 def generate_network(user_list, filename):
-    with open(filename+time.strftime("-%Y%m%d%H%M%S")+'.net') as fw:
+    with open(filename, 'w') as fw:
         size = len(user_list)
         for i in xrange(size):
             user1 = user_list[i]
             for j in xrange(i+1, size):
                 user2 = user_list[j]
+                print 'Test', i*size+j, user1, user2
                 friendships = get_friendship_info(user1, user2)
                 if friendships['relationship']['source']['following']:
+                    print str(user2)+'\t'+str(user1)+'\n'
                     fw.write(str(user2)+'\t'+str(user1)+'\n')
                 if friendships['relationship']['source']['followed_by']:
+                    print str(user1)+'\t'+str(user2)+'\n'
                     fw.write(str(user1)+'\t'+str(user2)+'\n')
 
 
