@@ -65,16 +65,18 @@ def handle_timeline_rate_limiting():
             app_id, twitter = twutil.twitter_change_auth(app_id)
             continue
         except TwythonError as detail:
-            if 'Twitter API returned a 503' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
-                exit(1)
+            # if 'Twitter API returned a 503' in str(detail):
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec' + str(detail)
+            time.sleep(30)
+            continue
+            # else:
+            #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
+            #     exit(1)
         except Exception as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
-            exit(2)
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Timeline Unhandled ERROR, EXIT()', str(detail)
+            time.sleep(30)
+            continue
+            # exit(2)
 
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])

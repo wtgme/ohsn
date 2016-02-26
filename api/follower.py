@@ -49,21 +49,21 @@ def handle_follower_rate_limiting():
             app_id_follower, twitter_follower = twutil.twitter_change_auth(app_id_follower)
             continue
         except TwythonError as detail:
-            if 'Twitter API returned a 503' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
-                exit(1)
+            # if 'Twitter API returned a 503' in str(detail):
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + '503 ERROE, sleep 30 Sec'
+            time.sleep(30)
+            continue
+            # else:
+            #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Unhandled ERROR, EXIT()', str(detail)
+            #     exit(1)
         except Exception as detail:
-            if '110' in str(detail) or '104' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'handle_follower_rate_limiting Unhandled ERROR, EXIT()', str(detail)
-                exit(2)
+            # if '110' in str(detail) or '104' in str(detail):
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
+            time.sleep(30)
+            continue
+            # else:
+            #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'handle_follower_rate_limiting Unhandled ERROR, EXIT()', str(detail)
+            #     exit(2)
 
         reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])
         remaining = int(rate_limit_status['resources']['followers']['/followers/ids']['remaining'])
@@ -109,14 +109,21 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                             break
                         except TwythonAuthError as detail:
                             # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                            if 'Twitter API returned a 401' in detail:
-                                continue
+                            # if 'Twitter API returned a 401' in detail:
+                            print 'snowball_follower TwythonAuthError unhandled expcetions', str(detail)
+                            time.sleep(30)
+                            continue
                         except TwythonError as detail:
-                            if 'Received response with content-encoding: gzip' in detail:
-                                continue
+                            # if 'Received response with content-encoding: gzip' in detail:
+                            print 'snowball_follower TwythonError unhandled expcetions', str(detail)
+                            time.sleep(30)
+                            continue
                         except Exception as detail:
                             print 'snowball_follower unhandled expcetions', str(detail)
-                            break
+                            time.sleep(30)
+                            continue
+                        #     print 'snowball_follower unhandled expcetions', str(detail)
+                        #     break
 
                     # Eliminate the users that have been scraped
                     # '''Get all documents in stream collections'''

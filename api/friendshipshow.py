@@ -39,13 +39,13 @@ def handle_friendship_rate_limiting():
                 time.sleep(30)
                 continue
         except Exception as detail:
-            if '110' in str(detail) or '104' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec'
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'friendship show Unhandled ERROR, EXIT()', str(detail)
-                exit(1)
+            # if '110' in str(detail) or '104' in str(detail):
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connection timed out, sleep 30 Sec' + str(detail)
+            time.sleep(30)
+            continue
+            # else:
+            #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'friendship show Unhandled ERROR, EXIT()', str(detail)
+            #     exit(1)
 
         reset = float(rate_limit_status['resources']['friendships']['/friendships/show']['reset'])
         remaining = int(rate_limit_status['resources']['friendships']['/friendships/show']['remaining'])
@@ -98,3 +98,6 @@ def generate_network(user_list, filename):
                     fw.write(str(user2)+'\t'+str(user1)+'\n')
                 if friendships['relationship']['source']['followed_by']:
                     fw.write(str(user1)+'\t'+str(user2)+'\n')
+
+
+# print get_friendship_info(726972960, 606011299)
