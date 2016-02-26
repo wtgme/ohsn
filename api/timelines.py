@@ -21,7 +21,10 @@ Created on 20:34, 26/10/15
     using limit and project to reduce burden of Mongodb
 3. Change Twitter App ID when without engouth rate
 4. Target users are those have timelines more than 3000
-
+since_id: Returns results with an ID greater than (that is, more recent than) the specified ID.
+max_id: Returns results with an ID less than (that is, older than) or equal to the specified ID.
+Each crawl is the most recent 200 timelines.
+Set the oldest one in each crawl as max_id.
 """
 
 
@@ -130,7 +133,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
             while timelines:
                 store_tweets(timelines, timeline_collection)
-                params['max_id'] = timelines[-1]['id']
+                params['max_id'] = timelines[-1]['id']-1
 
                 while True:
                     try:
