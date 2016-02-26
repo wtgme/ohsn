@@ -13,11 +13,13 @@ import datetime
 import time
 
 app_id_look, twitter_look = twutil.twitter_auth()
+lookup_remain = 0
+
 
 def handle_lookup_rate_limiting():
     global app_id_look, twitter_look
     while True:
-        # print '---------lookup rate handle------------------'
+        print '---------handle_lookup_rate_limiting------------------'
         try:
             rate_limit_status = twitter_look.get_application_rate_limit_status(resources=['users'])
         except TwythonRateLimitError as detail:
@@ -63,16 +65,18 @@ def handle_lookup_rate_limiting():
             continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
-            break
+            return remaining
 
 
 def get_users_info(stream_user_list):
-    global app_id_look, twitter_look
+    global app_id_look, twitter_look, lookup_remain
     infos = []
     while True:
-        handle_lookup_rate_limiting()
         try:
+            if lookup_remain == 0:
+                lookup_remain = handle_lookup_rate_limiting()
             infos = twitter_look.lookup_user(user_id=stream_user_list)
+            lookup_remain -= 1
             return infos
         except TwythonError as detail:
             if 'No user matches for specified terms' in str(detail):

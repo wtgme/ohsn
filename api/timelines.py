@@ -37,7 +37,7 @@ import time
 import pymongo
 
 app_id, twitter = twutil.twitter_auth()
-
+timeline_remain = 0
 
 def store_tweets(tweets_to_save, collection):
     """
@@ -54,6 +54,7 @@ def store_tweets(tweets_to_save, collection):
 # Test rate_limit is OK? If not, sleep till to next reset time
 def handle_timeline_rate_limiting():
     global app_id, twitter
+    print '-------------------handle_timeline_rate_limiting-----------'
     while True:
         try:
             rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
@@ -100,11 +101,11 @@ def handle_timeline_rate_limiting():
             continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
-            break
+            return remaining
 
 
 def get_user_timeline(user_id, user_collection, timeline_collection):
-    global app_id, twitter
+    global app_id, twitter, timeline_remain
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
         # crawl the recent timeline to the last stored timeline
@@ -121,9 +122,12 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     while True:
         # newest = None
         params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
-        handle_timeline_rate_limiting()
+
         try:
+            if timeline_remain == 0:
+                timeline_remain = handle_timeline_rate_limiting()
             timelines = twitter.get_user_timeline(**params)
+            timeline_remain -= 1
         except TwythonAuthError:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users'
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
@@ -142,8 +146,10 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
 
                 while True:
                     try:
-                        handle_timeline_rate_limiting()
+                        if timeline_remain == 0:
+                            timeline_remain = handle_timeline_rate_limiting()
                         timelines = twitter.get_user_timeline(**params)
+                        timeline_remain -= 1
                         break
                     except TwythonError as detail:
                         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(detail) + ' sleep 20 Sec'
@@ -182,3 +188,26 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
                                                              'timeline_scraped_times': timeline_scraped_times}},
                                    upsert=False)
 
+
+def monitor_timeline(user_collection, timeline_collection, scrapt_times):
+    while True:
+        count = user_collection.count({'$or':[{'timeline_scraped_times': {'$exists': False}},
+                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]})
+        if count == 0:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'finished'
+            break
+        else:
+            for user in user_collection.find({'$or':[{'timeline_scraped_times': {'$exists': False}},
+                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]},
+                                     {'id': 1}).limit(200):
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
+                get_user_timeline(user['id'], user_collection, timeline_collection)
+                # count = user_collection.count({"timeline_count": {'$gt': 3000}})
+                # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
+
+                # update timeline_scrapted_times and timeline_count fields
+                count_scraped = timeline_collection.count({'user.id': user['id']})
+                timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
+                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
+                                                             'timeline_scraped_times': timeline_scraped_times}},
+                                   upsert=False)

@@ -31,12 +31,13 @@ import lookup
 
 
 app_id_follower, twitter_follower = twutil.twitter_auth()
+follower_remain = 0
 
 
 def handle_follower_rate_limiting():
     global app_id_follower, twitter_follower
     while True:
-        # print '---------follower rate handle------------------'
+        print '---------handle_follower_rate_limiting------------------'
         try:
             rate_limit_status = twitter_follower.get_application_rate_limit_status(resources=['followers'])
         except TwythonRateLimitError as detail:
@@ -86,11 +87,11 @@ def handle_follower_rate_limiting():
             continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
-            break
+            return remaining
 
 
 def snowball_follower(poi_db, net_db, level, check='N'):
-    global app_id_follower, twitter_follower
+    global app_id_follower, twitter_follower, follower_remain
     start_level = level
     while True:
         count = poi_db.count({'level': start_level,
@@ -108,9 +109,11 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                 while next_cursor != 0:
                     params['cursor'] = next_cursor
                     while True:
-                        handle_follower_rate_limiting()
                         try:
+                            if follower_remain == 0:
+                                follower_remain = handle_follower_rate_limiting()
                             followers = twitter_follower.get_followers_ids(**params)
+                            follower_remain -= 1
                             break
                         except TwythonAuthError as detail:
                             # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
