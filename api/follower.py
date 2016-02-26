@@ -13,6 +13,7 @@ net_db:
     type:
         0: following
         1: follower.
+    The type field is not used in dynamic monitors.
 
 @author: wt
 """
