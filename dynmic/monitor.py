@@ -11,30 +11,22 @@ import datetime
 import pymongo
 from api import timelines, following
 import util.db_util as dbt
-import os
 import time
 from threading import Thread
-from apscheduler.schedulers.background import BackgroundScheduler
 
 
-def monitor_network():
+def monitor_network(time_index):
     datasets = ['ded', 'drd', 'dyg']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks'
     for dataset in datasets:
         db = dbt.db_connect_no_auth(dataset)
         sample_user = db['com']
+        sample_net = db['net']
         sample_user.create_index([('id', pymongo.ASCENDING)], unique=True)
-
-        user_set = set()
-        for user in sample_user.find({},['id']):
-            user_set.add(user['id'])
-
+        sample_net.create_index([('scraped_times', pymongo.ASCENDING)], unique=False)
         # crawl the current social network between users in a community
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks for ' + dataset
-        timestamp = time.strftime("-%Y%m%d%H%M%S")
-        out_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-                               'netfiles', dataset+timestamp+'.net')
-        following.monitor_friendships(user_set, out_path)
+        following.monitor_friendships(sample_user, sample_net, time_index)
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish network crawl for ' + dataset
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish networks crawl'
@@ -58,27 +50,64 @@ def monitor_timeline(time_index):
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish timlines crawl'
 
 
-# def check
+def check_change(time_index):
+    db = dbt.db_connect_no_auth('monitor')
+    changedb = db['changes']
+    datasets = ['ded', 'drd', 'dyg']
+    check_keys = ['description', 'friends_count', 'followers_count', 'statuses_count']
+    for dataset in datasets:
+        db = dbt.db_connect_no_auth(dataset)
+        sample_user = db['com']
+        sample_time = db['timeline']
+        changes = {'dataset': dataset}
+        # check profile changes, 'description', 'friends_count', 'followers_count', 'statuses_count'
+        for user in sample_user.find():
+            last_tweet = sample_time.find({'user.id':user['id']},
+                                          {'id':1, 'user':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
+            userc = last_tweet['user']
+            for key in check_keys:
+                if user[key] is not userc[key]:
+                    value = changes.get(key, 0)
+                    value += 1
+                    changes[key] = value
+        # check following changes among users
+        sample_net = db['net']
+        count = sample_net.count({'scraped_times': time_index})-sample_net.count({'scraped_times': time_index-1})
+        changes['net_changes'] = count
+        changes['scraped_at'] = datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')
+        changedb.insert(changes)
 
 
 def start_monitor():
-    global index
-    Thread(target=monitor_network).start()
-    Thread(target=monitor_timeline, args=[index]).start()
-    index += 1
-
-
-if __name__ == '__main__':
-    print 'Job starts.......'
     index = 1
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(start_monitor, 'interval', hours=24)
-    scheduler.start()
-    print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
-    try:
-        # This is here to simulate application activity (which keeps the main thread alive).
-        while True:
-            time.sleep(2)
-    except (KeyboardInterrupt, SystemExit):
-        # Not strictly necessary if daemonic mode is enabled but should be done if possible
-        scheduler.shutdown()
+    while True:
+        start = time.time()
+        t1 = Thread(target=monitor_network, args=[index])
+        t2 = Thread(target=monitor_timeline, args=[index])
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+        check_change(index)
+        finish = time.time()
+        during = finish - start
+        print 'TIME TO FINISH ONE MONITOR', during
+        time.sleep(24*60*60.0 - during)
+        index += 1
+
+start_monitor()
+
+# if __name__ == '__main__':
+#     print 'Job starts.......'
+#     index = 1
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(start_monitor, 'interval', hours=24)
+#     scheduler.start()
+#     print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+#     try:
+#         # This is here to simulate application activity (which keeps the main thread alive).
+#         while True:
+#             time.sleep(2)
+#     except (KeyboardInterrupt, SystemExit):
+#         # Not strictly necessary if daemonic mode is enabled but should be done if possible
+#         scheduler.shutdown()

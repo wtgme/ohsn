@@ -171,43 +171,22 @@ def snowball_following(poi_db, net_db, level, check='N'):
 
 # ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 
-def monitor_friendships(user_set, filename):
-    with open(filename, 'w') as fw:
-        index = 0
-        for userid in user_set:
-            index += 1
-            print str(index), 'user'
-            next_cursor = -1
-            params = {'user_id': userid, 'count': 5000}
-            while next_cursor != 0:
-                params['cursor'] = next_cursor
-                followees = get_followings(params)
-                # while True:
-                #     try:
-                #         if following_remain == 0:
-                #             following_remain = handle_following_rate_limiting()
-                #         followees = twitter_friend.get_friends_ids(**params)
-                #         following_remain -= 1
-                #         break
-                #     # except TwythonAuthError as detail:
-                #     #     # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                #     #     # if 'Twitter API returned a 401' in detail:
-                #     #     print 'snowball_following TwythonAuthError unhandled exception', str(detail)
-                #     #     time.sleep(20)
-                #     #     continue
-                #     except (TwythonError, TwythonAuthError) as detail:
-                #         # if 'Received response with content-encoding: gzip' in detail:
-                #         print 'snowball_following TwythonError unhandled exception', str(detail)
-                #         following_remain = handle_following_rate_limiting()
-                #         continue
-                #     except Exception as detail:
-                #         print 'snowball_following unhandled exception', str(detail)
-                #         time.sleep(20)
-                #         continue
-                followee_ids = followees['ids']
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', len(followee_ids), 'for user', str(userid)
-
-                for followee in followee_ids:
-                    if followee in user_set:
-                        fw.write(str(followee)+'\t'+str(userid)+'\n')
-                next_cursor = followees['next_cursor']
+def monitor_friendships(sample_user, sample_net, time_index):
+    user_set = set()
+    for user in sample_user.find({},['id']):
+        user_set.add(user['id'])
+    for userid in user_set:
+        next_cursor = -1
+        params = {'user_id': userid, 'count': 5000}
+        while next_cursor != 0:
+            params['cursor'] = next_cursor
+            followees = get_followings(params)
+            followee_ids = followees['ids']
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Monitor Processes followings', len(followee_ids), 'for user', str(userid)
+            for followee in followee_ids:
+                if followee in user_set:
+                    sample_net.insert({'user': followee, 'follower': userid,
+                                       'scraped_times': time_index, 'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+            next_cursor = followees['next_cursor']
+        sample_user.update({'id': userid}, {'$set':{'net_scraped_times': time_index}},
+                                   upsert=False)
