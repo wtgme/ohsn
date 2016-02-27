@@ -17,8 +17,8 @@ APP_SECRET = 'C0rbmJP0uKbuF6xcT6aR5vFOV9fS4L1965TKOH97pSqj3NJ1mP'
 OAUTH_TOKEN        = '3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G'
 OAUTH_TOKEN_SECRET = 'HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO'
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 ON_EXCEPTION_WAIT = 60*15
 
@@ -28,7 +28,7 @@ userid = 32343278
 
 while True:
     try:
-        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
         print str(reset)
@@ -51,9 +51,9 @@ while True:
             
         params = {'count':20, 'contributor_details':True, 'id':userid, 'since_id':None, 'include_rts':1}           
         print "timeline-call"    
-        response = twitter.get_user_timeline(**params)    
-        reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-        remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
+        response = timeline_twitter.get_user_timeline(**params)
+        reset = float(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
+        remaining = int(timeline_twitter.get_lastfunction_header('x-rate-limit-remaining'))
         print "main: user_timeline reset at " + str(reset)
         print "main: user_timeline remaining = " + str(remaining)
         # time.sleep(1)
@@ -70,7 +70,7 @@ while True:
         while True:
             try:               
                 print "getting rate_limit_status..."
-                rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+                rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
                 print "rate_limit_status returned..."
                 reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
                 remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
@@ -127,20 +127,20 @@ exit()
 #print twitter.get_lastfunction_header('x-rate-limit-reset')
 #print twitter.get_lastfunction_header('x-rate-limit-remaining')
 
-response = twitter.get_followers_ids(user_id=userid, count=10, cursor = -1)
+response = timeline_twitter.get_followers_ids(user_id=userid, count=10, cursor = -1)
 print "followers-call"
-print twitter.get_lastfunction_header('x-rate-limit-reset')
-print twitter.get_lastfunction_header('x-rate-limit-remaining')
+print timeline_twitter.get_lastfunction_header('x-rate-limit-reset')
+print timeline_twitter.get_lastfunction_header('x-rate-limit-remaining')
 
 #status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 #print "rate-limit-call"
 #print twitter.get_lastfunction_header('x-rate-limit-reset')
 #print twitter.get_lastfunction_header('x-rate-limit-remaining')
 
-response = twitter.get_friends_ids(user_id=userid, count=10, cursor = -1)
+response = timeline_twitter.get_friends_ids(user_id=userid, count=10, cursor = -1)
 print "friends-call"
-print twitter.get_lastfunction_header('x-rate-limit-reset')
-print twitter.get_lastfunction_header('x-rate-limit-remaining')
+print timeline_twitter.get_lastfunction_header('x-rate-limit-reset')
+print timeline_twitter.get_lastfunction_header('x-rate-limit-remaining')
 
 #status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 #print "rate-limit-call"

@@ -71,14 +71,14 @@ IDLETIME = 60*10 # 10 minutes
 #ERROR_LOG_FILENAME = 'log/TAPI_TimelineHarvester_ErrorLog_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.log'
 #errorfile = open(ERROR_LOG_FILENAME, 'w')
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 try:
-    rate_limit_status  = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+    rate_limit_status  = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
 except:
     print "Exception occured getting rate-limit-status sleeping till it MIGHT clear then exiting"
-    reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+    reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
     wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
     exit()
 
@@ -140,7 +140,7 @@ def handle_rate_limiting():
             try:
                 # This will crash if both app_staus remaining and home_status remaining are 0                
                 # rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
-                status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+                status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
                 app_status = status['resources']['application']['/application/rate_limit_status']
                 home_status = rate_limit_status['resources']['statuses']['/statuses/user_timeline']
                 if home_status['remaining'] == 0:
@@ -150,7 +150,7 @@ def handle_rate_limiting():
                 else:
                     return
             except TwythonRateLimitError, e:
-                reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
                 wait = max(reset - time.time(), 0) + 10 # addding 10 second pad                
                 error = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "TWYTHONRATEERROR\t handle_rate_limiting()" + ")\t" + str(e.__class__) +"\t" + str(e) + " Non rate-limit exception encountered. Sleeping for " + str(wait) + " before retrying\n" 
                 print error     
@@ -201,7 +201,7 @@ def get_user_timeline(user_id):
             
             handle_rate_limiting()
             #home = twitter.get_home_timeline(**params)
-            home = twitter.get_user_timeline(**params)
+            home = timeline_twitter.get_user_timeline(**params)
             
             if home:
                 while home:
@@ -216,7 +216,7 @@ def get_user_timeline(user_id):
                     handle_rate_limiting()
                     print "querying twitter for:" + str(user_id)
                             
-                    home = twitter.get_user_timeline(**params)
+                    home = timeline_twitter.get_user_timeline(**params)
                     
             else: 
                 # print "Ran out of tweets for the current username - setting last scrape time and AuthError = False"
@@ -226,7 +226,7 @@ def get_user_timeline(user_id):
         except TwythonRateLimitError, e:
             print "Rate-limit exception encountered. Sleeping for before retrying"
             print datetime.datetime.now().time()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
             time.sleep(wait)
         except TwythonAuthError, e:
@@ -238,7 +238,7 @@ def get_user_timeline(user_id):
             print error
 #            errorfile.write(error)
 #            errorfile.flush()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
             wait = 60
             print "setting auth error flag true; waiting for: " +  str(wait)
@@ -251,7 +251,7 @@ def get_user_timeline(user_id):
             if match:
                 poi.update({'id':user_id},{'$set':{"datetime_last_timeline_scrape": datetime.datetime.now(), 'timeline_auth_error_flag':True}}, upsert=False)
                 home = None
-                reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
                 wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
                 wait = 60
                 error = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "TWYTHONERROR\t get_user_timeline(" + str(user_id) + ")\t" + str(e.__class__) +"\t" + str(e) + " Non rate-limit exception encountered. Sleeping for " + str(wait) + " before retrying\n" 
@@ -267,7 +267,7 @@ def get_user_timeline(user_id):
 #                errorfile.write(error)
 #                errorfile.flush()
                 # time.sleep(ON_EXCEPTION_WAIT)
-                reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
                 wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
                 print "waiting till reset: " +  str(wait)
                 time.sleep(wait)

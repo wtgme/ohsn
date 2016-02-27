@@ -15,8 +15,8 @@ import util.db_util as dbt
 print 'Job starts.......'
 '''Connecting db and user collection'''
 db = dbt.db_connect_no_auth('rd')
-sample_user = db['com']
-sample_time = db['timeline']
+sample_user = db['tcom']
+sample_time = db['ttimeline']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
 sample_user.create_index([('timeline_scraped_times', pymongo.ASCENDING),
                           ('level', pymongo.ASCENDING)])

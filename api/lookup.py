@@ -10,10 +10,11 @@ sys.path.append('..')
 import util.twitter_util as twutil
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
+import pymongo
 import time
 
 app_id_look, twitter_look = twutil.twitter_auth()
-lookup_remain = 0
+lookup_remain, lookup_lock = 0, 1
 
 
 def handle_lookup_rate_limiting():
@@ -69,28 +70,61 @@ def handle_lookup_rate_limiting():
 
 
 def get_users_info(stream_user_list):
-    global app_id_look, twitter_look, lookup_remain
-    infos = []
-    while True:
+    global app_id_look, twitter_look, lookup_remain, lookup_lock
+    while lookup_lock:
         try:
-            if lookup_remain == 0:
+            lookup_lock = 0
+            # print 'lookup input', stream_user_list
+            if lookup_remain < 1:
                 lookup_remain = handle_lookup_rate_limiting()
             infos = twitter_look.lookup_user(user_id=stream_user_list)
             lookup_remain -= 1
+            lookup_lock = 1
+            # print 'lookup output', infos
             return infos
-        except TwythonError as detail:
-            if 'No user matches for specified terms' in str(detail):
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
-                      "\t cannot get user profiles for" , stream_user_list
-                return infos
-            elif '50' in str(detail):
-                time.sleep(10)
-                continue
-        except Exception as detail:
-            if '443' in str(detail):
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
-                    'get_users_info_exception', str(detail)
-                break
+        except TwythonRateLimitError:
+            lookup_lock = 0
+            lookup_remain = handle_lookup_rate_limiting()
+            lookup_lock = 1
+    # infos = []
+    # while True:
+    #     try:
+    #         if lookup_remain == 0:
+    #             lookup_remain = handle_lookup_rate_limiting()
+    #         infos = twitter_look.lookup_user(user_id=stream_user_list)
+    #         lookup_remain -= 1
+    #         return infos
+    #     except TwythonError as detail:
+    #         if 'No user matches for specified terms' in str(detail):
+    #             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + \
+    #                   "\t cannot get user profiles for" , stream_user_list
+    #             return infos
+    #         elif '50' in str(detail):
+    #             time.sleep(10)
+    #             continue
+    #     except Exception as detail:
+    #         if '443' in str(detail):
+    #             time.sleep(30)
+    #             continue
+    #         else:
+    #             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), \
+    #                 'get_users_info_exception', str(detail)
+    #             break
+
+
+def trans_seed_to_poi(seed_list, poi_db):
+    infos = get_users_info(seed_list)
+    for profile in infos:
+        if profile['lang'] == 'en' and profile['protected'] == False:
+            profile['level'] = 1
+            try:
+                poi_db.insert(profile)
+                seed_list.remove(profile['id'])
+            except pymongo.errors.DuplicateKeyError:
+                print 'Existing user:', profile['id_str']
+                seed_list.remove(profile['id'])
+                poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
+                                                    }}, upsert=False)
+        else:
+            print profile['screen_name'], 'set protected from others'
+    print seed_list, 'deleted their accounts'

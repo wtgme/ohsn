@@ -46,8 +46,8 @@ APP_SECRET = 'C0rbmJP0uKbuF6xcT6aR5vFOV9fS4L1965TKOH97pSqj3NJ1mP'
 OAUTH_TOKEN        = '3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G'
 OAUTH_TOKEN_SECRET = 'HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO'
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 GET_USER_TIMELINE_COUNT = 200
 ON_EXCEPTION_WAIT = 60*16
@@ -73,7 +73,7 @@ followercall_reset = ON_EXCEPTION_WAIT
 # on program initialisation get current rate info
 while True: 
     try:
-        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
+        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
         friendcall_reset  = float(rate_limit_status['resources']['friends']['/friends/ids']['reset'])
         friendcall_remaining = int(rate_limit_status['resources']['friends']['/friends/ids']['remaining'])   
         followercall_remaining = int(rate_limit_status['resources']['followers']['/followers/ids']['remaining'])
@@ -107,12 +107,12 @@ def  get_user_followers(userid, maxfollowers=5000):
                 #print datetime.datetime.now().time()            
                 time.sleep(wait)      
             
-            response =  twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
+            response =  timeline_twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
 
 	    #print "got response: "	
-            if twitter.get_lastfunction_header('x-rate-limit-reset') is not None:
-                followercall_reset  = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-                followercall_remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
+            if timeline_twitter.get_lastfunction_header('x-rate-limit-reset') is not None:
+                followercall_reset  = float(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
+                followercall_remaining = int(timeline_twitter.get_lastfunction_header('x-rate-limit-remaining'))
             else:
                 print "twitter.get_lastfunction_header is None!! Waiting on exception"
                 time.sleep(ON_EXCEPTION_WAIT)            
@@ -155,7 +155,7 @@ def  get_user_followers(userid, maxfollowers=5000):
                 while True:
                     try:               
                         print "getting rate_limit_status..."
-                        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
+                        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
                         print "rate_limit_status returned..."                                                
                         followercall_remaining = int(rate_limit_status['resources']['followers']['/followers/ids']['remaining'])
                         followercall_reset = float(rate_limit_status['resources']['followers']['/followers/ids']['reset'])        
@@ -213,11 +213,11 @@ def  get_user_followers(userid, maxfollowers=5000):
                 #print datetime.datetime.now().time()            
                 time.sleep(wait)      
             
-            response =  twitter.get_friends_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
+            response =  timeline_twitter.get_friends_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
 
-	    if twitter.get_lastfunction_header('x-rate-limit-reset') is not None:
-                friendcall_reset  = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-                friendcall_remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))            
+	    if timeline_twitter.get_lastfunction_header('x-rate-limit-reset') is not None:
+                friendcall_reset  = float(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
+                friendcall_remaining = int(timeline_twitter.get_lastfunction_header('x-rate-limit-remaining'))
             else:
                 print "twitter.get_lastfunction_header is None!! Waiting on exception"
                 time.sleep(ON_EXCEPTION_WAIT)      
@@ -258,7 +258,7 @@ def  get_user_followers(userid, maxfollowers=5000):
                 while True:
                     try:               
                         print "getting rate_limit_status..."
-                        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
+                        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['followers', 'friends', 'application'])
                         print "rate_limit_status returned..."   
                         friendcall_reset  = float(rate_limit_status['resources']['friends']['/friends/ids']['reset'])
                         friendcall_remaining = int(rate_limit_status['resources']['friends']['/friends/ids']['remaining'])                                                    

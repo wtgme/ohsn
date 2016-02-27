@@ -28,8 +28,8 @@ OAUTH_TOKEN_SECRET = config.get('credentials','oath_token_secret')
 #    oauth_token='3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G',
 #    oauth_token_secret='HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO')
  
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 #params = {'id':606043007612293120}
 ##params = {'count':200, 'contributor_details':True, 'since_id':latest}
@@ -47,7 +47,7 @@ nodes = {}
 
 def getfollowers(name, nodes=nodes, edges=edges):
     next_cursor = -1
-    followers = twitter.get_followers_list(screen_name=name, count=200)
+    followers = timeline_twitter.get_followers_list(screen_name=name, count=200)
 
     for follower in followers['users']:
         print follower['screen_name'] +"\t"+ follower['description'].encode('utf-8').replace('\n', ' ')
@@ -65,7 +65,7 @@ def getfollowers(name, nodes=nodes, edges=edges):
 
 
 for follower in followers['users']:
-    fh1 = fh1.update(twitter.get_followers_list(screen_name=follower['screen_name'], count=200))
+    fh1 = fh1.update(timeline_twitter.get_followers_list(screen_name=follower['screen_name'], count=200))
 
     
 

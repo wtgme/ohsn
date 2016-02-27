@@ -157,7 +157,7 @@ def seed_all_profile(stream_db):
     # stream_db = db['stream_users']
     seed_user = []
     for user in stream_db.find({'seeded':{'$exists': False}}).limit(100):
-        seed_user.append(user['screen_name'])
+        seed_user.append(user['id'])
         stream_db.update({'id': int(user['id_str'])},
                          {'$set':{"seeded": True}}, upsert=False)
     return seed_user

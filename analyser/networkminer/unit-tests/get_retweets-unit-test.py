@@ -28,8 +28,8 @@ OAUTH_TOKEN_SECRET = config.get('credentials','oath_token_secret')
 #    oauth_token='3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G',
 #    oauth_token_secret='HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO')
  
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
  
 # spin up database
 #DBNAME = config.get('database', 'name')
@@ -58,7 +58,7 @@ Requests / 15-min window (user auth) 180
 Requests / 15-min window (app auth) 60
 """
 params = {'id':orig_tweet_id}
-response = twitter.lookup_status(**params)
+response = timeline_twitter.lookup_status(**params)
 #print response
 for status in response:
     print status['user']['screen_name'] 
@@ -77,7 +77,7 @@ Requests / 15-min window (app auth) 60
 """
 params = {'count':100, 'id':orig_tweet_id, 'cursor':-1}
 
-response = twitter.get_retweeters_ids(**params)
+response = timeline_twitter.get_retweeters_ids(**params)
 #response['previous_cursor']
 #response['previous_cursor_str']
 print response['next_cursor']
@@ -96,7 +96,7 @@ you CANNOT cursor this...
 
 """
 params = {'count':100, 'id':orig_tweet_id}
-response= twitter.get_retweets(**params)
+response= timeline_twitter.get_retweets(**params)
 # print response
 for item in response:
     print item['user']['screen_name']

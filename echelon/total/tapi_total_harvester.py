@@ -74,11 +74,11 @@ errorfile = open(ERROR_LOG_FILENAME, 'w')
 LOG_FILENAME = 'log/timelineharvester_' + starttime  + '.log'
 logfile = open(LOG_FILENAME, 'w')
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 # get initail rate status
-rate_limit_status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
+rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 
 
 def run_scraper():
@@ -95,11 +95,11 @@ def run_scraper():
             time.sleep(wait)
         
         if rate_limit_status['resources']['application']['/application/rate_limit_status']['remaining'] > 0:
-            rate_limit_status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
+            rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
         else:
             wait = rate_limit_status['resources']['application']['/application/rate_limit_status']['reset'] - time.time() + 5
             time.sleep(wait)            
-            rate_limit_status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
+            rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 
 
 

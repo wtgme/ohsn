@@ -7,7 +7,7 @@ Created on 10:20, 02/02/16
 2. Snowball friends and followers of seed users
 """
 
-from api import follower, following, profiles_check
+from api import follower, following, profiles_check, lookup
 import util.db_util as dbt
 import datetime
 import time
@@ -40,7 +40,7 @@ while True:
     try:
         ed_seed = profiles_check.seed_all_profile(echelon_poi)
         # print ed_seed
-        following.trans_seed_to_poi(ed_seed, ed_poi)
+        lookup.trans_seed_to_poi(ed_seed, ed_poi)
         level = 1
         while True:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level

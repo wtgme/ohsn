@@ -11,8 +11,7 @@ import sys
 sys.path.append('..')
 import datetime
 import pymongo
-from api import following
-from api import follower, profiles_check
+from api import following, follower, profiles_check, lookup
 import util.db_util as dbt
 
 db = dbt.db_connect_no_auth('fed')
@@ -41,7 +40,7 @@ while True:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
         break
     else:
-        following.trans_seed_to_poi(ed_seed, ed_poi)
+        lookup.trans_seed_to_poi(ed_seed, ed_poi)
         continue
 
 while True:

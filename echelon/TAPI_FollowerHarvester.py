@@ -86,8 +86,8 @@ except Exception:
     print MONGOUSER +" FAILED to connect to required databases"
     exit()
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 print("twitter connection and database connection configured")
 
@@ -96,7 +96,7 @@ def handle_follower_rate_limiting():
     while True:
         wait = 0
         if app_status['remaining'] > 0:
-            status = twitter.get_application_rate_limit_status(resources = ['followers', 'application'])
+            status = timeline_twitter.get_application_rate_limit_status(resources = ['followers', 'application'])
             app_status = status['resources']['application']['/application/rate_limit_status']
             home_status = status['resources']['followers']['/followers/ids']
             if home_status['remaining'] == 0:
@@ -113,7 +113,7 @@ def handle_friend_rate_limiting():
     while True:
         wait = 0
         if app_status['remaining'] > 0:
-            status = twitter.get_application_rate_limit_status(resources = ['friends', 'application'])
+            status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'application'])
             app_status = status['resources']['application']['/application/rate_limit_status']
             home_status = status['resources']['friends']['/friends/ids']
             if home_status['remaining'] == 0:
@@ -154,7 +154,7 @@ def getfollowersids(userid, maxfollowers=5000, edges=followeredges):
             
             handle_follower_rate_limiting()
             #print("querying twitter")
-            response = twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
+            response = timeline_twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
             # store_followers(response['ids'])
             next_cursor = response['next_cursor']                
             
@@ -181,7 +181,7 @@ def getfollowersids(userid, maxfollowers=5000, edges=followeredges):
         except TwythonRateLimitError:
             #print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
             #print datetime.datetime.now().time()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
             time.sleep(wait)
             # try again
@@ -210,7 +210,7 @@ def getfriendsids(userid, maxfollowers=5000, edges=followeredges):
             
             handle_friend_rate_limiting()
             #print("querying twitter")
-            response = twitter.get_friends_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
+            response = timeline_twitter.get_friends_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
             # store_followers(response['ids'])
             next_cursor = response['next_cursor']                
             
@@ -237,7 +237,7 @@ def getfriendsids(userid, maxfollowers=5000, edges=followeredges):
         except TwythonRateLimitError:
             #print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
             #print datetime.datetime.now().time()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
             time.sleep(wait)
             # try again

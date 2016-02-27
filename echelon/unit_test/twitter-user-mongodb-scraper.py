@@ -28,8 +28,8 @@ OAUTH_TOKEN_SECRET = config.get('credentials','oath_token_secret')
 #    oauth_token='3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G',
 #    oauth_token_secret='HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO')
  
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
  
 # spin up database
 DBNAME = config.get('database', 'name')
@@ -82,7 +82,7 @@ def handle_rate_limiting():
     while True:
         wait = 0
         if app_status['remaining'] > 0:
-            status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+            status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
             app_status = status['resources']['application']['/application/rate_limit_status']
             home_status = status['resources']['statuses']['/statuses/home_timeline']
             if home_status['remaining'] == 0:
@@ -124,7 +124,7 @@ def get_user_timeline(username):
             
             handle_rate_limiting()
             #home = twitter.get_home_timeline(**params)
-            home = twitter.get_user_timeline(**params)
+            home = timeline_twitter.get_user_timeline(**params)
             print("querying twitter")
             if home:
                 while home:
@@ -137,7 +137,7 @@ def get_user_timeline(username):
      
                     params['max_id'] = home[-1]['id'] - 1
                     handle_rate_limiting()
-                    home = twitter.get_user_timeline(**params)
+                    home = timeline_twitter.get_user_timeline(**params)
                     # user_timeline=twitter.getUserTimeline(screen_name="dksbhj", count=200, include_rts=1)
             else: 
                 print "Ran out of tweets for the current username"
@@ -146,7 +146,7 @@ def get_user_timeline(username):
         except TwythonRateLimitError, e:
             print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
             print datetime.datetime.now().time()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
             time.sleep(wait)
         except TwythonAuthError, e:

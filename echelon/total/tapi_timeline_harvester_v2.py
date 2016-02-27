@@ -50,14 +50,14 @@ APP_SECRET = 'C0rbmJP0uKbuF6xcT6aR5vFOV9fS4L1965TKOH97pSqj3NJ1mP'
 OAUTH_TOKEN        = '3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G'
 OAUTH_TOKEN_SECRET = 'HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO'
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
  
 ON_EXCEPTION_WAIT = 60*16
 
 print("twitter connection and database connection configured")
 
-rate_limit_status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
+rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 
 def store_tweets(tweets_to_save, collection=timelines):
     """
@@ -86,7 +86,7 @@ def handle_rate_limiting():
         
         if rate_limit_status['resources']['application']['/application/rate_limit_status']['remaining'] > 0:
                 try:                                
-                    rate_limit_status = twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
+                    rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['friends', 'followers', 'statuses', 'application'])
 
                     if rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'] == 0:
                         wait = max(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'] - time.time(), 0) + 5 # addding 1 second pad
@@ -96,7 +96,7 @@ def handle_rate_limiting():
                         return
                     
                 except TwythonRateLimitError:
-                    reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                    reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
                     wait = max(reset - time.time(), 0) + 60 # addding 10 second pad
                     print "Rate-limit exception encountered getting rate_limit_status. Retry in " + str(wait) + " seconds"
                     print datetime.datetime.now().time()                    
@@ -142,7 +142,7 @@ def get_user_timeline(username):
             
             handle_rate_limiting()
             #home = twitter.get_home_timeline(**params)
-            home = twitter.get_user_timeline(**params)
+            home = timeline_twitter.get_user_timeline(**params)
             print("querying twitter")
             if home:
                 while home:
@@ -155,7 +155,7 @@ def get_user_timeline(username):
      
                     params['max_id'] = home[-1]['id'] - 1
                     handle_rate_limiting()
-                    home = twitter.get_user_timeline(**params)
+                    home = timeline_twitter.get_user_timeline(**params)
                     # user_timeline=twitter.getUserTimeline(screen_name="dksbhj", count=200, include_rts=1)
             else:
                 print "Ran out of tweets for the current username"
@@ -164,7 +164,7 @@ def get_user_timeline(username):
         except TwythonRateLimitError, e:
             print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
             print datetime.datetime.now().time()
-            reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+            reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
             wait = max(reset - time.time(), 0) + 15  # addding 15 second pad
             time.sleep(wait)
         except TwythonAuthError, e:
@@ -188,7 +188,7 @@ def get_user_timeline(username):
         pass  
         
         print datetime.datetime.now().time()
-        reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+        reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
         wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
         time.sleep(wait)
                           

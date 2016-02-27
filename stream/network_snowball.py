@@ -9,16 +9,16 @@ Created on 10:20, 02/02/16
 
 import sys
 sys.path.append('..')
-from api import follower, following, profiles_check
+from api import follower, following, lookup, profiles_check
 import util.db_util as dbt
 import datetime
 import pymongo
 
 
-def network_snowball(dbname, mode):
+def network_snowball(dbname, mode='N'):
     db = dbt.db_connect_no_auth(dbname)
-    ed_poi = db['com']
-    ed_net = db['net']
+    ed_poi = db['tcom']
+    ed_net = db['tnet']
     stream_users = db['poi']
     # echelon = dbt.db_connect_no_auth('echelon')
     # echelon_poi = echelon['poi']
@@ -43,7 +43,7 @@ def network_snowball(dbname, mode):
             break
         else:
             print 'seed users: ', length
-            following.trans_seed_to_poi(ed_seed, ed_poi)
+            lookup.trans_seed_to_poi(ed_seed, ed_poi)
             continue
 
     level = 1
@@ -63,5 +63,5 @@ def network_snowball(dbname, mode):
             continue
 
 
-network_snowball('rd', 'RD')
-network_snowball('yg', 'YG')
+network_snowball('rd')
+# network_snowball('yg', 'YG')

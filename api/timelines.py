@@ -25,6 +25,8 @@ since_id: Returns results with an ID greater than (that is, more recent than) th
 max_id: Returns results with an ID less than (that is, older than) or equal to the specified ID.
 Each crawl is the most recent 200 timelines.
 Set the oldest one in each crawl as max_id.
+
+SEE: https://unsupervisedlearning.wordpress.com/2014/07/06/scraping-your-twitter-homepage-with-python-and-mongodb/
 """
 
 
@@ -36,8 +38,9 @@ from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import time
 import pymongo
 
-app_id, twitter = twutil.twitter_auth()
-timeline_remain = 0
+timeline_app_id, timeline_twitter = twutil.twitter_auth()
+timeline_remain, timeline_lock = 0, 1
+
 
 def store_tweets(tweets_to_save, collection):
     """
@@ -53,22 +56,22 @@ def store_tweets(tweets_to_save, collection):
 
 # Test rate_limit is OK? If not, sleep till to next reset time
 def handle_timeline_rate_limiting():
-    global app_id, twitter
+    global timeline_app_id, timeline_twitter
     print '-------------------handle_timeline_rate_limiting-----------'
     while True:
         try:
-            rate_limit_status = twitter.get_application_rate_limit_status(resources=['statuses'])
+            rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources=['statuses'])
         except TwythonRateLimitError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
                   'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
-            twutil.release_app(app_id)
-            app_id, twitter = twutil.twitter_change_auth(app_id)
+            twutil.release_app(timeline_app_id)
+            timeline_app_id, timeline_twitter = twutil.twitter_change_auth(timeline_app_id)
             continue
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
                   'Author Error, change Twitter APP ID', str(detail)
-            twutil.release_app(app_id)
-            app_id, twitter = twutil.twitter_change_auth(app_id)
+            twutil.release_app(timeline_app_id)
+            timeline_app_id, timeline_twitter = twutil.twitter_change_auth(timeline_app_id)
             continue
         except TwythonError as detail:
             # if 'Twitter API returned a 503' in str(detail):
@@ -96,16 +99,35 @@ def handle_timeline_rate_limiting():
             if wait < 20:
                 time.sleep(wait)
             else:
-                twutil.release_app(app_id)
-                app_id, twitter = twutil.twitter_change_auth(app_id)
+                twutil.release_app(timeline_app_id)
+                timeline_app_id, timeline_twitter = twutil.twitter_change_auth(timeline_app_id)
             continue
         else:
             # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Ready rate to current query'
             return remaining
 
 
+def get_timeline(params):
+    global timeline_app_id, timeline_twitter, timeline_remain, timeline_lock
+    while timeline_lock:
+        try:
+            timeline_lock = 0
+            if timeline_remain < 1:
+                timeline_remain = handle_timeline_rate_limiting()
+            print 'timeline remaining rate:', timeline_remain
+            print 'x-rate-limit-remaining', timeline_twitter.get_lastfunction_header('x-rate-limit-remaining')
+            timelines = timeline_twitter.get_user_timeline(**params)
+            timeline_remain -= 1
+            timeline_lock = 1
+            return timelines
+        except TwythonRateLimitError:
+            timeline_lock = 0
+            timeline_remain = handle_timeline_rate_limiting()
+            timeline_lock = 1
+            continue
+
+
 def get_user_timeline(user_id, user_collection, timeline_collection):
-    global app_id, twitter, timeline_remain
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
         # crawl the recent timeline to the last stored timeline
@@ -122,12 +144,8 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     while True:
         # newest = None
         params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
-
         try:
-            if timeline_remain == 0:
-                timeline_remain = handle_timeline_rate_limiting()
-            timelines = twitter.get_user_timeline(**params)
-            timeline_remain -= 1
+            timelines = get_timeline(params)
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users', str(detail)
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
@@ -143,18 +161,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
             while timelines:
                 store_tweets(timelines, timeline_collection)
                 params['max_id'] = timelines[-1]['id']-1
-
-                while True:
-                    try:
-                        if timeline_remain == 0:
-                            timeline_remain = handle_timeline_rate_limiting()
-                        timelines = twitter.get_user_timeline(**params)
-                        timeline_remain -= 1
-                        break
-                    except TwythonError as detail:
-                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(detail) + ' sleep 20 Sec'
-                        timeline_remain = handle_timeline_rate_limiting()
-                        continue
+                timelines = get_timeline(params)
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return True

@@ -31,7 +31,7 @@ import lookup
 
 
 app_id_follower, twitter_follower = twutil.twitter_auth()
-follower_remain = 0
+follower_remain, follower_lock = 0, 1
 
 
 def handle_follower_rate_limiting():
@@ -90,8 +90,25 @@ def handle_follower_rate_limiting():
             return remaining
 
 
+def get_followers(params):
+    global app_id_follower, twitter_follower, follower_remain, follower_lock
+    while follower_lock:
+        try:
+            follower_lock = 0
+            if follower_remain < 1:
+                follower_remain = handle_follower_rate_limiting()
+            followers = twitter_follower.get_followers_ids(**params)
+            follower_remain -= 1
+            follower_lock = 1
+            return followers
+        except TwythonRateLimitError:
+            follower_lock = 0
+            follower_remain = handle_follower_rate_limiting()
+            follower_lock = 1
+            continue
+
+
 def snowball_follower(poi_db, net_db, level, check='N'):
-    global app_id_follower, twitter_follower, follower_remain
     start_level = level
     while True:
         count = poi_db.count({'level': start_level,
@@ -108,38 +125,8 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                 # follower getting
                 while next_cursor != 0:
                     params['cursor'] = next_cursor
-                    while True:
-                        try:
-                            if follower_remain == 0:
-                                follower_remain = handle_follower_rate_limiting()
-                            followers = twitter_follower.get_followers_ids(**params)
-                            follower_remain -= 1
-                            break
-                        # except TwythonAuthError as detail:
-                        #     # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                        #     # if 'Twitter API returned a 401' in detail:
-                        #     print 'snowball_follower TwythonAuthError unhandled expcetions', str(detail)
-                        #     time.sleep(30)
-                        #     continue
-                        except (TwythonAuthError, TwythonError) as detail:
-                            # if 'Received response with content-encoding: gzip' in detail:
-                            print 'snowball_follower TwythonError unhandled expcetions', str(detail)
-                            follower_remain = handle_follower_rate_limiting()
-                            continue
-                        except Exception as detail:
-                            print 'snowball_follower unhandled expcetions', str(detail)
-                            time.sleep(30)
-                            continue
-                        #     print 'snowball_follower unhandled expcetions', str(detail)
-                        #     break
-
-                    # Eliminate the users that have been scraped
-                    # '''Get all documents in stream collections'''
-                    # user_list_all = poi_db.distinct('id', {'level': start_level+1, 'follower_prelevel_node': user['id_str']})
+                    followers = get_followers(params)
                     follower_ids = followers['ids']
-                    # '''Eliminate the users that have been scraped'''
-                    # process_user_list = list(set(followee_ids) - set(user_list_all))
-                    # print len(followee_ids), len(process_user_list)
                     list_size = len(follower_ids)
                     length = int(math.ceil(list_size/100.0))
                     # print length
@@ -148,7 +135,8 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                         index_begin = index*100
                         index_end = min(list_size, index_begin+100)
                         profiles = lookup.get_users_info(follower_ids[index_begin:index_end])
-                        # print 'user profile:', index_begin, index_end, len(profiles)
+                        print 'user profile:', index_begin, index_end, len(profiles)
+                        # if profiles:
                         for profile in profiles:
                             if check is 'ED':
                                 check_flag = profiles_check.check_ed(profile)
@@ -172,10 +160,6 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                                                'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
                                 except pymongo.errors.DuplicateKeyError:
                                     pass
-                                # poi_db.update({'id': int(profile['id_str'])}, {'$set':profile}, upsert=True)
-                                # net_db.update({'user': int(user['id_str']), 'follower': int(profile['id_str'])},
-                                #               {'$set':{'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')}},
-                                #               upsert=True)
                     # prepare for next iterator
                     next_cursor = followers['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True

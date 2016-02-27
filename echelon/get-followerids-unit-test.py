@@ -66,8 +66,8 @@ db = conn_followers[DBNAME_FOLLOWERS]
 poi = db[POI_COL]
 followeredges = db[FOLLOWERNETWORK_COL]
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 print("twitter connection and database connection configured")
 
@@ -106,8 +106,8 @@ while True:
 #    oauth_token='3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G',
 #    oauth_token_secret='HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO')
  
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 #params = {'id':606043007612293120}
 ##params = {'count':200, 'contributor_details':True, 'since_id':latest}
@@ -126,7 +126,7 @@ def handle_rate_limiting():
     while True:
         wait = 0
         if app_status['remaining'] > 0:
-            status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+            status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
             app_status = status['resources']['application']['/application/rate_limit_status']
             home_status = status['resources']['statuses']['/statuses/home_timeline']
             if home_status['remaining'] == 0:
@@ -154,11 +154,11 @@ def store_followers(followers, collection=nodes):
 def getUserDetails(ids):
     userDetails = []
     if len(ids) > 100:
-        response = twitter.lookupUser(user_id = ','.join(str(a) for a in ids[0:99]))
+        response = timeline_twitter.lookupUser(user_id =','.join(str(a) for a in ids[0:99]))
         userDetails += response
         return getUserDetails(ids[100:]) + userDetails
     else:
-        response = twitter.lookupUser(user_id = ','.join(str(a) for a in ids))
+        response = timeline_twitter.lookupUser(user_id =','.join(str(a) for a in ids))
         userDetails += response
     return userDetails  
   
@@ -176,7 +176,7 @@ def getfollowersids(userid, hop=0, maxhop=2, maxfollowers=5000, nodes=nodes, edg
                 
                 handle_rate_limiting()
                 print("querying twitter")
-                response = twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
+                response = timeline_twitter.get_followers_ids(user_id=userid, count=maxfollowers, cursor = next_cursor)
                 # store_followers(response['ids'])
                 next_cursor = response['next_cursor']                
                 
@@ -191,7 +191,7 @@ def getfollowersids(userid, hop=0, maxhop=2, maxfollowers=5000, nodes=nodes, edg
             except TwythonRateLimitError:
                 print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
                 print datetime.datetime.now().time()
-                reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+                reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
                 wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
                 time.sleep(wait)
                 # try again

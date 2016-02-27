@@ -31,8 +31,8 @@ OAUTH_TOKEN_SECRET = config.get('credentials','oath_token_secret')
 #    oauth_token='3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G',
 #    oauth_token_secret='HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO')
  
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
  
 # spin up database
 DBNAME = config.get('database', 'name')
@@ -88,14 +88,14 @@ try:
             # tweetid = "595218763743666177"
             # tweetid = 595178774209101824
             params = {'id':tweet['id'], 'count':100}
-            results = twitter.get_retweets(**params)
+            results = timeline_twitter.get_retweets(**params)
             for result in results:
                 print result['id']
         print "end of results"
             
 except TwythonRateLimitError, e:
     print "Rate-limit exception encountered. Sleeping for ~ 15 min before retrying"
-    reset = int(twitter.get_lastfunction_header('x-rate-limit-reset'))
+    reset = int(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
     wait = max(reset - time.time(), 0) + 10 # addding 10 second pad
     time.sleep(wait)
 except Exception, e:

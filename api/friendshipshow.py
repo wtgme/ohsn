@@ -13,7 +13,7 @@ import datetime
 import time
 
 app_id_friendship, twitter_friendship = twutil.twitter_auth(56)
-friendships_remain = 0
+friendships_remain, friendships_lock = 0, 1
 
 
 def handle_friendship_rate_limiting():
@@ -70,27 +70,41 @@ def handle_friendship_rate_limiting():
 
 
 def get_friendship_info(user1, user2):
-    global app_id_friendship, twitter_friendship, friendships_remain
-    while True:
+    global app_id_friendship, twitter_friendship, friendships_remain, friendships_lock
+    while friendships_lock:
         try:
-            if friendships_remain == 0:
+            friendships_lock = 0
+            if friendships_remain < 1:
                 friendships_remain = handle_friendship_rate_limiting()
             infos = twitter_friendship.show_friendship(source_id=user1, target_id=user2)
             friendships_remain -= 1
+            friendships_lock = 1
             return infos
-        except TwythonError as detail:
-            if '50' in str(detail):
-                print 'get_friendship_info TwythonError', str(detail)
-                time.sleep(10)
-                continue
-        except Exception as detail:
-            if '443' in str(detail):
-                print 'get_friendship_info 443 Exception', str(detail)
-                time.sleep(30)
-                continue
-            else:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'get_friendship_info', str(detail)
-                break
+        except TwythonRateLimitError:
+            friendships_lock = 0
+            friendships_remain = handle_friendship_rate_limiting()
+            friendships_lock = 1
+            continue
+    # while True:
+    #     try:
+    #         if friendships_remain == 0:
+    #             friendships_remain = handle_friendship_rate_limiting()
+    #         infos = twitter_friendship.show_friendship(source_id=user1, target_id=user2)
+    #         friendships_remain -= 1
+    #         return infos
+    #     except TwythonError as detail:
+    #         if '50' in str(detail):
+    #             print 'get_friendship_info TwythonError', str(detail)
+    #             time.sleep(10)
+    #             continue
+    #     except Exception as detail:
+    #         if '443' in str(detail):
+    #             print 'get_friendship_info 443 Exception', str(detail)
+    #             time.sleep(30)
+    #             continue
+    #         else:
+    #             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'get_friendship_info', str(detail)
+    #             break
 
 
 def generate_network(user_list, filename):

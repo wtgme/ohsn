@@ -43,8 +43,8 @@ APP_SECRET = 'C0rbmJP0uKbuF6xcT6aR5vFOV9fS4L1965TKOH97pSqj3NJ1mP'
 OAUTH_TOKEN        = '3034707280-wFGQAF4FGBviaiSguCUdeG36NIQG1uh8qqXTC1G'
 OAUTH_TOKEN_SECRET = 'HUWMfHKyPShE6nH5WXlI26izoQjNtV3US3mNpND1F9qrO'
 
-twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-twitter.verify_credentials()
+timeline_twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+timeline_twitter.verify_credentials()
 
 GET_USER_TIMELINE_COUNT = 200
 ON_EXCEPTION_WAIT = 60*16
@@ -69,7 +69,7 @@ reset = ON_EXCEPTION_WAIT
 # on program initialisation get current rate info
 while True:
     try:
-        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
         print "user calls reset at " + str(reset)
@@ -136,13 +136,13 @@ def get_user_timeline(userid):
             params = {'count':GET_USER_TIMELINE_COUNT, 'contributor_details':True, 'id':userid, 'since_id':latest, 'include_rts':1}
             #print params
             # Now this may throw a 404, auth, rate-limit, or ordinary exception
-            home = twitter.get_user_timeline(**params)
+            home = timeline_twitter.get_user_timeline(**params)
             # if successfull update the global counters :)
 
             #print "first user call: SUCCESS home = "
             # print home
-            reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-            remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
+            reset = float(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
+            remaining = int(timeline_twitter.get_lastfunction_header('x-rate-limit-remaining'))
             #print "first user call: user_timeline reset at " + str(reset)
             #print "first user call: user_timeline remaining = " + str(remaining)
             # time.sleep(1)
@@ -159,7 +159,7 @@ def get_user_timeline(userid):
                 while True:
                     try:               
                         print "getting rate_limit_status..."
-                        rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+                        rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
                         print "rate_limit_status returned..."
                         reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
                         remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
@@ -232,10 +232,10 @@ def get_user_timeline(userid):
                         time.sleep(wait)
                     #print "next params = "
                     #print params
-                    home = twitter.get_user_timeline(**params)
+                    home = timeline_twitter.get_user_timeline(**params)
                     # if successfull update the global counters :)
-                    reset = float(twitter.get_lastfunction_header('x-rate-limit-reset'))
-                    remaining = int(twitter.get_lastfunction_header('x-rate-limit-remaining'))
+                    reset = float(timeline_twitter.get_lastfunction_header('x-rate-limit-reset'))
+                    remaining = int(timeline_twitter.get_lastfunction_header('x-rate-limit-remaining'))
                     #print "iterative user call: user_timeline reset at " + str(reset)
                     #print "iterative user call: user_timeline remaining = " + str(remaining)
                     # time.sleep(1)
@@ -252,7 +252,7 @@ def get_user_timeline(userid):
                         while True:
                             try:               
                                 print "getting rate_limit_status..."
-                                rate_limit_status = twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
+                                rate_limit_status = timeline_twitter.get_application_rate_limit_status(resources = ['statuses', 'application'])
                                 print "rate_limit_status returned..."
                                 reset = float(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['reset'])
                                 remaining = int(rate_limit_status['resources']['statuses']['/statuses/user_timeline']['remaining'])
