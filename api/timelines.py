@@ -128,13 +128,13 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                 timeline_remain = handle_timeline_rate_limiting()
             timelines = twitter.get_user_timeline(**params)
             timeline_remain -= 1
-        except TwythonAuthError:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users'
+        except TwythonAuthError as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users', str(detail)
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return False
-        except TwythonError:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Response was not valid JSON'
+        except TwythonError as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'timeline TwythonError', str(detail)
             user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return False

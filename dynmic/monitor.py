@@ -58,6 +58,9 @@ def monitor_timeline(time_index):
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish timlines crawl'
 
 
+# def check
+
+
 def start_monitor():
     global index
     Thread(target=monitor_network).start()

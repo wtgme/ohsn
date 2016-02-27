@@ -24,13 +24,13 @@ def handle_lookup_rate_limiting():
             rate_limit_status = twitter_look.get_application_rate_limit_status(resources=['users'])
         except TwythonRateLimitError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Cannot test due to last incorrect connection, change Twitter APP ID'
+                  'Cannot test due to last incorrect connection, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_look)
             app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
             continue
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-                  'Author Error, change Twitter APP ID'
+                  'Author Error, change Twitter APP ID', str(detail)
             twutil.release_app(app_id_look)
             app_id_look, twitter_look = twutil.twitter_change_auth(app_id_look)
             continue
