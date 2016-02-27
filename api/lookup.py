@@ -82,7 +82,7 @@ def get_users_info(stream_user_list):
             lookup_lock = 1
             # print 'lookup output', infos
             return infos
-        except TwythonRateLimitError:
+        except Exception:
             lookup_lock = 0
             lookup_remain = handle_lookup_rate_limiting()
             lookup_lock = 1

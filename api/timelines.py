@@ -120,7 +120,7 @@ def get_timeline(params):
             timeline_remain -= 1
             timeline_lock = 1
             return timelines
-        except TwythonRateLimitError:
+        except Exception:
             timeline_lock = 0
             timeline_remain = handle_timeline_rate_limiting()
             timeline_lock = 1

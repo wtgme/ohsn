@@ -99,7 +99,7 @@ def get_followings(params):
             following_remain -= 1
             following_lock = 1
             return followees
-        except TwythonRateLimitError:
+        except Exception:
             following_lock = 0
             following_remain = handle_following_rate_limiting()
             following_lock = 1

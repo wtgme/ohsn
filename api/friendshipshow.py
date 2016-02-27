@@ -80,7 +80,7 @@ def get_friendship_info(user1, user2):
             friendships_remain -= 1
             friendships_lock = 1
             return infos
-        except TwythonRateLimitError:
+        except Exception:
             friendships_lock = 0
             friendships_remain = handle_friendship_rate_limiting()
             friendships_lock = 1

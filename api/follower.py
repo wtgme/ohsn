@@ -101,7 +101,7 @@ def get_followers(params):
             follower_remain -= 1
             follower_lock = 1
             return followers
-        except TwythonRateLimitError:
+        except Exception:
             follower_lock = 0
             follower_remain = handle_follower_rate_limiting()
             follower_lock = 1
