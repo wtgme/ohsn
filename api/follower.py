@@ -115,16 +115,16 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                             followers = twitter_follower.get_followers_ids(**params)
                             follower_remain -= 1
                             break
-                        except TwythonAuthError as detail:
-                            # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
-                            # if 'Twitter API returned a 401' in detail:
-                            print 'snowball_follower TwythonAuthError unhandled expcetions', str(detail)
-                            time.sleep(30)
-                            continue
-                        except TwythonError as detail:
+                        # except TwythonAuthError as detail:
+                        #     # https://twittercommunity.com/t/401-error-when-requesting-friends-for-a-protected-user/580
+                        #     # if 'Twitter API returned a 401' in detail:
+                        #     print 'snowball_follower TwythonAuthError unhandled expcetions', str(detail)
+                        #     time.sleep(30)
+                        #     continue
+                        except (TwythonAuthError, TwythonError) as detail:
                             # if 'Received response with content-encoding: gzip' in detail:
                             print 'snowball_follower TwythonError unhandled expcetions', str(detail)
-                            time.sleep(30)
+                            follower_remain = handle_follower_rate_limiting()
                             continue
                         except Exception as detail:
                             print 'snowball_follower unhandled expcetions', str(detail)
