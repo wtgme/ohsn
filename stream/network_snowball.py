@@ -7,10 +7,11 @@ Created on 10:20, 02/02/16
 2. Snowball friends and followers of seed users
 """
 
+import sys
+sys.path.append('..')
 from api import follower, following, profiles_check
 import util.db_util as dbt
 import datetime
-import time
 import pymongo
 
 
