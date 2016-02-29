@@ -7,6 +7,7 @@ Created on 10:18 PM, 2/27/16
 
 import matplotlib.pyplot as plt
 
+import numpy as np
 from sklearn.datasets import load_svmlight_file
 from sklearn import linear_model, decomposition
 from sklearn import cross_validation
@@ -20,6 +21,7 @@ from sklearn.feature_selection import RFECV
 
 
 def read_field():
+    # read feature names in use
     fileds = []
     with open('fieldx.txt', 'r') as fo:
         for line in fo.readlines():
@@ -28,6 +30,7 @@ def read_field():
 
 
 def pac_svc(X_digits, y_digits):
+    # PCA and SVM test best number of components
     svc = SVC(kernel="linear")
 
     pca = decomposition.PCA()
@@ -64,7 +67,24 @@ def pac_svc(X_digits, y_digits):
     plt.show()
 
 
+def select_specific_features(X, ranks):
+    # select features (columns) according to ranks or binary list
+    size = 0
+    for rank in ranks:
+        if rank == 1:
+            size += 1
+    row, col = X.shape
+    X_new = np.zeros((row, size))
+    index_new = 0
+    for i in xrange(len(ranks)):
+        if ranks[i] == 1:
+            X_new[:, index_new] = X[:, i]
+            index_new += 1
+    return X_new
+
+
 def convert_fields(rank):
+    # Convert ranking IDs to feature names and rank them
     LIWC = read_field()
     rf = {}
     for i in xrange(len(rank)):
@@ -90,6 +110,8 @@ def convert_fields(rank):
 
 
 def rfe(X, y):
+    # recursive feature elimination with SVM
+
     # Create the RFE object and compute a cross-validated score.
     svc = SVC(kernel="linear")
     # The "accuracy" scoring is proportional to the number of correct
@@ -112,12 +134,14 @@ def rfe(X, y):
 
 
 def svm_cv(X, y):
+    # Cross validation with SVM
     clf = SVC(kernel='linear')
-    scores = cross_validation.cross_val_score(clf, X, y, cv=5)
-    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    scores = cross_validation.cross_val_score(clf, X, y, cv=5, scoring='accuracy')
+    print("Accuracy: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std() * 2))
 
 
 def fs_svm(X, y):
+    # feature selection with SVM model
     lsvc = LinearSVC(C=0.001, penalty="l1", dual=False).fit(X, y)
     model = SelectFromModel(lsvc, prefit=True)
     X_new = model.transform(X)
@@ -134,18 +158,25 @@ def fs_svm(X, y):
             print i+1, LIWC[i]
 
 
-X_digits, y_digits = load_svmlight_file("data/ed-rd-liwc.data")
+X_digits, y = load_svmlight_file("data/ed-rd-liwc.data")
 X_dentise = X_digits.toarray()
 
 X = preprocessing.scale(X_dentise)
+
 # min_max_scaler = preprocessing.MinMaxScaler()
 # X = min_max_scaler.fit_transform(X_dentise)
 
+
 # fs_svm(X, y_digits)
 
+support, ranking = rfe(X, y)
+convert_fields(ranking)
 
-# rfe(X, y_digits)
-rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
-        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
-        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
-convert_fields(rank)
+# print X.shape
+# svm_cv(X, y)
+# rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+#         48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+#         1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+# X_new = select_specific_features(X, rank)
+# print X_new.shape
+# svm_cv(X_new, y)
