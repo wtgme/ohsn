@@ -83,6 +83,7 @@ def get_friendship_info(user1, user2):
         except Exception as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Friendships Exception " + str(detail)
             if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                friendships_lock = 1
                 return None
             else:
                 friendships_lock = 0

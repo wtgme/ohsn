@@ -85,6 +85,7 @@ def get_users_info(stream_user_list):
         except Exception as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Lookup Exception " + str(detail)
             if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                lookup_lock = 1
                 return None
             else:
                 lookup_lock = 0

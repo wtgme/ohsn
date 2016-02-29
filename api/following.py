@@ -102,6 +102,7 @@ def get_followings(params):
         except Exception as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Following Exception " + str(detail)
             if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                following_lock = 1
                 return None
             else:
                 following_lock = 0

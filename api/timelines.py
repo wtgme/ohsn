@@ -128,6 +128,7 @@ def get_timeline(params):
                 # "error": "Not authorized."
                 # No Existing: "code": 34,
                 # "message": "Sorry, that page does not exist."
+                timeline_lock = 1
                 return None
             else:
                 timeline_lock = 0

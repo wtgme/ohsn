@@ -47,7 +47,7 @@ def test_common():
 
 
 def test_timline():
-    db = dbt.db_connect_no_auth('fed')
+    db = dbt.db_connect_no_auth('rd')
     cols = db['com']
     for user in cols.find({'timeline_count': 0}, ['id', 'timeline_count', 'statuses_count']):
         # print user
@@ -92,5 +92,5 @@ def remove_non_targeted_user():
             netdb.delete_many({'user': user['id']})
             netdb.delete_many({'follower': user['id']})
 
-test_common()
+test_timline()
 
