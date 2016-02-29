@@ -103,4 +103,4 @@ def release_app(index):
 #     release_app(ida)
 #     ida, a = twitter_change_auth(ida)
 
-twitter_auth(app_id=0)
+# twitter_auth(app_id=0)
