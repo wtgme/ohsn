@@ -33,13 +33,13 @@ def get_users(dbname):
     user_set = set()
     db = dbt.db_connect_no_auth(dbname)
     cols = db['com']
-    for user in cols.find({}, ['id']):
+    for user in cols.find({'level':1}, ['id']):
         user_set.add(user['id'])
     return user_set
 
 
 def test_common():
-    eds, rds, ygs = get_users('ded'), get_users('drd'), get_users('dyg')
+    eds, rds, ygs = get_users('fed'), get_users('random'), get_users('young')
     # rds, ygs = get_users('rd'), get_users('yg')
     print eds.intersection(rds)
     print eds.intersection(ygs)
@@ -92,5 +92,5 @@ def remove_non_targeted_user():
             netdb.delete_many({'user': user['id']})
             netdb.delete_many({'follower': user['id']})
 
-test_timline()
+test_common()
 
