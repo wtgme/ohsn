@@ -80,11 +80,15 @@ def get_friendship_info(user1, user2):
             friendships_remain -= 1
             friendships_lock = 1
             return infos
-        except Exception:
-            friendships_lock = 0
-            friendships_remain = handle_friendship_rate_limiting()
-            friendships_lock = 1
-            continue
+        except Exception as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Friendships Exception " + str(detail)
+            if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                return None
+            else:
+                friendships_lock = 0
+                friendships_remain = handle_friendship_rate_limiting()
+                friendships_lock = 1
+                continue
     # while True:
     #     try:
     #         if friendships_remain == 0:
@@ -116,12 +120,13 @@ def generate_network(user_list, filename):
                 user2 = user_list[j]
                 print 'Test', i*size+j, user1, user2
                 friendships = get_friendship_info(user1, user2)
-                if friendships['relationship']['source']['following']:
-                    print str(user2)+'\t'+str(user1)+'\n'
-                    fw.write(str(user2)+'\t'+str(user1)+'\n')
-                if friendships['relationship']['source']['followed_by']:
-                    print str(user1)+'\t'+str(user2)+'\n'
-                    fw.write(str(user1)+'\t'+str(user2)+'\n')
+                if friendships:
+                    if friendships['relationship']['source']['following']:
+                        print str(user2)+'\t'+str(user1)+'\n'
+                        fw.write(str(user2)+'\t'+str(user1)+'\n')
+                    if friendships['relationship']['source']['followed_by']:
+                        print str(user1)+'\t'+str(user2)+'\n'
+                        fw.write(str(user1)+'\t'+str(user2)+'\n')
 
 
 # print get_friendship_info(726972960, 606011299)

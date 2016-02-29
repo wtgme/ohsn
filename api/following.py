@@ -99,11 +99,15 @@ def get_followings(params):
             following_remain -= 1
             following_lock = 1
             return followees
-        except Exception:
-            following_lock = 0
-            following_remain = handle_following_rate_limiting()
-            following_lock = 1
-            continue
+        except Exception as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Following Exception " + str(detail)
+            if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                return None
+            else:
+                following_lock = 0
+                following_remain = handle_following_rate_limiting()
+                following_lock = 1
+                continue
 
 
 def snowball_following(poi_db, net_db, level, check='N'):
@@ -128,42 +132,43 @@ def snowball_following(poi_db, net_db, level, check='N'):
                 while next_cursor != 0:
                     params['cursor'] = next_cursor
                     followees = get_followings(params)
-                    followee_ids = followees['ids']
-                    list_size = len(followee_ids)
-                    length = int(math.ceil(list_size/100.0))
-                    # print length
-                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', list_size, 'for user', user['id_str']
-                    for index in xrange(length):
-                        index_begin = index*100
-                        index_end = min(list_size, index_begin+100)
-                        profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
-                        print 'user profile:', index_begin, index_end, len(profiles)
-                        # if profiles:
-                        for profile in profiles:
-                            if check is 'ED':
-                                check_flag = profiles_check.check_ed(profile)
-                            elif check is 'YG':
-                                check_flag = profiles_check.check_yg(profile)
-                            elif check is 'DP':
-                                check_flag = profiles_check.check_depression(profile)
-                            elif check is 'RD':
-                                check_flag = profiles_check.check_rd(profile)
-                            else:
-                                check_flag = profiles_check.check_en(profile)
-                            if check_flag:
-                                profile['following_prelevel_node'] = user['id_str']
-                                profile['level'] = start_level+1
-                                try:
-                                    poi_db.insert(profile)
-                                except pymongo.errors.DuplicateKeyError:
-                                    pass
-                                try:
-                                    net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
-                                               'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
-                                except pymongo.errors.DuplicateKeyError:
-                                    pass
-                    # prepare for next iterator
-                    next_cursor = followees['next_cursor']
+                    if followees:
+                        followee_ids = followees['ids']
+                        list_size = len(followee_ids)
+                        length = int(math.ceil(list_size/100.0))
+                        # print length
+                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', list_size, 'for user', user['id_str']
+                        for index in xrange(length):
+                            index_begin = index*100
+                            index_end = min(list_size, index_begin+100)
+                            profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
+                            print 'user profile:', index_begin, index_end, len(profiles)
+                            # if profiles:
+                            for profile in profiles:
+                                if check is 'ED':
+                                    check_flag = profiles_check.check_ed(profile)
+                                elif check is 'YG':
+                                    check_flag = profiles_check.check_yg(profile)
+                                elif check is 'DP':
+                                    check_flag = profiles_check.check_depression(profile)
+                                elif check is 'RD':
+                                    check_flag = profiles_check.check_rd(profile)
+                                else:
+                                    check_flag = profiles_check.check_en(profile)
+                                if check_flag:
+                                    profile['following_prelevel_node'] = user['id_str']
+                                    profile['level'] = start_level+1
+                                    try:
+                                        poi_db.insert(profile)
+                                    except pymongo.errors.DuplicateKeyError:
+                                        pass
+                                    try:
+                                        net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
+                                                   'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                    except pymongo.errors.DuplicateKeyError:
+                                        pass
+                        # prepare for next iterator
+                        next_cursor = followees['next_cursor']
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
             return True

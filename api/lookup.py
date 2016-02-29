@@ -82,10 +82,14 @@ def get_users_info(stream_user_list):
             lookup_lock = 1
             # print 'lookup output', infos
             return infos
-        except Exception:
-            lookup_lock = 0
-            lookup_remain = handle_lookup_rate_limiting()
-            lookup_lock = 1
+        except Exception as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t Lookup Exception " + str(detail)
+            if 'Twitter API returned a 401 (Unauthorized)' in str(detail) or 'Twitter API returned a 404 (Not Found)' in str(detail):
+                return None
+            else:
+                lookup_lock = 0
+                lookup_remain = handle_lookup_rate_limiting()
+                lookup_lock = 1
     # infos = []
     # while True:
     #     try:
@@ -114,17 +118,18 @@ def get_users_info(stream_user_list):
 
 def trans_seed_to_poi(seed_list, poi_db):
     infos = get_users_info(seed_list)
-    for profile in infos:
-        if profile['lang'] == 'en' and profile['protected'] == False:
-            profile['level'] = 1
-            try:
-                poi_db.insert(profile)
-                seed_list.remove(profile['id'])
-            except pymongo.errors.DuplicateKeyError:
-                print 'Existing user:', profile['id_str']
-                seed_list.remove(profile['id'])
-                poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
-                                                    }}, upsert=False)
-        else:
-            print profile['screen_name'], 'set protected from others'
-    print seed_list, 'deleted their accounts'
+    if infos:
+        for profile in infos:
+            if profile['lang'] == 'en' and profile['protected'] == False:
+                profile['level'] = 1
+                try:
+                    poi_db.insert(profile)
+                    seed_list.remove(profile['id'])
+                except pymongo.errors.DuplicateKeyError:
+                    print 'Existing user:', profile['id_str']
+                    seed_list.remove(profile['id'])
+                    poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
+                                                        }}, upsert=False)
+            else:
+                print profile['screen_name'], 'set protected from others'
+        print seed_list, 'deleted their accounts'
