@@ -116,11 +116,13 @@ def get_timeline(params):
                 timeline_remain = handle_timeline_rate_limiting()
             # print 'timeline remaining rate:', timeline_remain
             # print 'x-rate-limit-remaining', timeline_twitter.get_lastfunction_header('x-rate-limit-remaining')
+            print params
             timelines = timeline_twitter.get_user_timeline(**params)
             timeline_remain -= 1
             timeline_lock = 1
             return timelines
-        except Exception:
+        except Exception as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t timeline Exception " + str(detail)
             timeline_lock = 0
             timeline_remain = handle_timeline_rate_limiting()
             timeline_lock = 1

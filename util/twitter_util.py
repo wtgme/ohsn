@@ -77,9 +77,10 @@ def twitter_auth(app_id=0):
                       '443 ERROR: Sleep 30 sec for next connection', str(e)
                 time.sleep(30)
                 continue
-        except TwythonAuthError as e:
+        except (TwythonAuthError, Exception) as e:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Auth Unsucessful', str(e)
-            exit(1)
+            time.sleep(30)
+            continue
 
 def twitter_change_auth(index):
     global flags
@@ -100,3 +101,5 @@ def release_app(index):
 #     print '-------------------'
 #     release_app(ida)
 #     ida, a = twitter_change_auth(ida)
+
+twitter_auth(app_id=0)
