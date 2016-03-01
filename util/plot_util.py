@@ -6,14 +6,12 @@ Created on 18:29, 01/02/16
 
 """
 
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 from networkx import *
 from sklearn.metrics import mean_squared_error
 from matplotlib import cm
 import matplotlib as mpl
-import pandas as pd
 
 
 def mean_bin(list_x, list_y, linear_bins=False):

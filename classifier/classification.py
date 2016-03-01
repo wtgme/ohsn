@@ -137,7 +137,7 @@ def svm_cv(X, y):
     # Cross validation with SVM
     clf = SVC(kernel='linear')
     scores = cross_validation.cross_val_score(clf, X, y, cv=5, scoring='accuracy')
-    print("Accuracy: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std() * 2))
+    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
 
 
 def fs_svm(X, y):
@@ -169,14 +169,29 @@ X = preprocessing.scale(X_dentise)
 
 # fs_svm(X, y_digits)
 
-support, ranking = rfe(X, y)
-convert_fields(ranking)
+# support, ranking = rfe(X, y)
+# convert_fields(ranking)
 
-# print X.shape
-# svm_cv(X, y)
-# rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
-#         48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
-#         1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
-# X_new = select_specific_features(X, rank)
-# print X_new.shape
-# svm_cv(X_new, y)
+print X.shape
+svm_cv(X, y)
+rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+X_new = select_specific_features(X, rank)
+print X_new.shape
+svm_cv(X_new, y)
+
+rank1 = [0,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+X_new1 = select_specific_features(X, rank1)
+print X_new1.shape
+svm_cv(X_new1, y)
+
+rank2 = [1,1,2,31,54,9,47,42,0,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+X_new2 = select_specific_features(X, rank2)
+print X_new2.shape
+svm_cv(X_new2, y)
+

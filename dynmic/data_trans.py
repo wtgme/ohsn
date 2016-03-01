@@ -47,15 +47,14 @@ def test_common():
 
 
 def test_timline():
-    db = dbt.db_connect_no_auth('rd')
+    db = dbt.db_connect_no_auth('yg')
     cols = db['com']
-    for user in cols.find({'timeline_count': 0}, ['id', 'timeline_count', 'statuses_count']):
+    for user in cols.find({'timeline_count': {'$lt': 3200}}, ['id', 'timeline_count', 'statuses_count']):
         # print user
-        if user['statuses_count']-user['timeline_count']>100:
+        if (user['statuses_count']-user['timeline_count']) > 100:
             print user['id']
-            cols.update({'id': user['id']}, {'$set':{"timeline_count": 0,
-                                                             'timeline_scraped_times': 0}},
-                                   upsert=False)
+            cols.update({'id': user['id']}, {'$set': {"timeline_count": 0,
+                        'timeline_scraped_times': 0}}, upsert=False)
 
 
 def select_non_common_user():

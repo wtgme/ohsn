@@ -49,6 +49,11 @@ def db_connect_no_auth(DBNAME):
         exit()
 
 
+def db_connect_col(dbname, colname):
+    db = db_connect_no_auth(dbname)
+    return db[colname]
+
+
 ''' testing collection'''
 # collection = DBConnect('echelon', 'timelines')
 # for tweet in collection.find().limit(10):

@@ -45,8 +45,6 @@ def process(poi, timelines, level):
             liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
-                # is it a retweet?
-                # if not ('retweeted_status' in tweet):
                 text = tweet['text'].encode('utf8')
                 # replace RT, @, # and Http://
                 text = rtgrex.sub('', text)
@@ -57,13 +55,11 @@ def process(poi, timelines, level):
                 if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
                     text += '.'
                 textmass = textmass + " " + text.lower()
-            # print ' '.join(textmass.split())
-            result = Liwc.summarize_document(liwc, ' '.join(textmass.split()))
-            # print result
-            poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
-            # progcounter += 1
-            # if progcounter%1000 == 0:
-            #    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + str(progcounter)
+            words = textmass.split()
+            # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+            if len(words > 50):
+                result = Liwc.summarize_document(liwc, ' '.join(words))
+                poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
 
 
 if __name__ == '__main__':
@@ -94,4 +90,6 @@ if __name__ == '__main__':
     # text = ugrex.sub('', text)
     # print text
     # print ' '.join(text.split())
+    # test = 'fadfji aji  jaojf asfdj. ajfoia, fjaial aja.'
+    # print test.split()
 
