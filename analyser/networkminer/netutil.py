@@ -18,7 +18,8 @@ def load_network(db_name, collection):
         n2 = row['follower']
         weightv = 1
         if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
-            DG[n1][n2]['weight'] += weightv
+            # DG[n1][n2]['weight'] += weightv
+            pass
         else:
             DG.add_edge(n1, n2, weight=weightv)
     return DG

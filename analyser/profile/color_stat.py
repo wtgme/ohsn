@@ -19,6 +19,7 @@ import util.io_util as io
 import util.plot_util as plot
 import pickle
 import color_extractor
+import datetime
 
 
 def color_wheel():
@@ -38,6 +39,7 @@ def labc(clist):
 
 def srgbc(rgbv):
     # New Color object with Standard RGB format
+    rgbv = rgbv.replace('#', '')
     return sRGBColor(float(int(rgbv[0:2], 16)), float(int(rgbv[2:4], 16)), float(int(rgbv[4:6], 16)), is_upscaled=True)
 
 
@@ -74,11 +76,16 @@ def rmdefault(clist):
 
 
 def get_image_color(urllist):
+    print len(urllist)
     colorlist = []
+    i = 0
     for url in urllist:
+        i += 1
         main_colors = color_extractor.colorz(url)
         # print main_colors
         colorlist.extend(main_colors)
+        if i%100 == 0:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish users', i
     return colorlist
 
 
@@ -86,34 +93,32 @@ def image_color_compare():
     # ed_urls = io.get_values_one_field('fed', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
     # rd_urls = io.get_values_one_field('random', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
     # yg_urls = io.get_values_one_field('young', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
-
+    #
     # pickle.dump(ed_urls, open("edimage.p", "wb"))
     # pickle.dump(rd_urls, open("rdimage.p", "wb"))
     # pickle.dump(yg_urls, open("ygimage.p", "wb"))
-
+    standers = color_wheel()
+    rgbstan = rgbstandards(standers)
+    rgbstan[-1] = '#FFFFFF'
 
     ed_urls = pickle.load(open("edimage.p", "rb"))
     rd_urls = pickle.load(open("rdimage.p", "rb"))
     yg_urls = pickle.load(open("ygimage.p", "rb"))
 
-    ed_cs = get_image_color(ed_urls)
-    rd_cs = get_image_color(rd_urls)
-    yg_cs = get_image_color(yg_urls)
-
-    pickle.dump(ed_cs, open("edics.p", "wb"))
-    pickle.dump(rd_cs, open("rdics.p", "wb"))
-    pickle.dump(yg_cs, open("ygics.p", "wb"))
-
-    standers = color_wheel()
-
+    # ed_cs = get_image_color(ed_urls)
+    # pickle.dump(ed_cs, open("edics.p", "wb"))
+    ed_cs = pickle.load(open("edics.p", "rb"))
     edi = cate_color(ed_cs, standers)
-    rdi = cate_color(rd_cs, standers)
-    ygi = cate_color(yg_cs, standers)
-
-    rgbstan = rgbstandards(standers)
-    rgbstan[-1] = '#FFFFFF'
     plot.color_bars(rgbstan, edi)
+
+    rd_cs = get_image_color(rd_urls)
+    pickle.dump(rd_cs, open("rdics.p", "wb"))
+    rdi = cate_color(rd_cs, standers)
     plot.color_bars(rgbstan, rdi)
+
+    yg_cs = get_image_color(yg_urls)
+    pickle.dump(yg_cs, open("ygics.p", "wb"))
+    ygi = cate_color(yg_cs, standers)
     plot.color_bars(rgbstan, ygi)
 
 image_color_compare()

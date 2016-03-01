@@ -47,7 +47,7 @@ def test_common():
 
 
 def test_timline():
-    db = dbt.db_connect_no_auth('yg')
+    db = dbt.db_connect_no_auth('rd')
     cols = db['com']
     for user in cols.find({'timeline_count': {'$lt': 3200}}, ['id', 'timeline_count', 'statuses_count']):
         # print user

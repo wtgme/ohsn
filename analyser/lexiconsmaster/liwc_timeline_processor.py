@@ -57,14 +57,16 @@ def process(poi, timelines, level):
                 textmass = textmass + " " + text.lower()
             words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-            if len(words > 50):
+            if len(words) > 50:
                 result = Liwc.summarize_document(liwc, ' '.join(words))
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
+            else:
+                poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": None}}, upsert=False)
 
 
 if __name__ == '__main__':
     '''Connecting db and collections'''
-    db = dbutil.db_connect_no_auth('fed')
+    db = dbutil.db_connect_no_auth('yg')
     sample_poi = db['com']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 
@@ -73,7 +75,7 @@ if __name__ == '__main__':
 
     '''Counting the number of users whose timelines have been processed by LIWC'''
     print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
-    process(sample_poi, sample_time, 1)
+    process(sample_poi, sample_time, 1000)
 
     # rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')
     # mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')
