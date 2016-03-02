@@ -16,9 +16,10 @@ from colormath.color_objects import LabColor, sRGBColor, AdobeRGBColor
 from colormath.color_diff import delta_e_cie2000
 from colormath.color_conversions import convert_color
 import util.io_util as io
+import urllib2
 import util.plot_util as plot
 import pickle
-import color_extractor
+import image_color
 import datetime
 
 
@@ -43,12 +44,15 @@ def srgbc(rgbv):
     return sRGBColor(float(int(rgbv[0:2], 16)), float(int(rgbv[2:4], 16)), float(int(rgbv[4:6], 16)), is_upscaled=True)
 
 
-def cate_color(colors, standards):
+def cate_color(colors, standards, format='rgb'):
     # Map color to the most similar color in color wheel
     color_index = []
     for color in colors:
-        rgb = srgbc(color)
-        lab = convert_color(rgb, LabColor, target_illuminant='d50')
+        if format is 'rgb':
+            rgb = srgbc(color)
+            lab = convert_color(rgb, LabColor, target_illuminant='d50')
+        elif format is 'lab':
+            lab = labc(color)
         mindis, minindex = 10000, 0
         for index in xrange(len(standards)):
             distance = delta_e_cie2000(lab, standards[index])
@@ -81,7 +85,10 @@ def get_image_color(urllist):
     i = 0
     for url in urllist:
         i += 1
-        main_colors = color_extractor.colorz(url)
+        try:
+            main_colors = image_color.main_colors(url)
+        except urllib2.HTTPError:
+            continue
         # print main_colors
         colorlist.extend(main_colors)
         if i%100 == 0:
@@ -108,18 +115,19 @@ def image_color_compare():
     # ed_cs = get_image_color(ed_urls)
     # pickle.dump(ed_cs, open("edics.p", "wb"))
     ed_cs = pickle.load(open("edics.p", "rb"))
-    edi = cate_color(ed_cs, standers)
+    edi = cate_color(ed_cs, standers, 'lab')
     plot.color_bars(rgbstan, edi)
 
-    rd_cs = get_image_color(rd_urls)
-    pickle.dump(rd_cs, open("rdics.p", "wb"))
-    rdi = cate_color(rd_cs, standers)
-    plot.color_bars(rgbstan, rdi)
+    # rd_cs = get_image_color(rd_urls)
+    # pickle.dump(rd_cs, open("rdics.p", "wb"))
+    # rd_cs = pickle.load(open("rdics.p", "rb"))
+    # rdi = cate_color(rd_cs, standers, 'lab')
+    # plot.color_bars(rgbstan, rdi)
 
-    yg_cs = get_image_color(yg_urls)
-    pickle.dump(yg_cs, open("ygics.p", "wb"))
-    ygi = cate_color(yg_cs, standers)
-    plot.color_bars(rgbstan, ygi)
+    # yg_cs = get_image_color(yg_urls)
+    # pickle.dump(yg_cs, open("ygics.p", "wb"))
+    # ygi = cate_color(yg_cs, standers, 'lab')
+    # plot.color_bars(rgbstan, ygi)
 
 image_color_compare()
 
