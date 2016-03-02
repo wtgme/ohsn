@@ -56,8 +56,8 @@ def network_snowball(dbname, mode='N'):
         # follower_flag = follower.snowball_follower(ed_poi, ed_net, level, mode)
         count = ed_poi.count()
         nsize, esize = nt.size_gaint_comp_net(ed_net)
-        s = 'Start_level: ' + str(level), + ' all_users: ' + \
-                  str(count) + ' size_gc:' + str(nsize) + ' ed_gc: ' + str(esize)
+        s = 'Start_level: ' + str(level) + ' all_users: ' + \
+                  str(count) + ' size_gc:' + str(nsize) + ' ed_gc: ' + str(esize) + '\n'
         print s
         statis += s
         if (following_flag == False) or nsize>4000:
