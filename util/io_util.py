@@ -17,7 +17,7 @@ def read_fields():
     with open('fieldx.txt', 'r') as fo:
         for line in fo.readlines():
             if not line.startswith(' '):
-                print line
+                # print line
                 fileds.append(line.strip())
     return fileds
 

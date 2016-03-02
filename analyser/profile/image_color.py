@@ -7,7 +7,7 @@ Created on 6:10 PM, 3/1/16
 
 from skimage.io import imread
 from sklearn.cluster import KMeans
-from skimage.color import rgb2lab, lab2rgb
+from skimage.color import rgb2lab
 import numpy as np
 from sklearn.utils import shuffle
 

@@ -116,6 +116,7 @@ def rfe(X, y):
     svc = SVC(kernel="linear")
     # The "accuracy" scoring is proportional to the number of correct
     # classifications
+    # Tested: StratifiedKFold works for imbalanced labeled data.
     rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 5),
                   scoring='accuracy')
     rfecv.fit(X, y)
@@ -133,9 +134,22 @@ def rfe(X, y):
     return (rfecv.support_, rfecv.ranking_)
 
 
+def pca_svm_cv(X, y, n=70):
+    pca = decomposition.PCA(n_components=n)
+    X = pca.fit_transform(X)
+    clf = SVC(kernel='linear')
+    #When the cv argument is an integer, cross_val_score
+    # uses the KFold or StratifiedKFold strategies by default,
+    # the latter being used if the estimator derives from ClassifierMixin.
+    scores = cross_validation.cross_val_score(clf, X, y, cv=5, scoring='accuracy')
+    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
+
 def svm_cv(X, y):
     # Cross validation with SVM
     clf = SVC(kernel='linear')
+    #When the cv argument is an integer, cross_val_score
+    # uses the KFold or StratifiedKFold strategies by default,
+    # the latter being used if the estimator derives from ClassifierMixin.
     scores = cross_validation.cross_val_score(clf, X, y, cv=5, scoring='accuracy')
     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
 
@@ -162,7 +176,7 @@ X_digits, y = load_svmlight_file("data/ed-rd-liwc.data")
 X_dentise = X_digits.toarray()
 
 X = preprocessing.scale(X_dentise)
-
+pca_svm_cv(X, y)
 # min_max_scaler = preprocessing.MinMaxScaler()
 # X = min_max_scaler.fit_transform(X_dentise)
 
@@ -172,26 +186,26 @@ X = preprocessing.scale(X_dentise)
 # support, ranking = rfe(X, y)
 # convert_fields(ranking)
 
-print X.shape
-svm_cv(X, y)
-rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
-        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
-        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
-X_new = select_specific_features(X, rank)
-print X_new.shape
-svm_cv(X_new, y)
-
-rank1 = [0,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
-        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
-        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
-X_new1 = select_specific_features(X, rank1)
-print X_new1.shape
-svm_cv(X_new1, y)
-
-rank2 = [1,1,2,31,54,9,47,42,0,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
-        48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
-        1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
-X_new2 = select_specific_features(X, rank2)
-print X_new2.shape
-svm_cv(X_new2, y)
+# print X.shape
+# svm_cv(X, y)
+# rank = [1,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+#         48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+#         1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+# X_new = select_specific_features(X, rank)
+# print X_new.shape
+# svm_cv(X_new, y)
+#
+# rank1 = [0,1,2,31,54,9,47,42,1,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+#         48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+#         1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+# X_new1 = select_specific_features(X, rank1)
+# print X_new1.shape
+# svm_cv(X_new1, y)
+#
+# rank2 = [1,1,2,31,54,9,47,42,0,1,11,13,8,22,10,36,25,17,37,27,16,45,29,12,41,
+#         48,34,24,21,7,1,1,1,1,49,1,35,30,28,51,23,32,6,18,43,19,1,1,1,1,1,
+#         1,1,52,1,1,3,39,1,1,1,1,1,1,50,4,33,44,1,14,26,1,1,20,38,5,53,46,40,1,15]
+# X_new2 = select_specific_features(X, rank2)
+# print X_new2.shape
+# svm_cv(X_new2, y)
 
