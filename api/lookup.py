@@ -132,5 +132,5 @@ def trans_seed_to_poi(seed_list, poi_db):
                     poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
                                                         }}, upsert=False)
             else:
-                print profile['screen_name'], 'set protected from others'
-        print seed_list, 'deleted their accounts'
+                print 'Protected account', profile['screen_name']
+        print 'Deleted accounts', seed_list

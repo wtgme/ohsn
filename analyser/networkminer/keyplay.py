@@ -13,7 +13,7 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import util.db_util as dbt
-import netutil
+from util import net_util
 import pymongo
 import networkx as nx
 import util.plot_util as plot
@@ -129,12 +129,12 @@ db_name = 'yg'
 # extract_behavior_subnetwork(db_name)
 
 print 'original network'
-FDG = netutil.load_network(db_name, 'net')
+FDG = net_util.load_network(db_name, 'net')
 print FDG.number_of_edges()
 print FDG.number_of_nodes()
 
 print 'get gaint_component of network'
-FDG = netutil.get_gaint_comp(FDG)
+FDG = net_util.get_gaint_comp(FDG)
 print FDG.number_of_edges()
 print FDG.number_of_nodes()
 print nx.average_shortest_path_length(FDG)

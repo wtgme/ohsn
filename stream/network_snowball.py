@@ -9,16 +9,17 @@ Created on 10:20, 02/02/16
 
 import sys
 sys.path.append('..')
-from api import follower, following, lookup, profiles_check
+from api import following, lookup, profiles_check
 import util.db_util as dbt
+import util.net_util as nt
 import datetime
 import pymongo
 
 
 def network_snowball(dbname, mode='N'):
     db = dbt.db_connect_no_auth(dbname)
-    ed_poi = db['tcom']
-    ed_net = db['tnet']
+    ed_poi = db['ccom']
+    ed_net = db['cnet']
     stream_users = db['poi']
     # echelon = dbt.db_connect_no_auth('echelon')
     # echelon_poi = echelon['poi']
@@ -46,22 +47,27 @@ def network_snowball(dbname, mode='N'):
             lookup.trans_seed_to_poi(ed_seed, ed_poi)
             continue
 
+    statis = ''
     level = 1
     while True:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
         following_flag = following.snowball_following(ed_poi, ed_net, level, mode)
+        # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+        # follower_flag = follower.snowball_follower(ed_poi, ed_net, level, mode)
         count = ed_poi.count()
-        if count>3393:
-            break
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = follower.snowball_follower(ed_poi, ed_net, level, mode)
-        count = ed_poi.count()
-        if (following_flag == False and follower_flag == False) or count>3393:
-            break
+        nsize, esize = nt.size_gaint_comp_net(ed_net)
+        s = 'Start_level: ' + str(level), + ' all_users: ' + \
+                  str(count) + ' size_gc:' + str(nsize) + ' ed_gc: ' + str(esize)
+        print s
+        statis += s
+        if (following_flag == False) or nsize>4000:
+            return statis
         else:
             level += 1
             continue
 
 
-network_snowball('rd')
-# network_snowball('yg', 'YG')
+s = network_snowball('rd', 'N')
+print s
+s = network_snowball('yg', 'YG')
+print s
