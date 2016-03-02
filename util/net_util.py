@@ -78,3 +78,8 @@ def net_statis(DG):
         print 'Average shortest path length:', nx.average_shortest_path_length(DG)
     except Exception:
         pass
+
+# DG = load_network('rd', collection='cnet')
+# net_statis(DG)
+# G = get_gaint_comp(DG)
+# net_statis(G)
