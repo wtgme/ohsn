@@ -50,24 +50,25 @@ def get_gaint_comp(DG):
     # attributes for the new undirected edge will be a combination of the
     # attributes of the directed edges.
     G = DG.to_undirected()
+    print 'Getting Gaint Component.........................'
     print 'Network is connected:', (nx.is_connected(G))
     print 'The number of connected components:', (nx.number_connected_components(G))
     largest_cc = max(nx.connected_components(G), key=len)
-
-    for node in DG.nodes():
-        if node not in largest_cc:
-            DG.remove_node(node)
-    del G
-    return DG
+    return DG.subgraph(largest_cc)
 
 
-def size_gaint_comp_net(db_name, collection='None'):
+def size_gaint_comp_net_db(db_name, collection='None'):
     DG = load_network(db_name, collection)
+    return size_gaint_comp(DG)
+
+
+def size_gaint_comp(DG):
     G = get_gaint_comp(DG)
     return size_net(G)
 
 
 def size_net(DG):
+    print 'Size of network:', DG.number_of_nodes(), DG.number_of_edges()
     return (DG.number_of_nodes(), DG.number_of_edges())
 
 

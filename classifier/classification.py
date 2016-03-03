@@ -144,6 +144,7 @@ def pca_svm_cv(X, y, n=70):
     scores = cross_validation.cross_val_score(clf, X, y, cv=5, scoring='accuracy')
     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
 
+
 def svm_cv(X, y):
     # Cross validation with SVM
     clf = SVC(kernel='linear')
@@ -172,19 +173,18 @@ def fs_svm(X, y):
             print i+1, LIWC[i]
 
 
-X_digits, y = load_svmlight_file("data/ed-rd-liwc.data")
+X_digits, y = load_svmlight_file("data/ed-nrd-liwc.data")
 X_dentise = X_digits.toarray()
 
 X = preprocessing.scale(X_dentise)
-pca_svm_cv(X, y)
+
 # min_max_scaler = preprocessing.MinMaxScaler()
 # X = min_max_scaler.fit_transform(X_dentise)
 
+# pca_svm_cv(X, y)
 
-# fs_svm(X, y_digits)
-
-# support, ranking = rfe(X, y)
-# convert_fields(ranking)
+support, ranking = rfe(X, y)
+convert_fields(ranking)
 
 # print X.shape
 # svm_cv(X, y)

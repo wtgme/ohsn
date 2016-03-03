@@ -123,13 +123,13 @@ def centrality(BDG, FDG, p, T):
         print str(node) + ',' + str(dcv) + ',' + str(ngv)
     return dic
 
-db_name = 'yg'
+db_name = 'fed'
 # tweet_ret_times('fed')
 # extract_friend_subnetwork(db_name)
 # extract_behavior_subnetwork(db_name)
 
 print 'original network'
-FDG = net_util.load_network(db_name, 'net')
+FDG = net_util.load_network(db_name, 'snet')
 print FDG.number_of_edges()
 print FDG.number_of_nodes()
 
