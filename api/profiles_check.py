@@ -46,6 +46,7 @@ random.seed(time.time())
 
 girl_names = read_name()
 
+
 def tokenizer_stoprm(dscp):
     dscp = dscp.strip().lower()
     # dscp = re.sub(r"(?:\@|https?\://)\S+", "", dscp) # replace @ and http://
@@ -136,6 +137,18 @@ def check_depression(user):
     else:
         return False
 
+
+def check_user(profile, check='N'):
+    if check is 'ED':
+        return check_ed(profile)
+    elif check is 'YG':
+        return check_yg(profile)
+    elif check is 'DP':
+        return check_depression(profile)
+    elif check is 'RD':
+        return check_rd(profile)
+    else:
+        return check_en(profile)
 
 def profile_pos():
     db = dbt.db_connect_no_auth('ed')

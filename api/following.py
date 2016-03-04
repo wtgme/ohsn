@@ -128,7 +128,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                                     ['id_str']).limit(min(200, count)):
                 # print 'a new user'
                 next_cursor = -1
-                params = {'user_id': user['id_str'], 'count': 5000}
+                params = {'user_id': user['id_str'], 'count': 5000, 'stringify_ids':True}
                 # followee getting
                 while next_cursor != 0:
                     params['cursor'] = next_cursor
@@ -146,16 +146,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                             print 'user profile:', index_begin, index_end, len(profiles)
                             # if profiles:
                             for profile in profiles:
-                                if check is 'ED':
-                                    check_flag = profiles_check.check_ed(profile)
-                                elif check is 'YG':
-                                    check_flag = profiles_check.check_yg(profile)
-                                elif check is 'DP':
-                                    check_flag = profiles_check.check_depression(profile)
-                                elif check is 'RD':
-                                    check_flag = profiles_check.check_rd(profile)
-                                else:
-                                    check_flag = profiles_check.check_en(profile)
+                                check_flag = profiles_check.check_user(profile, check)
                                 if check_flag:
                                     profile['following_prelevel_node'] = user['id_str']
                                     profile['level'] = start_level+1
