@@ -16,8 +16,8 @@ import snap
 # randomc = pickle.load(open("data/randomc.p", "rb"))
 
 G = nt.load_network('rd', 'cnet')
-nx.write_edgelist(G, "net.edgelist")
-Graph = snap.LoadEdgeList(snap.PUNGraph, "net.edgelist", 0, 1, ' ')
+nx.write_edgelist(G, "data/net.data")
+Graph = snap.LoadEdgeList(snap.PUNGraph, "data/net.data", 0, 1, ' ')
 CmtyV = snap.TCnComV()
 modularity = snap.CommunityGirvanNewman(Graph, CmtyV)
 for Cmty in CmtyV:
