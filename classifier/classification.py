@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 from sklearn.datasets import load_svmlight_file
-from sklearn import linear_model, decomposition
+from sklearn import decomposition
 from sklearn import cross_validation
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 from sklearn import preprocessing
 from sklearn.svm import LinearSVC, SVC
-from sklearn.feature_selection import SelectFromModel
 from sklearn.cross_validation import StratifiedKFold
-from sklearn.feature_selection import RFECV
+from sklearn.feature_selection import RFECV, RFE, SelectFromModel
+import pickle
 
 
 def read_field():
@@ -26,7 +26,7 @@ def read_field():
     with open('fieldx.txt', 'r') as fo:
         for line in fo.readlines():
             fileds.append(line.strip().split('.')[-1])
-    return fileds
+    return np.array(fileds)
 
 
 def pac_svc(X_digits, y_digits):
@@ -67,50 +67,18 @@ def pac_svc(X_digits, y_digits):
     plt.show()
 
 
-def select_specific_features(X, ranks):
-    # select features (columns) according to ranks or binary list
-    size = 0
-    for rank in ranks:
-        if rank == 1:
-            size += 1
-    row, col = X.shape
-    X_new = np.zeros((row, size))
-    index_new = 0
-    for i in xrange(len(ranks)):
-        if ranks[i] == 1:
-            X_new[:, index_new] = X[:, i]
-            index_new += 1
-    return X_new
+def ref(X, y, n_features_to_select=1):
+    # specify the desired number of features
+    # return the masks and ranking of selected features
+    estimator = SVC(kernel="linear")
+    selector = RFE(estimator, n_features_to_select=n_features_to_select, step=1)
+    selector = selector.fit(X, y)
+    return (selector.support_, selector.ranking_)
 
 
-def convert_fields(rank):
-    # Convert ranking IDs to feature names and rank them
-    LIWC = read_field()
-    rf = {}
-    for i in xrange(len(rank)):
-        key = rank[i]
-        field = LIWC[i]
-        flist = rf.get(key, [])
-        flist.append(field)
-        rf[key] = flist
-    line_tag = ''
-    line_non_tag = ''
-    for key in sorted(rf):
-        flist = rf[key]
-        line = ''
-        for f in flist:
-            line += f + '; '
-        if key == 1:
-            line_tag += line
-        else:
-            line_non_tag += line
-
-    print 'Selected Features:, ', line_tag
-    print 'Eliminated Features:, ', line_non_tag
-
-
-def rfe(X, y):
+def rfecv(X, y):
     # recursive feature elimination with SVM
+    # CV to find the best set of features
 
     # Create the RFE object and compute a cross-validated score.
     svc = SVC(kernel="linear")
@@ -128,9 +96,11 @@ def rfe(X, y):
     plt.xlabel("Number of features selected")
     plt.ylabel("Cross validation score (nb of correct classifications)")
     plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
+    plt.grid()
     plt.show()
-    print 'Seleted features', (rfecv.support_)
-    print 'Ranking of features', (rfecv.ranking_)
+    # print 'Seleted features', (rfecv.support_)
+    # print 'Ranking of features', (rfecv.ranking_)
+    # print 'Estimator params', (rfecv.get_params(deep=True))
     return (rfecv.support_, rfecv.ranking_)
 
 
@@ -173,18 +143,107 @@ def fs_svm(X, y):
             print i+1, LIWC[i]
 
 
-X_digits, y = load_svmlight_file("data/ed-nrd-liwc.data")
-X_dentise = X_digits.toarray()
+def select_fields(fields, ranks):
+    return fields[ranks]
 
-X = preprocessing.scale(X_dentise)
 
-# min_max_scaler = preprocessing.MinMaxScaler()
-# X = min_max_scaler.fit_transform(X_dentise)
+def select_features(X, ranks):
+    # select features (columns) according to ranks or binary list
+    return X[:, ranks]
+    # size = 0
+    # for rank in ranks:
+    #     if rank == 1:
+    #         size += 1
+    # row, col = X.shape
+    # X_new = np.zeros((row, size))
+    # index_new = 0
+    # for i in xrange(len(ranks)):
+    #     if ranks[i] == 1:
+    #         X_new[:, index_new] = X[:, i]
+    #         index_new += 1
+    # return X_new
+
+
+
+def convert_fields(LIWC, rank):
+    # Convert ranking IDs to feature names and rank them
+    rf = {}
+    for i in xrange(len(rank)):
+        key = rank[i]
+        field = LIWC[i]
+        flist = rf.get(key, [])
+        flist.append(field)
+        rf[key] = flist
+    # output
+    line_tag = ''
+    line_non_tag = ''
+    for key in sorted(rf):
+        flist = rf[key]
+        line = ''
+        for f in flist:
+            line += f + '; '
+        if key == 1:
+            line_tag += line
+        else:
+            line_non_tag += line
+
+    print 'Selected Features:, ', line_tag
+    print 'Eliminated Features:, ', line_non_tag
+
+
+def load_scale_data(file_path):
+    X_digits, y = load_svmlight_file(file_path)
+    X_dentise = X_digits.toarray()
+    X = preprocessing.scale(X_dentise)
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # X = min_max_scaler.fit_transform(X_dentise)
+    return (X, y)
+
+
 
 # pca_svm_cv(X, y)
+# supportcv, rankingcv = rfecv(X, y)
+# pickle.dump(rankingcv, open("data/rankcv.p", "wb"))
+# rankingcv = pickle.load(open("data/rankcv.p", "rb"))
+# print rankingcv
+# convert_fields(LIWC, rankingcv)
 
-support, ranking = rfe(X, y)
-convert_fields(ranking)
+LIWC = read_field()
+
+X1, y1 = load_scale_data('data/ed-nrd-liwc.data')
+support1, ranking1 = ref(X1, y1, 38)
+convert_fields(LIWC, ranking1)
+
+X2, y2 = load_scale_data('data/ed-nyg-liwc.data')
+support2, ranking2 = ref(X2, y2, 31)
+convert_fields(LIWC, ranking2)
+
+X3, y3 = load_scale_data('data/ed-all-liwc.data')
+support1, ranking1 = rfecv(X1, y1)
+support3, ranking3 = ref(X3, y3, 69)
+convert_fields(LIWC, ranking3)
+
+comm = np.logical_and(support1, support2)
+convert_fields(LIWC, comm)
+
+svm_cv(X1[:, support1], y1)
+svm_cv(X2[:, support2], y2)
+svm_cv(X3[:, support3], y3)
+svm_cv(X1[:, comm], y1)
+svm_cv(X2[:, comm], y2)
+svm_cv(X3[:, comm], y3)
+
+
+
+
+
+
+# X_new = select_features(X, rankingcv)
+# LIWC = select_fields(LIWC, rankingcv)
+# supportn, rankingn = ref(X_new, y)
+# convert_fields(LIWC, rankingn)
+
+
 
 # print X.shape
 # svm_cv(X, y)

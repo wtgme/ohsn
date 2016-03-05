@@ -83,11 +83,11 @@ def start_monitor():
     while True:
         start = time.time()
         t1 = Thread(target=monitor_network, args=[index])
-        t2 = Thread(target=monitor_timeline, args=[index])
+        # t2 = Thread(target=monitor_timeline, args=[index])
         t1.start()
-        t2.start()
+        # t2.start()
         t1.join()
-        t2.join()
+        # t2.join()
         check_change(index)
         finish = time.time()
         during = finish - start

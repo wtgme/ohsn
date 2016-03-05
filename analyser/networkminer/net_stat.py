@@ -17,7 +17,7 @@ def random_walk(DG, n):
     G = DG.to_undirected()
     start_node = choice(G.nodes())
     nodes = set()
-    while len(nodes)<n:
+    while len(nodes) < n:
         nodes.add(start_node)
         start_node = choice(G.neighbors(start_node))
     return nodes
@@ -36,23 +36,30 @@ def sample_network(DG, seed_nodes, size):
     return startDG
 
 
+def gc_stat(dbname, colname):
+    DG = nt.load_network(dbname, colname)
+    # nt.net_statis(DG)
+    GC = nt.get_gaint_comp(DG)
+    UGC = GC.to_undirected()
+    # nt.net_statis(UGC)
+    return UGC
 
-seed_nodes = io.get_values_one_field('yg', 'ccom', 'id', {'level': 1})
-yDG = nt.load_network('yg', 'cnet')
-ygc = nt.get_gaint_comp(yDG)
-# plot.plot_whole_network(ygc)
-for node in seed_nodes:
-    if node not in ygc.nodes():
-        seed_nodes.remove(node)
-print 'Size of seed nodes in gaint components', len(seed_nodes)
-# fDG = sample_network(ygc, seed_nodes, 3380)
+print '----------------------'
+yg = gc_stat('yg', 'snet')
 
+print '----------------------'
+rd = gc_stat('rd', 'snet')
+
+print '----------------------'
+ed = gc_stat('fed', 'snet')
 
 
 # eDG = nt.load_network('fed', 'snet')
-# ydgs = sorted(nx.degree(yDG).values(),reverse=True)
-# edgs = sorted(nx.degree(yDG).values(),reverse=True)
-# plot.plot_pdf_mul_data([yDG, eDG], ['--bo', '--r^'], 'Degree',  ['Younger', 'ED'], False)
+ydgs = sorted(nx.degree(yg).values(),reverse=True)
+rdgs = sorted(nx.degree(rd).values(),reverse=True)
+edgs = sorted(nx.degree(ed).values(),reverse=True)
+
+plot.plot_pdf_mul_data([ydgs, rdgs, edgs], ['--bo', '--r^', '--ks'], 'Degree',  labels=['YG', 'RD', 'ED'], linear_bins=False)
 
 
 
