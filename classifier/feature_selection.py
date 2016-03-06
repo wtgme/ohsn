@@ -127,6 +127,7 @@ def plot_errorbar(score_means, score_stds, labels):
     plt.grid()
     plt.show()
 
+
 def pca_svm_cv(X, y, n=70):
     pca = decomposition.PCA(n_components=n)
     X = pca.fit_transform(X)
