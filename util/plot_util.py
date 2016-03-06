@@ -99,7 +99,7 @@ def lr_ks(list_x, list_y, fit_start=-1, fit_end=-1):
     logY = np.log10(Y)
 
 
-def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000):
+def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000, savefile=None):
     plt.clf()
     plt.scatter(listx, listy, s=20, c='#fee8c8', marker='+', label='raw '+l)
     ax = plt.gca()
@@ -116,7 +116,11 @@ def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000):
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=4)
     leg.draw_frame(True)
-    plt.show()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()
 
 
 def drop_zeros(list_a):
@@ -189,7 +193,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
+def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
     data = drop_zeros(data)
     # plt.gcf()
     # data = outstrength
@@ -214,10 +218,14 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1):
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
-    plt.show()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, scale='log', min_x=None, max_x=None):
+def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, scale='log', min_x=None, max_x=None, savefile=None):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
@@ -248,10 +256,14 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, scale
     ax.set_autoscale_on(True)
     # plt.savefig('echelon-smaple-'+field+'.pdf')
     # plt.clf()
-    plt.show()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()
 
 
-def plot_whole_network(DG):
+def network_top(DG, savefile=None):
     # pos = random_layout(DG)
     # pos = shell_layout(DG)
     pos = spring_layout(DG)
@@ -260,10 +272,14 @@ def plot_whole_network(DG):
     # pos = spectral_layout(DG)
     # plt.title('Plot of Network')
     draw(DG, pos)
-    plt.show()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()
 
 
-def color_wheel():
+def color_wheel(savefile=None):
     fig = plt.figure()
     display_axes = fig.add_axes([0.1,0.1,0.8,0.8], projection='polar')
     display_axes._direction = 2*np.pi ## This is a nasty hack - using the hidden field to
@@ -281,10 +297,15 @@ def color_wheel():
     cb.outline.set_visible(False)
     display_axes.set_axis_off()
     display_axes.set_rlim([-1,1])
-    plt.show() # Replace with plt.savefig if you want to save a file
+    # plt.show() # Replace with plt.savefig if you want to save a file
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()
 
 
-def color_bars(colorlist, colorcounts):
+def color_bars(colorlist, colorcounts, savefile=None):
     countsum = 0.0
     statis = [0.0]*len(colorlist)
     for i in colorcounts:
@@ -307,4 +328,8 @@ def color_bars(colorlist, colorcounts):
     ax.set_xlabel('Color ID')
     ax.set_xlim(xmax=len(colorlist))
     ax.grid(True)
-    plt.show()
+    if savefile is None:
+        plt.show()
+    else:
+        plt.savefig(savefile)
+        plt.clf()

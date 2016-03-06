@@ -5,7 +5,7 @@ Created on 16:49, 02/03/16
 @author: wt
 """
 import sys
-sys.path.append('..')
+sys.path.append('../..')
 from networkx import *
 import util.net_util as nt
 import util.io_util as io
