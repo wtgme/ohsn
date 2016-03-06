@@ -9,17 +9,20 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import util.db_util as dbt
+import numpy as np
 
 
-def read_fields():
+def read_fields(split=False):
     # read feature names in use
     fileds = []
     with open('fieldx.txt', 'r') as fo:
         for line in fo.readlines():
             if not line.startswith(' '):
-                # print line
-                fileds.append(line.strip())
-    return fileds
+                line = line.strip()
+                if split:
+                    line = line.split('.')[-1]
+                fileds.append(line)
+    return np.array(fileds)
 
 
 def get_fields_one_doc(x, fields):
