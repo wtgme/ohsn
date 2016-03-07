@@ -32,7 +32,7 @@ def snap_comm():
 def nx_comm_plot(dbname, colname):
     G = nt.load_network(dbname, colname)
     plot.network_top(G, dbname+'.png')
-    comp = girvan_newman(G)
+    comp = nt.girvan_newman(G)
     pickle.dump(comp, open('data/'+dbname+'.p', "wb"))
 
 
