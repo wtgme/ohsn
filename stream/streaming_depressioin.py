@@ -39,7 +39,7 @@ OAUTH_TOKEN_SECRET = config.get('credentials1', 'oath_token_secret')
 print('loaded configuation')
 
 # spin up database
-DBNAME = 'dp'
+DBNAME = 'depression'
 COLLECTION = 'stream'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
@@ -116,13 +116,10 @@ while True:
         # with open('keyword.txt', 'r') as fo:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
+        # Depression: http://psychcentral.com/lib/types-and-symptoms-of-depression/
         stream.statuses.filter(language=['en'], track=[
-            # 'proana', 'anamia', 'thinspo',
-            #                                            'EDProbs', 'askanamia', 'bonespo',
-            #                                            'legspo'
-            'depression', 'anxiety', 'paranoia',
-            'ocd', 'ptsd'
-                ])
+            'dysthymia', 'dysthymic', 'bipolar', 'peripartum', 'postpartum', 'melancholic',
+            'atypical', 'catatonic'])
 
     except Exception as detail:
         print str(detail)
