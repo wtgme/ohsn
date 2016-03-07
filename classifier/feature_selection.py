@@ -118,11 +118,19 @@ def plot_rfecvs(rfecvs, labels):
 def plot_errorbar(score_means, score_stds, labels):
     plt.figure()
     # plt.xlabel("Number of features selected")
+    index = np.arange(len(score_means))
+    bar_width = 0.5
+    opacity = 0.4
+    error_config = {'ecolor': '0.3'}
     plt.ylabel("Cross validation performance")
-    for i in xrange(len(score_means)):
-        plt.errorbar(i+1, score_means[i], np.array(score_stds[i]), fmt="o", label=labels[i])
-    plt.xticks(range(len(score_means)+2))
-    plt.ylim(0.4, 1)
+    # for i in xrange(len(score_means)):
+    #     plt.errorbar(i+1, score_means[i], np.array(score_stds[i]), fmt="o", label=labels[i])
+    plt.bar(index, score_means, bar_width, alpha=opacity, color='b',
+                 yerr=score_stds, error_kw=error_config, label='Accuracy')
+    plt.xticks(index + bar_width/2, labels)
+    # plt.xticks(range(len(score_means)), labels)
+    plt.ylim(0.45, 1)
+    # plt.xlim(-1, len(score_means))
     plt.legend()
     plt.grid()
     plt.show()
@@ -257,5 +265,5 @@ def balanced():
     plot_rfecvs(scores, ['Non-balanced', 'Balanced'])
 
 
-common_features()
+kernels()
 
