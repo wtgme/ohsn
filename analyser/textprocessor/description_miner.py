@@ -16,8 +16,10 @@ import util.db_util as dbutil
 # import urllib
 import re
 import datetime
-from operator import itemgetter
 from collections import Counter
+from deepdiff import DeepDiff
+import pymongo
+import pickle
 
 
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
@@ -438,67 +440,112 @@ def get_ultimate_goal_weight(text):
         return (None, None)
 
 
+def process_text(text):
+    results = {}
+    text = text.encode('utf-8').replace('\n', '')
+    text = text.lower()
+
+    cnt = Counter()
+    words = re.findall('\w+', text.lower())
+    for word in words:
+        if word in KEYWORDS:
+            cnt[word] += 1
+    edword_count = sum(cnt.values())
+    results['edword_count'] = {'value':int(edword_count)}
+
+    gw, gw_ug = get_goal_weight(text)
+    if gw is not None:
+        results['gw'] = {'ug': gw_ug, 'value': float(gw)}
+
+    cw, cw_ug = get_current_weight_KG(text)
+    if cw is not None:
+        results['cw'] = {'ug': cw_ug, 'value': float(cw)}
+
+    hw, hw_ug = get_high_weightKG(text)
+    if hw is not None:
+        results['hw'] = {'ug': hw_ug, 'value': float(hw)}
+
+    lw, lw_ug = get_low_weight_KG(text)
+    if lw is not None:
+        results['lw'] = {'ug': lw_ug, 'value': float(lw)}
+
+    h = get_height(text)
+    if h is not None:
+        results['h'] = {'value': float(h)}
+
+    a = get_age(text)
+    if a is not None:
+        results['a'] = {'value': float(a)}
+    return results
+
+
+def process_timelines(user_id, timeline, bio):
+    while True:
+        count = timeline.count({'user.id': user_id, 'bio_mined': {'$exists': False}})
+        if count is 0:
+            break
+        else:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
+
+        last_bio = bio.find({'uid': user_id}).sort([('tid', -1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
+        if last_bio is None:
+            last_bio_rec = {}
+        else:
+            last_bio_rec = last_bio['results']
+        for tweet in timeline.find({'user.id': user_id, 'bio_mined': {'$exists': False}},
+                                   {'id':1, 'user':1, 'created_at':1}).sort([('id', 1)]):
+            user = tweet['user']
+            text = user['description']
+            if text is None:
+                results = {}
+            else:
+                results = process_text(text)
+            if results and DeepDiff(results, last_bio_rec):
+                last_bio_rec = results
+                bio.insert({"uid": user_id, 'tid': tweet['id'], 'created_at': tweet['created_at'], 'results': results})
+            timeline.update({"id": tweet['id']}, {'$set': {'bio_mined': True}}, upsert=False)
+
+
 def process_description(poi):
     # poi.update({}, {'$set': {"text_anal.mined": False}}, multi=True)
     while True:
         count = poi.count({"text_anal.mined": {'$exists': False}})
         # count({'$or':[{'protected': False, 'text_anal.mined': {'$exists': False}, 'level': {'$lte': level}},
         #                                      {'protected': False, 'text_anal.mined': {'$lt': scrapt_times}, 'level': {'$lte': level}}]})
-
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
         for user in poi.find({"text_anal.mined": {'$exists': False}}).limit(500):
-            try:
-                text = user['description']
-                text = text.encode('utf-8').replace('\n', '')
-                text = text.lower()
-                source = 'description'
+            text = user['description']
+            if text is None:
+                results = {}
+            else:
+                results = process_text(text)
+            results['mined'] = True
+            poi.update({"id": user['id']}, {'$set': {'text_anal': results}}, upsert=False)
 
-                cnt = Counter()
-                words = re.findall('\w+', text.lower())
-                for word in words:
-                    if word in KEYWORDS:
-                        cnt[word] += 1
-                edword_count = sum(cnt.values())
-                poi.update({"id": user['id']}, {'$set':{'text_anal.edword_count.datetime':datetime.datetime.now() ,'text_anal.edword_count.source':source, 'text_anal.edword_count.value':int(edword_count)}})
 
-                # ugw, ugw_ug = get_ultimate_goal_weight(text)
-                # if ugw is not None:
-                #     poi.update({"id": user['id']}, {'$set':{'text_anal.ugw.datetime':datetime.datetime.now(),'text_anal.ugw.source':source, 'text_anal.ugw.ug':gw_ug, 'text_anal.ugw.value':gw}})
+def process_poi():
+    db = dbutil.db_connect_no_auth('ed')
+    sample_poi = db['poi_ed']
+    process_description(sample_poi)
 
-                gw, gw_ug = get_goal_weight(text)
-                if gw is not None:
-                    poi.update({"id": user['id']}, {'$set':{'text_anal.gw.datetime':datetime.datetime.now(),'text_anal.gw.source':source, 'text_anal.gw.ug':gw_ug, 'text_anal.gw.value':float(gw)}})
 
-                cw, cw_ug = get_current_weight_KG(text)
-                if cw is not None:
-                    poi.update({"id": user['id']}, {'$set':{'text_anal.cw.datetime':datetime.datetime.now(),'text_anal.cw.source':source, 'text_anal.cw.ug':cw_ug, 'text_anal.cw.value':float(cw)}})
+db = dbutil.db_connect_no_auth('fed')
+timeline = db['timeline']
+bio = db['bio']
+bio.create_index([('uid', pymongo.ASCENDING),
+                ('tid', pymongo.ASCENDING)],
+                    unique=True)
+test_ids = pickle.load(open('test_ids_class.p', 'r'))
+test_class = pickle.load(open('test_class.p', 'r'))
+test_class[test_class < 0] = 0
+targest_ids = test_ids[test_class]
+for user_id in targest_ids:
+    process_timelines(user_id, timeline, bio)
 
-                hw, hw_ug = get_high_weightKG(text)
-                if hw is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.hw.datetime':datetime.datetime.now(),'text_anal.hw.source':source, 'text_anal.hw.ug':hw_ug, 'text_anal.hw.value':float(hw)}})
 
-                lw, lw_ug = get_low_weight_KG(text)
-                if lw is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.lw.datetime':datetime.datetime.now(),'text_anal.lw.source':source, 'text_anal.lw.ug':lw_ug, 'text_anal.lw.value':float(lw)}})
-
-                h = get_height(text)
-                if h is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.h.datetime':datetime.datetime.now(),'text_anal.h.source':source, 'text_anal.h.value':float(h)}})
-
-                a = get_age(text)
-                if a is not None:
-                    poi.update({ "id": user['id']}, {'$set':{'text_anal.a.datetime':datetime.datetime.now(),'text_anal.a.source':source, 'text_anal.a.value':int(a)}})
-            except Exception as detail:
-                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), str(detail), 'miss user description'
-
-            poi.update({ "id": user['id']}, {'$set':{'text_anal.mined':True}})
-
-db = dbutil.db_connect_no_auth('young')
-sample_poi = db['com']
-process_description(sample_poi)
 
 # text =  '''23, 5'4 EDNOS. starve, purge, dying. don't care.'''.lower()
 # print get_age(text)
