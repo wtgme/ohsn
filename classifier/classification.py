@@ -24,11 +24,11 @@ def regression():
     svr_lin = SVR(kernel='linear')
     y_lin = svr_lin.fit(X_train, y_train).predict(X_test)
     pickle.dump(y_test, open('data/test_id_reg.p', 'w'))
-    pickle.dump(y_lin, open('data/test_reg.p', 'w'))
+    pickle.dump(y_lin, open('data/test_reg.pick', 'w'))
 
 
 def plot_regression():
-    results = pickle.load(open('data/test_reg.p', 'r'))
+    results = pickle.load(open('data/test_reg.pick', 'r'))
     print max(results), min(results)
     bins = np.linspace(-3, 4, 100)
     print bins
@@ -55,12 +55,12 @@ def classification():
     X_test = scaler.transform(X_test)
     svc_lin = SVC(kernel='linear')
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
-    pickle.dump(y_test, open('data/test_id_class.p', 'w'))
-    pickle.dump(y_lin, open('data/test_class.p', 'w'))
+    pickle.dump(y_test, open('data/test_id_class.pick', 'w'))
+    pickle.dump(y_lin, open('data/test_class.pick', 'w'))
 
 
 def plot_classification():
-    results = pickle.load(open('data/test_class.p', 'r'))
+    results = pickle.load(open('data/test_class.pick', 'r'))
     print results.shape
     print results
     print max(results), min(results)
@@ -92,12 +92,12 @@ def pclassification():
     X_test = scaler.transform(X_test)
     svc_lin = SVC(kernel='linear', probability=True, random_state=0)
     y_lin = svc_lin.fit(X_train, y_train).predict_proba(X_test)
-    pickle.dump(y_test, open('data/test_id_pclass.p', 'w'))
-    pickle.dump(y_lin, open('data/test_pclass.p', 'w'))
+    pickle.dump(y_test, open('data/test_id_pclass.pick', 'w'))
+    pickle.dump(y_lin, open('data/test_pclass.pick', 'w'))
 
 
 def plot_pclassification():
-    results = pickle.load(open('data/test_pclass.p', 'r'))
+    results = pickle.load(open('data/test_pclass.pick', 'r'))
     print np.sum(results, axis=1).shape
     results = results[:, 0]/(np.sum(results,axis=1))
     print results.shape

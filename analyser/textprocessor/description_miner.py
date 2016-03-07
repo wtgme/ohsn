@@ -548,8 +548,8 @@ bio = db['bio']
 bio.create_index([('uid', pymongo.ASCENDING),
                 ('tid', pymongo.ASCENDING)],
                     unique=True)
-test_ids = pickle.load(open('test_id_class.p', 'r'))
-test_class = pickle.load(open('test_class.p', 'r'))
+test_ids = pickle.load(open('test_id_class.pick', 'r'))
+test_class = pickle.load(open('test_class.pick', 'r'))
 test_class[test_class < 0] = 0
 test_class = test_class.astype(bool)
 targest_ids = test_ids[test_class]

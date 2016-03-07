@@ -33,7 +33,7 @@ def liwc_feature_output(fields, file_name, dbname, label):
                 fw.write(outstr+'\n')
 
 LIWC = io.read_fields()
-common = pickle.load(open('data/common.p', 'rb'))
+common = pickle.load(open('data/common.pick', 'rb'))
 fields = LIWC[common]
 print len(LIWC[common])
 print fields
