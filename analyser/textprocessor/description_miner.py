@@ -12,8 +12,6 @@ from os import path
 import sys
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import util.db_util as dbutil
-# import time
-# import urllib
 import re
 import datetime
 from collections import Counter
@@ -440,18 +438,23 @@ def get_ultimate_goal_weight(text):
         return (None, None)
 
 
+def edword(text):
+    cnt = Counter()
+    words = re.findall('\w+', text)
+    for word in words:
+        if word in KEYWORDS:
+            cnt[word] += 1
+    return int(sum(cnt.values()))
+
+
 def process_text(text):
     results = {}
     text = text.encode('utf-8').replace('\n', '')
     text = text.lower()
 
-    cnt = Counter()
-    words = re.findall('\w+', text.lower())
-    for word in words:
-        if word in KEYWORDS:
-            cnt[word] += 1
-    edword_count = sum(cnt.values())
-    results['edword_count'] = {'value':int(edword_count)}
+    edword_count = edword(text)
+    if edword_count is not 0:
+        results['edword_count'] = {'value':edword_count}
 
     gw, gw_ug = get_goal_weight(text)
     if gw is not None:
@@ -487,11 +490,16 @@ def process_timelines(user_id, timeline, bio):
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        last_bio = bio.find({'uid': user_id}).sort([('tid', -1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
-        if last_bio is None:
-            last_bio_rec = {}
-        else:
-            last_bio_rec = last_bio['results']
+        last_bio_rec = {}
+        try:
+            last_bio = bio.find({'uid': user_id}).sort([('tid', -1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
+            if last_bio:
+                last_bio_rec = last_bio['results']
+        except IndexError as detail:
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+                  'Get latest stored bio ERROR, a new user ' + str(detail)
+            pass
+        flag = False
         for tweet in timeline.find({'user.id': user_id, 'bio_mined': {'$exists': False}},
                                    {'id':1, 'user':1, 'created_at':1}).sort([('id', 1)]):
             user = tweet['user']
@@ -501,9 +509,11 @@ def process_timelines(user_id, timeline, bio):
             else:
                 results = process_text(text)
             if results and DeepDiff(results, last_bio_rec):
+                flag = True
                 last_bio_rec = results
-                bio.insert({"uid": user_id, 'tid': tweet['id'], 'created_at': tweet['created_at'], 'results': results})
+                bio.insert({"uid": user_id, 'tid': tweet['id'], 'screen_name': user['screen_name'], 'created_at': tweet['created_at'], 'results': results})
             timeline.update({"id": tweet['id']}, {'$set': {'bio_mined': True}}, upsert=False)
+        print str(user_id) + ' has bio information ' + str(flag)
 
 
 def process_description(poi):
@@ -538,12 +548,15 @@ bio = db['bio']
 bio.create_index([('uid', pymongo.ASCENDING),
                 ('tid', pymongo.ASCENDING)],
                     unique=True)
-test_ids = pickle.load(open('test_ids_class.p', 'r'))
+test_ids = pickle.load(open('test_id_class.p', 'r'))
 test_class = pickle.load(open('test_class.p', 'r'))
 test_class[test_class < 0] = 0
+test_class = test_class.astype(bool)
 targest_ids = test_ids[test_class]
+print targest_ids.shape
+
 for user_id in targest_ids:
-    process_timelines(user_id, timeline, bio)
+    process_timelines(int(user_id), timeline, bio)
 
 
 

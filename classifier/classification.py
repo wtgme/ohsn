@@ -23,7 +23,7 @@ def regression():
     X_test = scaler.transform(X_test)
     svr_lin = SVR(kernel='linear')
     y_lin = svr_lin.fit(X_train, y_train).predict(X_test)
-    pickle.dump(y_test, open('data/test_id.p', 'w'))
+    pickle.dump(y_test, open('data/test_id_reg.p', 'w'))
     pickle.dump(y_lin, open('data/test_reg.p', 'w'))
 
 
@@ -69,9 +69,9 @@ def plot_classification():
     # print len(results[np.where(results > 1)])
     # print len(results[np.where(results < 0)])
     hist, bin_edges = np.histogram(results, bins)
-    print sum(hist)
+    print hist, sum(hist)
     # print len(results[np.where(results > 1)]) + len(results[np.where(results < 0)]) + sum(hist)
-    plt.hist(results, bins, histtype='bar', rwidth=0.8)
+    plt.hist(results, bins, histtype='bar', rwidth=0.3, alpha=0.5)
     plt.title("Classification Results")
     plt.xlabel("Class")
     plt.ylabel("Frequency")
@@ -119,4 +119,4 @@ def plot_pclassification():
     plt.show()
 
 # classification()
-plot_pclassification()
+plot_classification()
