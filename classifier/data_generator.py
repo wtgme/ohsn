@@ -12,34 +12,41 @@ import util.io_util as io
 import pickle
 
 
-def liwc_feature_output(fields, file_name, dbname, label):
-    with open(file_name+'.data', 'a') as fw:
-        db = dbt.db_connect_no_auth(dbname)
-        poi = db['com']
+def liwc_feature_output(fields, file_name, dbname, label, outids=False):
+    fw = open(file_name+'.data', 'a')
+    db = dbt.db_connect_no_auth(dbname)
+    poi = db['com']
+    index = 0
+    maxsize = 2072
+    uids = list()
+    # exclude_set = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
 
-        index = 0
-        maxsize = 100000000
-        # exclude_set = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
+    for x in poi.find({'liwc_anal.result.WC': {'$exists': True}, 'timeline_count': {'$gt': 100}},
+                      ['id', 'liwc_anal.result']):
+        if index < maxsize:
+            if outids:
+                label = str(index+1)
+                uids.append(int(x['id']))
+            values = io.get_fields_one_doc(x, fields)
+            outstr = label + ' '
+            for i in xrange(len(values)):
+                outstr += str(i+1)+':'+str(values[i])+' '
+            index += 1
+            fw.write(outstr+'\n')
+    fw.close()
+    if outids:
+        pickle.dump(uids, open(file_name+'_ids.data', 'w'))
 
-        for x in poi.find({'liwc_anal.result.WC': {'$exists': True}},
-                          ['id', 'liwc_anal.result']):
-            if index < maxsize:
-                label = str(x['id'])
-                values = io.get_fields_one_doc(x, fields)
-                outstr = label + ' '
-                for i in xrange(len(values)):
-                    outstr += str(i+1)+':'+str(values[i])+' '
-                index += 1
-                fw.write(outstr+'\n')
+
 
 LIWC = io.read_fields()
-common = pickle.load(open('data/common.pick', 'rb'))
-fields = LIWC[common]
-print len(LIWC[common])
-print fields
+# common = pickle.load(open('data/common.pick', 'rb'))
+# fields = LIWC[common]
+# print len(LIWC[common])
+# print fields
 
 # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
 # fed, random, young
-liwc_feature_output(fields, 'data/test-norm', 'young', '')
+liwc_feature_output(LIWC, 'data/ed-nyg-time', 'yg', '-1')
 
 

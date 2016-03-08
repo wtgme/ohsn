@@ -27,6 +27,7 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV, RFE, SelectFromModel
 import pickle
+import itertools
 
 
 def read_field():
@@ -105,11 +106,23 @@ def rfecv(X, y, kernel='linear', class_weight=None):
 def plot_rfecvs(rfecvs, labels):
     # Plot number of features VS. cross-validation scores
     plt.figure()
-    # marks = ['*', '^', 'o']
+    marker = itertools.cycle((',', '+', '.', 'o', '*'))
     plt.xlabel("Number of features selected")
     plt.ylabel("Cross validation score (nb of correct classifications)")
     for i in xrange(len(rfecvs)):
-        plt.plot(range(1, len(rfecvs[i]) + 1), rfecvs[i], label=labels[i])
+        rfecv = rfecvs[i]
+        label = labels[i]
+        c = np.random.rand(3)
+
+        plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_,
+                 label=label+' ('+str(rfecv.n_features_)+', '+str(round(rfecv.grid_scores_[rfecv.n_features_-1], 4))+')',
+                 c=c, marker=marker.next()
+                 )
+        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c)
+        # plt.annotate(str(rfecv.n_features_)+', '+str(rfecv.grid_scores_[rfecv.n_features_-1]),
+        #              xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),
+        #              xytext=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]-0.2)
+        #              )
     plt.legend(loc="best")
     plt.grid()
     plt.show()
@@ -213,28 +226,45 @@ def load_scale_data(file_path):
 
 def common_features():
     LIWC = read_field()
-    X1, y1 = load_scale_data('data/ed-nrd-liwc.data')
-    ref1 = ref(X1, y1, 38)
-    support1, ranking1 = ref1.support_, ref1.ranking_
-    convert_fields(LIWC, ranking1)
-    X2, y2 = load_scale_data('data/ed-nyg-liwc.data')
-    ref2 = ref(X2, y2, 31)
-    support2, ranking2 = ref2.support_, ref2.ranking_
-    convert_fields(LIWC, ranking2)
-    # X3, y3 = load_scale_data('data/ed-all-liwc.data')
-    # ref3 = ref(X3, y3, 69)
-    # support3, ranking3 = ref3.support_, ref3.ranking_
-    # convert_fields(LIWC, ranking3)
+    X1, y1 = load_scale_data('data/ed-nrd-time.data')
+    X2, y2 = load_scale_data('data/ed-nyg-time.data')
 
-    comm = np.logical_and(support1, support2)
-    convert_fields(LIWC, comm)
-    pickle.dump(comm, open('data/common.pick', 'wb'))
+    # ref1 = ref(X1, y1, 32)
+    # support1, ranking1 = ref1.support_, ref1.ranking_
+    # convert_fields(LIWC, ranking1)
+    #
+    # ref2 = ref(X2, y2, 34)
+    # support2, ranking2 = ref2.support_, ref2.ranking_
+    # convert_fields(LIWC, ranking2)
+    # # X3, y3 = load_scale_data('data/ed-all-liwc.data')
+    # # ref3 = ref(X3, y3, 69)
+    # # support3, ranking3 = ref3.support_, ref3.ranking_
+    # # convert_fields(LIWC, ranking3)
+    #
+    # comm = np.logical_and(support1, support2)
+    # convert_fields(LIWC, comm)
+    # pickle.dump(comm, open('data/common-time.pick', 'w'))
     # svm_cv(X1[:, support1], y1)
     # svm_cv(X2[:, support2], y2)
-    # svm_cv(X3[:, support3], y3)
+    # # svm_cv(X3[:, support3], y3)
     # svm_cv(X1[:, comm], y1)
     # svm_cv(X2[:, comm], y2)
     # svm_cv(X3[:, comm], y3)
+
+    comm = pickle.load(open('data/common-time.pick', 'r'))
+    print X1[:, comm].shape
+    # ref1 = ref(X1[:, comm], y1)
+    # ref2 = ref(X2[:, comm], y2)
+    # convert_fields(LIWC[comm], ref1.ranking_)
+    # convert_fields(LIWC[comm], ref2.ranking_)
+    # ref1 = ref(X1, y1)
+    # ref2 = ref(X2, y2)
+    # convert_fields(LIWC, ref1.ranking_)
+    # convert_fields(LIWC, ref2.ranking_)
+
+
+
+common_features()
 
 
 def kernels():
@@ -257,13 +287,23 @@ def balanced():
     # ref1 = pickle.load(open('data/ref.p', 'rb'))
     # rfecv1 = rfecv(X1, y1)
     # rfecv2 = rfecv(X1, y1, class_weight='balanced')
-    rfecv1 = pickle.load(open('data/rfecv1.pick', 'rb'))
-    rfecv2 = pickle.load(open('data/rfecv2.pick', 'rb'))
+    rfecv1 = pickle.load(open('data/rfecv1.pick', 'r'))
+    rfecv2 = pickle.load(open('data/rfecv2.pick', 'r'))
     scores = list()
     scores.append(rfecv1.grid_scores_)
     scores.append(rfecv2.grid_scores_)
     plot_rfecvs(scores, ['Non-balanced', 'Balanced'])
 
 
-kernels()
+def cvrfe():
+    cvs = list()
+    # X1, y1 = load_scale_data('data/ed-nrd-time.data')
+    # refcv = rfecv(X1, y1)
+    # pickle.dump(refcv, open('data/ed-nrd-time-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-nrd-time-refcv.pick', 'r')))
+    # X2, y2 = load_scale_data('data/ed-nyg-time.data')
+    # refcv2 = rfecv(X2, y2)
+    # pickle.dump(refcv2, open('data/ed-nyg-time-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-nyg-time-refcv.pick', 'r')))
+    plot_rfecvs(cvs, ['ED-NRD-Time', 'ED-NYG-Time'])
 
