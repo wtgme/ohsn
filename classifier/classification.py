@@ -23,7 +23,7 @@ def regression():
     X_test = scaler.transform(X_test)
     svr_lin = SVR(kernel='linear')
     y_lin = svr_lin.fit(X_train, y_train).predict(X_test)
-    pickle.dump(y_test, open('data/test_id_reg.p', 'w'))
+    pickle.dump(y_test, open('data/test_id_reg.pick', 'w'))
     pickle.dump(y_lin, open('data/test_reg.pick', 'w'))
 
 

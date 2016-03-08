@@ -12,3 +12,8 @@
 2016-01-01-23-34-17	1049 remaining
 2016-01-01-23-34-17	549 remaining
 2016-01-01-23-34-18	49 remaining
+2016-03-08-12-58-34	Success connected to fed
+Traceback (most recent call last):
+  File "description_miner.py", line 551, in <module>
+    test_ids = pickle.load(open('test_id_class.pick', 'r'))
+IOError: [Errno 2] No such file or directory: 'test_id_class.pick'
