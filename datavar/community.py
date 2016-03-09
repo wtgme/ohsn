@@ -9,8 +9,10 @@ import sys
 sys.path.append('..')
 import util.net_util as nt
 import util.plot_util as plot
+import util.db_util as dbt
 import pickle
 import snap
+import networkx as nx
 
 # pickle.dump(fedc, open("data/fedc.p", "wb"))
 # randomc = pickle.load(open("data/randomc.p", "rb"))
@@ -29,14 +31,32 @@ def snap_comm():
     print "The modularity of the network is %f" % modularity
 
 
+def purn_net(dbname):
+    db = dbt.db_connect_no_auth(dbname)
+    poi = db['ccom']
+    net = db['cnet']
+    snet = db['scnet']
+
+    target = set()
+    for poi in poi.find({'level': {'$lt': 3}}, ['id']):
+        target.add(poi['id'])
+    print 'Targeted Users:', len(target)
+
+    for rec in net.find():
+        if rec['user'] in target and rec['follower'] in target:
+            snet.insert(rec)
+
+
 def nx_comm_plot(dbname, colname):
     G = nt.load_network(dbname, colname)
-    plot.network_top(G, dbname+'.png')
-    comp = nt.girvan_newman(G)
-    pickle.dump(comp, open('data/'+dbname+'.p', "wb"))
+    GC = nt.get_gaint_comp(G)
+    nt.net_statis(GC)
+    plot.network_top(GC)
+    comp = nt.girvan_newman(GC)
+    pickle.dump(comp, open('data/'+dbname+'.pick', "wb"))
 
-
-nx_comm_plot('rd', 'cnet')
-nx_comm_plot('yg', 'cnet')
+# purn_net('rd')
+nx_comm_plot('rd', 'scnet')
+# nx_comm_plot('yg', 'cnet')
 
 
