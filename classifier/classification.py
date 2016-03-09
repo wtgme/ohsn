@@ -59,7 +59,6 @@ def classification(train, test, outid, outclss):
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
     pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outclss, 'w'))
-classification('data/train.data', 'data/test.data', 'data/test_id_class.pick', 'data/test_class.pick')
 
 
 def plot_classification(clares):
@@ -81,7 +80,6 @@ def plot_classification(clares):
     plt.xticks([-1, 0, 1], ('Negative', '', 'Positive'))
     plt.grid(True)
     plt.show()
-# plot_classification('data/test_class.pick')
 
 
 def pclassification(train, test, outid, outpclas):
@@ -125,5 +123,6 @@ def plot_pclassification(pclares):
 # plot_pclassification('data/test_pclass.pick')
 
 
-# classification()
-# plot_classification()
+classification('data/ed-nyg-time.data', 'data/test-norm-time.data',
+               'data/test-time_id_class.pick', 'data/test-time_class.pick')
+plot_classification('data/test-time_class.pick')
