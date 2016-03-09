@@ -18,6 +18,7 @@ from collections import Counter
 from deepdiff import DeepDiff
 import pymongo
 import pickle
+import numpy as np
 
 
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
@@ -548,7 +549,7 @@ bio = db['bio']
 bio.create_index([('uid', pymongo.ASCENDING),
                 ('tid', pymongo.ASCENDING)],
                     unique=True)
-test_ids = pickle.load(open('test_id_class.pick', 'r'))
+test_ids = np.array(pickle.load(open('test_ids.data', 'r')))
 test_class = pickle.load(open('test_class.pick', 'r'))
 test_class[test_class < 0] = 0
 test_class = test_class.astype(bool)

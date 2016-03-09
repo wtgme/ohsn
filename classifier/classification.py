@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def regression(train, test, outid, outreg):
+def regression(train, test, outreg):
     X_train, y_train = load_svmlight_file(train)
     X_train = X_train.toarray()
     scaler = preprocessing.StandardScaler().fit(X_train)
@@ -23,7 +23,7 @@ def regression(train, test, outid, outreg):
     X_test = scaler.transform(X_test)
     svr_lin = SVR(kernel='linear')
     y_lin = svr_lin.fit(X_train, y_train).predict(X_test)
-    pickle.dump(y_test, open(outid, 'w'))
+    # pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outreg, 'w'))
 # regression('data/train.data', 'data/test.data', 'data/test_id_reg.pick', 'data/test_reg.pick')
 
@@ -47,7 +47,7 @@ def plot_regression(regres):
 # plot_regression('data/test_reg.pick')
 
 
-def classification(train, test, outid, outclss):
+def classification(train, test, outclss):
     X_train, y_train = load_svmlight_file(train)
     X_train = X_train.toarray()
     scaler = preprocessing.StandardScaler().fit(X_train)
@@ -57,7 +57,7 @@ def classification(train, test, outid, outclss):
     X_test = scaler.transform(X_test)
     svc_lin = SVC(kernel='linear')
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
-    pickle.dump(y_test, open(outid, 'w'))
+    # pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outclss, 'w'))
 
 
@@ -82,7 +82,7 @@ def plot_classification(clares):
     plt.show()
 
 
-def pclassification(train, test, outid, outpclas):
+def pclassification(train, test, outpclas):
     X_train, y_train = load_svmlight_file(train)
     X_train = X_train.toarray()
     # y_train[y_train < 0] = 0
@@ -94,7 +94,7 @@ def pclassification(train, test, outid, outpclas):
     X_test = scaler.transform(X_test)
     svc_lin = SVC(kernel='linear', probability=True, random_state=0)
     y_lin = svc_lin.fit(X_train, y_train).predict_proba(X_test)
-    pickle.dump(y_test, open(outid, 'w'))
+    # pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outpclas, 'w'))
 # pclassification('data/train.data', 'data/test.data', 'data/test_id_pclass.pick', 'data/test_pclass.pick')
 
@@ -123,6 +123,6 @@ def plot_pclassification(pclares):
 # plot_pclassification('data/test_pclass.pick')
 
 
-classification('data/ed-nyg-time.data', 'data/test-norm-time.data',
-               'data/test-time_id_class.pick', 'data/test-time_class.pick')
-plot_classification('data/test-time_class.pick')
+classification('data/train.data', 'data/test.data',
+               'data/test_id_class.pick', 'data/test_class.pick')
+plot_classification('data/test_class.pick')
