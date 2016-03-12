@@ -14,9 +14,6 @@ import pickle
 import snap
 import networkx as nx
 
-# pickle.dump(fedc, open("data/fedc.p", "wb"))
-# randomc = pickle.load(open("data/randomc.p", "rb"))
-
 
 def snap_comm():
     G = nt.load_network('rd', 'cnet')
@@ -47,16 +44,84 @@ def purn_net(dbname):
             snet.insert(rec)
 
 
-def nx_comm_plot(dbname, colname):
+def out_net(G, name):
+    fw = open('data/'+name+'.pairs', 'w')
+    id_map = {}
+    id_map_inv = {}
+    edgs = {}
+    for e in G.edges_iter():
+        n1, n2 = e
+        if n1 == n2:
+            print 'self following', n1, n2
+        n1id = id_map.get(n1, len(id_map)+1)
+        id_map[n1] = n1id
+        id_map_inv[n1id] = n1
+        n2id = id_map.get(n2, len(id_map)+1)
+        id_map[n2] = n2id
+        id_map_inv[n2id] = n2
+        if n1id == n2id:
+            print 'self following ids', n1id, n2id
+        flist = edgs.get(n1id, [])
+        flist.append(n2id)
+        edgs[n1id] = flist
+
+    for key in sorted(edgs):
+        for key2 in sorted(edgs[key]):
+            fw.write(str(key) + '\t' + str(key2) + '\n')
+    fw.close()
+    pickle.dump(id_map_inv, open('data/'+name+'-id.pick', 'w'))
+
+
+def out_net_commudet(dbname, colname, name):
     G = nt.load_network(dbname, colname)
     GC = nt.get_gaint_comp(G)
-    nt.net_statis(GC)
-    plot.network_top(GC)
-    comp = nt.girvan_newman(GC)
-    pickle.dump(comp, open('data/'+dbname+'.pick', "wb"))
+    # nt.net_statis(GC)
+    GCG = GC.to_undirected()
+    # nt.net_statis(GCG)
+    print GCG.number_of_selfloops()
+
+    out_net(GCG, name)
+    # nx.write_edgelist(GCG, "data/net.data", delimiter='\t', data=False)
+    # plot.network_top(GC)
+    # comp = nt.girvan_newman(GC)
+    # pickle.dump(comp, open('data/'+dbname+'.pick', "wb"))
+
+
+def plot_communty(dbname, colname, name, commline):
+    G = nt.load_network(dbname, colname)
+    GC = nt.get_gaint_comp(G)
+
+    id_map = pickle.load(open('data/'+name+'-id.pick', 'r'))
+    nodelist = list()
+
+    fr = open('data/'+name+'-fc_a.groups', 'r')
+    line = ''
+    while commline not in line:
+        line = fr.readline()
+    print line
+    print '----------------------------'
+    for line in fr.readlines():
+        if 'GROUP' in line:
+            break
+        else:
+            nodelist.append(id_map[int(line.strip())])
+    print 'node size:', str(len(nodelist))
+    # plot.network_top(GC.subgraph(nodelist))
+    return GC.subgraph(nodelist)
+
+
+
 
 # purn_net('rd')
-nx_comm_plot('rd', 'scnet')
-# nx_comm_plot('yg', 'cnet')
+# out_net_commudet('rd', 'cnet', 'rd3l')
+# rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
+rdcom = plot_communty('rd', 'cnet', 'rd3l', 'GROUP[ 52 ][ 9659 ]')
+# ygcom = plot_communty('yg', 'cnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
+fed = nt.load_network('fed', 'snet')
+nt.net_statis(fed)
+# rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
+ygdseq = sorted(nx.degree(rdcom).values(),reverse=True)
+eddseq = sorted(nx.degree(fed).values(),reverse=True)
+plot.plot_pdf_mul_data([ygdseq, eddseq], ['--bo', '--r^'], 'Degree',  ['Random', 'ED'], False)
 
 

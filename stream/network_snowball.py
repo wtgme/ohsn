@@ -11,16 +11,71 @@ Created on 10:20, 02/02/16
     The size of components increases suddently, since some nodes are the linker of two components
 3. Snowball (followees and followers) with a single users. Loss power lower in networks
 4. Snowball with seed users and check community.
+5. As all sampling methods based on friends and followers cannot get desired reference data,
+i.e., there is no something attractive to let users follow each other, this script is using timeline
+sampling method, i.e., snowball next users based on the involved users in current user's timelines.
+
 """
 
 import sys
 sys.path.append('..')
-from api import following, lookup, profiles_check, follower
+from api import following, timelines, lookup, profiles_check, follower
 import util.db_util as dbt
-import util.net_util as nt
+from networkminer import timeline_network_miner
 import datetime
 import pymongo
-import networkx
+import math
+
+
+def timeline_sampling(dbname, mode='N'):
+    db = dbt.db_connect_no_auth(dbname)
+    poi = db['tcom']
+    timel = db['times']
+    bnet = db['bnet']
+    stream_users = db['poi']
+    poi.create_index("id", unique=True)
+    poi.create_index("level", unique=False)
+    timel.create_index([('user.id', pymongo.ASCENDING),
+                                  ('id', pymongo.DESCENDING)], unique=False)
+    timel.create_index([('id', pymongo.ASCENDING)], unique=True)
+    bnet.create_index([("id0", pymongo.ASCENDING),
+                             ("id1", pymongo.ASCENDING),
+                             ("relationship", pymongo.ASCENDING),
+                             ("statusid", pymongo.ASCENDING)],
+                            unique=True)
+    # while True:
+    ed_seed = profiles_check.seed_all_profile(stream_users, 5)
+    length = len(ed_seed)
+    if length == 0:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
+        # break
+    else:
+        print 'seed users: ', length
+        lookup.trans_seed_to_poi(ed_seed, poi, mode)
+        # continue
+    level = 1
+    while True:
+        timelines.monitor_timeline(poi, timel, 1)
+        timeline_network_miner.network_mining(poi, timel, bnet, level)
+        for user in poi.find({'level': level}):
+            neiblist = set()
+            for relate in bnet.find({'id0': user['id'],
+                                     'relationship': {'$in': ['retweet', 'reply-to', 'dmentioned']}}):
+                neiblist.add(relate['id1'])
+            neiblist = list(neiblist)
+            list_size = len(neiblist)
+            length = int(math.ceil(list_size/100.0))
+            for index in xrange(length):
+                index_begin = index*100
+                index_end = min(list_size, index_begin+100)
+                lookup.lookup_user_list(neiblist[index_begin:index_end], poi, level+1, mode)
+        if poi.count() > 4000:
+            break
+        else:
+            level += 1
+            continue
+
+
 
 
 def network_snowball(dbname, mode='N'):
@@ -78,7 +133,9 @@ def network_snowball(dbname, mode='N'):
             continue
 
 
+
 # s = network_snowball('rd')
 # print s
-s = network_snowball('yg', 'YG')
-print s
+s = timeline_sampling('rd', 'N')
+s = timeline_sampling('yg', 'YG')
+# print s

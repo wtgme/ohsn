@@ -1,7 +1,0 @@
-.DS_Store
-*.pyc
-lexicons.egg-info/
-/log/
-/node_modules/
-*.out
-*.eps

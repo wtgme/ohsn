@@ -12,6 +12,7 @@ from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
 import pymongo
 import time
+import profiles_check
 
 app_id_look, twitter_look = twutil.twitter_auth()
 lookup_remain, lookup_lock = 0, 1
@@ -117,11 +118,12 @@ def get_users_info(stream_user_list):
     #             break
 
 
-def trans_seed_to_poi(seed_list, poi_db):
+def trans_seed_to_poi(seed_list, poi_db, check='N'):
     infos = get_users_info(seed_list)
     if infos:
         for profile in infos:
-            if profile['lang'] == 'en' and profile['protected'] == False:
+            check_flag = profiles_check.check_user(profile, check)
+            if check_flag:
                 profile['level'] = 1
                 try:
                     poi_db.insert(profile)
@@ -132,5 +134,26 @@ def trans_seed_to_poi(seed_list, poi_db):
                     poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
                                                         }}, upsert=False)
             else:
+                seed_list.remove(profile['id'])
                 print 'Protected account', profile['screen_name']
         print 'Deleted accounts', seed_list
+
+
+def lookup_user_list(user_list, poi_db, level, check='N'):
+    infos = get_users_info(user_list)
+    if infos:
+        for profile in infos:
+            check_flag = profiles_check.check_user(profile, check)
+            if check_flag:
+                profile['level'] = level
+                try:
+                    poi_db.insert(profile)
+                    user_list.remove(profile['id'])
+                except pymongo.errors.DuplicateKeyError:
+                    print 'Existing user:', profile['id_str']
+                    user_list.remove(profile['id'])
+                    pass
+            else:
+                user_list.remove(profile['id'])
+                print 'Protected account', profile['screen_name']
+        print 'Deleted accounts', user_list

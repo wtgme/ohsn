@@ -1,0 +1,24 @@
+FASTCOMMUNITY_INFERENCE_ALGORITHM
+START-----:	Thu Mar 10 21:17:03 2016
+---FILES--------
+D_IN------:	
+D_OUT-----:	
+F_IN------:	rd2l.pairs
+F_JOINS---:	rd2l-fc_a.joins
+F_INFO----:	rd2l-fc_a.info
+F_NET-----:	rd2l-fc_a.wpairs
+F_GROUPS--:	rd2l-fc_a.groups
+F_GDIST---:	rd2l-fc_a.hist
+---NET_STATS----
+MAXID-----:	40827
+NUMNODES--:	40827
+NUMEDGES--:	57432
+---GROUPS-------
+NUMGROUPS-:	26
+MINSIZE---:	173
+MEANSIZE--:	1570.27
+MAXSIZE---:	6777
+---MODULARITY---
+MAXQ------:	0.85024
+STEP------:	40801
+EXIT------:	Thu Mar 10 21:18:06 2016

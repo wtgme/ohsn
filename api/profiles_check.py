@@ -165,11 +165,11 @@ def profile_pos():
     return [user for user in seed_user]
 
 
-def seed_all_profile(stream_db):
+def seed_all_profile(stream_db, limit=100):
     # db = dbt.db_connect_no_auth('ed')
     # stream_db = db['stream_users']
     seed_user = []
-    for user in stream_db.find({'seeded':{'$exists': False}}).limit(100):
+    for user in stream_db.find({'seeded':{'$exists': False}}).limit(limit):
         seed_user.append(user['id'])
         stream_db.update({'id': int(user['id_str'])},
                          {'$set':{"seeded": True}}, upsert=False)

@@ -1,8 +1,0 @@
-{
-  "name": "lexicons",
-  "version": "0.2.3",
-  "main": "liwc.js",
-  "dependencies": {
-    "optimist": "*"
-  }
-}
