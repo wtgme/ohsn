@@ -136,6 +136,6 @@ def network_snowball(dbname, mode='N'):
 
 # s = network_snowball('rd')
 # print s
-s = timeline_sampling('rd', 'N')
-s = timeline_sampling('yg', 'YG')
+timeline_sampling('rd', 'N')
+timeline_sampling('yg', 'YG')
 # print s
