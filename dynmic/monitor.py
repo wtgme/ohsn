@@ -95,7 +95,28 @@ def start_monitor():
         time.sleep(24*60*60.0 - during)
         index += 1
 
-start_monitor()
+
+def fill_network(time_index):
+    datasets = ['rd']
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks'
+    for dataset in datasets:
+        db = dbt.db_connect_no_auth(dataset)
+        sample_user = db['tcom']
+        sample_net = db['tnet']
+        sample_user.create_index([('id', pymongo.ASCENDING)], unique=True)
+        sample_net.create_index([('scraped_times', pymongo.ASCENDING)], unique=False)
+        # crawl the current social network between users in a community
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks for ' + dataset
+        following.monitor_friendships(sample_user, sample_net, time_index)
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish network crawl for ' + dataset
+
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish networks crawl'
+
+fill_network(1)
+
+# start_monitor()
+
+
 
 # if __name__ == '__main__':
 #     print 'Job starts.......'
