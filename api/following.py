@@ -161,6 +161,8 @@ def snowball_following(poi_db, net_db, level, check='N'):
                                         pass
                         # prepare for next iterator
                         next_cursor = followees['next_cursor']
+                    else:
+                        break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
             return True
@@ -170,20 +172,26 @@ def snowball_following(poi_db, net_db, level, check='N'):
 
 def monitor_friendships(sample_user, sample_net, time_index):
     user_set = set()
-    for user in sample_user.find({},['id']):
+    for user in sample_user.find({}, ['id']):
         user_set.add(user['id'])
-    for userid in user_set:
+    for user in sample_user.find({'$or': [{'net_scraped_times': {'$exists': False}},
+                {'net_scraped_times': {'$lt': time_index}}]}, ['id']):
+        userid = user['id']
         next_cursor = -1
+        print 'Current processing user:', userid
         params = {'user_id': userid, 'count': 5000}
         while next_cursor != 0:
             params['cursor'] = next_cursor
             followees = get_followings(params)
-            followee_ids = followees['ids']
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Monitor Processes followings', len(followee_ids), 'for user', str(userid)
-            for followee in followee_ids:
-                if followee in user_set:
-                    sample_net.insert({'user': followee, 'follower': userid,
-                                       'scraped_times': time_index, 'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
-            next_cursor = followees['next_cursor']
+            if followees:
+                followee_ids = followees['ids']
+                print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Monitor Processes followings', len(followee_ids), 'for user', str(userid)
+                for followee in followee_ids:
+                    if followee in user_set:
+                        sample_net.insert({'user': followee, 'follower': userid,
+                                           'scraped_times': time_index, 'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                next_cursor = followees['next_cursor']
+            else:
+                break
         sample_user.update({'id': userid}, {'$set':{'net_scraped_times': time_index}},
                                    upsert=False)

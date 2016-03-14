@@ -73,6 +73,7 @@ def out_net(G, name):
 
 
 def out_net_commudet(dbname, colname, name):
+    # transform the largest component to undirect for community detection
     G = nt.load_network(dbname, colname)
     GC = nt.get_gaint_comp(G)
     # nt.net_statis(GC)
@@ -113,15 +114,17 @@ def plot_communty(dbname, colname, name, commline):
 
 
 # purn_net('rd')
-# out_net_commudet('rd', 'cnet', 'rd3l')
+out_net_commudet('yg', 'tnet', 'ygtime')
+
 # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
-rdcom = plot_communty('rd', 'cnet', 'rd3l', 'GROUP[ 52 ][ 9659 ]')
-# ygcom = plot_communty('yg', 'cnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
-fed = nt.load_network('fed', 'snet')
-nt.net_statis(fed)
-# rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
-ygdseq = sorted(nx.degree(rdcom).values(),reverse=True)
-eddseq = sorted(nx.degree(fed).values(),reverse=True)
-plot.plot_pdf_mul_data([ygdseq, eddseq], ['--bo', '--r^'], 'Degree',  ['Random', 'ED'], False)
+# # rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
+# # ygcom = plot_communty('yg', 'cnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
+# fed = nt.load_network('fed', 'snet')
+# nt.net_statis(rdcom)
+# nt.net_statis(fed)
+# # rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
+# ygdseq = sorted(nx.degree(rdcom).values(), reverse=True)
+# eddseq = sorted(nx.degree(fed).values(), reverse=True)
+# plot.plot_pdf_mul_data([ygdseq, eddseq], ['--bo', '--r^'], 'Degree',  ['Random', 'ED'], False)
 
 

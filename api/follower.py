@@ -159,6 +159,8 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                                         pass
                         # prepare for next iterator
                         next_cursor = followers['next_cursor']
+                    else:
+                        break
                 poi_db.update({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
                                                     }}, upsert=False)
             return True

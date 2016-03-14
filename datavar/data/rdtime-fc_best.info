@@ -1,0 +1,24 @@
+FASTCOMMUNITY_INFERENCE_ALGORITHM
+START-----:	Mon Mar 14 10:24:27 2016
+---FILES--------
+D_IN------:	
+D_OUT-----:	
+F_IN------:	rdtime.pairs
+F_JOINS---:	rdtime-fc_best.joins
+F_INFO----:	rdtime-fc_best.info
+F_NET-----:	rdtime-fc_best.wpairs
+F_GROUPS--:	rdtime-fc_best.groups
+F_GDIST---:	rdtime-fc_best.hist
+---NET_STATS----
+MAXID-----:	23343
+NUMNODES--:	23343
+NUMEDGES--:	382492
+---GROUPS-------
+NUMGROUPS-:	12
+MINSIZE---:	2
+MEANSIZE--:	1945.25
+MAXSIZE---:	9947
+---MODULARITY---
+MAXQ------:	0.332262
+STEP------:	23331
+EXIT------:	Mon Mar 14 10:27:25 2016

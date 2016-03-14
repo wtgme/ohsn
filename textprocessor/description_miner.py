@@ -488,7 +488,7 @@ def process_text(text):
 def process_timelines(user_id, timeline, bio):
     while True:
         count = timeline.count({'user.id': user_id, 'bio_mined': {'$exists': False}})
-        if count is 0:
+        if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
