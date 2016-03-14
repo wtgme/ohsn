@@ -13,6 +13,7 @@ from sklearn.utils import shuffle
 
 
 def main_colors(filename):
+    # return cluster centers, with LAB formats
     img = imread(filename)
     w, h, d = img.shape
     if d > 3:
@@ -29,6 +30,8 @@ def main_colors(filename):
 
 
 # colors = main_colors('black.png')
+# colors = main_colors('https://pbs.twimg.com/profile_banners/3327720838/1437934435')
+# print colors
 # centers = np.reshape(colors, (1, 3, 3))
 # print lab2rgb(centers)
 

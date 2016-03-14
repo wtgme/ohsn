@@ -10,9 +10,26 @@ sys.path.append('..')
 import util.db_util as dbt
 import util.io_util as io
 import pickle
+from profile import image_color
+import urllib2
 
 
-def liwc_feature_output(fields, file_name, dbname, label, outids=False):
+def image_main_color(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    poi = db[colname]
+    color_list = {}
+    for user in poi.find({'profile_banner_url': {'$exists': True}}, ['id', 'profile_banner_url']):
+        uid = user['id']
+        url = user['profile_banner_url']
+        try:
+            main_colors = image_color.main_colors(url)
+            color_list[uid] = main_colors
+        except urllib2.HTTPError:
+            continue
+    return color_list
+
+
+def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
     fw = open(file_name+'.data', 'a')
     db = dbt.db_connect_no_auth(dbname)
     poi = db['com']
@@ -30,7 +47,7 @@ def liwc_feature_output(fields, file_name, dbname, label, outids=False):
             if outids:
                 label = str(index+1)
                 uids.append(int(x['id']))
-            values = io.get_fields_one_doc(x, fields)
+            values = io.get_fields_one_doc(x, field_names)
             outstr = label + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
@@ -41,15 +58,18 @@ def liwc_feature_output(fields, file_name, dbname, label, outids=False):
         pickle.dump(uids, open(file_name+'_ids.data', 'w'))
 
 
+ygimage = image_main_color('young', 'com')
+print len(ygimage)
+pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
 
-LIWC = io.read_fields()
-common = pickle.load(open('data/common.pick', 'r'))
-fields = LIWC[common]
-print len(LIWC[common])
-print fields
-
-# common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
-# fed, random, young
-liwc_feature_output(fields, 'data/test', 'fed', '', True)
+# LIWC = io.read_fields()
+# common = pickle.load(open('data/common.pick', 'r'))
+# fields = LIWC[common]
+# print len(LIWC[common])
+# print fields
+#
+# # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
+# # fed, random, young
+# liwc_feature_output(fields, 'data/test', 'fed', '', True)
 
 

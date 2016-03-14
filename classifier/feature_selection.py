@@ -26,6 +26,8 @@ from sklearn import preprocessing
 from sklearn.svm import LinearSVC, SVC
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV, RFE, SelectFromModel
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import LabelBinarizer
 import pickle
 import itertools
 
@@ -97,6 +99,15 @@ def rfecv(X, y, kernel='linear', class_weight=None):
     # classifications
     # Tested: StratifiedKFold works for imbalanced labeled data.
     rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 5),
+                  scoring='accuracy')
+    rfecv.fit(X, y)
+    print("Optimal number of features : %d" % rfecv.n_features_)
+    return (rfecv)
+
+
+def mlrfecv(X, y, kernel='linear', class_weight=None):
+    classif = OneVsRestClassifier(SVC(kernel=kernel, class_weight=class_weight))
+    rfecv = RFECV(estimator=classif, step=1, cv=StratifiedKFold(y, 5),
                   scoring='accuracy')
     rfecv.fit(X, y)
     print("Optimal number of features : %d" % rfecv.n_features_)

@@ -8,7 +8,10 @@ Created on 12:55 PM, 3/1/16
 Background color ----> "profile_background_color": "EBEBEB"
 Theme color ----> "profile_link_color": "990000"
 Profile image small block ----> profile_image_url
-Profile image top ----> "profile_banner_url"
+Profile image top ----> "profile_banner_url". if profile_banner_url is not none, user has modified the banner
+If profile image small block is modefied, default egg avatar -----> default_profile_image": false 头像
+default Theme color: 0084B4 Background color: C0DEED
+Theme color and background colors are default ------> default_profile": true
 
 """
 
@@ -76,7 +79,7 @@ def rgbstandards(standards):
 
 def rmdefault(clist):
     # Remove the default color on Twitter.
-    # Theme color: 0084B4 Background color: C0DEED
+    # default Theme color: 0084B4 Background color: C0DEED
     return [co for co in clist if co!='0084B4']
 
 
@@ -142,13 +145,13 @@ def color_compare():
     # randomc = get_field_values('random', 'profile_link_color')
     # youngc = get_field_values('young', 'profile_link_color')
     # fedc = get_field_values('fed', 'profile_link_color')
-    # pickle.dump(randomc, open("data/randomc.p", "wb"))
-    # pickle.dump(youngc, open("data/youngc.p", "wb"))
-    # pickle.dump(fedc, open("data/fedc.p", "wb"))
+    # pickle.dump(randomc, open("data/randomc.pick", "wb"))
+    # pickle.dump(youngc, open("data/youngc.pick", "wb"))
+    # pickle.dump(fedc, open("data/fedc.pick", "wb"))
 
-    randomc = pickle.load(open("data/randomc.p", "rb"))
-    youngc = pickle.load(open("data/youngc.p", "rb"))
-    fedc = pickle.load(open("data/fedc.p", "rb"))
+    randomc = pickle.load(open("data/randomc.pick", "rb"))
+    youngc = pickle.load(open("data/youngc.pick", "rb"))
+    fedc = pickle.load(open("data/fedc.pick", "rb"))
 
     randomc = rmdefault(randomc)
     youngc = rmdefault(youngc)
