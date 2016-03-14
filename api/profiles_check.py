@@ -110,8 +110,8 @@ def check_ed(user):
 
 
 def check_yg(user):
-    profile = user['description']
-    if user['lang'] == 'en' and user['protected']==False and user['verified']==False:
+    # profile = user['description']
+    if user['lang'] == 'en' and user['protected']==False: # and user['verified']==False:
         name_match = name_pat.search(user['name'].strip())
         # age_match = age_pat.search(profile.strip())
         if name_match and (name_match.group('first') in girl_names):
