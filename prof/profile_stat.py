@@ -4,7 +4,7 @@ Created on 13:56, 18/02/16
 
 @author: wt
 
-Compare the difference from their profile information
+Compare the difference from their prof information
 
 
 """

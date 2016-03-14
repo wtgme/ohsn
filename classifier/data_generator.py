@@ -6,11 +6,11 @@ Created on 8:15 PM, 2/27/16
 Export data from mongodb for classification and feature analysis
 """
 import sys
-sys.path.append('..')
+sys.path.append('../')
 import util.db_util as dbt
 import util.io_util as io
+import prof.image_color as ic
 import pickle
-from profile import image_color
 import urllib2
 
 
@@ -22,7 +22,7 @@ def image_main_color(dbname, colname):
         uid = user['id']
         url = user['profile_banner_url']
         try:
-            main_colors = image_color.main_colors(url)
+            main_colors = ic.main_colors(url)
             color_list[uid] = main_colors
         except urllib2.HTTPError:
             continue

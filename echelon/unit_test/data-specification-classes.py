@@ -123,7 +123,7 @@ Should be a list of observations of type PhysicalObs
 """
     
 class LIWCScores(object):
-    # a LIWC profile occurs over a time period.
+    # a LIWC prof occurs over a time period.
     datetime_begin_observation
     datetime_end_observation
     id

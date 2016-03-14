@@ -143,7 +143,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                             index_begin = index*100
                             index_end = min(list_size, index_begin+100)
                             profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
-                            print 'user profile:', index_begin, index_end, len(profiles)
+                            print 'user prof:', index_begin, index_end, len(profiles)
                             # if profiles:
                             for profile in profiles:
                                 check_flag = profiles_check.check_user(profile, check)

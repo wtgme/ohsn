@@ -9,7 +9,7 @@ Background color ----> "profile_background_color": "EBEBEB"
 Theme color ----> "profile_link_color": "990000"
 Profile image small block ----> profile_image_url
 Profile image top ----> "profile_banner_url". if profile_banner_url is not none, user has modified the banner
-If profile image small block is modefied, default egg avatar -----> default_profile_image": false 头像
+If prof image small block is modefied, default egg avatar -----> default_profile_image": false 头像
 default Theme color: 0084B4 Background color: C0DEED
 Theme color and background colors are default ------> default_profile": true
 

@@ -103,17 +103,17 @@ def check_en(user):
 def check_ed(user):
     profile = user['description']
     if user['lang'] == 'en' and user['protected']==False and profile != None:
-        # print check_ed_profile(profile)
+        # print check_ed_profile(prof)
         return check_ed_profile(profile)
     else:
         return False
 
 
 def check_yg(user):
-    # profile = user['description']
+    # prof = user['description']
     if user['lang'] == 'en' and user['protected'] == False: # and user['verified']==False:
         name_match = name_pat.search(user['name'].strip())
-        # age_match = age_pat.search(profile.strip())
+        # age_match = age_pat.search(prof.strip())
         if name_match and (name_match.group('first') in girl_names):
             return True
     else:
@@ -132,7 +132,7 @@ def check_rd(user):
 def check_depression(user):
     profile = user['description']
     if user['lang'] == 'en' and user['protected']==False and profile != None:
-        # print check_ed_profile(profile)
+        # print check_ed_profile(prof)
         return check_depression_profile(profile)
     else:
         return False

@@ -31,7 +31,7 @@ print("twitter connection and database connection configured")
 usernames = {'needingbones':'b-', 'tiinyterry':'g-'}
 
 print "TODO: create your own ED dictionary..."
-print "TODO: upload the LIWC analysis result to the user profile entry? No LIWC should be done on a static set"
+print "TODO: upload the LIWC analysis result to the user prof entry? No LIWC should be done on a static set"
 
 for username in usernames:
     results = tweets.find({'user.screen_name': username})

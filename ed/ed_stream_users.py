@@ -125,9 +125,9 @@ def extract_users(stream, user_info):
                 stream.update({'id': int(user_id['id_str'])}, {'$set':{"user_extracted": True
                                                     }}, upsert=False)
             user_profiles = get_users_info([x for x in user_list])
-            for profile in user_profiles:
+            for prof in user_profiles:
                 try:
-                    user_info.insert(profile)
+                    user_info.insert(prof)
                 except pymongo.errors.DuplicateKeyError:
                     pass
 '''

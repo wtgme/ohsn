@@ -60,7 +60,7 @@ def check_change(time_index):
         sample_user = db['com']
         sample_time = db['timeline']
         changes = {'dataset': dataset}
-        # check profile changes, 'description', 'friends_count', 'followers_count', 'statuses_count'
+        # check prof changes, 'description', 'friends_count', 'followers_count', 'statuses_count'
         for user in sample_user.find():
             last_tweet = sample_time.find({'user.id':user['id']},
                                           {'id':1, 'user':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
