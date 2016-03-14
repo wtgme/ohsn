@@ -97,7 +97,7 @@ def start_monitor():
 
 
 def fill_network(time_index):
-    datasets = ['yg']
+    datasets = ['rd']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks'
     for dataset in datasets:
         db = dbt.db_connect_no_auth(dataset)
