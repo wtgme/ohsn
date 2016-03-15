@@ -42,6 +42,15 @@ def bio_statis(dbname, colname):
         change_per = float(change_count)/len(user_count)
         print ('%s, %.2f, %.2f' % (name, percent, change_per))
 
+    count = bio.count({"$or":[{biolist[0]:{'$exists': True}},
+                         {biolist[1]:{'$exists': True}},
+                         # {biolist[2]:{'$exists': True}},
+                         {biolist[3]:{'$exists': True}},
+                         # {biolist[4]:{'$exists': True}},
+                         {biolist[5]:{'$exists': True}},
+                         {biolist[6]:{'$exists': True}}]})
+    print ('Have anyone, %.2f' %(float(count)/61580))
+
 bio_statis('fed', 'bio')
 
 
@@ -69,7 +78,7 @@ def ed_bio_sta():
 
     biolist =    ['text_anal.gw.value',
                   'text_anal.cw.value',
-                  'text_anal.edword_count.value',
+                  # 'text_anal.edword_count.value',
                   'text_anal.h.value',
                   'text_anal.a.value',
                   'text_anal.lw.value',

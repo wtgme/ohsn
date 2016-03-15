@@ -6,7 +6,7 @@ Created on 8:15 PM, 2/27/16
 Export data from mongodb for classification and feature analysis
 """
 import sys
-sys.path.append('../')
+sys.path.append('..')
 import util.db_util as dbt
 import util.io_util as io
 import prof.image_color as ic

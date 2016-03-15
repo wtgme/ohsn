@@ -1,0 +1,24 @@
+FASTCOMMUNITY_INFERENCE_ALGORITHM
+START-----:	Mon Mar 14 22:24:05 2016
+---FILES--------
+D_IN------:	
+D_OUT-----:	
+F_IN------:	ygtime.pairs
+F_JOINS---:	ygtime-fc_best.joins
+F_INFO----:	ygtime-fc_best.info
+F_NET-----:	ygtime-fc_best.wpairs
+F_GROUPS--:	ygtime-fc_best.groups
+F_GDIST---:	ygtime-fc_best.hist
+---NET_STATS----
+MAXID-----:	31481
+NUMNODES--:	31481
+NUMEDGES--:	709783
+---GROUPS-------
+NUMGROUPS-:	107
+MINSIZE---:	2
+MEANSIZE--:	294.215
+MAXSIZE---:	16682
+---MODULARITY---
+MAXQ------:	0.39584
+STEP------:	31374
+EXIT------:	Mon Mar 14 22:29:51 2016
