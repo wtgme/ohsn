@@ -10,6 +10,10 @@ from sklearn.cluster import KMeans
 from skimage.color import rgb2lab
 import numpy as np
 from sklearn.utils import shuffle
+from colormath.color_conversions import convert_color
+from colormath.color_diff import delta_e_cie2000
+from colormath.color_objects import LabColor, sRGBColor
+
 
 
 def main_colors(filename):
@@ -34,4 +38,24 @@ def main_colors(filename):
 # print colors
 # centers = np.reshape(colors, (1, 3, 3))
 # print lab2rgb(centers)
+
+def color_wheel():
+    # read color wheel
+    color_list = []
+    with open('color.list') as fo:
+        lines = fo.readlines()
+        for i in xrange(len(lines)/3):
+            color_list.append(labc([float(line.strip()) for line in lines[3*i:3*i+3]]))
+    return color_list
+
+
+def labc(clist):
+    # New Color object with LAB format
+    return LabColor(clist[0], clist[1], clist[2], illuminant='d50')
+
+
+def srgbc(rgbv):
+    # New Color object with Standard RGB format
+    rgbv = rgbv.replace('#', '')
+    return sRGBColor(float(int(rgbv[0:2], 16)), float(int(rgbv[2:4], 16)), float(int(rgbv[4:6], 16)), is_upscaled=True)
 

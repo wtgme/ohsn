@@ -18,15 +18,29 @@ def image_main_color(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     poi = db[colname]
     color_list = {}
-    for user in poi.find({'profile_banner_url': {'$exists': True}}, ['id', 'profile_banner_url']):
+    index = 0
+    for user in poi.find({'profile_banner_url': {'$exists': True},
+                          'liwc_anal.result.WC': {'$exists': True}},
+                         ['id', 'profile_banner_url']):
         uid = user['id']
         url = user['profile_banner_url']
+        index += 1
+        if index%100==0:
+            print 'Have processed users:', index
         try:
             main_colors = ic.main_colors(url)
             color_list[uid] = main_colors
         except urllib2.HTTPError:
             continue
+        # if len(color_list)>10000:
+        #     break
     return color_list
+
+
+def map_color_label(uimages):
+    user_tags = {}
+    for user in uimages.keys():
+        colors = uimages[user]
 
 
 def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
@@ -58,9 +72,10 @@ def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
         pickle.dump(uids, open(file_name+'_ids.data', 'w'))
 
 
-ygimage = image_main_color('young', 'com')
-print len(ygimage)
-pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
+# ygimage = image_main_color('young', 'com')
+# print len(ygimage)
+# pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
+ygimage = pickle.load(open('data/ygimage.pick', 'r'))
 
 # LIWC = io.read_fields()
 # common = pickle.load(open('data/common.pick', 'r'))

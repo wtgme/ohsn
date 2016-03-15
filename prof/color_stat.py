@@ -19,33 +19,11 @@ import datetime
 import pickle
 import urllib2
 
-from colormath.color_conversions import convert_color
-from colormath.color_diff import delta_e_cie2000
-from colormath.color_objects import LabColor, sRGBColor
 
 import image_color
 import util.plot_util as plot
 
 
-def color_wheel():
-    # read color wheel
-    color_list = []
-    with open('color.list') as fo:
-        lines = fo.readlines()
-        for i in xrange(len(lines)/3):
-            color_list.append(labc([float(line.strip()) for line in lines[3*i:3*i+3]]))
-    return color_list
-
-
-def labc(clist):
-    # New Color object with LAB format
-    return LabColor(clist[0], clist[1], clist[2], illuminant='d50')
-
-
-def srgbc(rgbv):
-    # New Color object with Standard RGB format
-    rgbv = rgbv.replace('#', '')
-    return sRGBColor(float(int(rgbv[0:2], 16)), float(int(rgbv[2:4], 16)), float(int(rgbv[4:6], 16)), is_upscaled=True)
 
 
 def cate_color(colors, standards, format='rgb'):
