@@ -225,14 +225,14 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1, 
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, scale='log', min_x=None, max_x=None, savefile=None):
+def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x=None, max_x=None, savefile=None):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
     if not max_x:
-        max_x = max([np.amax(lista) for lista in lists])
+        max_x = max([np.percentile(lista, 97.5) for lista in lists])
     if not min_x:
-        min_x = min([np.amin(lista) for lista in lists])
+        min_x = min([np.percentile(lista, 2.5) for lista in lists])
 
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
@@ -241,7 +241,7 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, scale
         ax = plt.gca()
         list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
         ax.plot(list_x, list_y, denots[i+1], label=labels[i+1])
-    if scale is 'log':
+    if linear_bins == False:
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
@@ -327,9 +327,21 @@ def color_bars(colorlist, colorcounts, savefile=None):
     ax.set_ylabel('Color choice (%)')
     ax.set_xlabel('Color ID')
     ax.set_xlim(xmax=len(colorlist))
-    ax.grid(True)
+    # ax.grid(True)
+    ax.yaxis.grid()
     if savefile is None:
         plt.show()
     else:
         plt.savefig(savefile)
         plt.clf()
+
+
+def hist2d(x, y, nx, ny):
+    # fig, ax = plt.subplots()
+    # im = ax.hexbin(x, y, gridsize=20)
+    # fig.colorbar(im, ax=ax)
+    # x, y = np.random.normal(size=(2, 10000))
+    fig, ax = plt.subplots()
+    H = ax.hist2d(x, y, bins=[nx, ny])
+    fig.colorbar(H[3], ax=ax)
+    plt.show()

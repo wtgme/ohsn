@@ -9,11 +9,12 @@ from skimage.io import imread
 from sklearn.cluster import KMeans
 from skimage.color import rgb2lab
 import numpy as np
-import os, path
+import os
 from sklearn.utils import shuffle
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
-from colormath.color_objects import LabColor, sRGBColor
+from colormath.color_objects import LabColor, sRGBColor, AdobeRGBColor
+import util.plot_util as plot
 
 
 def main_colors(filename):
@@ -33,7 +34,7 @@ def main_colors(filename):
     return kmeans.cluster_centers_
 
 
-# colors = main_colors('black.png')
+# colors = main_colors('data/black.png')
 # colors = main_colors('https://pbs.twimg.com/profile_banners/3327720838/1437934435')
 # print colors
 # centers = np.reshape(colors, (1, 3, 3))
@@ -71,12 +72,12 @@ def cate_color(colors, standards, cformat='rgb'):
 
 
 def color_map(color, standards, cformat='rgb'):
-    if cformat is 'rgb':
+    if cformat == 'rgb':
         rgb = srgbc(color)
         lab = convert_color(rgb, LabColor, target_illuminant='d50')
-    elif cformat is 'lab':
+    elif cformat == 'lab':
         lab = labc(color)
-    mindis, minindex = 10000, 0
+    mindis, minindex = 10000000, 0
     for index in xrange(len(standards)):
         distance = delta_e_cie2000(lab, standards[index])
         if distance < mindis:
@@ -89,7 +90,11 @@ def rgbstandards(standards):
     # Plot color wheel: but first transform LAB formats of color wheel to sRGB formats
     rgblist = []
     for lab in standards:
+        # print '--------------------'
+        # print lab
         rgb = convert_color(lab, sRGBColor, target_illuminant='d50')
+        # print rgb
+        # print convert_color(rgb, LabColor, target_illuminant='d50')
         rgblist.append(rgb.get_rgb_hex())
     return rgblist
 
@@ -99,3 +104,21 @@ def color_standers():
     rgbstan = rgbstandards(labstanders)
     rgbstan[-1] = '#FFFFFF'
     return (labstanders, rgbstan)
+
+def get_color_sent():
+    MYDIR = os.path.dirname(__file__)
+    cmap = {}
+    with open(os.path.join(MYDIR, 'color-cate'), 'r') as fo:
+        lines = fo.readlines()
+        for i in xrange(len(lines)):
+            for index in lines[i].split(' '):
+                cmap[int(index)] = i+1
+    return cmap
+
+# labstanders, rgbstan = color_standers()
+# print labstanders
+# print rgbstan
+# plot.color_bars(rgbstan, [i+1 for i in range(38)])
+# cs = get_color_sent()
+# print len(cs)
+# print cs

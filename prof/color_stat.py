@@ -14,7 +14,9 @@ default Theme color: 0084B4 Background color: C0DEED
 Theme color and background colors are default ------> default_profile": true
 
 """
-
+import sys
+sys.path.append('..')
+import util.io_util as io
 import datetime
 import pickle
 import urllib2
@@ -46,35 +48,35 @@ def get_image_color(urllist):
 
 
 def image_color_compare():
-    # ed_urls = io.get_values_one_field('fed', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
-    # rd_urls = io.get_values_one_field('random', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
-    # yg_urls = io.get_values_one_field('young', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
-    #
-    # pickle.dump(ed_urls, open("data/edimage.pick", "wb"))
-    # pickle.dump(rd_urls, open("data/rdimage.pick", "wb"))
-    # pickle.dump(yg_urls, open("data/ygimage.pick", "wb"))
+    ed_urls = io.get_values_one_field('fed', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
+    rd_urls = io.get_values_one_field('random', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
+    yg_urls = io.get_values_one_field('young', 'com', 'profile_banner_url', {'level': 1, 'profile_banner_url': {'$exists': True}})
+
+    pickle.dump(ed_urls, open("data/edimage.pick", "wb"))
+    pickle.dump(rd_urls, open("data/rdimage.pick", "wb"))
+    pickle.dump(yg_urls, open("data/ygimage.pick", "wb"))
     standers, rgbstan = color_standers()
 
-    ed_urls = pickle.load(open("data/edimage.pick", "rb"))
-    rd_urls = pickle.load(open("data/rdimage.pick", "rb"))
-    yg_urls = pickle.load(open("data/ygimage.pick", "rb"))
+    # ed_urls = pickle.load(open("data/edimage.pick", "rb"))
+    # rd_urls = pickle.load(open("data/rdimage.pick", "rb"))
+    # yg_urls = pickle.load(open("data/ygimage.pick", "rb"))
 
-    # ed_cs = get_image_color(ed_urls)
-    # pickle.dump(ed_cs, open("data/edics.pick", "wb"))
+    ed_cs = get_image_color(ed_urls)
+    pickle.dump(ed_cs, open("data/edics.pick", "wb"))
     ed_cs = pickle.load(open("data/edics.pick", "rb"))
     edi = cate_color(ed_cs, standers, 'lab')
     plot.color_bars(rgbstan, edi)
 
-    # rd_cs = get_image_color(rd_urls)
-    # pickle.dump(rd_cs, open("data/rdics.pick", "wb"))
-    # rd_cs = pickle.load(open("data/rdics.pick", "rb"))
-    # rdi = cate_color(rd_cs, standers, 'lab')
-    # plot.color_bars(rgbstan, rdi)
+    rd_cs = get_image_color(rd_urls)
+    pickle.dump(rd_cs, open("data/rdics.pick", "wb"))
+    rd_cs = pickle.load(open("data/rdics.pick", "rb"))
+    rdi = cate_color(rd_cs, standers, 'lab')
+    plot.color_bars(rgbstan, rdi)
 
-    # yg_cs = get_image_color(yg_urls)
-    # pickle.dump(yg_cs, open("data/ygics.pick", "wb"))
-    # ygi = cate_color(yg_cs, standers, 'lab')
-    # plot.color_bars(rgbstan, ygi)
+    yg_cs = get_image_color(yg_urls)
+    pickle.dump(yg_cs, open("data/ygics.pick", "wb"))
+    ygi = cate_color(yg_cs, standers, 'lab')
+    plot.color_bars(rgbstan, ygi)
 
 image_color_compare()
 

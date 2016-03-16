@@ -10,12 +10,14 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import util.db_util as dbt
 import numpy as np
+import os
 
 
 def read_fields(split=False):
     # read feature names in use
+    MYDIR = os.path.dirname(__file__)
     fileds = []
-    with open('fieldx.txt', 'r') as fo:
+    with open(os.path.join(MYDIR, 'fieldx.txt'), 'r') as fo:
         for line in fo.readlines():
             if not line.startswith(' '):
                 line = line.strip()
@@ -64,6 +66,19 @@ def get_mlvs_field_values(db_name, flag, field):
     for v in poi.find({'level': 1, flag: {'$exists': True}}, [field]):
         # print v
         counts.append(v[tag_names[0]][tag_names[1]])
+    return counts
+
+def get_mlvs_field_values_uids(db_name, uids, flag, field):
+    db = dbt.db_connect_no_auth(db_name)
+    poi = db['com']
+    counts = []
+    tag_names = field.split('.')
+    for uid in uids:
+        v = poi.find_one({'id': uid, flag: {'$exists': True}}, [field])
+        if v is None:
+            continue
+        else:
+            counts.append(v[tag_names[0]][tag_names[1]])
     return counts
 
 

@@ -107,8 +107,8 @@ def rfecv(X, y, kernel='linear', class_weight=None):
 
 def mlrfecv(X, y, kernel='linear', class_weight=None):
     classif = OneVsRestClassifier(SVC(kernel=kernel, class_weight=class_weight))
-    mrfecv = RFECV(estimator=classif, step=1, cv=StratifiedKFold(y, 5),
-                  scoring='accuracy')
+    mrfecv = RFECV(estimator  =classif, step=1, cv=StratifiedKFold(y, 5),
+                  scoring='f1_samples')
     rfecv.fit(X, y)
     print("Optimal number of features : %d" % mrfecv.n_features_)
     return (mrfecv)
@@ -173,6 +173,7 @@ def pca_svm_cv(X, y, n=70):
 
 def mlsvm_cv(X, y, kernel='linear'):
     # Cross validation with SVM
+    print 'Multiple label classification'
     classif = OneVsRestClassifier(SVC(kernel=kernel))
     #When the cv argument is an integer, cross_val_score
     # uses the KFold or StratifiedKFold strategies by default,
@@ -237,13 +238,13 @@ def convert_fields(LIWC, rank):
 
 
 def load_scale_data(file_path, multilabeltf=False):
-    X_digits, y = load_svmlight_file(file_path, multilabel=multilabeltf)
-    X_dentise = X_digits.toarray()
-    X = preprocessing.scale(X_dentise)
+    X, y = load_svmlight_file(file_path, multilabel=multilabeltf)
+    X = X.toarray()
+    # X = preprocessing.scale(X)
     # min_max_scaler = preprocessing.MinMaxScaler()
     # X = min_max_scaler.fit_transform(X_dentise)
-    if multilabeltf == True:
-        y = MultiLabelBinarizer().fit_transform(y)
+    # if multilabeltf == True:
+    #     y = MultiLabelBinarizer().fit_transform(y)
     return (X, y)
 
 
@@ -256,7 +257,7 @@ def common_features():
     # support1, ranking1 = ref1.support_, ref1.ranking_
     # convert_fields(LIWC, ranking1)
     #
-    # ref2 = ref(X2, y2, 34)
+    ref2 = ref(X2, y2, 34)
     # support2, ranking2 = ref2.support_, ref2.ranking_
     # convert_fields(LIWC, ranking2)
     # # X3, y3 = load_scale_data('data/ed-all-liwc.data')
@@ -299,9 +300,57 @@ def kernels():
     plot_errorbar(means, np.array(stds), labels)
 
 
-X, y = load_scale_data('data/ygcolor.data', True)
-mlsvm_cv(X, y)
 
+# mlsvm_cv(X, y)
+def mlcvrfe():
+    cvs = list()
+    X, y = load_scale_data('data/ygcolor.data', True)
+    print y
+    print y[:, 0]
+    # refcv = rfecv(X, y[:, 0])
+    # pickle.dump(refcv, open('data/posref.pick', 'w'))
+    # cvs.append(pickle.load(open('data/posref.pick', 'r')))
+
+    # refcv = rfecv(X, y[:, 1])
+    # pickle.dump(refcv, open('data/neuref.pick', 'w'))
+    # cvs.append(pickle.load(open('data/neuref.pick', 'r')))
+    #
+    # refcv = rfecv(X, y[:, 2])
+    # pickle.dump(refcv, open('data/negref.pick', 'w'))
+    # cvs.append(pickle.load(open('data/negref.pick', 'r')))
+
+    # plot_rfecvs(cvs, ['Positive', 'Neutral', 'Negative'])
+
+
+def liwc_color_bar(fieldname):
+    X, y = load_scale_data('data/ygcolor.data', True)
+    y = np.array(y).ravel()
+    print y
+    LIWC = read_field()
+    T = X[:, np.argwhere(LIWC == fieldname)]
+    T = np.repeat(T, 3)
+    # fig, ax = plt.subplots()
+    yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
+    print yhist
+    xhist, xbin_edges = np.histogram(T, 30, range=(np.percentile(T, 2.5), np.percentile(T, 97.5)))
+    H = np.histogram2d(T, y, bins=[xbin_edges, ybin_edges])
+    ind = np.arange(30)  # the x locations for the groups
+    width = 0.35  # the width of the bars: can also be len(x) sequence
+    p1 = plt.bar(ind, H[0][:, 0], width, color='r')
+    p2 = plt.bar(ind, H[0][:, 1], width, color='g', bottom=H[0][:, 0])
+    p3 = plt.bar(ind, H[0][:, 2], width, color='b', bottom=H[0][:, 0] + H[0][:, 1])
+    # plt.xticks(ind+width/2., 0.5*(H[1][1:] + H[1][:-1])*100)
+    plt.xticks(ind + width / 2., ind)
+    plt.ylabel('Count')
+    plt.xlabel('Value')
+    plt.title('Sentiment class counts of colors by LIWC field ' + fieldname)
+    plt.legend((p1[0], p2[0], p3[0]), ('Positive', 'Neutral', 'Negative'))
+    plt.show()
+    plt.savefig(fieldname+'-color.pdf')
+    plt.clf()
+
+for name in ['anger', 'sad', 'anx', 'posemo', 'negemo']:
+    liwc_color_bar(name)
 
 def balanced():
     X1, y1 = load_scale_data('data/ed-all-liwc.data')

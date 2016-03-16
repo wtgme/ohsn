@@ -37,13 +37,23 @@ def image_main_color(dbname, colname):
     return color_list
 
 
+def map_label_senti(labels):
+    user_senti = {}
+    csmap = ic.get_color_sent()
+    print csmap
+    for user in labels.keys():
+        labs = labels[user]
+        user_senti[user] = [csmap[lab] for lab in labs]
+    return user_senti
+
+
 def map_color_label(uimages):
     user_tags = {}
     stand = ic.color_wheel()
     for user in uimages.keys():
         colors = uimages[user]
-        user_tags[user] = set(ic.color_map(color, stand, cformat='lab') for color in colors)
-        print user, user_tags[user]
+        user_tags[user] = [ic.color_map(color, stand, cformat='lab') for color in colors]
+        # print user, user_tags[user]
     return user_tags
 
 
@@ -53,7 +63,7 @@ def color_classify(userlabels, field_names, file_name, dbname):
     poi = db['com']
     # format: 6,7,11,12 1:-0.022711 2:-0.050504 3:-0.035691
     for uid in userlabels.keys():
-        labels = userlabels[uid]
+        labels = (userlabels[uid])
         user = poi.find_one({'id': uid}, ['liwc_anal.result'])
         values = io.get_fields_one_doc(user, field_names)
         outstr = ','.join(str(x) for x in labels)
@@ -96,14 +106,19 @@ def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
 # ygimage = image_main_color('young', 'com')
 # pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
 # ygimage = pickle.load(open('data/ygimage.pick', 'r'))
-print len(ygimage)
+# print len(ygimage)
 # labels = map_color_label(ygimage)
 # pickle.dump(labels, open('data/yglabels.pick', 'w'))
-labels = pickle.load(open('data/yglabels.pick', 'r'))
+# labels = pickle.load(open('data/yglabels.pick', 'r'))
+# print labels
+# senti = map_label_senti(labels)
+# pickle.dump(senti, open('data/ygsentis.pick', 'w'))
+senti = pickle.load(open('data/ygsentis.pick', 'r'))
 LIWC = io.read_fields()
 print len(LIWC)
-print len(labels)
-# color_classify(labels, LIWC, 'data/ygcolor', 'young')
+print len(senti)
+print senti
+color_classify(senti, LIWC, 'data/ygcolor', 'young')
 
 
 # LIWC = io.read_fields()

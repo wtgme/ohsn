@@ -2,7 +2,7 @@ liwc_anal.result.WC
 liwc_anal.result.WPS
 liwc_anal.result.Sixltr
 liwc_anal.result.Dic
-liwc_anal.result.Numerals
+    liwc_anal.result.Numerals
 liwc_anal.result.funct
 liwc_anal.result.pronoun
 liwc_anal.result.ppron
