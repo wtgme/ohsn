@@ -18,41 +18,8 @@ Theme color and background colors are default ------> default_profile": true
 import datetime
 import pickle
 import urllib2
-
-
-import image_color
+from image_color import *
 import util.plot_util as plot
-
-
-
-
-def cate_color(colors, standards, format='rgb'):
-    # Map color to the most similar color in color wheel
-    color_index = []
-    for color in colors:
-        if format is 'rgb':
-            rgb = srgbc(color)
-            lab = convert_color(rgb, LabColor, target_illuminant='d50')
-        elif format is 'lab':
-            lab = labc(color)
-        mindis, minindex = 10000, 0
-        for index in xrange(len(standards)):
-            distance = delta_e_cie2000(lab, standards[index])
-            if distance < mindis:
-                mindis = distance
-                minindex = index + 1
-        # print mindis, minindex
-        color_index.append(minindex)
-    return color_index
-
-
-def rgbstandards(standards):
-    # Plot color wheel: but first transform LAB formats of color wheel to sRGB formats
-    rgblist = []
-    for lab in standards:
-        rgb = convert_color(lab, sRGBColor, target_illuminant='d50')
-        rgblist.append(rgb.get_rgb_hex())
-    return rgblist
 
 
 def rmdefault(clist):
@@ -68,7 +35,7 @@ def get_image_color(urllist):
     for url in urllist:
         i += 1
         try:
-            main_colors = image_color.main_colors(url)
+            main_colors = main_colors(url)
         except urllib2.HTTPError:
             continue
         # print main_colors
@@ -86,9 +53,7 @@ def image_color_compare():
     # pickle.dump(ed_urls, open("data/edimage.pick", "wb"))
     # pickle.dump(rd_urls, open("data/rdimage.pick", "wb"))
     # pickle.dump(yg_urls, open("data/ygimage.pick", "wb"))
-    standers = color_wheel()
-    rgbstan = rgbstandards(standers)
-    rgbstan[-1] = '#FFFFFF'
+    standers, rgbstan = color_standers()
 
     ed_urls = pickle.load(open("data/edimage.pick", "rb"))
     rd_urls = pickle.load(open("data/rdimage.pick", "rb"))

@@ -27,7 +27,7 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV, RFE, SelectFromModel
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import MultiLabelBinarizer
 import pickle
 import itertools
 
@@ -107,11 +107,11 @@ def rfecv(X, y, kernel='linear', class_weight=None):
 
 def mlrfecv(X, y, kernel='linear', class_weight=None):
     classif = OneVsRestClassifier(SVC(kernel=kernel, class_weight=class_weight))
-    rfecv = RFECV(estimator=classif, step=1, cv=StratifiedKFold(y, 5),
+    mrfecv = RFECV(estimator=classif, step=1, cv=StratifiedKFold(y, 5),
                   scoring='accuracy')
     rfecv.fit(X, y)
-    print("Optimal number of features : %d" % rfecv.n_features_)
-    return (rfecv)
+    print("Optimal number of features : %d" % mrfecv.n_features_)
+    return (mrfecv)
 
 
 def plot_rfecvs(rfecvs, labels):
@@ -171,6 +171,16 @@ def pca_svm_cv(X, y, n=70):
     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
 
 
+def mlsvm_cv(X, y, kernel='linear'):
+    # Cross validation with SVM
+    classif = OneVsRestClassifier(SVC(kernel=kernel))
+    #When the cv argument is an integer, cross_val_score
+    # uses the KFold or StratifiedKFold strategies by default,
+    # the latter being used if the estimator derives from ClassifierMixin.
+    scores = cross_validation.cross_val_score(classif, X, y, scoring='f1_samples', cv=5, n_jobs=5)
+    print("F1_samples: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
+    return scores
+
 def svm_cv(X, y, kernel='linear'):
     # Cross validation with SVM
     clf = SVC(kernel=kernel)
@@ -226,12 +236,14 @@ def convert_fields(LIWC, rank):
     print 'Eliminated Features:, ', line_non_tag
 
 
-def load_scale_data(file_path):
-    X_digits, y = load_svmlight_file(file_path)
+def load_scale_data(file_path, multilabeltf=False):
+    X_digits, y = load_svmlight_file(file_path, multilabel=multilabeltf)
     X_dentise = X_digits.toarray()
     X = preprocessing.scale(X_dentise)
     # min_max_scaler = preprocessing.MinMaxScaler()
     # X = min_max_scaler.fit_transform(X_dentise)
+    if multilabeltf == True:
+        y = MultiLabelBinarizer().fit_transform(y)
     return (X, y)
 
 
@@ -274,10 +286,6 @@ def common_features():
     # convert_fields(LIWC, ref2.ranking_)
 
 
-
-common_features()
-
-
 def kernels():
     X1, y1 = load_scale_data('data/ed-nrd-liwc.data')
     ref1 = ref(X1, y1, 38)
@@ -289,6 +297,10 @@ def kernels():
         means.append(score.mean())
         stds.append(score.std())
     plot_errorbar(means, np.array(stds), labels)
+
+
+X, y = load_scale_data('data/ygcolor.data', True)
+mlsvm_cv(X, y)
 
 
 def balanced():

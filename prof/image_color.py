@@ -9,11 +9,11 @@ from skimage.io import imread
 from sklearn.cluster import KMeans
 from skimage.color import rgb2lab
 import numpy as np
+import os, path
 from sklearn.utils import shuffle
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
 from colormath.color_objects import LabColor, sRGBColor
-
 
 
 def main_colors(filename):
@@ -41,8 +41,9 @@ def main_colors(filename):
 
 def color_wheel():
     # read color wheel
+    MYDIR = os.path.dirname(__file__)
     color_list = []
-    with open('color.list') as fo:
+    with open(os.path.join(MYDIR, 'color-list'), 'r') as fo:
         lines = fo.readlines()
         for i in xrange(len(lines)/3):
             color_list.append(labc([float(line.strip()) for line in lines[3*i:3*i+3]]))
@@ -59,3 +60,42 @@ def srgbc(rgbv):
     rgbv = rgbv.replace('#', '')
     return sRGBColor(float(int(rgbv[0:2], 16)), float(int(rgbv[2:4], 16)), float(int(rgbv[4:6], 16)), is_upscaled=True)
 
+
+def cate_color(colors, standards, cformat='rgb'):
+    # Map color to the most similar color in color wheel
+    color_index = []
+    for color in colors:
+        minindex = color_map(color, cformat, standards)
+        color_index.append(minindex)
+    return color_index
+
+
+def color_map(color, standards, cformat='rgb'):
+    if cformat is 'rgb':
+        rgb = srgbc(color)
+        lab = convert_color(rgb, LabColor, target_illuminant='d50')
+    elif cformat is 'lab':
+        lab = labc(color)
+    mindis, minindex = 10000, 0
+    for index in xrange(len(standards)):
+        distance = delta_e_cie2000(lab, standards[index])
+        if distance < mindis:
+            mindis = distance
+            minindex = index + 1
+    return minindex
+
+
+def rgbstandards(standards):
+    # Plot color wheel: but first transform LAB formats of color wheel to sRGB formats
+    rgblist = []
+    for lab in standards:
+        rgb = convert_color(lab, sRGBColor, target_illuminant='d50')
+        rgblist.append(rgb.get_rgb_hex())
+    return rgblist
+
+
+def color_standers():
+    labstanders = color_wheel()
+    rgbstan = rgbstandards(labstanders)
+    rgbstan[-1] = '#FFFFFF'
+    return (labstanders, rgbstan)

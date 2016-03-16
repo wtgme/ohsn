@@ -39,8 +39,29 @@ def image_main_color(dbname, colname):
 
 def map_color_label(uimages):
     user_tags = {}
+    stand = ic.color_wheel()
     for user in uimages.keys():
         colors = uimages[user]
+        user_tags[user] = set(ic.color_map(color, stand, cformat='lab') for color in colors)
+        print user, user_tags[user]
+    return user_tags
+
+
+def color_classify(userlabels, field_names, file_name, dbname):
+    fw = open(file_name+'.data', 'w')
+    db = dbt.db_connect_no_auth(dbname)
+    poi = db['com']
+    # format: 6,7,11,12 1:-0.022711 2:-0.050504 3:-0.035691
+    for uid in userlabels.keys():
+        labels = userlabels[uid]
+        user = poi.find_one({'id': uid}, ['liwc_anal.result'])
+        values = io.get_fields_one_doc(user, field_names)
+        outstr = ','.join(str(x) for x in labels)
+        outstr += ' '
+        for i in xrange(len(values)):
+            outstr += str(i+1)+':'+str(values[i])+' '
+        fw.write(outstr+'\n')
+    fw.close()
 
 
 def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
@@ -73,9 +94,17 @@ def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
 
 
 # ygimage = image_main_color('young', 'com')
-# print len(ygimage)
 # pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
-ygimage = pickle.load(open('data/ygimage.pick', 'r'))
+# ygimage = pickle.load(open('data/ygimage.pick', 'r'))
+print len(ygimage)
+# labels = map_color_label(ygimage)
+# pickle.dump(labels, open('data/yglabels.pick', 'w'))
+labels = pickle.load(open('data/yglabels.pick', 'r'))
+LIWC = io.read_fields()
+print len(LIWC)
+print len(labels)
+# color_classify(labels, LIWC, 'data/ygcolor', 'young')
+
 
 # LIWC = io.read_fields()
 # common = pickle.load(open('data/common.pick', 'r'))
