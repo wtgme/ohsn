@@ -134,9 +134,10 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
 def network_mining(poi, timelines, network, level):
     # set every poi to have not been analysed.
     # poi.update({}, {'$set': {"net_anal.tnmined": False}}, multi=True)
-    # poi.create_index([('timeline_count', pymongo.DESCENDING),
-    #                   ('net_anal.tnmined', pymongo.ASCENDING),
-    #                   ('level', pymongo.ASCENDING)], unique=False)
+    # TODO: change net_anal.tnmined as int not bool for multiple processing
+    poi.create_index([('timeline_count', pymongo.DESCENDING),
+                      ('net_anal.tnmined', pymongo.ASCENDING),
+                      ('level', pymongo.ASCENDING)], unique=False)
 
     #### Start to mining relationship network from users' timelines
     while True:
@@ -201,4 +202,4 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
 
     network_mining(sample_poi, sample_time, sample_network, level)
 
-process_db('fed', 'com', 'timeline', 'bnet', 100)
+process_db('fed', 'com', 'timeline', 'bnet', 10)
