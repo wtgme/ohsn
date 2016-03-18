@@ -546,6 +546,7 @@ def process_poi():
 
 
 db = dbutil.db_connect_no_auth('fed')
+# poi = db['com']
 timeline = db['timeline']
 bio = db['bio']
 bio.create_index([('uid', pymongo.ASCENDING),
@@ -556,11 +557,12 @@ test_class = pickle.load(open('test_class.pick', 'r'))
 test_class[test_class < 0] = 0
 test_class = test_class.astype(bool)
 targest_ids = test_ids[test_class]
-print targest_ids.shape
+# print targest_ids.shape
 
 for user_id in targest_ids:
     process_timelines(int(user_id), timeline, bio)
-
+    # user = poi.find_one({'id': user_id}, ['id', 'screen_name'])
+    # print user['screen_name']
 
 
 # text =  '''23, 5'4 EDNOS. starve, purge, dying. don't care.'''.lower()

@@ -30,6 +30,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 import pickle
 import itertools
+from sklearn.metrics import f1_score
 
 
 def read_field():
@@ -299,9 +300,20 @@ def kernels():
         stds.append(score.std())
     plot_errorbar(means, np.array(stds), labels)
 
+# X, y = load_scale_data('data/ygcolor.data', True)
+# # mlsvm_cv(X, y)
+# yp = y.copy()
+# yp[:, 0] = 0
+# yp[:, 1] = 1
+# yp[:, 2] = 1
+# # yp = np.random.randint(2, size=(y.shape[0], y.shape[1]))
+# print y
+# print y.shape
+# print '----------'
+# print yp
+# print yp.shape
+# print f1_score(y, yp, average='samples')
 
-
-# mlsvm_cv(X, y)
 def mlcvrfe():
     cvs = list()
     X, y = load_scale_data('data/ygcolor.data', True)
@@ -324,29 +336,38 @@ def mlcvrfe():
 
 def liwc_color_bar(fieldname):
     X, y = load_scale_data('data/ygcolor.data', True)
+    group = 10
+    # print X.shape
     y = np.array(y).ravel()
-    print y
     LIWC = read_field()
     T = X[:, np.argwhere(LIWC == fieldname)]
     T = np.repeat(T, 3)
     # fig, ax = plt.subplots()
     yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
-    print yhist
-    xhist, xbin_edges = np.histogram(T, 30, range=(np.percentile(T, 2.5), np.percentile(T, 97.5)))
+    # print yhist
+    xhist, xbin_edges = np.histogram(T, group, range=(np.percentile(T, 2.5), np.percentile(T, 97.5)))
     H = np.histogram2d(T, y, bins=[xbin_edges, ybin_edges])
-    ind = np.arange(30)  # the x locations for the groups
+    print xbin_edges
+    ind = np.arange(group)  # the x locations for the groups
     width = 0.35  # the width of the bars: can also be len(x) sequence
-    p1 = plt.bar(ind, H[0][:, 0], width, color='r')
-    p2 = plt.bar(ind, H[0][:, 1], width, color='g', bottom=H[0][:, 0])
-    p3 = plt.bar(ind, H[0][:, 2], width, color='b', bottom=H[0][:, 0] + H[0][:, 1])
-    # plt.xticks(ind+width/2., 0.5*(H[1][1:] + H[1][:-1])*100)
-    plt.xticks(ind + width / 2., ind)
-    plt.ylabel('Count')
+    # print H[0][:, 0]
+    # print H[0][:, 1]
+    # print H[0][:, 2]
+    # print H[0][:, 0]+H[0][:, 1]+H[0][:, 2]
+    # print xhist
+    # print H[0][:, 0]/xhist
+    p1 = plt.bar(ind, H[0][:, 0]/xhist, width, color='r', hatch="\\\\")
+    p2 = plt.bar(ind, H[0][:, 1]/xhist, width, color='g', hatch="//", bottom=H[0][:, 0]/xhist)
+    p3 = plt.bar(ind, H[0][:, 2]/xhist, width, color='b', hatch="--", bottom=(H[0][:, 0] + H[0][:, 1])/xhist)
+    plt.xticks(ind+width/2., np.around(0.5*(xbin_edges[1:] + xbin_edges[:-1]), decimals=4))
+    # [::3] choose one every three items
+    # plt.xticks(ind + width / 2., ind)
+    plt.ylabel('Ratio')
     plt.xlabel('Value')
     plt.title('Sentiment class counts of colors by LIWC field ' + fieldname)
     plt.legend((p1[0], p2[0], p3[0]), ('Positive', 'Neutral', 'Negative'))
-    plt.show()
-    plt.savefig(fieldname+'-color.pdf')
+    # plt.show()
+    plt.savefig(fieldname+'-color-ratio.pdf')
     plt.clf()
 
 for name in ['anger', 'sad', 'anx', 'posemo', 'negemo']:

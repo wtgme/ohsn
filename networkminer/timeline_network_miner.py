@@ -201,4 +201,4 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
 
     network_mining(sample_poi, sample_time, sample_network, level)
 
-# process_db('young', 'com', 'timeline', 'bnet', 1)
+process_db('fed', 'com', 'timeline', 'bnet', 100)

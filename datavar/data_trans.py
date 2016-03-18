@@ -91,5 +91,9 @@ def remove_non_targeted_user():
             netdb.delete_many({'user': user['id']})
             netdb.delete_many({'follower': user['id']})
 
-test_common()
+
+db = dbt.db_connect_no_auth('fed')
+cols = db['com']
+for user in cols.find({'level': {'$lte': 1}}, ['id', 'screen_name']):
+    print user['screen_name']
 
