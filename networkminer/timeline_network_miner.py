@@ -158,8 +158,8 @@ def network_mining(poi, timelines, network, level):
                 #print tweet['text']
                 # if it doesn't mention or retweet or reply...
                 if len(tweet['entities']['user_mentions']) < 1:
-                    add_tweet_edge(network, tweet['user']['id'], tweet['created_at'], tweet['id'])
-
+                    # add_tweet_edge(network, tweet['user']['id'], tweet['created_at'], tweet['id'])
+                    continue
                 else:
                     udmention_list = []
                     if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
