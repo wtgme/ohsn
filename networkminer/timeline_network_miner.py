@@ -199,6 +199,7 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
                                 unique=True)
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
+    sample_network.delete_many({'relationship': 'tweet'})
 
     network_mining(sample_poi, sample_time, sample_network, level)
 
