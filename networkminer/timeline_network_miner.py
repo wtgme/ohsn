@@ -136,14 +136,15 @@ def network_mining(poi, timelines, network, level):
     # TODO: change net_anal.tnmined as int not bool for multiple processing
     #### Start to mining relationship network from users' timelines
     while True:
-        count = poi.count({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False}, 'level': {'$lte': level}})
+        count = poi.count({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
+                                             {'net_anal.tnmined': False}], 'level': {'$lte': level}})
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False},
-                              'level': {'$lte': level}}, {'id': 1}).limit(250):
+        for user in poi.find({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
+                                             {'net_anal.tnmined': False}], 'level': {'$lte': level}}, {'id': 1}).limit(250):
 
             for tweet in timelines.find({'user.id': user['id']}):
                 # parse the tweet for mrr edges:
