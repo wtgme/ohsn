@@ -3,7 +3,7 @@
 Created on 12:04, 18/11/15
 
 Mining relationship network from users' timelines
-Relationship: Tweet, Retweet, Reply, Mention
+Relationship: Tweet; Retweet; Reply; direct Mention; indirect mention, denoted as 0, 1, 2, 3, 4
 
 @author: wt
 """
@@ -24,7 +24,7 @@ def add_tweet_edge(netdb, userid, createdat, statusid):
     # edge['screen_name_0'] =
     edge['id1'] = userid
     # edge['screen_name_1'] =
-    edge['relationship'] = 'tweet'
+    edge['type'] = 0
     # edge['relationship'] = 'friend'
     # this is an observation we can merge observations into weighted and time period later.
     edge['created_at'] = createdat
@@ -40,13 +40,37 @@ def add_tweet_edge(netdb, userid, createdat, statusid):
         #print "forming tweet edge Duplicate Key ERROR! this shouldn't happen..."
         #print 'tweet\t' + str(userid) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
+
+def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
+    edge = {}
+    edge['id0'] = userid
+    # edge['screen_name_0'] =
+    edge['id1'] = retweeted
+    # edge['screen_name_1'] =
+    edge['type'] = 1
+    # edge['relationship'] = 'friend'
+    # this is an observation we can merge observations into weighted and time period later.
+    edge['created_at'] = createdat
+    # edge['first-date'] = createdat
+    edge['statusid'] = statusid
+    #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
+
+    try:
+        netdb.insert(edge)
+    except pymongo.errors.DuplicateKeyError:
+        pass
+        #print "forming retweet edge Duplicate Key ERROR! this shouldn't happen..."
+        #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
+        #exit()
+
+
 def add_reply_edge(netdb, userid, replied_to, createdat, statusid):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
     edge['id1'] = replied_to
     # edge['screen_name_1'] =
-    edge['relationship'] = 'reply-to'
+    edge['type'] = 2
     # edge['relationship'] = 'friend'
     # this is an observation we can merge observations into weighted and time period later.
     edge['created_at'] = createdat
@@ -68,7 +92,7 @@ def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid):
     # edge['screen_name_0'] =
     edge['id1'] = mentioned
     # edge['screen_name_1'] =
-    edge['relationship'] = 'dmentioned'
+    edge['type'] = 3
     # edge['relationship'] = 'friend'
     # this is an observation we can merge observations into weighted and time period later.
     edge['created_at'] = createdat
@@ -91,7 +115,7 @@ def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
     # edge['screen_name_0'] =
     edge['id1'] = mentioned
     # edge['screen_name_1'] =
-    edge['relationship'] = 'udmentioned'
+    edge['type'] = 4
     # edge['relationship'] = 'friend'
     # this is an observation we can merge observations into weighted and time period later.
     edge['created_at'] = createdat
@@ -106,29 +130,6 @@ def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
         pass
         #print "forming mentions edge Duplicate Key ERROR! this shouldn't happen..."
         #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
-
-
-def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
-    edge = {}
-    edge['id0'] = userid
-    # edge['screen_name_0'] =
-    edge['id1'] = retweeted
-    # edge['screen_name_1'] =
-    edge['relationship'] = 'retweet'
-    # edge['relationship'] = 'friend'
-    # this is an observation we can merge observations into weighted and time period later.
-    edge['created_at'] = createdat
-    # edge['first-date'] = createdat
-    edge['statusid'] = statusid
-    #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
-
-    try:
-        netdb.insert(edge)
-    except pymongo.errors.DuplicateKeyError:
-        pass
-        #print "forming retweet edge Duplicate Key ERROR! this shouldn't happen..."
-        #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
-        #exit()
 
 
 def network_mining(poi, timelines, network, level):
@@ -193,7 +194,7 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     sample_network = db[bnetcol]
     sample_network.create_index([("id0", pymongo.ASCENDING),
                                  ("id1", pymongo.ASCENDING),
-                                 ("relationship", pymongo.ASCENDING),
+                                 ("type", pymongo.ASCENDING),
                                  ("statusid", pymongo.ASCENDING),
                                  ('created_at', pymongo.ASCENDING)],
                                 unique=True)
