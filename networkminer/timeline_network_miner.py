@@ -133,13 +133,7 @@ def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
 
 
 def network_mining(poi, timelines, network, level):
-    # set every poi to have not been analysed.
-    # poi.update({}, {'$set': {"net_anal.tnmined": False}}, multi=True)
     # TODO: change net_anal.tnmined as int not bool for multiple processing
-    poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('net_anal.tnmined', pymongo.ASCENDING),
-                      ('level', pymongo.ASCENDING)], unique=False)
-
     #### Start to mining relationship network from users' timelines
     while True:
         count = poi.count({"timeline_count": {'$gt': 0}, "net_anal.tnmined": {'$exists': False}, 'level': {'$lte': level}})
@@ -178,12 +172,12 @@ def network_mining(poi, timelines, network, level):
 
                         else:  # original mentions
                             add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
-            poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}})
+            poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}}, upsert=False)
 
 
 
 def process_db(dbname, poicol, timecol, bnetcol, level):
-#### Connecting db and collections
+    #### Connecting db and collections
     db = dbutil.db_connect_no_auth(dbname)
     sample_poi = db[poicol]
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
@@ -198,9 +192,13 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
                                  ("statusid", pymongo.ASCENDING),
                                  ('created_at', pymongo.ASCENDING)],
                                 unique=True)
-
+    sample_poi.create_index([('timeline_count', pymongo.DESCENDING),
+                      ('net_anal.tnmined', pymongo.ASCENDING),
+                      ('level', pymongo.ASCENDING)], unique=False)
+    # set every poi to have not been analysed.
+    sample_poi.update_many({"net_anal.tnmined": True}, {'$set': {"net_anal.tnmined": False}}, upsert=False)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
-    sample_network.delete_many({'relationship': 'tweet'})
+    # sample_network.delete_many({'relationship': 'tweet'})
 
     network_mining(sample_poi, sample_time, sample_network, level)
 
