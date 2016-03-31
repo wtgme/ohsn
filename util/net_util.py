@@ -31,7 +31,7 @@ def load_beh_network(db_name, collection):
     DG = nx.DiGraph()
     db = dbt.db_connect_no_auth(db_name)
     cols = db[collection]
-    for row in cols.find({'type': {'$in': [1, 2, 3]}}):
+    for row in cols.find({'type': {'$in': [1, 2, 3]}}, timeout=False):
         n1 = row['id0']
         n2 = row['id1']
         weightv = 1
