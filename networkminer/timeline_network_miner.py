@@ -190,8 +190,7 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     sample_network.create_index([("id0", pymongo.ASCENDING),
                                  ("id1", pymongo.ASCENDING),
                                  ("type", pymongo.ASCENDING),
-                                 ("statusid", pymongo.ASCENDING),
-                                 ('created_at', pymongo.ASCENDING)],
+                                 ("statusid", pymongo.ASCENDING)],
                                 unique=True)
     sample_poi.create_index([('timeline_count', pymongo.DESCENDING),
                       ('net_anal.tnmined', pymongo.ASCENDING),
