@@ -74,7 +74,7 @@ def out_net(G, name):
 
 def out_net_commudet(dbname, colname, name):
     # transform the largest component to undirect for community detection
-    G = nt.load_network(dbname, colname)
+    G = nt.load_beh_network(dbname, colname)
     GC = nt.get_gaint_comp(G)
     # nt.net_statis(GC)
     GCG = GC.to_undirected()
@@ -117,10 +117,10 @@ def count_freque():
     for i in xrange(5):
         print bnet.count({'type': i})
 
-count_freque()
+# count_freque()
 
 # purn_net('yg')
-# out_net_commudet('yg', 'bnet', 'ygtime')
+out_net_commudet('fed', 'bnet', 'fedtime')
 
 # # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
 # rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
