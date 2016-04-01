@@ -15,17 +15,13 @@ import snap
 import networkx as nx
 
 
-def snap_comm():
-    G = nt.load_network('rd', 'cnet')
+def snap_comm(db_name, col_name, name):
+    DG = nt.load_beh_network(db_name, col_name)
+    G = DG.to_undirected()
     nx.write_edgelist(G, "data/net.data")
-    Graph = snap.LoadEdgeList(snap.PUNGraph, "data/net.data", 0, 1, ' ')
-    CmtyV = snap.TCnComV()
-    modularity = snap.CommunityGirvanNewman(Graph, CmtyV)
-    for Cmty in CmtyV:
-        print "Community: "
-        for NI in Cmty:
-            print NI
-    print "The modularity of the network is %f" % modularity
+    LoadedNet = snap.LoadEdgeList(snap.PNEANet, "data/net.data", 0, 1, ' ')
+    MxWcc = snap.GetMxWcc(LoadedNet)
+    out_net(G.subgraph(MxWcc.Nodes()), name)
 
 
 def purn_net(dbname):
@@ -117,10 +113,11 @@ def count_freque():
     for i in xrange(5):
         print bnet.count({'type': i})
 
+snap_comm('fed', 'bnet', 'fedtime')
 # count_freque()
 
 # purn_net('yg')
-out_net_commudet('fed', 'bnet', 'fedtime')
+# out_net_commudet('fed', 'bnet', 'fedtime')
 
 # # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
 # rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
