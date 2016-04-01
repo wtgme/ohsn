@@ -18,6 +18,7 @@ import networkx as nx
 def snap_comm(db_name, col_name, name):
     DG = nt.load_beh_network(db_name, col_name)
     G = DG.to_undirected()
+    del DG
     nx.write_edgelist(G, "data/net.data")
     LoadedNet = snap.LoadEdgeList(snap.PNEANet, "data/net.data", 0, 1, ' ')
     MxWcc = snap.GetMxWcc(LoadedNet)
