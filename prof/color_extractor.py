@@ -6,7 +6,7 @@ Created on 11:39 AM, 3/1/16
 Identify the main colors of an image
 See: http://charlesleifer.com/blog/using-python-and-k-means-to-find-the-dominant-colors-in-images/
 
-#######################discarded......
+#######################discarded......###############
 """
 
 from collections import namedtuple

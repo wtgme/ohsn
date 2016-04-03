@@ -334,15 +334,38 @@ def mlcvrfe():
     # plot_rfecvs(cvs, ['Positive', 'Neutral', 'Negative'])
 
 
+# def liwc_color_sig(fieldname):
+X, y = load_scale_data('data/ygcolor.data', True)
+LIWC = read_field()
+T = X[:, np.argwhere(LIWC == 'anger').ravel()]
+print X.shape
+print T.shape
+flags = list()
+for yi in y:
+    if yi[0]==yi[1] and yi[1]==yi[2]:
+        flags.append(True)
+    else:
+        flags.append(False)
+y = np.array([(b, c, d) for (b, c, d) in y])
+flags = np.array(flags)
+f = y[flags][:, 0]
+l = T[flags].ravel()
+yhist, ybin_edges = np.histogram(f, [1, 2, 3, 4])
+print yhist
+print ybin_edges
+
+
 def liwc_color_bar(fieldname):
     X, y = load_scale_data('data/ygcolor.data', True)
     group = 10
     # print X.shape
     y = np.array(y).ravel()
     LIWC = read_field()
-    T = X[:, np.argwhere(LIWC == fieldname)]
+    T = X[:, np.argwhere(LIWC == fieldname).ravel()]
     T = np.repeat(T, 3)
     # fig, ax = plt.subplots()
+    print T.shape
+    print y.shape
     yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
     # print yhist
     xhist, xbin_edges = np.histogram(T, group, range=(np.percentile(T, 2.5), np.percentile(T, 97.5)))
@@ -366,12 +389,13 @@ def liwc_color_bar(fieldname):
     plt.xlabel('Value')
     plt.title('Sentiment class counts of colors by LIWC field ' + fieldname)
     plt.legend((p1[0], p2[0], p3[0]), ('Positive', 'Neutral', 'Negative'))
-    # plt.show()
-    plt.savefig(fieldname+'-color-ratio.pdf')
-    plt.clf()
+    plt.show()
+    # plt.savefig(fieldname+'-color-ratio.pdf')
+    # plt.clf()
 
-for name in ['anger', 'sad', 'anx', 'posemo', 'negemo']:
-    liwc_color_bar(name)
+# for name in ['anger', 'sad', 'anx', 'posemo', 'negemo']:
+#     liwc_color_bar(name)
+
 
 def balanced():
     X1, y1 = load_scale_data('data/ed-all-liwc.data')
