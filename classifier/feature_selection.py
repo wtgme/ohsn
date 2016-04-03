@@ -337,9 +337,9 @@ def mlcvrfe():
 # def liwc_color_sig(fieldname):
 X, y = load_scale_data('data/ygcolor.data', True)
 LIWC = read_field()
-T = X[:, np.argwhere(LIWC == 'anger').ravel()]
-print X.shape
-print T.shape
+# T = X[:, np.argwhere(LIWC == 'anger').ravel()]
+# print X.shape
+# print T.shape
 flags = list()
 for yi in y:
     if yi[0]==yi[1] and yi[1]==yi[2]:
@@ -348,11 +348,20 @@ for yi in y:
         flags.append(False)
 y = np.array([(b, c, d) for (b, c, d) in y])
 flags = np.array(flags)
-f = y[flags][:, 0]
-l = T[flags].ravel()
-yhist, ybin_edges = np.histogram(f, [1, 2, 3, 4])
+y = y[flags][:, 0]
+yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
 print yhist
-print ybin_edges
+y[np.where(y < 3)] = +1
+y[np.where(y==3)] = -1
+print y.shape
+print len(y[np.where(y==1)])
+print len(y[np.where(y==-1)])
+X = X[flags, :]
+rfecv1 = rfecv(X, y)
+pickle.dump(rfecv1, open('data/allrfcv.p', 'w'))
+scores = list()
+scores.append(rfecv1.grid_scores_)
+plot_rfecvs(scores, ['All Negative'])
 
 
 def liwc_color_bar(fieldname):

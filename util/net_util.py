@@ -28,7 +28,7 @@ def load_network(db_name, collection='None'):
 
 
 def load_beh_network(db_name, collection):
-    DG = nx.DiGraph()
+    DG = nx.Graph()
     db = dbt.db_connect_no_auth(db_name)
     cols = db[collection]
     for row in cols.find({'type': {'$in': [1, 2, 3]}}, no_cursor_timeout=True):
