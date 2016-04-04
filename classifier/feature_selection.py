@@ -212,7 +212,7 @@ def fs_svm(X, y):
             print i+1, LIWC[i]
 
 
-def convert_fields(LIWC, rank):
+def  convert_fields(LIWC, rank):
     # Convert ranking IDs to feature names and rank them
     rf = {}
     for i in xrange(len(rank)):
@@ -300,19 +300,6 @@ def kernels():
         stds.append(score.std())
     plot_errorbar(means, np.array(stds), labels)
 
-# X, y = load_scale_data('data/ygcolor.data', True)
-# # mlsvm_cv(X, y)
-# yp = y.copy()
-# yp[:, 0] = 0
-# yp[:, 1] = 1
-# yp[:, 2] = 1
-# # yp = np.random.randint(2, size=(y.shape[0], y.shape[1]))
-# print y
-# print y.shape
-# print '----------'
-# print yp
-# print yp.shape
-# print f1_score(y, yp, average='samples')
 
 def mlcvrfe():
     cvs = list()
@@ -334,35 +321,40 @@ def mlcvrfe():
     # plot_rfecvs(cvs, ['Positive', 'Neutral', 'Negative'])
 
 
-# def liwc_color_sig(fieldname):
-X, y = load_scale_data('data/ygcolor.data', True)
-LIWC = read_field()
-# T = X[:, np.argwhere(LIWC == 'anger').ravel()]
-# print X.shape
-# print T.shape
-flags = list()
-for yi in y:
-    if yi[0]==yi[1] and yi[1]==yi[2]:
-        flags.append(True)
-    else:
-        flags.append(False)
-y = np.array([(b, c, d) for (b, c, d) in y])
-flags = np.array(flags)
-y = y[flags][:, 0]
-yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
-print yhist
-y[np.where(y < 3)] = +1
-y[np.where(y==3)] = -1
-print y.shape
-print len(y[np.where(y==1)])
-print len(y[np.where(y==-1)])
-X = X[flags, :]
-rfecv1 = rfecv(X, y)
-pickle.dump(rfecv1, open('data/allrfcv.p', 'w'))
-scores = list()
-scores.append(rfecv1.grid_scores_)
-plot_rfecvs(scores, ['All Negative'])
+def liwc_color_sig():
+    X, y = load_scale_data('data/ygcolor.data', True)
+    LIWC = read_field()
+    flags = list()
+    for yi in y:
+        if yi[0]==yi[1] and yi[1]==yi[2]:
+            flags.append(True)
+        else:
+            flags.append(False)
+    y = np.array([(b, c, d) for (b, c, d) in y])
+    flags = np.array(flags)
+    y = y[flags][:, 0]
+    yhist, ybin_edges = np.histogram(y, [1, 2, 3, 4])
+    print yhist
+    y[np.where(y < 3)] = +1
+    y[np.where(y==3)] = -1
+    print y.shape
+    print len(y[np.where(y==1)])
+    print len(y[np.where(y==-1)])
+    X = X[flags, :]
+    print X.shape
 
+    # rfecv1 = rfecv(X, y)
+    # pickle.dump(rfecv1, open('data/allrfcv.p', 'w'))
+    # rfecv1 = pickle.load(open('data/allrfcv.p', 'r'))
+    # scores = list()
+    # scores.append(rfecv1)
+    # plot_rfecvs(scores, ['All Negative or All Non-negative'])
+
+    ref2 = ref(X, y, 58)
+    support2, ranking2 = ref2.support_, ref2.ranking_
+    convert_fields(LIWC, ranking2)
+
+liwc_color_sig()
 
 def liwc_color_bar(fieldname):
     X, y = load_scale_data('data/ygcolor.data', True)
