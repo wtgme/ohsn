@@ -73,14 +73,18 @@ def out_net(G, name):
 
 def out_net_commudet(dbname, colname, name):
     # transform the largest component to undirect for community detection
+    # G = nt.load_beh_network(dbname, colname)
     G = nt.load_beh_network(dbname, colname)
+    nx.write_edgelist(G, "data/net.data")
+    # G = nx.read_edgelist("data/net.data")
     GC = nt.get_gaint_comp(G)
     # nt.net_statis(GC)
-    GCG = GC.to_undirected()
+    # GCG = GC.to_undirected()
     # nt.net_statis(GCG)
-    print GCG.number_of_selfloops()
+    nx.write_edgelist(GC, "data/comp.data")
+    print GC.number_of_selfloops()
 
-    out_net(GCG, name)
+    out_net(GC, name)
     # nx.write_edgelist(GCG, "data/net.data", delimiter='\t', data=False)
     # plot.network_top(GC)
     # comp = nt.girvan_newman(GC)
@@ -116,11 +120,11 @@ def count_freque():
     for i in xrange(5):
         print bnet.count({'type': i})
 
-snap_comm('fed', 'bnet', 'fedtime')
+# snap_comm('fed', 'bnet', 'fedtime')
 # count_freque()
 
 # purn_net('yg')
-# out_net_commudet('fed', 'bnet', 'fedtime')
+out_net_commudet('fed', 'bnet', 'fedtime')
 
 # # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
 # rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')

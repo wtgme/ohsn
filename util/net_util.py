@@ -60,16 +60,16 @@ def load_behavior_network(db_name, collection='None'):
     return DG
 
 
-def get_gaint_comp(DG):
+def get_gaint_comp(G):
     #If edges in both directions (u,v) and (v,u) exist in the graph,
     # attributes for the new undirected edge will be a combination of the
     # attributes of the directed edges.
-    G = DG.to_undirected()
+    # G = DG.to_undirected()
     print 'Getting Gaint Component.........................'
     print 'Network is connected:', (nx.is_connected(G))
     print 'The number of connected components:', (nx.number_connected_components(G))
     largest_cc = max(nx.connected_components(G), key=len)
-    return DG.subgraph(largest_cc)
+    return G.subgraph(largest_cc)
 
 
 def size_gaint_comp_net_db(db_name, collection='None'):
