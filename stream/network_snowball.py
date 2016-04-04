@@ -14,7 +14,9 @@ Created on 10:20, 02/02/16
 5. As all sampling methods based on friends and followers cannot get desired reference data,
 i.e., there is no something attractive to let users follow each other, this script is using timeline
 sampling method, i.e., snowball next users based on the involved users in current user's timelines.
-
+    The used relationships are 'retweet', 'reply-to', 'dmentioned'.
+    ....... 1. snowball user based on 'retweet', 'reply-to', 'dmentioned', storing the network in bnet
+    ....... 2. fill up the friendship network of crawled users, storing the network in tnet
 """
 
 import sys

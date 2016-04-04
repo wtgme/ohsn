@@ -9,10 +9,33 @@ import sys
 sys.path.append('..')
 import datetime
 import pymongo
-from api import timelines, following
+from api import timelines, following, lookup
 import util.db_util as dbt
 import time
 from threading import Thread
+import pickle, math
+
+
+def getuid(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    sample_user = db[colname]
+    uids = list()
+    for user in sample_user.find({'level': 1}, ['id']):
+        uids.append(user['id'])
+    return uids
+
+def seed():
+    db = dbt.db_connect_no_auth('ded')
+    sample_user = db['com']
+    # neiblist = pickle.load(open('ygtimeuid.pick', 'r'))
+    neiblist = getuid('fed', 'com')
+    list_size = len(neiblist)
+    print list_size
+    length = int(math.ceil(list_size/100.0))
+    for index in xrange(length):
+        index_begin = index*100
+        index_end = min(list_size, index_begin+100)
+        lookup.lookup_user_list(neiblist[index_begin:index_end], sample_user, 1, 'N')
 
 
 def monitor_network(time_index):
@@ -83,11 +106,11 @@ def start_monitor():
     while True:
         start = time.time()
         t1 = Thread(target=monitor_network, args=[index])
-        # t2 = Thread(target=monitor_timeline, args=[index])
+        t2 = Thread(target=monitor_timeline, args=[index])
         t1.start()
-        # t2.start()
+        t2.start()
         t1.join()
-        # t2.join()
+        t2.join()
         check_change(index)
         finish = time.time()
         during = finish - start
@@ -112,9 +135,9 @@ def fill_network(time_index):
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish networks crawl'
 
-fill_network(1)
+# fill_network(1)
 
-# start_monitor()
+start_monitor()
 
 
 

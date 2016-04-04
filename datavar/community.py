@@ -111,6 +111,7 @@ def plot_communty(dbname, colname, name, commline):
             nodelist.append(id_map[int(line.strip())])
     print 'node size:', str(len(nodelist))
     # plot.network_top(GC.subgraph(nodelist))
+    pickle.dump(nodelist, open('data/'+name+'uid.pick', 'w'))
     return GC.subgraph(nodelist)
 
 
@@ -126,17 +127,17 @@ def count_freque():
 # purn_net('yg')
 # out_net_commudet('fed', 'bnet', 'fedtime')
 
-# # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
-# rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
-# # ygcom = plot_communty('yg', 'scnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
-# ygcom = plot_communty('yg', 'tnet', 'ygtime', 'GROUP[ 2360 ][ 1966 ]')
-# fed = nt.load_network('fed', 'snet')
-# nt.net_statis(rdcom)
-# nt.net_statis(ygcom)
-# nt.net_statis(fed)
-# rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
-# ygdseq = sorted(nx.degree(ygcom).values(), reverse=True)
-# eddseq = sorted(nx.degree(fed).values(), reverse=True)
-# plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], 'Degree',  ['Random', 'Young', 'ED'], False)
+# rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
+rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
+# ygcom = plot_communty('yg', 'scnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
+ygcom = plot_communty('yg', 'tnet', 'ygtime', 'GROUP[ 2360 ][ 1966 ]')
+fed = nt.load_network('fed', 'snet')
+nt.net_statis(rdcom)
+nt.net_statis(ygcom)
+nt.net_statis(fed)
+rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
+ygdseq = sorted(nx.degree(ygcom).values(), reverse=True)
+eddseq = sorted(nx.degree(fed).values(), reverse=True)
+plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], 'Degree',  ['Random', 'Young', 'ED'], False)
 
 
