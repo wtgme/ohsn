@@ -124,7 +124,7 @@ def count_freque():
 # count_freque()
 
 # purn_net('yg')
-out_net_commudet('fed', 'bnet', 'fedtime')
+# out_net_commudet('fed', 'bnet', 'fedtime')
 
 # # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
 # rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
