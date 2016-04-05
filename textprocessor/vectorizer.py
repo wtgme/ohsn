@@ -14,6 +14,8 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import EnglishStemmer
 import re
+import os
+import shutil
 
 
 def compare_difference():
@@ -22,7 +24,7 @@ def compare_difference():
     print list(set(ed_ids).intersection(rd_ids))
 
 
-def tokenizer(dbname, poicol, timecol):
+def tokenizer(dbname, poicol, timecol, foldername):
     rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9]))@([A-Za-z0-9_]+):')  # for Retweet
     mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))@([A-Za-z0-9_]+)')  # for mention
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
@@ -32,6 +34,10 @@ def tokenizer(dbname, poicol, timecol):
     db = dbutil.db_connect_no_auth(dbname)
     poi = db[poicol]
     time = db[timecol]
+    if os.path.exists(foldername):
+        shutil.rmtree(foldername)
+    else:
+        os.makedirs(foldername)
     for user in poi.find({'level':1}, ['id']):
         textmass = ""
         for tweet in time.find({'user.id': user['id']}, ['text']):
@@ -54,7 +60,9 @@ def tokenizer(dbname, poicol, timecol):
         if len(words) > 50:
             tokens = text_process(textmass)
             if len(tokens) > 50:
-                print str(user['id']) + '\t'+ (' '.join(tokens))
+                with open(foldername+'/'+str(user['id']), 'w') as the_file:
+                    the_file.write(' '.join(tokens))
+                # print str(user['id']) + '\t'+ (' '.join(tokens))
 
 stopwds = stopwords.words('english')
 stemmer = EnglishStemmer()
@@ -75,23 +83,31 @@ def text_process(text):
 
 # text_process('(step..) ) play.  flappy bird between rounds.')
 
-def hashtags(dbname, poicol, timecol):
+def hashtags(dbname, poicol, timecol, foldername):
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
     db = dbutil.db_connect_no_auth(dbname)
     poi = db[poicol]
     time = db[timecol]
+    if os.path.exists(foldername):
+        shutil.rmtree(foldername)
+    else:
+        os.makedirs(foldername)
     for user in poi.find({'level':1}, ['id']):
         tags = list()
         for tweet in time.find({'user.id': user['id']}, ['text']):
             text = tweet['text'].encode('utf8').lower()
             tags += re.findall(hgrex, text)
         if len(tags) > 10:
-            print str(user['id']) + '\t'+ (' '.join(tags))
+            with open(foldername+'/'+str(user['id']), 'w') as the_file:
+                    the_file.write(' '.join(tags))
+            # print str(user['id']) + '\t'+ (' '.join(tags))
 
 
 
 
-#tokenizer('fed', 'com', 'timeline')
+tokenizer('random', 'com', 'timeline', 'rdword')
+tokenizer('fed', 'com', 'timeline', 'edword')
 
-hashtags('fed', 'com', 'timeline')
+hashtags('random', 'com', 'timeline', 'rdtag')
+hashtags('fed', 'com', 'timeline', 'edtag')
 
