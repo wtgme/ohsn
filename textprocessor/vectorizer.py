@@ -91,7 +91,7 @@ def hashtags(dbname, poicol, timecol):
 
 
 
-tokenizer('random', 'com', 'timeline')
+#tokenizer('fed', 'com', 'timeline')
 
-# hashtags('random', 'com', 'timeline')
+hashtags('fed', 'com', 'timeline')
 
