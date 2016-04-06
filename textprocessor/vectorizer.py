@@ -60,7 +60,7 @@ def tokenizer(dbname, poicol, timecol, foldername):
         if len(words) > 50:
             tokens = text_process(textmass)
             if len(tokens) > 50:
-                with open(foldername+'/'+str(user['id']), 'w') as the_file:
+                with open(foldername+'/'+str(user['id'])+'.data', 'w') as the_file:
                     the_file.write(' '.join(tokens))
                 # print str(user['id']) + '\t'+ (' '.join(tokens))
 
@@ -98,7 +98,7 @@ def hashtags(dbname, poicol, timecol, foldername):
             text = tweet['text'].encode('utf8').lower()
             tags += re.findall(hgrex, text)
         if len(tags) > 10:
-            with open(foldername+'/'+str(user['id']), 'w') as the_file:
+            with open(foldername+'/'+str(user['id'])+'.data', 'w') as the_file:
                     the_file.write(' '.join(tags))
             # print str(user['id']) + '\t'+ (' '.join(tags))
 

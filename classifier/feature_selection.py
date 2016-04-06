@@ -350,8 +350,9 @@ def liwc_color_sig():
     # scores.append(rfecv1)
     # plot_rfecvs(scores, ['All Negative or All Non-negative'])
 
-    ref2 = ref(X, y, 58)
+    ref2 = ref(X, y, 1)
     support2, ranking2 = ref2.support_, ref2.ranking_
+    print ranking2
     convert_fields(LIWC, ranking2)
 
 liwc_color_sig()
