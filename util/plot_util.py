@@ -140,6 +140,7 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     if not xmin:
         xmin = min(data)
     if linear_bins:
+        print xmin, xmax
         bins = range(int(xmin), int(xmax))
     else:
         log_min_size = np.log10(xmin)

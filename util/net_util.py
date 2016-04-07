@@ -17,13 +17,14 @@ def load_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     for row in cols.find({}):
-        n1 = row['user']
-        n2 = row['follower']
-        weightv = 1
-        if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
-            DG[n1][n2]['weight'] += weightv
-        else:
-            DG.add_edge(n1, n2, weight=weightv)
+        n2 = row['user']
+        n1 = row['follower']
+        DG.add_edge(n1, n2)
+        # weightv = 1
+        # if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
+        #     DG[n1][n2]['weight'] += weightv
+        # else:
+        #     DG.add_edge(n1, n2, weight=weightv)
     return DG
 
 
@@ -50,8 +51,8 @@ def load_behavior_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     for row in cols.find({}):
-        n1 = row['id1']
-        n2 = row['id0']
+        n2 = row['id1']
+        n1 = row['id0']
         weightv = 1
         if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
             DG[n1][n2]['weight'] += weightv
