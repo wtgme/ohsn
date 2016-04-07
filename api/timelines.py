@@ -224,7 +224,7 @@ def monitor_timeline(user_collection, timeline_collection, scrapt_times):
 
                 # update timeline_scrapted_times and timeline_count fields
                 count_scraped = timeline_collection.count({'user.id': user['id']})
-                timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
+                # timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
                 user_collection.update({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
-                                                             'timeline_scraped_times': timeline_scraped_times}},
+                                                             'timeline_scraped_times': scrapt_times}},
                                    upsert=False)
