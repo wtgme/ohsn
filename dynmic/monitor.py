@@ -25,6 +25,7 @@ def getuid(dbname, colname):
         uids.append(user['id'])
     return uids
 
+
 def seed():
     db = dbt.db_connect_no_auth('ded')
     sample_user = db['com']
@@ -85,12 +86,12 @@ def check_change(time_index):
         dbs = dbt.db_connect_no_auth(dataset)
         sample_user = dbs['com']
         sample_time = dbs['timeline']
-        changes = {'dataset': dataset}
-        changes['statis_index'] = time_index
+        sample_net = dbs['net']
+        changes = {'dataset': dataset, 'statis_index': time_index}
         # check prof changes, 'description', 'friends_count', 'followers_count', 'statuses_count'
         for user in sample_user.find({'timeline_scraped_times': time_index, 'timeline_count': {'$gt': 0}}):
             # print dataset, user['id']
-            last_tweet = sample_time.find({'user.id':user['id']},
+            last_tweet = sample_time.find({'user.id': user['id']},
                                           {'id':1, 'user':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
             if last_tweet:
                 userc = last_tweet['user']
@@ -100,8 +101,19 @@ def check_change(time_index):
                         value = changes.get(key, 0)
                         value += 1
                         changes[key] = value
+                        sample_user.update_one({'id': user['id']}, {'$set': {key: userc[key]}}, upsert=False)
+                        if 'count' in key:
+                            if user[key] < userc[key]:
+                                value = changes.get(key+'_inc', 0)
+                                value += 1
+                                changes[key+'_inc'] = value
+                            elif user[key] > userc[key]:
+                                value = changes.get(key+'_dec', 0)
+                                value += 1
+                                changes[key+'_dec'] = value
+
         # check following changes among users
-        sample_net = db['net']
+
         count = sample_net.count({'scraped_times': time_index})-sample_net.count({'scraped_times': time_index-1})
         changes['net_changes'] = count
         changes['statis_at'] = datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')
@@ -109,7 +121,6 @@ def check_change(time_index):
             changedb.insert(changes)
         except pymongo.errors.DuplicateKeyError:
             pass
-
 
 
 def start_monitor():

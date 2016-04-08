@@ -13,14 +13,14 @@ import pickle
 
 def friendship_community():
     fg = gt.load_network('fed', 'net')
-    pickle.dump(fg, open('ed-fg.pick', 'w'))
+    pickle.dump(fg, open('data/ed-fg.pick', 'w'))
     fgc = gt.giant_component(fg, 'WEAK')
     gt.summary(fgc)
-    pickle.dump(fgc, open('ed-fgc.pick', 'w'))
+    pickle.dump(fgc, open('data/ed-fgc.pick', 'w'))
     fcoms = gt.community(fgc)
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
-    pickle.dump(fclus, open('ed-fcom.pick', 'w'))
+    pickle.dump(fclus, open('data/ed-fcom.pick', 'w'))
 
 
 def behavior_community():
@@ -32,14 +32,14 @@ def behavior_community():
 
     bg = gt.load_beh_network('fed', 'bnet')
     bg = bg.subgraph(targed_list)
-    pickle.dump(bg, open('ed-bg.pick', 'w'))
+    pickle.dump(bg, open('data/ed-bg.pick', 'w'))
     bgc = gt.giant_component(bg, 'WEAK')
     gt.summary(bgc)
-    pickle.dump(bgc, open('ed-bgc.pick', 'w'))
+    pickle.dump(bgc, open('data/ed-bgc.pick', 'w'))
     bcoms = gt.community(bgc)
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
-    pickle.dump(bclus, open('ed-bcom.pick', 'w'))
+    pickle.dump(bclus, open('data/ed-bcom.pick', 'w'))
 
 
 if __name__ == '__main__':
