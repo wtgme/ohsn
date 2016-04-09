@@ -68,7 +68,7 @@ def load_beh_network(db_name, collection='None', target_set=None):
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(edges.keys())
-    g.es["weight"] = edges.values()
+    # g.es["weight"] = edges.values()
     return g
 
 
