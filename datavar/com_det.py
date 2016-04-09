@@ -24,14 +24,13 @@ def friendship_community():
 
 
 def behavior_community():
-    targed_list = []
+    targed_list = set()
     db = dbt.db_connect_no_auth('fed')
     poi = db['com']
-    for user in poi.find({}, ['id_str']):
-        targed_list.append(user['id_str'])
+    for user in poi.find({}, ['id']):
+        targed_list.add(user['id'])
 
-    bg = gt.load_beh_network('fed', 'bnet')
-    bg = bg.subgraph(targed_list)
+    bg = gt.load_beh_network('fed', 'bnet', targed_list)
     pickle.dump(bg, open('data/ed-bg.pick', 'w'))
     bgc = gt.giant_component(bg, 'WEAK')
     gt.summary(bgc)
