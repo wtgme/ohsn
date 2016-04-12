@@ -194,8 +194,10 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
+def pdf_plot_one_data(data, name, title=None, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
+    print 'Original length', len(data)
     data = drop_zeros(data)
+    print 'Stripped length', len(data)
     # plt.gcf()
     # data = outstrength
     if not xmax:
@@ -219,6 +221,9 @@ def pdf_plot_one_data(data, name, xmin=None, xmax=None, fit_start=1, fit_end=1, 
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
+    ax.grid(True)
+    if title:
+        ax.set_title(title)
     if savefile is None:
         plt.show()
     else:
