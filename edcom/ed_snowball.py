@@ -14,11 +14,11 @@ import pymongo
 from api import following, follower, profiles_check, lookup
 import util.db_util as dbt
 
-db = dbt.db_connect_no_auth('fed')
+db = dbt.db_connect_no_auth('ed')
 
 ed_poi = db['com']
 ed_net = db['net']
-stream_users = db['poi']
+# stream_users = db['poi']
 # echelon = dbt.db_connect_no_auth('echelon')
 # echelon_poi = echelon['poi']
 
@@ -34,20 +34,23 @@ ed_net.create_index([("user", pymongo.ASCENDING),
                      ("type", pymongo.ASCENDING)],
                             unique=True)
 
-while True:
-    ed_seed = profiles_check.seed_all_profile(stream_users)
-    if len(ed_seed)==0:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
-        break
-    else:
-        lookup.trans_seed_to_poi(ed_seed, ed_poi)
-        continue
+# while True:
+#     ed_seed = profiles_check.seed_all_profile(stream_users)
+#     if len(ed_seed)==0:
+#         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
+#         break
+#     else:
+#         lookup.trans_seed_to_poi(ed_seed, ed_poi)
+#         continue
 
+level = 1
 while True:
-    level = 1
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-    following_flag = following.snowball_following(ed_poi, ed_net, level)
+    following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-    follower_flag = follower.snowball_follower(ed_poi, ed_net, level)
+    follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
     if following_flag == False and follower_flag == False:
         break
+    else:
+        level = level+1
+        continue
