@@ -66,15 +66,15 @@ def relative_time(creat_time, post_time):
 
 def avg_per_day(post_count, post_time):
     dates = []
-    oldest, oldcre, oldpost, count = 0.0, datetime.now(), datetime.now(), 0
+    oldest, oldcre, oldpost, count, uid = 0.0, datetime.now(), datetime.now(), 0, 0
     for key in post_time.keys():
         posts = post_time[key]
         first, last = min(posts), max(posts)
         delta = last.date() - first.date()
         dates.append(post_count[key]/float(delta.days+1))
         if post_count[key]/float(delta.days+1) > oldest:
-            oldest, oldcre, oldpost, count = post_count[key]/float(delta.days+1), first, last, post_count[key]
-    print 'Oldest', oldest, oldcre, oldpost, count
+            oldest, oldcre, oldpost, count, uid = post_count[key]/float(delta.days+1), first, last, post_count[key], key
+    print 'Oldest', oldest, oldcre, oldpost, count, uid
     return dates
 
 
@@ -184,7 +184,7 @@ timelines = pickle.load(open('data/user-post-time.pick', 'r'))
 
 
 avgs = avg_per_day(posts, timelines)
-plot.pdf_plot_one_data(avgs, 'counts', 'Average posts per day')
+#plot.pdf_plot_one_data(avgs, 'counts', 'Average posts per day')
 
 # for key in posts.keys():
 #     if (posts[key]==0 and key not in timelines) or (posts[key] == len(timelines[key])):
