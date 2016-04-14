@@ -125,7 +125,7 @@ def count_freque():
 # count_freque()
 
 # purn_net('yg')
-out_net_commudet('fed', 'bnet', 'fedtime')
+# out_net_commudet('fed', 'bnet', 'fedtime')
 
 # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
 rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
@@ -135,7 +135,7 @@ fed = nt.load_network('fed', 'snet')
 nt.net_statis(rdcom)
 nt.net_statis(ygcom)
 nt.net_statis(fed)
-rddseq = sorted(nx.degree(rdcom).values(),reverse=True)
+rddseq = sorted(nx.degree(rdcom).values(), reverse=True)
 ygdseq = sorted(nx.degree(ygcom).values(), reverse=True)
 eddseq = sorted(nx.degree(fed).values(), reverse=True)
 plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], 'Degree',  ['Random', 'Young', 'ED'], False)

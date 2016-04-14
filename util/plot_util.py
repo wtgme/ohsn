@@ -255,7 +255,7 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
 
-    ax.set_title('Comparison of probability density function on '+field)
+    ax.set_title('Comparison of probability density functions on '+field)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
