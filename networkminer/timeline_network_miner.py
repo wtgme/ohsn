@@ -202,4 +202,8 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
 
     network_mining(sample_poi, sample_time, sample_network, level)
 
-process_db('fed', 'com', 'timeline', 'bnet', 10)
+if __name__ == '__main__':
+
+    process_db('sed', 'com', 'timeline', 'bnet', 10)
+    process_db('srd', 'com', 'timeline', 'bnet', 10)
+    process_db('syg', 'com', 'timeline', 'bnet', 10)

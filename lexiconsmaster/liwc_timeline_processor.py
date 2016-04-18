@@ -67,18 +67,23 @@ def process(poi, timelines, level):
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": None}}, upsert=False)
 
 
-if __name__ == '__main__':
+def process_db(dbname, colname, timename):
     '''Connecting db and collections'''
-    db = dbutil.db_connect_no_auth('fed')
-    sample_poi = db['com']
+    db = dbutil.db_connect_no_auth(dbname)
+    sample_poi = db[colname]
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
 
-    sample_time = db['timeline']
+    sample_time = db[timename]
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
 
     '''Counting the number of users whose timelines have been processed by LIWC'''
     print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
     process(sample_poi, sample_time, 1000)
+
+if __name__ == '__main__':
+    process_db('sed', 'com', 'timeline')
+    process_db('srd', 'com', 'timeline')
+    process_db('syg', 'com', 'timeline')
 
     # rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')
     # mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')

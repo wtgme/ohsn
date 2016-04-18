@@ -90,6 +90,7 @@ def identify_manual_retweet(text):
     else:
         return True
 
+
 def identify_retweet(tweet):
 # if its an official retweet ignore the tweet itself
     try:
@@ -243,7 +244,6 @@ def get_high_weightKG(text):
         return (None, None)
 
 
-
 def get_low_weight_KG(text):
     pattern = re.compile("[(\[{]?(lw|low weight|low)[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*", re.IGNORECASE)
     match = pattern.search(text)
@@ -344,8 +344,6 @@ def get_current_weight_KG(text):
         return (weight_kg, unitsguessed)
     else:
         return (None, None)
-
-
 
 
 def get_goal_weight(text):
@@ -539,30 +537,38 @@ def process_description(poi):
             poi.update({"id": user['id']}, {'$set': {'text_anal': results}}, upsert=False)
 
 
-def process_poi():
-    db = dbutil.db_connect_no_auth('ed')
-    sample_poi = db['poi_ed']
+def process_poi(dbname, colname):
+    print 'Processing', dbname, colname
+    db = dbutil.db_connect_no_auth(dbname)
+    sample_poi = db[colname]
     process_description(sample_poi)
 
 
-db = dbutil.db_connect_no_auth('fed')
-# poi = db['com']
-timeline = db['timeline']
-bio = db['bio']
-bio.create_index([('uid', pymongo.ASCENDING),
-                ('tid', pymongo.ASCENDING)],
-                    unique=True)
-test_ids = np.array(pickle.load(open('test_ids.data', 'r')))
-test_class = pickle.load(open('test_class.pick', 'r'))
-test_class[test_class < 0] = 0
-test_class = test_class.astype(bool)
-targest_ids = test_ids[test_class]
-# print targest_ids.shape
+def process_test_results():
+    db = dbutil.db_connect_no_auth('fed')
+    # poi = db['com']
+    timeline = db['timeline']
+    bio = db['bio']
+    bio.create_index([('uid', pymongo.ASCENDING),
+                      ('tid', pymongo.ASCENDING)],
+                     unique=True)
+    test_ids = np.array(pickle.load(open('test_ids.data', 'r')))
+    test_class = pickle.load(open('test_class.pick', 'r'))
+    test_class[test_class < 0] = 0
+    test_class = test_class.astype(bool)
+    targest_ids = test_ids[test_class]
+    # print targest_ids.shape
+    for user_id in targest_ids:
+        process_timelines(int(user_id), timeline, bio)
+        # user = poi.find_one({'id': user_id}, ['id', 'screen_name'])
+        # print user['screen_name']
 
-for user_id in targest_ids:
-    process_timelines(int(user_id), timeline, bio)
-    # user = poi.find_one({'id': user_id}, ['id', 'screen_name'])
-    # print user['screen_name']
+if __name__ == '__main__':
+    process_poi('sed', 'com')
+    process_poi('srd', 'com')
+    process_poi('syg', 'com')
+
+
 
 
 # text =  '''23, 5'4 EDNOS. starve, purge, dying. don't care.'''.lower()
