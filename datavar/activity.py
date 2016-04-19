@@ -9,13 +9,14 @@ Plot the distribution of timeline, i.e., how many tweets are there in each perio
 import sys
 sys.path.append('..')
 import util.db_util as dbt
+import util.plot_util as plot
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import calendar
 import pickle
 import numpy as np
-import util.plot_util as plot
+
 
 
 def create_time(dbname, colname):
@@ -29,15 +30,16 @@ def create_time(dbname, colname):
                   'text_anal.a.value',
                   'text_anal.lw.value',
                   'text_anal.hw.value']
-    for user in com.find({"$and":[
-                         # {biolist[0]:{'$exists': True}},
-                         {biolist[1]:{'$exists': True}},
-                         {biolist[2]:{'$exists': True}},
-                         # {biolist[3]:{'$exists': True}},
-                         # {biolist[4]:{'$exists': True}},
-                         # {biolist[5]:{'$exists': True}}
-        {'status':{'$exists': True}}
-                        ]}):
+    # for user in com.find({"$and":[
+    #                      # {biolist[0]:{'$exists': True}},
+    #                      {biolist[1]:{'$exists': True}},
+    #                      {biolist[2]:{'$exists': True}},
+    #                      # {biolist[3]:{'$exists': True}},
+    #                      # {biolist[4]:{'$exists': True}},
+    #                      # {biolist[5]:{'$exists': True}}
+    #     {'status':{'$exists': True}}
+    #                     ]}):
+    for user in com.find({'status':{'$exists': True}}):
         ts = datetime.strptime(user['status']['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
         # print type(ts)
         created_time[user['id']] = ts
@@ -188,7 +190,7 @@ if __name__ == '__main__':
     cdates = create_dates.values()
     print len(cdates), min(cdates), max(cdates)
     print mdates.date2num(min(cdates)), mdates.date2num(max(cdates))
-    plot_time(cdates, 1, 'Created time of Last Post for ED accounts with BMI')
+    plot_time(cdates, 1, 'Created time of Last Post for ED accounts')
 
 
     # posts, timelines = timeline_time('sed', 'com', 'timeline')
