@@ -81,9 +81,10 @@ def process_db(dbname, colname, timename):
     process(sample_poi, sample_time, 1000)
 
 if __name__ == '__main__':
-    process_db('sed', 'com', 'timeline')
-    process_db('srd', 'com', 'timeline')
-    process_db('syg', 'com', 'timeline')
+    process_db('fed', 'com', 'timeline')
+    # process_db('sed', 'com', 'timeline')
+    # process_db('srd', 'com', 'timeline')
+    # process_db('syg', 'com', 'timeline')
 
     # rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')
     # mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')

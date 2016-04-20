@@ -564,9 +564,10 @@ def process_test_results():
         # print user['screen_name']
 
 if __name__ == '__main__':
-    process_poi('sed', 'com')
-    process_poi('srd', 'com')
-    process_poi('syg', 'com')
+    process_poi('fed', 'com')
+    # process_poi('sed', 'com')
+    # process_poi('srd', 'com')
+    # process_poi('syg', 'com')
 
 
 

@@ -11,20 +11,8 @@ import util.net_util as nt
 import util.plot_util as plot
 import util.db_util as dbt
 import pickle
-import snap
 import networkx as nx
 
-
-def snap_comm(db_name, col_name, name):
-    G = nt.load_beh_network(db_name, col_name)
-    # G = DG.to_undirected()
-    # del DG
-    nx.write_edgelist(G, "data/net.data")
-    print G.number_of_nodes()
-    print G.number_of_edges()
-    # LoadedNet = snap.LoadEdgeList(snap.PNEANet, "data/net.data", 0, 1, ' ')
-    # MxWcc = snap.GetMxWcc(LoadedNet)
-    # out_net(G, name)
 
 
 def purn_net(dbname):
@@ -121,23 +109,25 @@ def count_freque():
     for i in xrange(5):
         print bnet.count({'type': i})
 
-# snap_comm('fed', 'bnet', 'fedtime')
-# count_freque()
+if __name__ == '__main__':
 
-# purn_net('yg')
-# out_net_commudet('fed', 'bnet', 'fedtime')
+    # snap_comm('fed', 'bnet', 'fedtime')
+    # count_freque()
 
-# rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
-rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
-# ygcom = plot_communty('yg', 'scnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
-ygcom = plot_communty('yg', 'tnet', 'ygtime', 'GROUP[ 2360 ][ 1966 ]')
-fed = nt.load_network('fed', 'snet')
-nt.net_statis(rdcom)
-nt.net_statis(ygcom)
-nt.net_statis(fed)
-rddseq = sorted(nx.degree(rdcom).values(), reverse=True)
-ygdseq = sorted(nx.degree(ygcom).values(), reverse=True)
-eddseq = sorted(nx.degree(fed).values(), reverse=True)
-plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], 'Degree',  ['Random', 'Young', 'ED'], False)
+    # purn_net('yg')
+    # out_net_commudet('fed', 'bnet', 'fedtime')
+
+    # rdcom = plot_communty('rd', 'scnet', 'rd2l', 'GROUP[ 74 ][ 2691 ]')
+    rdcom = plot_communty('rd', 'tnet', 'rdtime', 'GROUP[ 1539 ][ 4641 ]')
+    # ygcom = plot_communty('yg', 'scnet', 'yg3l', 'GROUP[ 33 ][ 3883 ]')
+    ygcom = plot_communty('yg', 'tnet', 'ygtime', 'GROUP[ 2360 ][ 1966 ]')
+    fed = nt.load_network('fed', 'snet')
+    nt.net_statis(rdcom)
+    nt.net_statis(ygcom)
+    nt.net_statis(fed)
+    rddseq = sorted(nx.degree(rdcom).values(), reverse=True)
+    ygdseq = sorted(nx.degree(ygcom).values(), reverse=True)
+    eddseq = sorted(nx.degree(fed).values(), reverse=True)
+    plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], 'Degree',  ['Random', 'Young', 'ED'], False)
 
 

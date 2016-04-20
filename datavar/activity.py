@@ -18,18 +18,17 @@ import pickle
 import numpy as np
 
 
-
 def create_time(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
     created_time = {}
-    biolist =    ['text_anal.gw.value',
-                  'text_anal.cw.value',
-                  # 'text_anal.edword_count.value',
-                  'text_anal.h.value',
-                  'text_anal.a.value',
-                  'text_anal.lw.value',
-                  'text_anal.hw.value']
+    # biolist =    ['text_anal.gw.value',
+    #               'text_anal.cw.value',
+    #               # 'text_anal.edword_count.value',
+    #               'text_anal.h.value',
+    #               'text_anal.a.value',
+    #               'text_anal.lw.value',
+    #               'text_anal.hw.value']
     # for user in com.find({"$and":[
     #                      # {biolist[0]:{'$exists': True}},
     #                      {biolist[1]:{'$exists': True}},
@@ -39,8 +38,8 @@ def create_time(dbname, colname):
     #                      # {biolist[5]:{'$exists': True}}
     #     {'status':{'$exists': True}}
     #                     ]}):
-    for user in com.find({'status':{'$exists': True}}):
-        ts = datetime.strptime(user['status']['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
+    for user in com.find({}):
+        ts = datetime.strptime(user['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
         # print type(ts)
         created_time[user['id']] = ts
         # print ts
@@ -190,31 +189,31 @@ if __name__ == '__main__':
     cdates = create_dates.values()
     print len(cdates), min(cdates), max(cdates)
     print mdates.date2num(min(cdates)), mdates.date2num(max(cdates))
-    plot_time(cdates, 1, 'Created time of Last Post for ED accounts')
+    plot_time(cdates, 1, 'Created time of ED accounts')
 
 
-    # posts, timelines = timeline_time('sed', 'com', 'timeline')
-    # pickle.dump(posts, open('data/user-post-count.pick', 'w'))
-    # pickle.dump(timelines, open('data/user-post-time.pick', 'w'))
-    # posts = pickle.load(open('data/user-post-count.pick', 'r'))
-    # timelines = pickle.load(open('data/user-post-time.pick', 'r'))
+    posts, timelines = timeline_time('sed', 'com', 'timeline')
+    pickle.dump(posts, open('data/user-post-count.pick', 'w'))
+    pickle.dump(timelines, open('data/user-post-time.pick', 'w'))
+    posts = pickle.load(open('data/user-post-count.pick', 'r'))
+    timelines = pickle.load(open('data/user-post-time.pick', 'r'))
 
-    # plot.pdf_plot_one_data(posts.values(), 'counts', 'Timeline counts of ED')
-    # timelist = []
-    # for v in timelines.values():
-    #     timelist += v
-    # plot_time(timelist, 3, 'Created time of ED posts')
-
-
-    # days = relative_time(create_dates, timelines)
-    # plot.pdf_plot_one_data(days, 'counts', 'Timeline ages of ED')
-
-    # durings = first_last_time(timelines)
-    # plot.pdf_plot_one_data(durings, 'counts', 'Spans of first post and last post')
+    plot.pdf_plot_one_data(posts.values(), 'counts', 'Timeline counts of ED')
+    timelist = []
+    for v in timelines.values():
+        timelist += v
+    plot_time(timelist, 1, 'Created time of ED posts')
 
 
-    # avgs = avg_per_day(posts, timelines)
-    # plot.pdf_plot_one_data(avgs, 'counts', 'Average posts per day')
+    days = relative_time(create_dates, timelines)
+    plot.pdf_plot_one_data(days, 'counts', 'Timeline ages of ED')
+
+    durings = first_last_time(timelines)
+    plot.pdf_plot_one_data(durings, 'counts', 'Spans of first post and last post')
+
+
+    avgs = avg_per_day(posts, timelines)
+    plot.pdf_plot_one_data(avgs, 'counts', 'Average posts per day')
 
     # for key in posts.keys():
     #     if (posts[key]==0 and key not in timelines) or (posts[key] == len(timelines[key])):
