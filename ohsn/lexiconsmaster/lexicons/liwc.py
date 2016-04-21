@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import os
 from ohsn.lexiconsmaster.lexicons.base import Lexicon
 from collections import Counter
 import json
@@ -8,7 +9,8 @@ import json
 class Liwc(Lexicon):
     #corpus_filepath = '/usr/local/data/liwc_2007.trie'
     #corpus_filepath = 'liwc_2007.trie'
-    corpus_filepath = "liwc_2007.trie"
+    path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    corpus_filepath = os.path.join(path, "liwc_2007.trie")
 
     # category analysis variables:
     category_keys = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe',

@@ -6,7 +6,7 @@ Created on 12:17 PM, 4/5/16
 
 """
 
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 import ohsn.util.io_util as ioutil
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords

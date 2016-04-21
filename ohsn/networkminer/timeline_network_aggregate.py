@@ -16,7 +16,7 @@ for user0 in data:
 @author: wt
 """
 
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 import datetime
 import pymongo
 

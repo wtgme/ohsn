@@ -8,7 +8,7 @@ Created on 17:54, 06/12/15
 # import sys
 # from os import path
 # sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 
 #### Connecting db and collections
 db = dbutil.db_connect_no_auth('stream')

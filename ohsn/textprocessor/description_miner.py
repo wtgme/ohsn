@@ -11,7 +11,8 @@ Get CW, GW, H, LW, HW etc from description
 # from os import path
 # import sys
 # sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
-from ohsn import util as dbutil
+
+from ohsn.util import db_util as dbutil
 import re
 import datetime
 from collections import Counter

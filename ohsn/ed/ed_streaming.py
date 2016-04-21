@@ -16,7 +16,6 @@ Filter tweets with location, but few tweets have location information
 Identify the location of users that post the crawled tweets, only store the users in UK
 """
 
-import sys
 
 from twython import TwythonStreamer
 import urllib
@@ -25,7 +24,7 @@ import os
 import ConfigParser
 import datetime
 import logging
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg'))

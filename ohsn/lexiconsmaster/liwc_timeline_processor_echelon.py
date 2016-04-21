@@ -8,9 +8,8 @@ Created on 14:56, 03/11/15
 # import sys
 # from os import path
 # sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
-import sys
-sys.path.append('..')
-from ohsn import util as dbutil
+
+from ohsn.util import db_util as dbutil
 import datetime
 import re
 from lexicons.liwc import Liwc

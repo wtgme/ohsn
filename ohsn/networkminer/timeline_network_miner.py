@@ -3,7 +3,12 @@
 Created on 12:04, 18/11/15
 
 Mining relationship network from users' timelines
-Relationship: Tweet; Retweet; Reply; direct Mention; indirect mention, denoted as 0, 1, 2, 3, 4
+Relationship:
+Tweet: 0
+Retweet: 1;
+Reply: 2;
+Direct Mention: 3;
+undirect mention: 4
 
 @author: wt
 """
@@ -11,7 +16,7 @@ Relationship: Tweet; Retweet; Reply; direct Mention; indirect mention, denoted a
 # import sys
 # from os import path
 # sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 import datetime
 import pymongo
 

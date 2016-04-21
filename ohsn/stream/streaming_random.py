@@ -23,7 +23,7 @@ import imghdr
 import os
 import ConfigParser
 import datetime
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 
 config = ConfigParser.ConfigParser()
 config.read(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'TwitterAPI.cfg'))

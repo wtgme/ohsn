@@ -46,12 +46,10 @@ def process(dbname, colname, range, index):
             timetem.insert(status)
         except pymongo.errors.DuplicateKeyError:
             pass
-        try:
-            user = status['user']
-            user['level'] = 1
-            comtem.insert(user)
-        except pymongo.errors.DuplicateKeyError:
-            pass
+        user = status['user']
+        user['level'] = 1
+        user['timeline_count'] = timetem.count({'user.id': user['id']})
+        comtem.replace_one({'id': user['id']}, user, upsert=True)
 
     liwcp.process_db(dbname, tmpcom, tmptimeline)
     netp.process_db(dbname, tmpcom, tmptimeline, tmpbnet, 10000)

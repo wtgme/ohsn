@@ -8,7 +8,7 @@ Using Z-test to verify the LIWC difference between two groups.
 """
 
 import numpy as np
-from ohsn import util as dbutil
+from ohsn.util import db_util as dbutil
 import datetime
 import matplotlib.pyplot as plt
 
