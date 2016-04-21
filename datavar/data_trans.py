@@ -29,6 +29,26 @@ def transform():
                      'statuses_count': user['statuses_count']})
 
 
+def select_sub(dbname, colname, newcolname, timename, newtimename):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    newcom = db[newcolname]
+    newcom.create_index("id", unique=True)
+    newcom.create_index([('level', pymongo.ASCENDING)],
+                        unique=False)
+
+    timeline = db[timename]
+    newtimeline = db[newtimename]
+    newtimeline.create_index([('user.id', pymongo.ASCENDING),
+                              ('id', pymongo.DESCENDING)])
+    newtimeline.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    for user in com.find({'level':1}):
+        newcom.insert(user)
+        for tw in timeline.find({'user.id': user['id']}):
+            newtimeline.insert(tw)
+
+
 def get_users(dbname, level=1):
     user_set = set()
     db = dbt.db_connect_no_auth(dbname)
@@ -91,9 +111,11 @@ def remove_non_targeted_user():
             netdb.delete_many({'user': user['id']})
             netdb.delete_many({'follower': user['id']})
 
+if __name__ == '__main__':
+    # db = dbt.db_connect_no_auth('fed')
+    # cols = db['com']
+    # for user in cols.find({'level': {'$lte': 1}}, ['id', 'screen_name']):
+    #     print user['screen_name']
 
-db = dbt.db_connect_no_auth('fed')
-cols = db['com']
-for user in cols.find({'level': {'$lte': 1}}, ['id', 'screen_name']):
-    print user['screen_name']
+    select_sub('fed', 'com', 'ccom', 'timeline', 'ctimeline')
 

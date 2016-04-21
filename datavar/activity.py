@@ -49,6 +49,19 @@ def create_time(dbname, colname):
     return created_time
 
 
+def timeline_split(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    timeline = db[colname]
+    yeartw = {}
+    for status in timeline.find():
+        ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        tid = status['id']
+        tlist = yeartw.get(ts.year, [])
+        tlist.append(tid)
+        yeartw[ts.year] = tlist
+    return yeartw
+
+
 def timeline_time(dbname, colname, timename):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
