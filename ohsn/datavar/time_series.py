@@ -24,19 +24,13 @@ def process(dbname, colname, range, index):
     timelines = db[colname]
 
     '''Create tempt collections'''
-    tmpcom, tmptimeline, tmpnet, tmpbnet = 'com_t'+str(index), 'timeline_t'+str(index), 'net_t'+str(index), 'bnet_t'+str(index)
+    tmpcom, tmptimeline, tmpbnet = 'com_t'+str(index), 'timeline_t'+str(index), 'bnet_t'+str(index)
     comtem = db[tmpcom]
     comtem.create_index("id", unique=True)
     timetem = db[tmptimeline]
     timetem.create_index([('user.id', pymongo.ASCENDING),
                               ('id', pymongo.DESCENDING)])
     timetem.create_index([('id', pymongo.ASCENDING)], unique=True)
-    nettem = db[tmpnet]
-    nettem.create_index([("id0", pymongo.ASCENDING),
-                                 ("id1", pymongo.ASCENDING),
-                                 ("type", pymongo.ASCENDING),
-                                 ("statusid", pymongo.ASCENDING)],
-                                unique=True)
 
     for tid in processlist:
         # print tid

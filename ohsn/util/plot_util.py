@@ -236,11 +236,11 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
     if not max_x:
-        # max_x = max([np.percentile(lista, 97.5) for lista in lists])
-        max_x = max([max(lista) for lista in lists])
+        max_x = max([np.percentile(lista, 97.5) for lista in lists])
+        # max_x = max([max(lista) for lista in lists])
     if not min_x:
-        # min_x = min([np.percentile(lista, 2.5) for lista in lists])
-        min_x = min([min(lista) for lista in lists])
+        min_x = min([np.percentile(lista, 2.5) for lista in lists])
+        # min_x = min([min(lista) for lista in lists])
 
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
