@@ -3,6 +3,12 @@
 Created on 16:54, 21/04/16
 
 @author: wt
+1. active.py split timeline by years
+2. time_series.py split timelines (as well as the users posting timelines) into sperate collection
+    processing with LIWC, behaviour network extaction, and bio information extraction
+3. keyplay.py calculte centrality
+4. description_minier.py calculate cbmi and gbmi
+5. export_csv.py output files
 """
 
 

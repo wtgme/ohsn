@@ -550,6 +550,21 @@ def process_description(poi):
             poi.update({"id": user['id']}, {'$set': {'text_anal': results}}, upsert=False)
 
 
+def inference_stat(dbname, colname):
+    db = dbutil.db_connect_no_auth(dbname)
+    com = db[colname]
+    for user in com.find({'text_anal.h': {'$exists': True}}, ['id', 'text_anal']):
+        values = user['text_anal']
+        h = values['h']['value']/100
+        if 'gw' in values:
+            gw = values['gw']['value']
+            values['gbmi'] = {'value': gw/(h*h)}
+        if 'cw' in values:
+            cw = values['cw']['value']
+            values['cbmi'] = {'value': cw/(h*h)}
+        com.update({"id": user['id']}, {'$set': {'text_anal': values}}, upsert=False)
+
+
 def process_poi(dbname, colname):
     print 'Processing', dbname, colname
     db = dbutil.db_connect_no_auth(dbname)
@@ -577,10 +592,15 @@ def process_test_results():
         # print user['screen_name']
 
 if __name__ == '__main__':
-    process_poi('fed', 'com')
+    # process_poi('fed', 'com')
     # process_poi('sed', 'com')
     # process_poi('srd', 'com')
     # process_poi('syg', 'com')
+    inference_stat('fed', 'com_t1')
+    inference_stat('fed', 'com_t2')
+    inference_stat('fed', 'com_t3')
+    inference_stat('fed', 'com_t4')
+    inference_stat('fed', 'com_t5')
 
 
 

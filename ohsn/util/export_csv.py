@@ -36,35 +36,38 @@ def csv_output(fields, file_name, data):
             writer.writerow(proce_values)
 
 
-def export_poi(dbname, colname, file_name, lev):
+def export_poi(dbname, colname, file_name, lev=1):
     db = dbutil.db_connect_no_auth(dbname)
     poidb = db[colname]
     fields = ['id',
               'name',
               "screen_name",
               'created_at',
-              'description',
               'timeline_count',
               'lang',
               'location',
               'level',
               'geo_enabled',
-              'level',
               'followers_count',
               'friends_count',
               'statuses_count',
               'retweet_count',
               'favourites_count',
+              'dc',
+              'ng',
               'time_zone',
               'verified',
+              'description',
               'text_anal.gw.value',
               'text_anal.cw.value',
-              'text_anal.edword_count.value',
+              'text_anal.lw.value',
+              'text_anal.hw.value',
               'text_anal.h.value',
               'text_anal.a.value',
               'text_anal.bmi.value',
-              'text_anal.lw.value',
-              'text_anal.hw.value',
+              'text_anal.cmi.value',
+              'text_anal.gmi.value',
+              'text_anal.edword_count.value',
               'liwc_anal.result.WC',
               'liwc_anal.result.WPS',
               'liwc_anal.result.Sixltr',
@@ -147,26 +150,29 @@ def export_poi(dbname, colname, file_name, lev):
               'liwc_anal.result.OtherP',
               'liwc_anal.result.AllPct'
               ]
-    data = [x for x in poidb.find({'net_anal.tnmined': True}, projection=fields)]
+    data = [x for x in poidb.find({}, projection=fields)]
     csv_output(fields, file_name, data)
 
 
 def export_net_agg(dbname, comname, colname, file_name):
     db = dbutil.db_connect_no_auth(dbname)
-    poidb = db[colname]
-    com = db[comname]
-    fields = ['id0', 'id1', 'count']
+    net = db[colname]
+    fields = ['id0', 'id1', 'type', 'count']
+    ttypes = {1: 'retweet', 2: 'reply', 3: 'mention'}
 
     '''Only include poi users'''
-    pois = [x['id'] for x in com.find()]
     data = []
-    length = len(pois)
-    for i in xrange(length):
-        u0 = pois[i]
-        for j in xrange(length):
-            u1 = pois[j]
-            count = poidb.count({'id0': u0, 'id1':u1, "type": {'$in': [2, 3]}})
-            data.append({'id0': u0, 'id1': u1, 'count': count})
+    tems = {}
+    for re in net.find({"type": {'$in': [1, 2, 3]}}):
+        id0 = re['id0']
+        id1 = re['id1']
+        typeid = re['type']
+        if id0 != id1:
+            count = tems.get((id0, id1, typeid), 0)
+            tems[(id0, id1, typeid)] = count+1
+
+    for id0, id1, typeid in tems.keys():
+        data.append({'id0': id0, 'id1': id1, 'type': ttypes[typeid], 'count': tems[(id0, id1, typeid)]})
     csv_output(fields, file_name, data)
 
 
@@ -276,13 +282,16 @@ def export_poi_echelon(dbname,colname, file_name):
 
 
 if __name__ == '__main__':
-    pois = [1, 2, 3, 4, 5]
-    length = len(pois)
-    for i in xrange(length):
-        u0 = pois[i]
-        for j in xrange(length):
-            u1 = pois[j]
-            print u0, u1
+    export_poi('fed', 'com_t1', 'poi_t1')
+    export_poi('fed', 'com_t2', 'poi_t2')
+    export_poi('fed', 'com_t3', 'poi_t3')
+    export_poi('fed', 'com_t4', 'poi_t4')
+    export_poi('fed', 'com_t5', 'poi_t5')
+    export_net_agg('fed', 'com_t1', 'sbnet_t1', 'bnet_t1')
+    export_net_agg('fed', 'com_t2', 'sbnet_t2', 'bnet_t2')
+    export_net_agg('fed', 'com_t3', 'sbnet_t3', 'bnet_t3')
+    export_net_agg('fed', 'com_t4', 'sbnet_t4', 'bnet_t4')
+    export_net_agg('fed', 'com_t5', 'sbnet_t5', 'bnet_t5')
 
     # export_poi_echelon('echelon', 'poi', 're_echelon_poi')
     # export_poi('ed', 'poi_ed', 'ed_poi', 9)

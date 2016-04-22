@@ -56,7 +56,7 @@ def load_behavior_network(db_name, collection='None'):
     else:
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
-    for row in cols.find({}):
+    for row in cols.find({"type": {'$in': [1, 2, 3]}}):
         if row['type'] == 1:
             n2 = row['id0']
             n1 = row['id1']

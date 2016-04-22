@@ -151,15 +151,15 @@ if __name__ == '__main__':
         print BDG.number_of_edges()
         print BDG.number_of_nodes()
 
-        print 'get gaint_component of network'
-        BDG = net_util.get_gaint_comp(BDG)
-        print BDG.number_of_edges()
-        print BDG.number_of_nodes()
+        # print 'get gaint_component of network'
+        # BDG = net_util.get_gaint_comp(BDG)
+        # print BDG.number_of_edges()
+        # print BDG.number_of_nodes()
 
         print 'prune nodes not in friendship network'
         BDG = prune_bdg(BDG, FDG)
         print BDG.number_of_edges()
         print BDG.number_of_nodes()
-        print nx.average_shortest_path_length(BDG)
+        # print nx.average_shortest_path_length(BDG)
 
         centrality(db_name, scom, BDG, FDG, 0.2, 3)
