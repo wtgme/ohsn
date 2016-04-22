@@ -27,7 +27,7 @@ def extract_friend_subnetwork(db_name):
                     unique=True)
     # index = 0
     userl1 = set([])
-    for user in poi.find({'level':1}, ['id']):
+    for user in poi.find({'level': 1}, ['id']):
         # print user['id']
         userl1.add(user['id'])
     for user in userl1:
@@ -100,8 +100,10 @@ def prune_bdg(BDG, FDG):
     return BDG
 
 
-def centrality(BDG, FDG, p, T):
-    dic = {}
+def centrality(dbname, scom, BDG, FDG, p, T):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[scom]
+
     length = nx.all_pairs_shortest_path_length(FDG, T)
     for node in BDG.nodes():
         dcv, ngv = 0.0, 0.0
@@ -113,11 +115,11 @@ def centrality(BDG, FDG, p, T):
             t = length.get(sayer, {node: -1}).get(node, -1)
             if t != -1 and t <= T:
                 ngv += BDG[sayer][node]['weight']*math.pow(p, t)
-        dic[node] = (dcv, ngv)
+        com.update_one({'id': node}, {'$set': {'dc': dcv, 'ng': ngv}}, upsert=False)
         # user = poi.find_one({'id': node}, ['screen_name'])
         # print str(node) + ',' + user['screen_name']+ ',' + str(dcv) + ',' + str(ngv)
-        print str(node) + ',' + str(dcv) + ',' + str(ngv)
-    return dic
+        # print str(node) + ',' + str(dcv) + ',' + str(ngv)
+
 
 if __name__ == '__main__':
 
@@ -143,7 +145,7 @@ if __name__ == '__main__':
 
     for index in range(1, 6):
         sbnet = 'sbnet_t'+str(index)
-
+        scom = 'com_t'+str(index)
         print 'original network'
         BDG = net_util.load_behavior_network(db_name, sbnet)
         print BDG.number_of_edges()
@@ -160,4 +162,4 @@ if __name__ == '__main__':
         print BDG.number_of_nodes()
         print nx.average_shortest_path_length(BDG)
 
-        centrality(BDG, FDG, 0.2, 3)
+        centrality(db_name, scom, BDG, FDG, 0.2, 3)
