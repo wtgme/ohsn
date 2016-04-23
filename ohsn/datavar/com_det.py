@@ -9,6 +9,7 @@ import ohsn.util.graph_util as gt
 from ohsn.util import db_util as dbt
 import ohsn.util.plot_util as plot
 import pickle
+import sys
 
 
 def core_ed():
@@ -50,29 +51,29 @@ def friendship_community(dbname, colname, label):
     pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
 
 
-def behavior_community():
-    targed_list = set()
-    db = dbt.db_connect_no_auth('fed')
-    poi = db['com']
-    for user in poi.find({}, ['id']):
-        targed_list.add(user['id'])
+def behavior_community(dbname, colname, label):
+    # targed_list = set()
+    # db = dbt.db_connect_no_auth('fed')
+    # poi = db['com']
+    # for user in poi.find({}, ['id']):
+    #     targed_list.add(user['id'])
 
-    bg = gt.load_beh_network('fed', 'bnet', targed_list)
-    pickle.dump(bg, open('data/ed-bg.pick', 'w'))
+    bg = gt.load_beh_network(dbname, colname)
+    pickle.dump(bg, open('data/'+label+'-bg.pick', 'w'))
     bgc = gt.giant_component(bg, 'WEAK')
     gt.summary(bgc)
-    pickle.dump(bgc, open('data/ed-bgc.pick', 'w'))
+    pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
     bcoms = gt.community(bgc)
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
-    pickle.dump(bclus, open('data/ed-bcom.pick', 'w'))
+    pickle.dump(bclus, open('data/'+label+'-bcom.pick', 'w'))
 
 
 if __name__ == '__main__':
-    # if sys.argv[1] == 'friend':
-    #     friendship_community()
-    # elif sys.argv[1] == 'behavior':
-    #     behavior_community()
+    if sys.argv[1] == 'friend':
+        friendship_community('fed', 'snet', 'sed')
+    elif sys.argv[1] == 'behavior':
+        behavior_community('fed', 'snet', 'sed')
 
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')

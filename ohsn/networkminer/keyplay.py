@@ -126,40 +126,40 @@ if __name__ == '__main__':
     db_name = 'fed'
     # tweet_ret_times('fed')
     # extract_friend_subnetwork(db_name)
-    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 1)
+    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet')
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 2)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 3)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 4)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 5)
 
-    print 'original network'
-    FDG = net_util.load_network(db_name, 'snet')
-    print FDG.number_of_edges()
-    print FDG.number_of_nodes()
-
-    print 'get gaint_component of network'
-    FDG = net_util.get_gaint_comp(FDG)
-    print FDG.number_of_edges()
-    print FDG.number_of_nodes()
-    print nx.average_shortest_path_length(FDG)
-
-    for index in range(1, 6):
-        sbnet = 'sbnet_t'+str(index)
-        scom = 'com_t'+str(index)
-        print 'original network'
-        BDG = net_util.load_behavior_network(db_name, sbnet)
-        print BDG.number_of_edges()
-        print BDG.number_of_nodes()
-
-        # print 'get gaint_component of network'
-        # BDG = net_util.get_gaint_comp(BDG)
-        # print BDG.number_of_edges()
-        # print BDG.number_of_nodes()
-
-        print 'prune nodes not in friendship network'
-        BDG = prune_bdg(BDG, FDG)
-        print BDG.number_of_edges()
-        print BDG.number_of_nodes()
-        # print nx.average_shortest_path_length(BDG)
-
-        centrality(db_name, scom, BDG, FDG, 0.2, 3)
+    # print 'original network'
+    # FDG = net_util.load_network(db_name, 'snet')
+    # print FDG.number_of_edges()
+    # print FDG.number_of_nodes()
+    #
+    # print 'get gaint_component of network'
+    # FDG = net_util.get_gaint_comp(FDG)
+    # print FDG.number_of_edges()
+    # print FDG.number_of_nodes()
+    # print nx.average_shortest_path_length(FDG)
+    #
+    # for index in range(1, 6):
+    #     sbnet = 'sbnet_t'+str(index)
+    #     scom = 'com_t'+str(index)
+    #     print 'original network'
+    #     BDG = net_util.load_behavior_network(db_name, sbnet)
+    #     print BDG.number_of_edges()
+    #     print BDG.number_of_nodes()
+    #
+    #     # print 'get gaint_component of network'
+    #     # BDG = net_util.get_gaint_comp(BDG)
+    #     # print BDG.number_of_edges()
+    #     # print BDG.number_of_nodes()
+    #
+    #     print 'prune nodes not in friendship network'
+    #     BDG = prune_bdg(BDG, FDG)
+    #     print BDG.number_of_edges()
+    #     print BDG.number_of_nodes()
+    #     # print nx.average_shortest_path_length(BDG)
+    #
+    #     centrality(db_name, scom, BDG, FDG, 0.2, 3)

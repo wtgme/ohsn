@@ -592,15 +592,16 @@ def process_test_results():
         # print user['screen_name']
 
 if __name__ == '__main__':
-    # process_poi('fed', 'com')
+    process_poi('fed', 'scom')
+    inference_stat('fed', 'scom')
     # process_poi('sed', 'com')
     # process_poi('srd', 'com')
     # process_poi('syg', 'com')
-    inference_stat('fed', 'com_t1')
-    inference_stat('fed', 'com_t2')
-    inference_stat('fed', 'com_t3')
-    inference_stat('fed', 'com_t4')
-    inference_stat('fed', 'com_t5')
+    # inference_stat('fed', 'com_t1')
+    # inference_stat('fed', 'com_t2')
+    # inference_stat('fed', 'com_t3')
+    # inference_stat('fed', 'com_t4')
+    # inference_stat('fed', 'com_t5')
 
 
 
