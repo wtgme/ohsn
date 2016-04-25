@@ -51,24 +51,27 @@ def load_beh_network(db_name, collection='None', target_set=None):
         for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
             n1 = str(row['id0'])
             n2 = str(row['id1'])
-            n1id = name_map.get(n1, len(name_map))
-            name_map[n1] = n1id
-            n2id = name_map.get(n2, len(name_map))
-            name_map[n2] = n2id
-            wt = edges.get((n1id, n2id), 0)
-            edges[(n1id, n2id)] = wt + 1
-    else:
-        # for row in cols.find({}):
-        for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
-            if row['id0'] in target_set and row['id1'] in target_set:
-                n1 = str(row['id0'])
-                n2 = str(row['id1'])
+            if n1 != n2:
                 n1id = name_map.get(n1, len(name_map))
                 name_map[n1] = n1id
                 n2id = name_map.get(n2, len(name_map))
                 name_map[n2] = n2id
                 wt = edges.get((n1id, n2id), 0)
                 edges[(n1id, n2id)] = wt + 1
+    else:
+        # for row in cols.find({}):
+        for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
+            if row['id0'] in target_set and row['id1'] in target_set:
+                n1 = str(row['id0'])
+                n2 = str(row['id1'])
+                # remove self-loops
+                if n1 != n2:
+                    n1id = name_map.get(n1, len(name_map))
+                    name_map[n1] = n1id
+                    n2id = name_map.get(n2, len(name_map))
+                    name_map[n2] = n2id
+                    wt = edges.get((n1id, n2id), 0)
+                    edges[(n1id, n2id)] = wt + 1
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(edges.keys())
