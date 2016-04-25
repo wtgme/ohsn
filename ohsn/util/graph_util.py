@@ -83,8 +83,12 @@ def giant_component(g, mode):
 
 
 def community(g, weighted=False):
+    '''Only for Undirected graph'''
     if g.is_directed():
-        g = g.as_undirected()
+        if weighted:
+            g = g.as_undirected(combine_edges='sum')
+        else:
+            g = g.as_undirected()
     if weighted:
         return g.community_fastgreedy(weights='weight')
     else:

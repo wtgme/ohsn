@@ -54,8 +54,8 @@ def export_poi(dbname, colname, file_name, lev=1):
               'statuses_count',
               'retweet_count',
               'favourites_count',
-              # 'dc',
-              # 'ng',
+              'dc',
+              'ng',
               'time_zone',
               'verified',
               'description',
@@ -284,10 +284,11 @@ def export_poi_echelon(dbname,colname, file_name):
 
 if __name__ == '__main__':
     export_poi('fed', 'scom', 'poi')
-    # export_poi('fed', 'com_t2', 'poi_t2')
-    # export_poi('fed', 'com_t3', 'poi_t3')
-    # export_poi('fed', 'com_t4', 'poi_t4')
-    # export_poi('fed', 'com_t5', 'poi_t5')
+    export_poi('fed', 'com_t1', 'poi_t1')
+    export_poi('fed', 'com_t2', 'poi_t2')
+    export_poi('fed', 'com_t3', 'poi_t3')
+    export_poi('fed', 'com_t4', 'poi_t4')
+    export_poi('fed', 'com_t5', 'poi_t5')
     # export_net_agg('fed', 'com_t1', 'sbnet_t1', 'bnet_t1')
     # export_net_agg('fed', 'com_t2', 'sbnet_t2', 'bnet_t2')
     # export_net_agg('fed', 'com_t3', 'sbnet_t3', 'bnet_t3')

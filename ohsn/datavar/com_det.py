@@ -40,15 +40,19 @@ def plot_pdf(ed, rd, yg, mode='degree'):
 
 
 def friendship_community(dbname, colname, label):
-    fg = gt.load_network(dbname, colname)
-    pickle.dump(fg, open('data/'+label+'-fg.pick', 'w'))
-    fgc = gt.giant_component(fg, 'WEAK')
-    gt.summary(fgc)
-    pickle.dump(fgc, open('data/'+label+'-fgc.pick', 'w'))
-    fcoms = gt.community(fgc)
-    fclus = fcoms.as_clustering()
-    gt.summary(fclus)
-    pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
+    # fg = gt.load_network(dbname, colname)
+    # pickle.dump(fg, open('data/'+label+'-fg.pick', 'w'))
+    fg = pickle.load(open('data/'+label+'-fg.pick', 'r'))
+    # fgc = gt.giant_component(fg, 'WEAK')
+    # gt.summary(fgc)
+    # pickle.dump(fgc, open('data/'+label+'-fgc.pick', 'w'))
+    # fcoms = gt.community(fg)
+    # fclus = fcoms.as_clustering()
+    # gt.summary(fclus)
+    # pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
+    fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
+    layout = fg.layout("fr")
+    gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, bbox=(1200, 900))
 
 
 def behavior_community(dbname, colname, label):
@@ -59,27 +63,32 @@ def behavior_community(dbname, colname, label):
     #     targed_list.add(user['id'])
 
     bg = gt.load_beh_network(dbname, colname)
+    gt.summary(bg)
     pickle.dump(bg, open('data/'+label+'-bg.pick', 'w'))
-    bgc = gt.giant_component(bg, 'WEAK')
-    gt.summary(bgc)
-    pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
-    bcoms = gt.community(bgc)
+    # bgc = gt.giant_component(bg, 'WEAK')
+    # gt.summary(bgc)
+    # pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
+    bcoms = gt.community(bg, weighted=True)
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
     pickle.dump(bclus, open('data/'+label+'-bcom.pick', 'w'))
+    layout = bg.layout("fr")
+    gt.plot(bclus, 'behaviour_comms_fr.pdf', layout=layout, bbox=(1200, 900))
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'friend':
-        friendship_community('fed', 'snet', 'sed')
-    elif sys.argv[1] == 'behavior':
-        behavior_community('fed', 'snet', 'sed')
+    # if sys.argv[1] == 'friend':
+    #     friendship_community('fed', 'snet', 'ED')
+    # elif sys.argv[1] == 'behavior':
+    #     behavior_community('fed', 'snet', 'ED')
 
+    # friendship_community('fed', 'snet', 'ED')
+    behavior_community('fed', 'sbnet', 'ED')
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')
 
-    coreed = core_ed()
-    print 'NO of core ED' +'\t'+ str(len(coreed))
+    # coreed = core_ed()
+    # print 'NO of core ED' +'\t'+ str(len(coreed))
 
     # print 'Friendship Network'
     # print 'Community Index \t Community Size \t NO of Targeted Core ED \t Ratio of Targeted Core ED'
@@ -97,11 +106,11 @@ if __name__ == '__main__':
     print '-----------------------'
 
 
-    print 'Behavior (retweet, mention, and reply) Network'
-    print 'Community Index \t Community Size \t NO of Targeted Core ED \t Ratio of Targeted Core ED'
-    label = 'fed'
-    ygfg = pickle.load(open('data/'+label+'-bg.pick', 'r'))
-    ygf = pickle.load(open('data/'+label+'-bcom.pick', 'r'))
+    # print 'Behavior (retweet, mention, and reply) Network'
+    # print 'Community Index \t Community Size \t NO of Targeted Core ED \t Ratio of Targeted Core ED'
+    # label = 'fed'
+    # ygfg = pickle.load(open('data/'+label+'-bg.pick', 'r'))
+    # ygf = pickle.load(open('data/'+label+'-bcom.pick', 'r'))
     # print rdf.membership
 
     # index = 0
@@ -115,9 +124,9 @@ if __name__ == '__main__':
 
     # ed = gt.load_network('fed', 'snet')
     # rd = rdfg.subgraph(rdf[2])
-    print len(ygf[1])
-    yg = ygfg.subgraph(ygf[1])
-    out_screen_name(yg.vs['name'])
+    # print len(ygf[1])
+    # yg = ygfg.subgraph(ygf[1])
+    # out_screen_name(yg.vs['name'])
     # plot_pdf(ed, rd, yg, 'degree')
 
     '''Plot ED RD YG'''

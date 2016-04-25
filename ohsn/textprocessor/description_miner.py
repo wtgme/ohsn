@@ -21,57 +21,55 @@ import pymongo
 import pickle
 import numpy as np
 
-
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
 
 KEYWORDS = ['anorexic',
-                    'anorexia',
-                    'anorexia-purging',
-                    'hypergymnasia',
-                    'diagnosed',
-                    'relapse',
-                    'relapsing',
-                    'recovery',
-                    'recovering',
-                    'inpatient',
-                    'ed',
-                    'eating',
-                    'eating-disorder',
-                    'ednos',
-                    'ed-nos',
-                    'bulimic',
-                    'bulimia',
-                    'depressed',
-                    'depression',
-                    'depressive',
-                    'anxiety',
-                    'anxieties',
-                    'ocd',
-                    'suicidal',
-                    'skinny',
-                    'thin',
-                    'fat',
-                    'thighs',
-                    'collarbones',
-                    'hips',
-                    'harm',
-                    'self-harm',
-                    'selfharm',
-                    'cutter',
-                    'cutting',
-                    'hate',
-                    'ana',
-                    'proana',
-                    'mia',
-                    'promia',
-                    'starving',
-                    'diet',
-                    'fasting',
-                    'purging',
-                    'purge',
-                    'clean',
-                    'insomnia']
-
+            'anorexia',
+            'anorexia-purging',
+            'hypergymnasia',
+            'diagnosed',
+            'relapse',
+            'relapsing',
+            'recovery',
+            'recovering',
+            'inpatient',
+            'ed',
+            'eating',
+            'eating-disorder',
+            'ednos',
+            'ed-nos',
+            'bulimic',
+            'bulimia',
+            'depressed',
+            'depression',
+            'depressive',
+            'anxiety',
+            'anxieties',
+            'ocd',
+            'suicidal',
+            'skinny',
+            'thin',
+            'fat',
+            'thighs',
+            'collarbones',
+            'hips',
+            'harm',
+            'self-harm',
+            'selfharm',
+            'cutter',
+            'cutting',
+            'hate',
+            'ana',
+            'proana',
+            'mia',
+            'promia',
+            'starving',
+            'diet',
+            'fasting',
+            'purging',
+            'purge',
+            'clean',
+            'insomnia']
 
 VERSION = 0.01
 
@@ -81,7 +79,7 @@ def getVersion():
 
 
 def identify_manual_retweet(text):
-    #r'\b(?:#|@|)[0-9]*%s[0-9]*\b'
+    # r'\b(?:#|@|)[0-9]*%s[0-9]*\b'
     pattern = re.compile('\s*(RT|retweet|MT|via)\s*@', re.IGNORECASE)
     match = pattern.search(text)
     if match is None:
@@ -91,7 +89,7 @@ def identify_manual_retweet(text):
 
 
 def identify_retweet(tweet):
-# if its an official retweet ignore the tweet itself
+    # if its an official retweet ignore the tweet itself
     try:
         orig = tweet['interaction']['twitter']['retweeted_status']
         return True
@@ -107,56 +105,56 @@ def get_age(text):
     match = pattern.search(text)
     if match is not None:
         # print 'a'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("(?P<age>[1-8][0-9])\s*y/o", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'b'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("^(?P<age>[1-8][0-9])\s*([^\w'\"\.]|(\.\D)|(f|m))[^kdl]", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'c'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("(?P<age>[1-8][0-9])\s*yrs", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'd'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("(?P<age>[1-8][0-9])\s*yo?", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'e'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("age[:;=\s-]+(?P<age>[1-8][0-9])[^a-z]", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'f'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("\sa[:;=\s-]+(?P<age>[1-8][0-9])[^a-z]", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'h'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
 
     pattern = re.compile("[;|,•=-]\s*(?P<age>[1-8][0-9])\s*([;=|,•-])", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         # print 'i'
-        #print match.group('age') +"\t"+ text
+        # print match.group('age') +"\t"+ text
         return match.group('age')
     return None
 
@@ -166,7 +164,8 @@ def get_age(text):
 
 def get_bmi(text):
     # print text
-    pattern = re.compile("BMI[:]*\s*(?P<bmi>[0-9][0-9][.,]?[0-9]*)", re.IGNORECASE)
+    # pattern = re.compile("BMI[:-]*\s*(?P<bmi>[0-9][0-9][.,]?[0-9]*)", re.IGNORECASE)
+    pattern = re.compile("BMI\W*(?P<bmi>[0-9][0-9][.,]?[0-9]*)", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         s = (match.group('bmi'))
@@ -175,66 +174,71 @@ def get_bmi(text):
 
 
 def get_height(text):
-    #Height Matching
-    pattern = re.compile("(?P<feet>[4-6])\s*(‘|'|f(oo)?t)\s*(?P<inches>1[0-1]|[0-9])?\s*(('')|“|\"|in(ches)?)?", re.IGNORECASE)
-    #pattern = re.compile("(?P<feet>[4-6])'\s*(?P<inches>[1-9]|1[0-2])\"?", re.IGNORECASE)
+    # Height Matching
+    pattern = re.compile("(?P<feet>[4-6])\s*(‘|'|f(oo)?t)\s*(?P<inches>1[0-1]|[0-9])?\s*(('')|“|\"|in(ches)?)?",
+                         re.IGNORECASE)
+    # pattern = re.compile("(?P<feet>[4-6])'\s*(?P<inches>[1-9]|1[0-2])\"?", re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
-        inches =  int(match.group('feet'))*12
+        inches = int(match.group('feet')) * 12
         if match.group('inches') is not None:
-             inches = inches + int(match.group('inches'))
-        height = inches*2.54
+            inches = inches + int(match.group('inches'))
+        height = inches * 2.54
         return height
-       # print user_stats['username'].encode('utf-8') +":"+ user_stats['age'] +":"+ match.group('feet') +"'" + match.group('inches')+ "\"=" + str(user_stats['height']) #+'\n'
+        # print user_stats['username'].encode('utf-8') +":"+ user_stats['age'] +":"+ match.group('feet') +"'" + match.group('inches')+ "\"=" + str(user_stats['height']) #+'\n'
     else:
-        pattern = re.compile("(?P<metres>[1-2])(‘|'|m)\s*(?P<cmetres>[0-9][0-9]?)\s*(cm)?|(?P<ctmetres>[1-2][0-9][0-9])\s*(cm)", re.IGNORECASE)
-        #pattern = re.compile("(?P<feet>[4-6])'\s*(?P<inches>1[01]|\d)\"?", re.IGNORECASE)
+        pattern = re.compile(
+            "(?P<metres>[1-2])(‘|'|m)\s*(?P<cmetres>[0-9][0-9]?)\s*(cm)?|(?P<ctmetres>[1-2][0-9][0-9])\s*(cm)",
+            re.IGNORECASE)
+        # pattern = re.compile("(?P<feet>[4-6])'\s*(?P<inches>1[01]|\d)\"?", re.IGNORECASE)
         match = pattern.search(text)
         if match is not None:
             if match.group('ctmetres') is not None:
                 return float(match.group('ctmetres'))
             else:
-                return float(int(match.group('metres'))*100 + int(match.group('cmetres')))
+                return float(int(match.group('metres')) * 100 + int(match.group('cmetres')))
         else:
             pattern = re.compile("(?P<metres>\d\.\d*)\s*m[,\.:;=\s-]", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                return float(match.group('metres'))*100
+                return float(match.group('metres')) * 100
 
 
 def get_high_weightKG(text):
-    pattern = re.compile("[(\[{]?(hw|high weight|high|sw)(\s?[/|]\s?sw)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile(
+        "[(\[{]?(hw|high weight| high|sw)(\s?[/|]\s?sw)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
-            if match.group('units') in ("lb","pounds"):
+            # print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb", "pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
-                        #bmi = weight_kg/(height_cm^2)
+                # bmi = weight_kg/(height_cm^2)
             elif match.group('units') in ('stone'):
                 weight_kg = mass * 6.35029
                 unitsguessed = False
-            else: # i.e. it matches kilos
+            else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
             # search for units elsewhere in the description
-            pattern = re.compile("(stone|lb|lbs|kg|pounds)", re.IGNORECASE)
+            pattern = re.compile("(stone |lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                 if match.group(0) in ("lb","lbs","pounds"):
-                        weight_kg = mass * 0.453592
-                        unitsguessed = True
-                 elif match.group(0) in ('stone'):
-                        weight_kg = mass * 6.35029
-                        unitsguessed = True
-                 else: # i.e. it matches kilos
-                        weight_kg = mass
-                        unitsguessed = True
-                #print mass + match.group(0) + "(Unit Deduction)"
-            #Lets assume that if the cw is greater than 70 then its in pounds.
+                if match.group(0) in ("lb", "lbs", "pounds"):
+                    weight_kg = mass * 0.453592
+                    unitsguessed = True
+                elif match.group(0) in ('stone '):
+                    weight_kg = mass * 6.35029
+                    unitsguessed = True
+                else:  # i.e. it matches kilos
+                    weight_kg = mass
+                    unitsguessed = True
+                    # print mass + match.group(0) + "(Unit Deduction)"
+            # Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
                 weight_kg = mass
                 unitsguessed = True
@@ -242,11 +246,11 @@ def get_high_weightKG(text):
             elif float(mass) < 12:
                 weight_kg = mass * 6.35029
                 unitsguessed = True
-            else: # if in doubt guess lbs?
+            else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
-                #print mass + "lb" + "(Unit Guess)"
-            # check location? i.e. USA = lbs, rest = kg
+                # print mass + "lb" + "(Unit Guess)"
+                # check location? i.e. USA = lbs, rest = kg
 
         return (weight_kg, unitsguessed)
     else:
@@ -254,38 +258,40 @@ def get_high_weightKG(text):
 
 
 def get_low_weight_KG(text):
-    pattern = re.compile("[(\[{]?(lw|low weight|low)[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile(
+        "[(\[{]?(lw|low weight| low)[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
-            if match.group('units') in ("lb","pounds"):
+            # print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb", "pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
-                        #bmi = weight_kg/(height_cm^2)
+                # bmi = weight_kg/(height_cm^2)
             elif match.group('units') in ('stone'):
                 weight_kg = mass * 6.35029
                 unitsguessed = False
-            else: # i.e. it matches kilos
+            else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
             # search for units elsewhere in the description
-            pattern = re.compile("(stone|lb|lbs|kg|pounds)", re.IGNORECASE)
+            pattern = re.compile("(stone |lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                 if match.group(0) in ("lb","lbs","pounds"):
-                        weight_kg = mass * 0.453592
-                        unitsguessed = True
-                 elif match.group(0) in ('stone'):
-                        weight_kg = mass * 6.35029
-                        unitsguessed = True
-                 else: # i.e. it matches kilos
-                        weight_kg = mass
-                        unitsguessed = True
-                #print mass + match.group(0) + "(Unit Deduction)"
-            #Lets assume that if the cw is greater than 70 then its in pounds.
+                if match.group(0) in ("lb", "lbs", "pounds"):
+                    weight_kg = mass * 0.453592
+                    unitsguessed = True
+                elif match.group(0) in ('stone '):
+                    weight_kg = mass * 6.35029
+                    unitsguessed = True
+                else:  # i.e. it matches kilos
+                    weight_kg = mass
+                    unitsguessed = True
+                    # print mass + match.group(0) + "(Unit Deduction)"
+            # Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
                 weight_kg = mass
                 unitsguessed = True
@@ -293,11 +299,11 @@ def get_low_weight_KG(text):
             elif float(mass) < 12:
                 weight_kg = mass * 6.35029
                 unitsguessed = True
-            else: # if in doubt guess lbs?
+            else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
-                #print mass + "lb" + "(Unit Guess)"
-            # check location? i.e. USA = lbs, rest = kg
+                # print mass + "lb" + "(Unit Guess)"
+                # check location? i.e. USA = lbs, rest = kg
 
         return (weight_kg, unitsguessed)
     else:
@@ -305,38 +311,40 @@ def get_low_weight_KG(text):
 
 
 def get_current_weight_KG(text):
-    pattern = re.compile("[(\[{]?(cw|current weight|current(ly)?)[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile(
+        "[(\[{]?(cw|current weight|current(ly)?)\(?\w?\)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
-            if match.group('units') in ("lb","pounds"):
+            # print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb", "pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
-                        #bmi = weight_kg/(height_cm^2)
+                # bmi = weight_kg/(height_cm^2)
             elif match.group('units') in ('stone'):
                 weight_kg = mass * 6.35029
                 unitsguessed = False
-            else: # i.e. it matches kilos
+            else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
             # search for units elsewhere in the description
-            pattern = re.compile("(stone|lb|lbs|kg|pounds)", re.IGNORECASE)
+            pattern = re.compile("(stone |lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                 if match.group(0) in ("lb","lbs","pounds"):
-                        weight_kg = mass * 0.453592
-                        unitsguessed = True
-                 elif match.group(0) in ('stone'):
-                        weight_kg = mass * 6.35029
-                        unitsguessed = True
-                 else: # i.e. it matches kilos
-                        weight_kg = mass
-                        unitsguessed = True
-                #print mass + match.group(0) + "(Unit Deduction)"
-            #Lets assume that if the cw is greater than 70 then its in pounds.
+                if match.group(0) in ("lb", "lbs", "pounds"):
+                    weight_kg = mass * 0.453592
+                    unitsguessed = True
+                elif match.group(0) in ('stone '):
+                    weight_kg = mass * 6.35029
+                    unitsguessed = True
+                else:  # i.e. it matches kilos
+                    weight_kg = mass
+                    unitsguessed = True
+                    # print mass + match.group(0) + "(Unit Deduction)"
+            # Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
                 weight_kg = mass
                 unitsguessed = True
@@ -344,11 +352,11 @@ def get_current_weight_KG(text):
             elif float(mass) < 12:
                 weight_kg = mass * 6.35029
                 unitsguessed = True
-            else: # if in doubt guess lbs?
+            else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
-                #print mass + "lb" + "(Unit Guess)"
-            # check location? i.e. USA = lbs, rest = kg
+                # print mass + "lb" + "(Unit Guess)"
+                # check location? i.e. USA = lbs, rest = kg
 
         return (weight_kg, unitsguessed)
     else:
@@ -356,38 +364,40 @@ def get_current_weight_KG(text):
 
 
 def get_goal_weight(text):
-    pattern = re.compile("[(\[{]?(gw|goal weight|goal)\(?\w?\)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile(
+        "[(\[{]?(gw|goal weight|goal)\(?\w?\)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*",
+        re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
-            if match.group('units') in ("lb","pounds"):
+            # print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb", "pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
-                        #bmi = weight_kg/(height_cm^2)
+                # bmi = weight_kg/(height_cm^2)
             elif match.group('units') in ('stone'):
                 weight_kg = mass * 6.35029
                 unitsguessed = False
-            else: # i.e. it matches kilos
+            else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
             # search for units elsewhere in the description
-            pattern = re.compile("(stone|lb|lbs|kg|pounds)", re.IGNORECASE)
+            pattern = re.compile("(stone |lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                 if match.group(0) in ("lb","lbs","pounds"):
-                        weight_kg = mass * 0.453592
-                        unitsguessed = True
-                 elif match.group(0) in ('stone'):
-                        weight_kg = mass * 6.35029
-                        unitsguessed = True
-                 else: # i.e. it matches kilos
-                        weight_kg = mass
-                        unitsguessed = True
-                #print mass + match.group(0) + "(Unit Deduction)"
-            #Lets assume that if the cw is greater than 70 then its in pounds.
+                if match.group(0) in ("lb", "lbs", "pounds"):
+                    weight_kg = mass * 0.453592
+                    unitsguessed = True
+                elif match.group(0) in ('stone '):
+                    weight_kg = mass * 6.35029
+                    unitsguessed = True
+                else:  # i.e. it matches kilos
+                    weight_kg = mass
+                    unitsguessed = True
+                    # print mass + match.group(0) + "(Unit Deduction)"
+            # Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
                 weight_kg = mass
                 unitsguessed = True
@@ -395,11 +405,11 @@ def get_goal_weight(text):
             elif float(mass) < 12:
                 weight_kg = mass * 6.35029
                 unitsguessed = True
-            else: # if in doubt guess lbs?
+            else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
-                #print mass + "lb" + "(Unit Guess)"
-            # check location? i.e. USA = lbs, rest = kg
+                # print mass + "lb" + "(Unit Guess)"
+                # check location? i.e. USA = lbs, rest = kg
 
         return (weight_kg, unitsguessed)
     else:
@@ -412,12 +422,12 @@ def get_ultimate_goal_weight(text):
     if match is not None:
         mass = float(match.group('mass'))
         if match.group('units') is not None:
-            #print match.group('mass') + match.group('units') #user_stats[
-            if match.group('units') in ("lb","pounds"):
+            # print match.group('mass') + match.group('units') #user_stats[
+            if match.group('units') in ("lb", "pounds"):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
-                        #bmi = weight_kg/(height_cm^2)
-            else: # i.e. it matches kilos
+                # bmi = weight_kg/(height_cm^2)
+            else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
@@ -425,23 +435,23 @@ def get_ultimate_goal_weight(text):
             pattern = re.compile("(lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
-                 if match.group(0) in ("lb","lbs","pounds"):
-                     weight_kg = mass * 0.453592
-                     unitsguessed = True
-                 else: # i.e. it matches kilos
-                     weight_kg = mass
-                     unitsguessed = True
-                #print mass + match.group(0) + "(Unit Deduction)"
-            #Lets assume that if the cw is greater than 70 then its in pounds.
+                if match.group(0) in ("lb", "lbs", "pounds"):
+                    weight_kg = mass * 0.453592
+                    unitsguessed = True
+                else:  # i.e. it matches kilos
+                    weight_kg = mass
+                    unitsguessed = True
+                    # print mass + match.group(0) + "(Unit Deduction)"
+            # Lets assume that if the cw is greater than 70 then its in pounds.
             elif float(mass) < 70:
                 weight_kg = mass
                 unitsguessed = True
                 # print mass + "kg" + "(Unit Probable)"
-            else: # if in doubt guess lbs?
+            else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
-                #print mass + "lb" + "(Unit Guess)"
-            # check location? i.e. USA = lbs, rest = kg
+                # print mass + "lb" + "(Unit Guess)"
+                # check location? i.e. USA = lbs, rest = kg
 
         return (weight_kg, unitsguessed)
     else:
@@ -459,12 +469,12 @@ def edword(text):
 
 def process_text(text):
     results = {}
-    text = text.encode('utf-8').replace('\n', '')
+    text = text.encode('utf-8').replace('\n', ' ')
     text = text.lower()
 
     edword_count = edword(text)
     if edword_count is not 0:
-        results['edword_count'] = {'value':edword_count}
+        results['edword_count'] = {'value': edword_count}
 
     gw, gw_ug = get_goal_weight(text)
     if gw is not None:
@@ -502,20 +512,21 @@ def process_timelines(user_id, timeline, bio):
         if count == 0:
             break
         else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
         last_bio_rec = {}
         try:
-            last_bio = bio.find({'uid': user_id}).sort([('tid', -1)]).limit(1)[0] # sort: 1 = ascending, -1 = descending
+            last_bio = bio.find({'uid': user_id}).sort([('tid', -1)]).limit(1)[
+                0]  # sort: 1 = ascending, -1 = descending
             if last_bio:
                 last_bio_rec = last_bio['results']
         except IndexError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + \
                   'Get latest stored bio ERROR, a new user ' + str(detail)
             pass
         flag = False
         for tweet in timeline.find({'user.id': user_id, 'bio_mined': {'$exists': False}},
-                                   {'id':1, 'user':1, 'created_at':1}).sort([('id', 1)]):
+                                   {'id': 1, 'user': 1, 'created_at': 1}).sort([('id', 1)]):
             user = tweet['user']
             text = user['description']
             if text is None:
@@ -525,7 +536,8 @@ def process_timelines(user_id, timeline, bio):
             if results and DeepDiff(results, last_bio_rec):
                 flag = True
                 last_bio_rec = results
-                bio.insert({"uid": user_id, 'tid': tweet['id'], 'screen_name': user['screen_name'], 'created_at': tweet['created_at'], 'results': results})
+                bio.insert({"uid": user_id, 'tid': tweet['id'], 'screen_name': user['screen_name'],
+                            'created_at': tweet['created_at'], 'results': results})
             timeline.update({"id": tweet['id']}, {'$set': {'bio_mined': True}}, upsert=False)
         print str(user_id) + ' has bio information ' + str(flag)
 
@@ -539,7 +551,7 @@ def process_description(poi):
         if count == 0:
             break
         else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
         for user in poi.find({"text_anal.mined": {'$exists': False}}).limit(500):
             text = user['description']
             if text is None:
@@ -555,13 +567,13 @@ def inference_stat(dbname, colname):
     com = db[colname]
     for user in com.find({'text_anal.h': {'$exists': True}}, ['id', 'text_anal']):
         values = user['text_anal']
-        h = values['h']['value']/100
+        h = values['h']['value'] / 100
         if 'gw' in values:
             gw = values['gw']['value']
-            values['gbmi'] = {'value': gw/(h*h)}
+            values['gbmi'] = {'value': gw / (h * h)}
         if 'cw' in values:
             cw = values['cw']['value']
-            values['cbmi'] = {'value': cw/(h*h)}
+            values['cbmi'] = {'value': cw / (h * h)}
         com.update({"id": user['id']}, {'$set': {'text_anal': values}}, upsert=False)
 
 
@@ -570,6 +582,7 @@ def process_poi(dbname, colname):
     db = dbutil.db_connect_no_auth(dbname)
     sample_poi = db[colname]
     process_description(sample_poi)
+    inference_stat(dbname, colname)
 
 
 def process_test_results():
@@ -591,6 +604,7 @@ def process_test_results():
         # user = poi.find_one({'id': user_id}, ['id', 'screen_name'])
         # print user['screen_name']
 
+
 if __name__ == '__main__':
     process_poi('fed', 'scom')
     inference_stat('fed', 'scom')
@@ -606,8 +620,9 @@ if __name__ == '__main__':
 
 
 
-    # text =  '''#anasister #ed 156cm gw:42kg (bmi:17.3) ugw:38kgi just want to be thin. not pro ana just an average teen. bmi: 20.3'''.lower()
-    # print get_bmi(text)
+   #  text = '''
+   # Leeshly. 15. Ana with Mia tendencies. Bipolar. Self- harmer. CW: 88 HW:13O LW: 88 GW: 85 UGW: 7O (then lower)'''.lower()
+   #  print get_high_weightKG(text)
 
     # 17. uk. 5'4. 114lbs. (bmi: 18.9) bulimic. anorexic. anxiety. paranoia. anemic.  Hands Like Houses
     # 15, anorexia, CW:106lbs UGW: 90lbs

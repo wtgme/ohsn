@@ -126,7 +126,7 @@ if __name__ == '__main__':
     db_name = 'fed'
     # tweet_ret_times('fed')
     # extract_friend_subnetwork(db_name)
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet')
+    extract_behavior_subnetwork(db_name, 'scom', 'bnet', 'sbnet')
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 2)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 3)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 4)

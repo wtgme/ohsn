@@ -168,7 +168,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=50)
+        bins = np.linspace(xmin, xmax, num=16)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(
@@ -257,7 +257,7 @@ def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
 
-    ax.set_title('Comparison of probability density functions on '+field)
+    # ax.set_title('Comparison of probability density functions on '+field)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
