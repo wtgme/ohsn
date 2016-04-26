@@ -194,7 +194,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def pdf_plot_one_data(data, name, title=None, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
+def pdf_plot_one_data(data, name, linear_bins=True, title=None, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
     print 'Original length', len(data)
     data = drop_zeros(data)
     print 'Stripped length', len(data)
@@ -204,20 +204,21 @@ def pdf_plot_one_data(data, name, title=None, xmin=None, xmax=None, fit_start=1,
         xmax = max(data)
     if not xmin:
         xmin = min(data)
-    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
+    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
-    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax)
+    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
     if fit_start!=fit_end:
         list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
         ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+    if linear_bins == False:
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlim(xmin=1)
+        ax.set_ylim(ymax=1)
     ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
-    ax.set_xlim(xmin=1)
-    ax.set_ylim(ymax=1)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)

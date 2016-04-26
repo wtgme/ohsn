@@ -12,9 +12,11 @@ from ohsn.util import graph_util as grt
 from ohsn.util import plot_util as splt
 import numpy as np
 
+
 def drop_zeros(list_a):
     # discard the zeros in a list
     return [i for i in list_a if i>0]
+
 
 def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
@@ -38,9 +40,10 @@ def fnet_bmi(dbname, colname, comname, name, field):
                  7: '#e31a1c', 8: '#b10026', 9: '#00441b'}
     inds = np.digitize(values, bins)
     print min(values), max(values), min(inds), max(inds)
-    layout = g.layout("fr")
-    grt.plot(g, 'friend_gbmi.pdf', layout=layout, bbox=(1200, 900),
-             vertex_color=[color_map[i] for i in inds])
+    splt.pdf_plot_one_data(values, 'GBMI', linear_bins=True)
+    # layout = g.layout("fr")
+    # grt.plot(g, 'friend_gbmi.pdf', layout=layout, bbox=(1200, 900),
+    #          vertex_color=[color_map[i] for i in inds])
 
 
 def frienship(dbname, colname, comname):
