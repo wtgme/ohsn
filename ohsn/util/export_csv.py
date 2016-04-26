@@ -37,7 +37,7 @@ def csv_output(fields, file_name, data):
             writer.writerow(proce_values)
 
 
-def export_poi(dbname, colname, file_name, lev=1):
+def export_poi(dbname, colname, file_name, index):
     db = dbutil.db_connect_no_auth(dbname)
     poidb = db[colname]
     fields = ['id',
@@ -151,8 +151,14 @@ def export_poi(dbname, colname, file_name, lev=1):
               'liwc_anal.result.OtherP',
               'liwc_anal.result.AllPct'
               ]
-    data = [x for x in poidb.find({'timeline_count':{'$gt':0}}, projection=fields)]
-    csv_output(fields, file_name, data)
+    data = []
+    for x in poidb.find({'timeline_count':{'$gt':0}}, projection=fields):
+        x['t_index'] = index
+        data.append(x)
+
+    # data = [x for x in poidb.find({'timeline_count':{'$gt':0}}, projection=fields)]
+    return data
+    # csv_output(fields, file_name, data)
 
 
 def export_net_agg(dbname, comname, colname, file_name):
@@ -283,12 +289,127 @@ def export_poi_echelon(dbname,colname, file_name):
 
 
 if __name__ == '__main__':
-    export_poi('fed', 'scom', 'poi')
-    export_poi('fed', 'com_t1', 'poi_t1')
-    export_poi('fed', 'com_t2', 'poi_t2')
-    export_poi('fed', 'com_t3', 'poi_t3')
-    export_poi('fed', 'com_t4', 'poi_t4')
-    export_poi('fed', 'com_t5', 'poi_t5')
+    # d1 = export_poi('fed', 'scom', 'poi')
+    d1 = export_poi('fed', 'com_t1', 'poi_t1')
+    d2 = export_poi('fed', 'com_t2', 'poi_t2')
+    d3 = export_poi('fed', 'com_t3', 'poi_t3')
+    d4 = export_poi('fed', 'com_t4', 'poi_t4')
+    d5 = export_poi('fed', 'com_t5', 'poi_t5')
+    # csv_output(fields, file_name, data)
+    d = d1 + d2 + d3 + d4+ d5
+    fields = ['id',
+              'name',
+              "screen_name",
+              'created_at',
+              'timeline_count',
+              'lang',
+              'location',
+              'level',
+              'geo_enabled',
+              'followers_count',
+              'friends_count',
+              'statuses_count',
+              'retweet_count',
+              'favourites_count',
+              'dc',
+              'ng',
+              'time_zone',
+              'verified',
+              'description',
+              'text_anal.gw.value',
+              'text_anal.cw.value',
+              'text_anal.lw.value',
+              'text_anal.hw.value',
+              'text_anal.h.value',
+              'text_anal.a.value',
+              'text_anal.bmi.value',
+              'text_anal.cbmi.value',
+              'text_anal.gbmi.value',
+              'text_anal.edword_count.value',
+              'liwc_anal.result.WC',
+              'liwc_anal.result.WPS',
+              'liwc_anal.result.Sixltr',
+              'liwc_anal.result.Dic',
+              'liwc_anal.result.Numerals',
+              'liwc_anal.result.funct',
+              'liwc_anal.result.pronoun',
+              'liwc_anal.result.ppron',
+              'liwc_anal.result.i',
+              'liwc_anal.result.we',
+              'liwc_anal.result.you',
+              'liwc_anal.result.shehe',
+              'liwc_anal.result.they',
+              'liwc_anal.result.ipron',
+              'liwc_anal.result.article',
+              'liwc_anal.result.verb',
+              'liwc_anal.result.auxverb',
+              'liwc_anal.result.past',
+              'liwc_anal.result.present',
+              'liwc_anal.result.future',
+              'liwc_anal.result.adverb',
+              'liwc_anal.result.preps',
+              'liwc_anal.result.conj',
+              'liwc_anal.result.negate',
+              'liwc_anal.result.quant',
+              'liwc_anal.result.number',
+              'liwc_anal.result.swear',
+              'liwc_anal.result.social',
+              'liwc_anal.result.family',
+              'liwc_anal.result.friend',
+              'liwc_anal.result.humans',
+              'liwc_anal.result.affect',
+              'liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad',
+              'liwc_anal.result.cogmech',
+              'liwc_anal.result.insight',
+              'liwc_anal.result.cause',
+              'liwc_anal.result.discrep',
+              'liwc_anal.result.tentat',
+              'liwc_anal.result.certain',
+              'liwc_anal.result.inhib',
+              'liwc_anal.result.incl',
+              'liwc_anal.result.excl',
+              'liwc_anal.result.percept',
+              'liwc_anal.result.see',
+              'liwc_anal.result.hear',
+              'liwc_anal.result.feel',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.sexual',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.relativ',
+              'liwc_anal.result.motion',
+              'liwc_anal.result.space',
+              'liwc_anal.result.time',
+              'liwc_anal.result.work',
+              'liwc_anal.result.achieve',
+              'liwc_anal.result.leisure',
+              'liwc_anal.result.home',
+              'liwc_anal.result.money',
+              'liwc_anal.result.relig',
+              'liwc_anal.result.death',
+              'liwc_anal.result.assent',
+              'liwc_anal.result.nonfl',
+              'liwc_anal.result.filler',
+              'liwc_anal.result.Period',
+              'liwc_anal.result.Comma',
+              'liwc_anal.result.Colon',
+              'liwc_anal.result.SemiC',
+              'liwc_anal.result.QMark',
+              'liwc_anal.result.Exclam',
+              'liwc_anal.result.Dash',
+              'liwc_anal.result.Quote',
+              'liwc_anal.result.Apostro',
+              'liwc_anal.result.Parenth',
+              'liwc_anal.result.OtherP',
+              'liwc_anal.result.AllPct'
+              ]
+    csv_output(fields, 'poi_ts', d)
+
     # export_net_agg('fed', 'com_t1', 'sbnet_t1', 'bnet_t1')
     # export_net_agg('fed', 'com_t2', 'sbnet_t2', 'bnet_t2')
     # export_net_agg('fed', 'com_t3', 'sbnet_t3', 'bnet_t3')
