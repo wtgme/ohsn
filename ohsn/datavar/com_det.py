@@ -40,18 +40,19 @@ def plot_pdf(ed, rd, yg, mode='degree'):
 
 
 def friendship_community(dbname, colname, label):
-    # fg = gt.load_network(dbname, colname)
-    # pickle.dump(fg, open('data/'+label+'-fg.pick', 'w'))
-    fg = pickle.load(open('data/'+label+'-fg.pick', 'r'))
-    # fgc = gt.giant_component(fg, 'WEAK')
-    # gt.summary(fgc)
-    # pickle.dump(fgc, open('data/'+label+'-fgc.pick', 'w'))
+    fg = gt.load_network(dbname, colname)
+    gt.summary(fg)
+    pickle.dump(fg, open('data/'+label+'-fg.pick', 'w'))
+    # fg = pickle.load(open('data/'+label+'-fg.pick', 'r'))
+    fgc = gt.giant_component(fg, 'WEAK')
+    gt.summary(fgc)
+    pickle.dump(fgc, open('data/'+label+'-fgc.pick', 'w'))
 
-    # fcoms = gt.community(fg)
-    # fclus = fcoms.as_clustering()
-    # gt.summary(fclus)
-    # pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
-    fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
+    fcoms = gt.community(fg)
+    fclus = fcoms.as_clustering()
+    gt.summary(fclus)
+    pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
+    # fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
     layout = fg.layout("fr")
     gt.plot(fg, 'friend_fr.pdf', layout=layout, bbox=(1200, 900))
     gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, bbox=(1200, 900))
@@ -69,9 +70,9 @@ def behavior_community(dbname, colname, label):
     pickle.dump(bg, open('data/'+label+'-bg.pick', 'w'))
     # bg = pickle.load(open('data/'+label+'-bg.pick', 'r'))
 
-    # bgc = gt.giant_component(bg, 'WEAK')
-    # gt.summary(bgc)
-    # pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
+    bgc = gt.giant_component(bg, 'WEAK')
+    gt.summary(bgc)
+    pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
 
     bcoms = gt.community(bg, weighted=True)
     bclus = bcoms.as_clustering()
@@ -80,8 +81,8 @@ def behavior_community(dbname, colname, label):
 
     # bclus = pickle.load(open('data/'+label+'-bcom.pick', 'r'))
     layout = bg.layout("fr")
-    gt.plot(bg, 'behaviour_fr.pdf', layout=layout, bbox=(1200, 900))
-    gt.plot(bclus, 'behaviour_comms_fr.pdf', layout=layout, bbox=(1200, 900))
+    # gt.plot(bg, 'behaviour_fr.pdf', layout=layout, weighted=False, bbox=(1200, 900))
+    gt.plot(bclus, label+'_comms_fr.pdf', layout=layout, bbox=(1200, 900))
 
 
 if __name__ == '__main__':
@@ -91,7 +92,7 @@ if __name__ == '__main__':
     #     behavior_community('fed', 'snet', 'ED')
 
     # friendship_community('fed', 'snet', 'ED')
-    behavior_community('fed', 'sbnet', 'ED')
+    behavior_community('fed', 'sbnet', 'communi')
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')
 

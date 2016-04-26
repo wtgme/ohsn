@@ -7,7 +7,7 @@ Created on 20:05, 07/04/16
 
 from igraph import *
 import db_util as dbt
-import plot_util as plot
+import plot_util as splot
 import pickle
 
 
@@ -79,12 +79,29 @@ def load_beh_network(db_name, collection='None', target_set=None):
     return g
 
 
-def add_attribute(g, dbname, colname, name, field):
+def add_attribute(g, name, dbname, colname, field):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
-    for v in g.vs:
-        v[name] = com.find_one({'id': int(v['name'])}, [field])[field]
-         
+    g.vs[name] = 0.0
+    for x in com.find({field: {'$exists': True}}, ['id', field]):
+        uid = x['id']
+        exist = True
+        try:
+            v = g.vs.find(name=str(uid))
+        except ValueError:
+            exist = False
+        if exist:
+            if '.' in field:
+                levels = field.split('.')
+                t = x.get(levels[0])
+                for level in levels[1:]:
+                    t = t.get(level)
+                    if t is None:
+                        break
+                v[name] = t
+            else:
+                v[name] = x.get(field)
+    return g
 
 
 def giant_component(g, mode):
@@ -107,11 +124,13 @@ def community(g, weighted=False):
 
 
 if __name__ == '__main__':
-    # g = load_beh_network('fed', 'sbnet')
-    # pickle.dump(g, open('data/bg.pick', 'w'))
-    g = pickle.load(open('data/bg.pick', 'r'))
+    g = load_network('fed', 'snet')
+    pickle.dump(g, open('data/fg.pick', 'w'))
+    # g = pickle.load(open('data/bg.pick', 'r'))
+    g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
     for v in g.vs:
-        print v['name']
+        print v['name'], v['gbmi']
+
     # print g.es[g.get_eid('480706562', '386203927')]
     # print g.es[g.get_eid('1092937046', '777200318')]
     # print g.es[g.get_eid('1129480146', '919267472')]
@@ -122,8 +141,8 @@ if __name__ == '__main__':
     # instrength = g.strength(mode='IN', weights='weight')
     # outstrenght = g.strength(mode='OUT', weights='weight')
     # print min(indegree), max(indegree)
-    # plot.pdf_plot_one_data(indegree, 'Indegree')
-    # plot.pdf_plot_one_data(outdegree, 'Outdegree')
+    # splot.pdf_plot_one_data(indegree, 'Indegree')
+    # splot.pdf_plot_one_data(outdegree, 'Outdegree')
 
 
 
