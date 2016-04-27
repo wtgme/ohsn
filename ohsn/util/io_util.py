@@ -8,6 +8,7 @@ Created on 12:59 PM, 3/1/16
 from ohsn.util import db_util as dbt
 import numpy as np
 import os
+import plot_util as splot
 
 
 def read_fields(split=False):

@@ -134,10 +134,10 @@ def plot_bio(dbname, colname, w1, w2):
     # plot.pdf_plot_one_data(gws, 'height', 100, 200)
     # plot.pdf_plot_one_data(cws, 'hw', 20, 200)
     # plot.plot_pdf_mul_data(gws, cws, 25, 200, 'lw', 'hw')
-    plot.plot_pdf_mul_data([gws, cws], ['--bo', '--r^'], 'GCW',  ['GW', 'CW'], True)
+    plot.plot_pdf_mul_data([gws, cws], ['--bo', '--r^'], 'GCW',  ['GBMI', 'CBMI'], True)
 
 
 
 if __name__ == '__main__':
     # ed_bio_sta('fed', 'scom')
-    plot_bio('fed', 'scom', 'gw', 'cw')
+    plot_bio('fed', 'scom', 'gbmi', 'cbmi')

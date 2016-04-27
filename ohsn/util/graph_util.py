@@ -38,7 +38,7 @@ def load_network(db_name, collection='None'):
     Reply: 2;
     Direct Mention: 3;
     undirect mention: 4 '''
-def load_beh_network(db_name, collection='None', target_set=None):
+def load_beh_network(db_name, collection='None'):
     ''' behavior network: directed weighted network'''
     if collection is 'None':
         cols = db_name
@@ -46,36 +46,21 @@ def load_beh_network(db_name, collection='None', target_set=None):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, {}
-    if target_set is None:
-        # for row in cols.find({}):
-        for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
-            n1 = str(row['id0'])
-            n2 = str(row['id1'])
-            if n1 != n2:
-                n1id = name_map.get(n1, len(name_map))
-                name_map[n1] = n1id
-                n2id = name_map.get(n2, len(name_map))
-                name_map[n2] = n2id
-                wt = edges.get((n1id, n2id), 0)
-                edges[(n1id, n2id)] = wt + 1
-    else:
-        # for row in cols.find({}):
-        for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
-            if row['id0'] in target_set and row['id1'] in target_set:
-                n1 = str(row['id0'])
-                n2 = str(row['id1'])
-                # remove self-loops
-                if n1 != n2:
-                    n1id = name_map.get(n1, len(name_map))
-                    name_map[n1] = n1id
-                    n2id = name_map.get(n2, len(name_map))
-                    name_map[n2] = n2id
-                    wt = edges.get((n1id, n2id), 0)
-                    edges[(n1id, n2id)] = wt + 1
+    # for row in cols.find({}):
+    for row in cols.find({'type': {'$in': [2]}}, no_cursor_timeout=True):
+        n1 = str(row['id0'])
+        n2 = str(row['id1'])
+        if n1 != n2:
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            wt = edges.get((n1id, n2id), 0)
+            edges[(n1id, n2id)] = wt + 1
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(edges.keys())
-    g.es["weight"] = edges.values()
+    # g.es["weight"] = edges.values()
     return g
 
 
@@ -124,12 +109,22 @@ def community(g, weighted=False):
 
 
 if __name__ == '__main__':
-    g = load_network('fed', 'snet')
-    pickle.dump(g, open('data/fg.pick', 'w'))
-    # g = pickle.load(open('data/bg.pick', 'r'))
-    g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
-    for v in g.vs:
-        print v['name'], v['gbmi']
+    # g = load_network('fed', 'snet')
+    # pickle.dump(g, open('data/fg.pick', 'w'))
+    # # g = pickle.load(open('data/bg.pick', 'r'))
+    # g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
+    # for v in g.vs:
+    #     print v['name'], v['gbmi']
+
+    g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
+    g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
+    g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
+    g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
+    g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
+    g.es['weight'] = 2.0
+    layout = g.layout("kk")
+    plot(g, layout=layout, bbox=(1200, 900))
+
 
     # print g.es[g.get_eid('480706562', '386203927')]
     # print g.es[g.get_eid('1092937046', '777200318')]

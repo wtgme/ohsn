@@ -358,3 +358,4 @@ def hist2d(x, y, nx, ny):
     plt.show()
 
 if __name__ == '__main__':
+    pass

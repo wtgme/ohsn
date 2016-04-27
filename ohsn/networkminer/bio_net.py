@@ -31,19 +31,20 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 
 def fnet_bmi(dbname, colname, comname, name, field):
-    g = grt.load_network(dbname, colname)
+    # g = grt.load_network(dbname, colname)
+    g = grt.load_beh_network(dbname, colname)
     g = grt.add_attribute(g, name, dbname, comname, field)
-    values = np.array(g.vs['gbmi'])
+    values = np.array(g.vs[name])
     bins = np.array([0.0, 1.0, 15.0, 16, 18.5, 25, 30, 35])
-    color_map = {1: '#FFFFFF', 2: '#ffffb2', 3: '#fed976',
-                 4: '#feb24c', 5: '#fd8d3c', 6: '#fc4e2a',
-                 7: '#e31a1c', 8: '#b10026', 9: '#00441b'}
+    color_map = {1: '#FFFFFF00', 2: '#ffffb2FF', 3: '#fed976FF',
+                 4: '#feb24cFF', 5: '#fd8d3cFF', 6: '#fc4e2aFF',
+                 7: '#e31a1cFF', 8: '#b10026FF', 9: '#00441bFF'}
     inds = np.digitize(values, bins)
     print min(values), max(values), min(inds), max(inds)
-    splt.pdf_plot_one_data(values, 'GBMI', linear_bins=True)
-    # layout = g.layout("fr")
-    # grt.plot(g, 'friend_gbmi.pdf', layout=layout, bbox=(1200, 900),
-    #          vertex_color=[color_map[i] for i in inds])
+    # splt.pdf_plot_one_data(values, 'GBMI', linear_bins=True)
+    layout = g.layout("fr")
+    grt.plot(g, 'reply'+name+'.pdf', layout=layout, bbox=(1200, 900),
+             vertex_color=[grt.color_name_to_rgba(color_map[i]) for i in inds])
 
 
 def frienship(dbname, colname, comname):
@@ -86,5 +87,5 @@ def behaviour(dbname, colname):
 
 if __name__ == '__main__':
     # frienship('fed', 'snet', 'scom')
-    fnet_bmi('fed', 'snet', 'scom', 'gbmi', 'text_anal.gbmi.value')
+    fnet_bmi('fed', 'sbnet', 'scom', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
