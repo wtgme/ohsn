@@ -8,7 +8,7 @@ The util for statistics
 """
 import numpy as np
 import math
-from scipy.stats import ks_2samp
+import scipy.stats as stats
 
 
 def z_test(list1, list2):
@@ -23,7 +23,7 @@ def z_test(list1, list2):
 
 
 def ks_test(list1, list2):
-    d, p = ks_2samp(list1, list2)
+    d, p = stats.ks_2samp(list1, list2)
     return len(list1), len(list2), round(d, 3), round(p, 4)
 
 
@@ -35,6 +35,10 @@ def comm_stat(lista):
 def mode(lst):
     # find the mode of a list
     return max(set(lst), key=lst.count)
+
+def tau_coef(x1, x2):
+    tau, p_value = stats.kendalltau(x1, x2)
+    return (tau, p_value)
 
 
 def pearson(x, y):
@@ -53,6 +57,10 @@ def pearson(x, y):
         ydiff2 += ydiff*ydiff
     return diffprod/math.sqrt(xdiff2*ydiff2)
 
-
-# print z_test([1,2,6,7,8,10,3,4,5,9], [1,2,3,4,5,6,7,8,9,10])
-# print ks_test([1,2,6,7,8,10,3,4,5,9], [1,2,3,4,5,6,7,8,9,10])
+if __name__ == '__main__':
+    l1 = [1,2,6,7,8,10,3,4,5,9]
+    l2 = [1,2,3,4,5,6,7,8,9,10]
+    print z_test(l1, l2)
+    print ks_test(l1, l2)
+    print pearson(l1, l2)
+    print stats.pearsonr(l1, l2)

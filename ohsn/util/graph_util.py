@@ -9,6 +9,7 @@ from igraph import *
 import db_util as dbt
 import plot_util as splot
 import pickle
+from random import randint
 
 
 def load_network(db_name, collection='None'):
@@ -30,6 +31,7 @@ def load_network(db_name, collection='None'):
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(list(edges))
+    g.es["weight"] = 1
     return g
 
 
@@ -47,7 +49,7 @@ def load_beh_network(db_name, collection='None'):
         cols = db[collection]
     name_map, edges = {}, {}
     # for row in cols.find({}):
-    for row in cols.find({'type': {'$in': [2]}}, no_cursor_timeout=True):
+    for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:
@@ -60,7 +62,7 @@ def load_beh_network(db_name, collection='None'):
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(edges.keys())
-    # g.es["weight"] = edges.values()
+    g.es["weight"] = edges.values()
     return g
 
 
@@ -95,7 +97,20 @@ def giant_component(g, mode):
     return com.giant()
 
 
-def community(g, weighted=False):
+def optimal_community(g, weighted=False):
+    '''
+    :param g:
+    :param weighted:
+    :return:
+    membership indexes from 0
+    '''
+    if weighted:
+        return g.community_optimal_modularity(weights='weight')
+    else:
+        return g.community_optimal_modularity()
+
+
+def fast_community(g, weighted=False):
     '''Only for Undirected graph'''
     if g.is_directed():
         if weighted:
@@ -108,6 +123,48 @@ def community(g, weighted=False):
         return g.community_fastgreedy()
 
 
+def comm_plot(g, clusters, membership=None):
+    '''
+    See: http://stackoverflow.com/questions/23184306/draw-network-and-grouped-vertices-of-the-same-community-or-partition/23185529#23185529
+    '''
+    if membership is not None:
+        gcopy = g.copy()
+        edges = []
+        edges_colors = []
+        for edge in g.es():
+            if membership[edge.tuple[0]] != membership[edge.tuple[1]]:
+                edges.append(edge)
+                edges_colors.append("gray")
+            else:
+                edges_colors.append("black")
+        gcopy.delete_edges(edges)
+        layout = gcopy.layout("kk")
+        g.es["color"] = edges_colors
+    else:
+        layout = g.layout("kk")
+        g.es["color"] = "gray"
+    visual_style = {}
+    visual_style["vertex_label_dist"] = 0
+    visual_style["vertex_shape"] = "circle"
+    visual_style["edge_color"] = g.es["color"]
+    # visual_style["bbox"] = (4000, 2500)
+    # visual_style["vertex_size"] = 30
+    visual_style["layout"] = layout
+    visual_style["bbox"] = (1024, 768)
+    # visual_style["margin"] = 40
+    # visual_style["edge_label"] = g.es["weight"]
+    # for vertex in g.vs():
+    #     vertex["label"] = vertex.index
+    # if membership is not None:
+    #     pal = ClusterColoringPalette(n=max(membership)+1)
+    #     # for i in range(0, max(membership)+1):
+    #     #     colors.append('%06X' % randint(0, 0xFFFFFF))
+    #     for vertex in g.vs():
+    #         vertex["color"] = pal.get([membership[vertex.index]])
+    #     visual_style["vertex_color"] = g.vs["color"]
+    plot(clusters, **visual_style)
+
+
 if __name__ == '__main__':
     # g = load_network('fed', 'snet')
     # pickle.dump(g, open('data/fg.pick', 'w'))
@@ -115,6 +172,7 @@ if __name__ == '__main__':
     # g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
     # for v in g.vs:
     #     print v['name'], v['gbmi']
+
 
     g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
     g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]

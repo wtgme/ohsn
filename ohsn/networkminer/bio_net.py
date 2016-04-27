@@ -30,7 +30,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     return rightMin + (valueScaled * rightSpan)
 
 
-def fnet_bmi(dbname, colname, comname, name, field):
+def fnet_bmi(dbname, colname, comname, typename, name, field):
     # g = grt.load_network(dbname, colname)
     g = grt.load_beh_network(dbname, colname)
     g = grt.add_attribute(g, name, dbname, comname, field)
@@ -43,7 +43,7 @@ def fnet_bmi(dbname, colname, comname, name, field):
     print min(values), max(values), min(inds), max(inds)
     # splt.pdf_plot_one_data(values, 'GBMI', linear_bins=True)
     layout = g.layout("fr")
-    grt.plot(g, 'reply'+name+'.pdf', layout=layout, bbox=(1200, 900),
+    grt.plot(g, typename+'_'+name+'.pdf', layout=layout, bbox=(1200, 900),
              vertex_color=[grt.color_name_to_rgba(color_map[i]) for i in inds])
 
 
@@ -87,5 +87,5 @@ def behaviour(dbname, colname):
 
 if __name__ == '__main__':
     # frienship('fed', 'snet', 'scom')
-    fnet_bmi('fed', 'sbnet', 'scom', 'gbmi', 'text_anal.gbmi.value')
+    fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')

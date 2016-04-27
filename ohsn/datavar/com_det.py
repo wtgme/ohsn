@@ -48,14 +48,15 @@ def friendship_community(dbname, colname, label):
     gt.summary(fgc)
     pickle.dump(fgc, open('data/'+label+'-fgc.pick', 'w'))
 
-    fcoms = gt.community(fg)
+    fcoms = gt.fast_community(fg)
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
     pickle.dump(fclus, open('data/'+label+'-fcom.pick', 'w'))
     # fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
-    layout = fg.layout("fr")
-    gt.plot(fg, 'friend_fr.pdf', layout=layout, bbox=(1200, 900))
-    gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, bbox=(1200, 900))
+    # layout = fg.layout("kk")
+    # gt.plot(fg, 'friend_fr.pdf', layout=layout, bbox=(1200, 900))
+    # gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, mark_groups=True, bbox=(1200, 900))
+    gt.comm_plot(fg, fclus, fclus.membership)
 
 
 def behavior_community(dbname, colname, label):
@@ -74,13 +75,13 @@ def behavior_community(dbname, colname, label):
     gt.summary(bgc)
     pickle.dump(bgc, open('data/'+label+'-bgc.pick', 'w'))
 
-    bcoms = gt.community(bg, weighted=True)
+    bcoms = gt.fast_community(bg, weighted=True)
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
     pickle.dump(bclus, open('data/'+label+'-bcom.pick', 'w'))
 
     # bclus = pickle.load(open('data/'+label+'-bcom.pick', 'r'))
-    layout = bg.layout("fr")
+    layout = bg.layout("kk")
     # gt.plot(bg, 'behaviour_fr.pdf', layout=layout, weighted=False, bbox=(1200, 900))
     gt.plot(bclus, label+'_comms_fr.pdf', layout=layout, bbox=(1200, 900))
 
@@ -91,8 +92,8 @@ if __name__ == '__main__':
     # elif sys.argv[1] == 'behavior':
     #     behavior_community('fed', 'snet', 'ED')
 
-    # friendship_community('fed', 'snet', 'ED')
-    behavior_community('fed', 'sbnet', 'communi')
+    friendship_community('fed', 'snet', 'ED')
+    # behavior_community('fed', 'sbnet', 'communi')
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')
 
