@@ -201,11 +201,13 @@ def pdf_plot_one_data(data, name, linear_bins=True, title=None, xmin=None, xmax=
     # plt.gcf()
     # data = outstrength
     if not xmax:
-        xmax = max(data)
+        xmax = np.percentile(data, 97.5)
+        # xmax = max(data)
     if not xmin:
-        xmin = min(data)
-    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
-    plt.plot(list_x, list_y, 'k+', label='Raw '+name)
+        xmin = np.percentile(data, 2.5)
+        # xmin = min(data)
+    # list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
+    # plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
@@ -354,3 +356,5 @@ def hist2d(x, y, nx, ny):
     H = ax.hist2d(x, y, bins=[nx, ny])
     fig.colorbar(H[3], ax=ax)
     plt.show()
+
+if __name__ == '__main__':
