@@ -5,12 +5,13 @@ Created on 16:25, 16/02/16
 @author: wt
 """
 
-import networkx as nx
+from networkx import *
 from ohsn.util import db_util as dbt
+import math
 
 
 def load_network(db_name, collection='None'):
-    DG = nx.DiGraph()
+    DG = DiGraph()
     if collection is 'None':
         cols = db_name
     else:
@@ -20,55 +21,35 @@ def load_network(db_name, collection='None'):
         n1 = row['user']
         n2 = row['follower']
         DG.add_edge(n1, n2)
-        # weightv = 1
-        # if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
-        #     DG[n1][n2]['weight'] += weightv
-        # else:
-        #     DG.add_edge(n1, n2, weight=weightv)
     return DG
 
 
-def load_beh_network(db_name, collection):
-    DG = nx.Graph()
-    db = dbt.db_connect_no_auth(db_name)
-    cols = db[collection]
-    for row in cols.find({'type': {'$in': [1, 2, 3]}}, no_cursor_timeout=True):
-        n1 = row['id0']
-        n2 = row['id1']
-        weightv = 1
-        if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
-            DG[n1][n2]['weight'] += weightv
-        else:
-            DG.add_edge(n1, n2, weight=weightv)
-    return DG
-
-
+def load_behavior_network(db_name, collection='None', btype='communication'):
     '''Tweet: 0
     Retweet: 1;
     Reply: 2;
     Direct Mention: 3;
     undirect mention: 4 '''
-
-def load_behavior_network(db_name, collection='None'):
-    DG = nx.DiGraph()
+    btype_dic = {'retweet': [1], 'reply': [2], 'mention': [3], 'communication': [2, 3]}
+    DG = DiGraph()
     if collection is 'None':
         cols = db_name
     else:
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
-    for row in cols.find({"type": {'$in': [1, 2, 3]}}):
-        if row['type'] == 1:
+    for row in cols.find({"type": {'$in': btype_dic[btype]}}):
+        if btype is 'retweet':
             n2 = row['id0']
             n1 = row['id1']
         else:
             n1 = row['id0']
             n2 = row['id1']
-
-        weightv = 1
-        if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
-            DG[n1][n2]['weight'] += weightv
-        else:
-            DG.add_edge(n1, n2, weight=weightv)
+        if n1 != n2:
+            weightv = 1
+            if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
+                DG[n1][n2]['weight'] += weightv
+            else:
+                DG.add_edge(n1, n2, weight=weightv)
     return DG
 
 
@@ -99,6 +80,23 @@ def size_net(DG):
     return (DG.number_of_nodes(), DG.number_of_edges())
 
 
+def diffusion_centrality(BDG, FDG, p=0.2, T=3):
+    length = nx.all_pairs_shortest_path_length(FDG, T)
+    dc_dict = {}
+    for node in BDG.nodes():
+        dcv, ngv = 0.0, 0.0
+        for hearer in BDG.successors(node):
+            t = length.get(node, {hearer: -1}).get(hearer, -1)
+            if t != -1 and t <= T:
+                dcv += BDG[node][hearer]['weight']*math.pow(p, t)
+        for sayer in BDG.predecessors(node):
+            t = length.get(sayer, {node: -1}).get(node, -1)
+            if t != -1 and t <= T:
+                ngv += BDG[sayer][node]['weight']*math.pow(p, t)
+        dc_dict[node] = (dcv, ngv)
+    return dc_dict
+
+
 def net_statis(DG):
     print 'Nodes in network:', DG.number_of_nodes()
     print 'Edges in network:', DG.number_of_edges()
@@ -109,28 +107,7 @@ def net_statis(DG):
 
 
 def girvan_newman(G, weight=None):
-    """Find communities in graph using Girvan–Newman method.
-
-    Parameters
-    ----------
-    G : NetworkX graph
-
-    weight : string, optional (default=None)
-       Edge data key corresponding to the edge weight.
-
-    Returns
-    -------
-    List of tuples which contains the clusters of nodes.
-
-    Examples
-    --------
-    >>> G = nx.path_graph(10)
-    >>> comp = girvan_newman(G)
-    >>> comp[0]
-    ([0, 1, 2, 3, 4], [8, 9, 5, 6, 7])
-
-    Notes
-    -----
+    """
     The Girvan–Newman algorithm detects communities by progressively removing
     edges from the original graph. Algorithm removes edge with the highest
     betweenness centrality at each step. As the graph breaks down into pieces,
@@ -168,3 +145,8 @@ def _remove_max_edge(G, weight=None):
         for edge in list(G.edges()):
             if betweenness[edge] == max_value:
                 G.remove_edge(*edge)
+
+
+if __name__ == '__main__':
+    g = load_behavior_network('fed', 'sbnet', 'retweet')
+    print (g.number_of_nodes()), g.number_of_edges()

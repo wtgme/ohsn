@@ -9,7 +9,6 @@ import ohsn.util.graph_util as gt
 from ohsn.util import db_util as dbt
 import ohsn.util.plot_util as plot
 import pickle
-import sys
 
 
 def core_ed():

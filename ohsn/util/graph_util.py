@@ -9,11 +9,13 @@ from igraph import *
 import db_util as dbt
 import plot_util as splot
 import pickle
-from random import randint
 
 
 def load_network(db_name, collection='None'):
-    ''' Friendship network: directed network'''
+    '''
+    Friendship network: directed network
+    Edge: user---------> follower
+    '''
     if collection is 'None':
         cols = db_name
     else:
@@ -35,13 +37,18 @@ def load_network(db_name, collection='None'):
     return g
 
 
-    '''Tweet: 0
+def load_beh_network(db_name, collection='None', btype='communication'):
+    '''
+    behavior network: directed weighted network
+    Tweet: 0
     Retweet: 1;
     Reply: 2;
     Direct Mention: 3;
-    undirect mention: 4 '''
-def load_beh_network(db_name, collection='None'):
-    ''' behavior network: directed weighted network'''
+    undirect mention: 4
+    Reply and mention Edge: u0 -----------> u1
+    Retweet Edge: u1 ----------> u0
+    '''
+    btype_dic = {'retweet': [1], 'reply': [2], 'mention': [3], 'communication': [2, 3]}
     if collection is 'None':
         cols = db_name
     else:
@@ -49,9 +56,13 @@ def load_beh_network(db_name, collection='None'):
         cols = db[collection]
     name_map, edges = {}, {}
     # for row in cols.find({}):
-    for row in cols.find({'type': {'$in': [2, 3]}}, no_cursor_timeout=True):
-        n1 = str(row['id0'])
-        n2 = str(row['id1'])
+    for row in cols.find({'type': {'$in': btype_dic[btype]}}, no_cursor_timeout=True):
+        if btype is 'retweet':
+            n2 = str(row['id0'])
+            n1 = str(row['id1'])
+        else:
+            n1 = str(row['id0'])
+            n2 = str(row['id1'])
         if n1 != n2:
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
@@ -166,22 +177,23 @@ def comm_plot(g, clusters, membership=None):
 
 
 if __name__ == '__main__':
-    # g = load_network('fed', 'snet')
+    g = load_beh_network('fed', 'sbnet', 'retweet')
+    summary(g)
     # pickle.dump(g, open('data/fg.pick', 'w'))
-    # # g = pickle.load(open('data/bg.pick', 'r'))
+    # g = pickle.load(open('data/bg.pick', 'r'))
     # g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
     # for v in g.vs:
     #     print v['name'], v['gbmi']
 
 
-    g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
-    g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
-    g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
-    g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
-    g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
-    g.es['weight'] = 2.0
-    layout = g.layout("kk")
-    plot(g, layout=layout, bbox=(1200, 900))
+    # g = Graph([(0,1), (0,2), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)])
+    # g.vs["name"] = ["Alice", "Bob", "Claire", "Dennis", "Esther", "Frank", "George"]
+    # g.vs["age"] = [25, 31, 18, 47, 22, 23, 50]
+    # g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
+    # g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
+    # g.es['weight'] = 2.0
+    # layout = g.layout("kk")
+    # plot(g, layout=layout, bbox=(1200, 900))
 
 
     # print g.es[g.get_eid('480706562', '386203927')]
