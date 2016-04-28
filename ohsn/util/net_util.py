@@ -148,5 +148,10 @@ def _remove_max_edge(G, weight=None):
 
 
 if __name__ == '__main__':
-    g = load_behavior_network('fed', 'sbnet', 'retweet')
+    g = load_behavior_network('fed', 'sbnet_t1', 'retweet')
     print (g.number_of_nodes()), g.number_of_edges()
+    print g.in_degree()
+    print g.out_degree()
+    print g.in_degree(weight='weight')
+    print sum(g.in_degree().values())
+    print sum(g.in_degree(weight='weight').values())

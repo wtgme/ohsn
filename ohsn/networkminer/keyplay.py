@@ -17,17 +17,17 @@ import ohsn.util.plot_util as plot
 import math
 
 
-def extract_friend_subnetwork(db_name):
+def extract_friend_subnetwork(db_name, comname, fnetname, sfnetname):
     db = dbt.db_connect_no_auth(db_name)
-    poi = db['com']
-    net = db['net']
-    tem = db['snet']  # subset of friendship network
+    poi = db[comname]
+    net = db[fnetname]
+    tem = db[sfnetname]  # subset of friendship network
     tem.create_index([("user", pymongo.ASCENDING),
                     ("follower", pymongo.ASCENDING)],
                     unique=True)
     # index = 0
     userl1 = set([])
-    for user in poi.find({'level': 1}, ['id']):
+    for user in poi.find({}, ['id']):
         # print user['id']
         userl1.add(user['id'])
     for user in userl1:
@@ -125,8 +125,12 @@ if __name__ == '__main__':
 
     db_name = 'fed'
     # tweet_ret_times('fed')
-    # extract_friend_subnetwork(db_name)
-    extract_behavior_subnetwork(db_name, 'scom', 'bnet', 'sbnet')
+    extract_friend_subnetwork(db_name, 'com_t1', 'snet', 'snet_t1')
+    extract_friend_subnetwork(db_name, 'com_t2', 'snet', 'snet_t2')
+    extract_friend_subnetwork(db_name, 'com_t3', 'snet', 'snet_t3')
+    extract_friend_subnetwork(db_name, 'com_t4', 'snet', 'snet_t4')
+    extract_friend_subnetwork(db_name, 'com_t5', 'snet', 'snet_t5')
+    # extract_behavior_subnetwork(db_name, 'scom', 'bnet', 'sbnet')
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 2)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 3)
     # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 4)
