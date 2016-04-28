@@ -32,7 +32,7 @@ def network_stat(dbname, comname, fnetname, bnetname):
     goss_all = sum([diff_cen[item][1] for item in diff_cen])
 
     for v in G.nodes():
-        values = com.find_one({'id': v}, ['id', 'net_anal'])['net_anal']
+        values = com.find_one({'id': v}, ['id', 'net_anal']).get('net_anal', {'mined': True})
         net_sta = {}
         net_sta['node_no'] = G.number_of_nodes()
         net_sta['indegree'] = G.in_degree(v)
@@ -81,7 +81,7 @@ def beh_net_stat(dbname, comname, bnetname, btype):
     kt_cen_weight_all = sum(kt_cen_weight.values())
 
     for v in G.nodes():
-        values = com.find_one({'id': v}, ['id', 'net_anal'])['net_anal']
+        values = com.find_one({'id': v}, ['id', 'net_anal']).get('net_anal', {'mined': True})
         net_sta = {}
         net_sta['node_no'] = G.number_of_nodes()
         net_sta['indegree'] = G.in_degree(v)

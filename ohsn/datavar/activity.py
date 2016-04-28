@@ -232,8 +232,8 @@ if __name__ == '__main__':
     #     else:
     #         print key
 
-    yearsplit = timeline_split('fed', 'stimeline')
-    pickle.dump(yearsplit, open('data/tyear.pick', 'w'))
-    yearsplit = pickle.load(open('data/tyear.pick', 'r'))
+    yearsplit = timeline_split('tyg', 'timeline')
+    pickle.dump(yearsplit, open('data/ygtyear.pick', 'w'))
+    yearsplit = pickle.load(open('data/ygtyear.pick', 'r'))
     print yearsplit.keys()
 

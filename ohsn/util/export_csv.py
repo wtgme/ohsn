@@ -15,12 +15,13 @@ def csv_output(data, fields, file_name):
         writer = csv.writer(csv_file)
         writer.writerow(fields)
         for x in data:
+            # print x
             values = []
             for field in fields:
-                print field
+                # print field
                 if '.' in field:
                     levels = field.split('.')
-                    t = x.get(levels[0])
+                    t = x.get(levels[0], {})
                     for level in levels[1:]:
                         # print t
                         t = t.get(level)
@@ -74,13 +75,14 @@ def export_net_agg(dbname, colname, file_name):
 if __name__ == '__main__':
     fields = iot.read_fields()
     d = export_poi('fed', 'scom')
-    # d1 = export_poi('fed', 'com_t1', 1)
-    # d2 = export_poi('fed', 'com_t2', 2)
-    # d3 = export_poi('fed', 'com_t3', 3)
-    # d4 = export_poi('fed', 'com_t4', 4)
-    # d5 = export_poi('fed', 'com_t5', 5)
-    # d = d1 + d2 + d3 + d4 + d5
     csv_output(d, fields, 'poi')
+    d1 = export_poi('fed', 'com_t1', 1)
+    d2 = export_poi('fed', 'com_t2', 2)
+    d3 = export_poi('fed', 'com_t3', 3)
+    d4 = export_poi('fed', 'com_t4', 4)
+    d5 = export_poi('fed', 'com_t5', 5)
+    d = d1 + d2 + d3 + d4 + d5
+    csv_output(d, fields, 'poi_ts')
 
     # export_net_agg('fed', 'com_t1', 'sbnet_t1', 'bnet_t1')
     # export_net_agg('fed', 'com_t2', 'sbnet_t2', 'bnet_t2')
