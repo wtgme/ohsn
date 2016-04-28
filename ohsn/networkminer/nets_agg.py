@@ -112,7 +112,7 @@ def beh_net_stat(dbname, comname, bnetname, btype):
 
 
 if __name__ == '__main__':
-    dbname = 'fed'
+    dbname = 'tyg'
     network_stat(dbname, 'scom', 'snet', 'sbnet')
     for btype in ['retweet', 'reply', 'mention', 'communication']:
         beh_net_stat(dbname, 'scom', 'sbnet', btype)

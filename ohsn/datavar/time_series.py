@@ -44,6 +44,18 @@ def transform_data(dbname, colname, newdbname, newcolname, timeend):
         if ts <= timeend:
             timen.insert(status)
 
+def transform_net_data(dbname, colname, newdbname, newcolname):
+    dbo = dbt.db_connect_no_auth(dbname)
+    neto = dbo[colname]
+    dbn = dbt.db_connect_no_auth(newdbname)
+    netn = dbn[newcolname]
+    netn.create_index([("user", pymongo.ASCENDING),
+                    ("follower", pymongo.ASCENDING),
+                     ("type", pymongo.ASCENDING)],
+                            unique=True)
+    for status in neto.find({'scraped_times':1}):
+        netn.insert(status)
+
 
 def process(dbname, colname, range, index, filename):
     yearsplit = pickle.load(open(filename, 'r'))
@@ -82,18 +94,23 @@ def process(dbname, colname, range, index, filename):
 
 
 if __name__ == '__main__':
+    dbname, tmpcom, tmptimeline, tmpbnet = 'tyg', 'com', 'timeline', 'bnet'
+    liwcp.process_db(dbname, tmpcom, tmptimeline)
+    netp.process_db(dbname, tmpcom, tmptimeline, tmpbnet, 10000)
+    textp.process_poi(dbname, tmpcom)
     # process('fed', 'stimeline', [2009, 2010, 2011], 1)
     # process('fed', 'stimeline', [2012], 2)
     # process('fed', 'stimeline', [2013], 3)
     # process('fed', 'stimeline', [2014], 4)
     # process('fed', 'stimeline', [2015, 2016], 5)
 
-    process('tyg', 'timeline', [2009, 2010, 2011], 1, 'data/ygtyear.pick')
-    process('tyg', 'timeline', [2012], 2, 'data/ygtyear.pick')
-    process('tyg', 'timeline', [2013], 3, 'data/ygtyear.pick')
-    process('tyg', 'timeline', [2014], 4, 'data/ygtyear.pick')
-    process('tyg', 'timeline', [2015, 2016], 5, 'data/ygtyear.pick')
+    # process('tyg', 'timeline', [2009, 2010, 2011], 1, 'data/ygtyear.pick')
+    # process('tyg', 'timeline', [2012], 2, 'data/ygtyear.pick')
+    # process('tyg', 'timeline', [2013], 3, 'data/ygtyear.pick')
+    # process('tyg', 'timeline', [2014], 4, 'data/ygtyear.pick')
+    # process('tyg', 'timeline', [2015, 2016], 5, 'data/ygtyear.pick')
 
+    # transform_net_data('dyg', 'net', 'tyg', 'net')
     # tlist = timeline('fed', 'stimeline')
     # transform_data('dyg', 'timeline', 'tyg', 'timeline', max(tlist))
 
