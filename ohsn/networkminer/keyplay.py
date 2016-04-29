@@ -125,16 +125,18 @@ if __name__ == '__main__':
 
     db_name = 'tyg'
     # tweet_ret_times('fed')
+    # extract_friend_subnetwork(db_name, 'com', 'net', 'snet')
+    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet')
     # extract_friend_subnetwork(db_name, 'com_t1', 'net', 'snet_t1')
     # extract_friend_subnetwork(db_name, 'com_t2', 'net', 'snet_t2')
     # extract_friend_subnetwork(db_name, 'com_t3', 'net', 'snet_t3')
     # extract_friend_subnetwork(db_name, 'com_t4', 'net', 'snet_t4')
     # extract_friend_subnetwork(db_name, 'com_t5', 'net', 'snet_t5')
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 1)
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 2)
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 3)
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 4)
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 5)
+    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 1)
+    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 2)
+    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 3)
+    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 4)
+    # extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet', 5)
 
     # print 'original network'
     # FDG = net_util.load_network(db_name, 'snet')

@@ -113,12 +113,12 @@ def beh_net_stat(dbname, comname, bnetname, btype):
 
 if __name__ == '__main__':
     dbname = 'tyg'
-    network_stat(dbname, 'scom', 'snet', 'sbnet')
+    network_stat(dbname, 'com', 'snet', 'sbnet')
     for btype in ['retweet', 'reply', 'mention', 'communication']:
-        beh_net_stat(dbname, 'scom', 'sbnet', btype)
-    # for i in range(1, 6):
-    #     comname, bnetname, netname = 'com_t'+ str(i), 'sbnet_t'+str(i), 'snet_t'+str(i)
-    #     print dbname, comname, bnetname, netname
-    #     network_stat(dbname, comname, netname, bnetname)
-    #     for btype in ['retweet', 'reply', 'mention', 'communication']:
-    #         beh_net_stat(dbname, comname, bnetname, btype)
+        beh_net_stat(dbname, 'com', 'sbnet', btype)
+    for i in range(1, 6):
+        comname, bnetname, netname = 'com_t'+ str(i), 'sbnet_t'+str(i), 'snet_t'+str(i)
+        print dbname, comname, bnetname, netname
+        network_stat(dbname, comname, netname, bnetname)
+        for btype in ['retweet', 'reply', 'mention', 'communication']:
+            beh_net_stat(dbname, comname, bnetname, btype)
