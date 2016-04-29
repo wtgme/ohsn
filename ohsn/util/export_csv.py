@@ -74,8 +74,8 @@ def export_net_agg(dbname, colname, file_name):
 
 if __name__ == '__main__':
     fields = iot.read_fields()
-    dbname = 'fed'
-    d = export_poi(dbname, 'scom')
+    dbname = 'tyg'
+    d = export_poi(dbname, 'com')
     csv_output(d, fields, 'yg_poi')
     d1 = export_poi(dbname, 'com_t1', 1)
     d2 = export_poi(dbname, 'com_t2', 2)
