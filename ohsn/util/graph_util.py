@@ -22,7 +22,7 @@ def load_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, set()
-    for row in cols.find({}):
+    for row in cols.find():
         n1 = str(row['user'])
         n2 = str(row['follower'])
         n1id = name_map.get(n1, len(name_map))

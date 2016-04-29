@@ -8,7 +8,8 @@ Created on 16:54, 21/04/16
     processing with LIWC, behaviour network extaction, and bio information extraction
 3. keyplay.py calculte centrality
 4. description_minier.py calculate cbmi and gbmi
-6. nets_agg.py calculate network statistics
+5. nets_agg.py calculate network statistics
+6. friend_pro.py calcuate how many friends are ED
 5. export_csv.py output files
 """
 

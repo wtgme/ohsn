@@ -91,7 +91,7 @@ if __name__ == '__main__':
     # elif sys.argv[1] == 'behavior':
     #     behavior_community('fed', 'snet', 'ED')
 
-    friendship_community('fed', 'snet', 'ED')
+    # friendship_community('fed', 'snet', 'ED')
     # behavior_community('fed', 'sbnet', 'communi')
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')
@@ -139,13 +139,12 @@ if __name__ == '__main__':
     # plot_pdf(ed, rd, yg, 'degree')
 
     '''Plot ED RD YG'''
-    # ed = gt.load_network('sed', 'net')
-    # rd = gt.load_network('srd', 'net')
-    # # rd = rdfg.subgraph(rdf[1])
-    # yg = gt.load_network('syg', 'net')
-    # plot_pdf(ed, rd, yg, 'indegree')
-    # plot_pdf(ed, rd, yg, 'outdegree')
-    # plot_pdf(ed, rd, yg, 'degree')
+    ed = gt.load_network('ded', 'net')
+    rd = gt.load_network('drd', 'net')
+    yg = gt.load_network('dyg', 'net')
+    plot_pdf(ed, rd, yg, 'indegree')
+    plot_pdf(ed, rd, yg, 'outdegree')
+    plot_pdf(ed, rd, yg, 'degree')
 
 
 

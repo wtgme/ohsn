@@ -234,16 +234,20 @@ def pdf_plot_one_data(data, name, linear_bins=True, title=None, xmin=None, xmax=
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, min_x=None, max_x=None, savefile=None):
+def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, central=True, min_x=None, max_x=None, savefile=None):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
     if not max_x:
-        max_x = max([np.percentile(lista, 97.5) for lista in lists])
-        # max_x = max([max(lista) for lista in lists])
+        if central:
+            max_x = max([np.percentile(lista, 97.5) for lista in lists])
+        else:
+            max_x = max([max(lista) for lista in lists])
     if not min_x:
-        min_x = min([np.percentile(lista, 2.5) for lista in lists])
-        # min_x = min([min(lista) for lista in lists])
+        if central:
+            min_x = min([np.percentile(lista, 2.5) for lista in lists])
+        else:
+            min_x = min([min(lista) for lista in lists])
 
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
