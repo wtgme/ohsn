@@ -42,22 +42,24 @@ def gc_stat(dbname, colname):
     # nt.net_statis(UGC)
     return UGC
 
-print '----------------------'
-yg = gc_stat('yg', 'snet')
+if __name__ == '__main__':
 
-print '----------------------'
-rd = gc_stat('rd', 'snet')
+    print '----------------------'
+    yg = gc_stat('yg', 'snet')
 
-print '----------------------'
-ed = gc_stat('fed', 'snet')
+    print '----------------------'
+    rd = gc_stat('rd', 'snet')
+
+    print '----------------------'
+    ed = gc_stat('fed', 'snet')
 
 
-# eDG = nt.load_network('fed', 'snet')
-ydgs = sorted(nx.degree(yg).values(),reverse=True)
-rdgs = sorted(nx.degree(rd).values(),reverse=True)
-edgs = sorted(nx.degree(ed).values(),reverse=True)
+    # eDG = nt.load_network('fed', 'snet')
+    ydgs = sorted(nx.degree(yg).values(), reverse=True)
+    rdgs = sorted(nx.degree(rd).values(), reverse=True)
+    edgs = sorted(nx.degree(ed).values(), reverse=True)
 
-plot.plot_pdf_mul_data([ydgs, rdgs, edgs], ['--bo', '--r^', '--ks'], 'Degree',  labels=['YG', 'RD', 'ED'], linear_bins=False)
+    plot.plot_pdf_mul_data([ydgs, rdgs, edgs], ['--bo', '--r^', '--ks'], 'Degree',  labels=['YG', 'RD', 'ED'], linear_bins=False)
 
 
 
