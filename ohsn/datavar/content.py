@@ -17,26 +17,34 @@ import pickle
 def beh_stat(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[colname]
-    # count_sum = timeline.count()
     tweet, retweet, dmention, udmention, reply, count_sum = 0, 0, 0, 0, 0, 0
-    for tweet in timeline.find({}):
+    for status in timeline.find({}):
         count_sum += 1
-        if len(tweet['entities']['user_mentions']) < 1:
-            tweet += 1
+        if 'retweeted_status' in status:
+            retweet += 1
         else:
+            tweet += 1
+        if len(status['entities']['user_mentions']) > 0:
             udmention_list = []
-            if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
-                for udmention in tweet['retweeted_status']['entities']['user_mentions']:
-                    udmention_list.append(udmention['id'])
-            for mention in tweet['entities']['user_mentions']:
-                if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
-                    reply += 1
-                elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
-                    retweet += 1
-                elif mention['id'] in udmention_list:  # mentions in Retweet content
-                    udmention += 1
-                else:  # original mentions
-                    dmention += 1
+            replyf, udmentionf, dmentionf = False, False, False
+            # get user mentions in retweet
+            if ('retweeted_status' in status) and len(status['retweeted_status']['entities']['user_mentions'])>0:
+                for udmention_item in status['retweeted_status']['entities']['user_mentions']:
+                    udmention_list.append(udmention_item['id'])
+
+            for mention in status['entities']['user_mentions']:
+                if ('in_reply_to_user_id' in status) and (mention['id'] == status['in_reply_to_user_id']): # reply
+                    replyf = True
+                elif mention['id'] in udmention_list:  # mentions in Retweet content; undirected mention
+                    udmentionf = True
+                else:  # original mentions; directed mention
+                    dmentionf = True
+            if replyf:
+                reply += 1
+            if udmentionf:
+                udmention += 1
+            if dmentionf:
+                dmention += 1
     print tweet, retweet, dmention, udmention, reply, count_sum
     print float(tweet)/count_sum, float(retweet)/count_sum, float(dmention)/count_sum, float(udmention)/count_sum, float(reply)/count_sum
 
@@ -83,7 +91,7 @@ def most_entities(dbname, colname):
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    beh_stat('fed', 'stimeline')
+    beh_stat('rd', 'times')
     # beh_stat('srd', 'timeline')
     # beh_stat('syg', 'timeline')
 
