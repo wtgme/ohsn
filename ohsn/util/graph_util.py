@@ -108,6 +108,13 @@ def giant_component(g, mode):
     return com.giant()
 
 
+def betweenness_community(g):
+    '''
+    This supports directed and weighted graph
+    '''
+    return g.community_edge_betweenness(directed=True, weights='weight')
+
+
 def optimal_community(g, weighted=False):
     '''
     :param g:

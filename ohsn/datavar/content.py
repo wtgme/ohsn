@@ -17,21 +17,28 @@ import pickle
 def beh_stat(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[colname]
-    count_sum = timeline.count()
-    tweet, retweet, mention, reply = 0, 0, 0, 0
-    for status in timeline.find({}):
-        if 'retweeted_status' in status:
-            retweet += 1
-        else:
+    # count_sum = timeline.count()
+    tweet, retweet, dmention, udmention, reply, count_sum = 0, 0, 0, 0, 0, 0
+    for tweet in timeline.find({}):
+        count_sum += 1
+        if len(tweet['entities']['user_mentions']) < 1:
             tweet += 1
-        if status['in_reply_to_user_id']:
-            reply += 1
-        if len(status['entities']['user_mentions']) > 0:
-            mention += 1
-    print tweet, retweet, mention, reply, count_sum
-    print float(tweet)/count_sum, float(retweet)/count_sum, float(mention)/count_sum, float(reply)/count_sum
-
-
+        else:
+            udmention_list = []
+            if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                for udmention in tweet['retweeted_status']['entities']['user_mentions']:
+                    udmention_list.append(udmention['id'])
+            for mention in tweet['entities']['user_mentions']:
+                if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
+                    reply += 1
+                elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
+                    retweet += 1
+                elif mention['id'] in udmention_list:  # mentions in Retweet content
+                    udmention += 1
+                else:  # original mentions
+                    dmention += 1
+    print tweet, retweet, dmention, udmention, reply, count_sum
+    print float(tweet)/count_sum, float(retweet)/count_sum, float(dmention)/count_sum, float(udmention)/count_sum, float(reply)/count_sum
 
 
 def most_retweet(dbname, colname):
@@ -76,29 +83,29 @@ def most_entities(dbname, colname):
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    # beh_stat('sed', 'timeline')
+    beh_stat('fed', 'stimeline')
     # beh_stat('srd', 'timeline')
     # beh_stat('syg', 'timeline')
 
-    '''retweet IDs and publishers' IDs of retweets'''
-    edrt, edrte = most_retweet('sed', 'timeline')
-    rdrt, rdrte = most_retweet('srd', 'timeline')
-    ygrt, ygrte = most_retweet('syg', 'timeline')
-    pickle.dump((edrt, edrte), open('data/edrt.pick', 'w'))
-    pickle.dump((rdrt, rdrte), open('data/rdrt.pick', 'w'))
-    pickle.dump((ygrt, ygrte), open('data/ugrt.pick', 'w'))
-    edrt, edrte = pickle.load(open('data/edrt.pick', 'r'))
-    rdrt, rdrte = pickle.load(open('data/rdrt.pick', 'r'))
-    ygrt, ygrte = pickle.load(open('data/ugrt.pick', 'r'))
-    print len(edrt), len(rdrt), len(ygrt)
-    print sum(edrt.values()), sum(rdrt.values()), sum(ygrt.values())
-    print float(sum(edrt.values()))/len(edrt), float(sum(rdrt.values()))/len(rdrt), float(sum(ygrt.values()))/len(ygrt)
-    print len(edrte), len(rdrte), len(ygrte)
-    print sum(edrte.values()), sum(rdrte.values()), sum(ygrte.values())
-    print float(sum(edrte.values()))/len(edrte), float(sum(rdrte.values()))/len(rdrte), float(sum(ygrte.values()))/len(ygrte)
-
-    plot.plot_pdf_mul_data([edrt.values(), rdrt.values(), ygrt.values()], ['--bo', '--r^', '--ks'], 'retweets',  ['ED', 'Random', 'Young'], False)
-    plot.plot_pdf_mul_data([edrte.values(), rdrte.values(), ygrte.values()], ['--bo', '--r^', '--ks'], 'publishers of retweets',  ['ED', 'Random', 'Young'], False)
+    # '''retweet IDs and publishers' IDs of retweets'''
+    # edrt, edrte = most_retweet('sed', 'timeline')
+    # rdrt, rdrte = most_retweet('srd', 'timeline')
+    # ygrt, ygrte = most_retweet('syg', 'timeline')
+    # pickle.dump((edrt, edrte), open('data/edrt.pick', 'w'))
+    # pickle.dump((rdrt, rdrte), open('data/rdrt.pick', 'w'))
+    # pickle.dump((ygrt, ygrte), open('data/ugrt.pick', 'w'))
+    # edrt, edrte = pickle.load(open('data/edrt.pick', 'r'))
+    # rdrt, rdrte = pickle.load(open('data/rdrt.pick', 'r'))
+    # ygrt, ygrte = pickle.load(open('data/ugrt.pick', 'r'))
+    # print len(edrt), len(rdrt), len(ygrt)
+    # print sum(edrt.values()), sum(rdrt.values()), sum(ygrt.values())
+    # print float(sum(edrt.values()))/len(edrt), float(sum(rdrt.values()))/len(rdrt), float(sum(ygrt.values()))/len(ygrt)
+    # print len(edrte), len(rdrte), len(ygrte)
+    # print sum(edrte.values()), sum(rdrte.values()), sum(ygrte.values())
+    # print float(sum(edrte.values()))/len(edrte), float(sum(rdrte.values()))/len(rdrte), float(sum(ygrte.values()))/len(ygrte)
+    #
+    # plot.plot_pdf_mul_data([edrt.values(), rdrt.values(), ygrt.values()], ['--bo', '--r^', '--ks'], 'retweets',  ['ED', 'Random', 'Young'], False)
+    # plot.plot_pdf_mul_data([edrte.values(), rdrte.values(), ygrte.values()], ['--bo', '--r^', '--ks'], 'publishers of retweets',  ['ED', 'Random', 'Young'], False)
 
     # '''Hashtags in tweets'''
     # edtags, edments = most_entities('sed', 'timeline')
