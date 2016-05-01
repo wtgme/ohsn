@@ -4,10 +4,13 @@ Created on 14:58, 08/04/16
 
 @author: wt
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
-import ohsn.util.graph_util as gt
+from ohsn.util import graph_util as gt
 from ohsn.util import db_util as dbt
-import ohsn.util.plot_util as plot
+from ohsn.util import plot_util as plot
 import pickle
 
 
