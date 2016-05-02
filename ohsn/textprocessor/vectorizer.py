@@ -79,7 +79,6 @@ def text_process(text):
             new_token.append(st)
     return new_token
 
-# text_process('(step..) ) play.  flappy bird between rounds.')
 
 def hashtags(dbname, poicol, timecol, foldername):
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
@@ -102,10 +101,11 @@ def hashtags(dbname, poicol, timecol, foldername):
 
 
 
-
-tokenizer('random', 'com', 'timeline', 'rdword')
-tokenizer('fed', 'com', 'timeline', 'edword')
-
-hashtags('random', 'com', 'timeline', 'rdtag')
-hashtags('fed', 'com', 'timeline', 'edtag')
+if __name__ == '__main__':
+    print text_process('(step..) ) play.  flappy bird between rounds.')
+    # tokenizer('random', 'com', 'timeline', 'rdword')
+    # tokenizer('fed', 'com', 'timeline', 'edword')
+    #
+    # hashtags('random', 'com', 'timeline', 'rdtag')
+    # hashtags('fed', 'com', 'timeline', 'edtag')
 
