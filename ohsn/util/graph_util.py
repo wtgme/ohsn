@@ -77,11 +77,11 @@ def load_beh_network(db_name, collection='None', btype='communication'):
     return g
 
 
-def add_attribute(g, name, dbname, colname, field):
+def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
-    g.vs[name] = 0.0
-    for x in com.find({field: {'$exists': True}}, ['id', field]):
+    g.vs[att_name] = 0.0
+    for x in com.find({db_field_name: {'$exists': True}}, ['id', db_field_name]):
         uid = x['id']
         exist = True
         try:
@@ -89,16 +89,16 @@ def add_attribute(g, name, dbname, colname, field):
         except ValueError:
             exist = False
         if exist:
-            if '.' in field:
-                levels = field.split('.')
+            if '.' in db_field_name:
+                levels = db_field_name.split('.')
                 t = x.get(levels[0])
                 for level in levels[1:]:
                     t = t.get(level)
                     if t is None:
                         break
-                v[name] = t
+                v[att_name] = t
             else:
-                v[name] = x.get(field)
+                v[att_name] = x.get(db_field_name)
     return g
 
 

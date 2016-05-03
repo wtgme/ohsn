@@ -10,6 +10,7 @@ Import bio infomration into network, see what distribution of bio information in
 from ohsn.util import db_util as dbt
 from ohsn.util import graph_util as grt
 from ohsn.util import plot_util as splt
+from ohsn.util import io_util as iot
 import numpy as np
 
 
@@ -30,9 +31,26 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     return rightMin + (valueScaled * rightSpan)
 
 
+def feature_assort_friend(dbname, colname, comname, db_field_names):
+    g = grt.load_network(dbname, colname)
+    print 'Assortativity_degree of whole network, ', round(g.assortativity_degree(), 3)
+    node_size = len(g.vs)
+    for db_field_name in db_field_names:
+        g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
+        values = drop_zeros(np.array(g.vs['foi']))
+        if len(values)>10:
+            # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
+            maxv, minv = max(values), min(values)
+            vs = g.vs(foi_gt=minv, foi_lt=maxv)
+            t_node_size = len(vs)
+            sg = g.subgraph(vs)
+            print db_field_name+',', round(float(t_node_size)/node_size, 3), ',', \
+                round(sg.assortativity_degree(), 3), ',', round(sg.assortativity('foi'), 3)
+
+
 def fnet_bmi(dbname, colname, comname, typename, name, field):
-    # g = grt.load_network(dbname, colname)
-    g = grt.load_beh_network(dbname, colname)
+    g = grt.load_network(dbname, colname)
+    # g = grt.load_beh_network(dbname, colname)
     g = grt.add_attribute(g, name, dbname, comname, field)
     values = np.array(g.vs[name])
     bins = np.array([0.0, 1.0, 15.0, 16, 18.5, 25, 30, 35])
@@ -87,5 +105,7 @@ def behaviour(dbname, colname):
 
 if __name__ == '__main__':
     # frienship('fed', 'snet', 'scom')
-    fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
+    # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
+    fields = iot.read_fields()
+    feature_assort_friend(dbname='fed', colname='snet', comname='scom', db_field_names=fields)

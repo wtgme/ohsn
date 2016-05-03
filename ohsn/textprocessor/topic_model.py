@@ -5,7 +5,7 @@ Created on 4:52 PM, 5/2/16
 @author: tw
 """
 
-from gensim import corpora, models, similarities
+from gensim import corpora, models
 from ohsn.util import db_util as dbt
 import re
 from nltk.tokenize import RegexpTokenizer
@@ -25,9 +25,15 @@ def read_document(dbname, colname, timecol, uset=None):
     ugrex = re.compile(r'(https?://[^\s]+)')  # for url
     documents = list()
 
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
+    # for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
+    #     passf = True
+    #     if (uset is not None) and (user['id'] not in uset):
+    #         passf = False
+    #     if passf:
+    #             uid = user['id']
+    for uid in uset:
         textmass = ""
-        for tweet in timelines.find({'user.id': user['id']}):
+        for tweet in timelines.find({'user.id': uid}):
             text = tweet['text'].encode('utf8')
             # replace RT, @, # and Http://
             text = rtgrex.sub('', text)
@@ -77,7 +83,7 @@ def pre_process(documents):
 def topic_model(dbname, colname, timecol, uset=None):
     documents = read_document(dbname, colname, timecol, uset)
     corpus, dictionary = pre_process(documents)
-    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=100, update_every=1, chunksize=10000, passes=1)
+    lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=20, update_every=1, chunksize=10000, passes=1)
     lda.print_topics(20)
 
 

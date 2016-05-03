@@ -11,6 +11,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 from ohsn.util import graph_util as gt
 from ohsn.util import db_util as dbt
 from ohsn.util import plot_util as plot
+from ohsn.textprocessor import topic_model
 import pickle
 
 
@@ -41,6 +42,14 @@ def plot_pdf(ed, rd, yg, mode='degree'):
     plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], mode,  ['Random', 'Young', 'ED'], False)
 
 
+def community_topic(clus, dbname, colname, timename):
+    for clu in clus:
+        uset = set()
+        for v in clu:
+            uset.add(int(v['name']))
+        topic_model.topic_model(dbname, colname, timename, uset)
+
+
 def friendship_community(dbname, colname, label):
     # fg = gt.load_network(dbname, colname)
     # gt.summary(fg)
@@ -58,12 +67,13 @@ def friendship_community(dbname, colname, label):
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
     print fclus.recalculate_modularity()
+    community_topic(fclus, dbname, 'scom', 'stimeline')
 
     # # fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
     # layout = fg.layout("fr")
     # # gt.plot(fg, 'friend_fr.pdf', layout=layout, bbox=(1200, 900))
     # gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, mark_groups=True, bbox=(1200, 900))
-    gt.comm_plot(fg, fclus, 'friend_comms_fr.pdf', fclus.membership)
+    # gt.comm_plot(fg, fclus, 'friend_comms_fr.pdf', fclus.membership)
 
 
 def behavior_community(dbname, colname, label):
@@ -89,6 +99,7 @@ def behavior_community(dbname, colname, label):
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
     print bclus.recalculate_modularity()
+    community_topic(bclus, dbname, 'scom', 'stimeline')
 
 
     # # gt.comm_plot(bg, fclus, fclus.membership)
@@ -96,7 +107,7 @@ def behavior_community(dbname, colname, label):
     # layout = bg.layout("fr")
     # # # gt.plot(bg, 'behaviour_fr.pdf', layout=layout, weighted=False, bbox=(1200, 900))
     # gt.plot(bclus, label+'_comms_fr.pdf', layout=layout, mark_groups=True, bbox=(1200, 900))
-    gt.comm_plot(bg, bclus, label+'_comms_fr.pdf', bclus.membership)
+    # gt.comm_plot(bg, bclus, label+'_comms_fr.pdf', bclus.membership)
 
 
 if __name__ == '__main__':
