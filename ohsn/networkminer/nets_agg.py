@@ -122,4 +122,3 @@ if __name__ == '__main__':
         network_stat(dbname, comname, netname, bnetname)
         for btype in ['retweet', 'reply', 'mention', 'communication']:
             beh_net_stat(dbname, comname, bnetname, btype)
-            
