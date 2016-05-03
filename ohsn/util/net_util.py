@@ -20,7 +20,7 @@ def load_network(db_name, collection='None'):
     for row in cols.find({}):
         n1 = row['user']
         n2 = row['follower']
-        DG.add_edge(n1, n2)
+        DG.add_edge(n1, n2, weight=1)
     return DG
 
 

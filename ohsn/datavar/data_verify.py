@@ -20,4 +20,5 @@ def compare_id():
     for name in bnets.intersection(liwcs):
         print name
 
-compare_id()
+if __name__ == '__main__':
+    compare_id()

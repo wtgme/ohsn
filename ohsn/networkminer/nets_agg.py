@@ -16,10 +16,10 @@ def network_stat(dbname, comname, fnetname, bnetname):
     G = nt.load_network(dbname, fnetname)
     # print G.number_of_nodes()
     BG = nt.load_behavior_network(dbname, bnetname, 'retweet')
-    close_cen = nt.closeness_centrality(G)
-    between_cen = nt.betweenness_centrality(G)
-    eigen_cen = nt.eigenvector_centrality_numpy(G)
-    kt_cen = nt.katz_centrality_numpy(G)
+    close_cen = nt.closeness_centrality(G)  # normalized=True
+    between_cen = nt.betweenness_centrality(G, weight='weight')  # normalized=True, weight=None
+    eigen_cen = nt.eigenvector_centrality_numpy(G)  # weight='weight'
+    kt_cen = nt.katz_centrality_numpy(G)  # normalized=True, weight='weight'
     diff_cen = nt.diffusion_centrality(BG, G)
 
     indegree_all = sum(G.in_degree().values())
@@ -122,3 +122,4 @@ if __name__ == '__main__':
         network_stat(dbname, comname, netname, bnetname)
         for btype in ['retweet', 'reply', 'mention', 'communication']:
             beh_net_stat(dbname, comname, bnetname, btype)
+            
