@@ -39,7 +39,7 @@ def csv_output(data, fields, file_name):
             writer.writerow(proce_values)
 
 
-def export_poi(dbname, colname, index=0):
+def export_poi(dbname, colname, index='All'):
     db = dbutil.db_connect_no_auth(dbname)
     poidb = db[colname]
     data = []
@@ -74,16 +74,16 @@ def export_net_agg(dbname, colname, file_name):
 
 if __name__ == '__main__':
     fields = iot.read_fields()
-    dbname = 'tyg'
-    d = export_poi(dbname, 'com')
-    csv_output(d, fields, 'yg_poi')
+    dbname = 'fed'
+    d = export_poi(dbname, 'scom')
+    # csv_output(d, fields, 'yg_poi')
     d1 = export_poi(dbname, 'com_t1', 1)
     d2 = export_poi(dbname, 'com_t2', 2)
     d3 = export_poi(dbname, 'com_t3', 3)
     d4 = export_poi(dbname, 'com_t4', 4)
     d5 = export_poi(dbname, 'com_t5', 5)
-    d = d1 + d2 + d3 + d4 + d5
-    csv_output(d, fields, 'yg_poi_ts')
+    d = d + d1 + d2 + d3 + d4 + d5
+    csv_output(d, fields, 'ed_poi')
 
     # export_net_agg('fed', 'com_t1', 'sbnet_t1', 'bnet_t1')
     # export_net_agg('fed', 'com_t2', 'sbnet_t2', 'bnet_t2')

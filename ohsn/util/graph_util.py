@@ -128,7 +128,7 @@ def optimal_community(g, weighted=False):
         return g.community_optimal_modularity()
 
 
-def fast_community(g, weighted=False):
+def fast_community(g, weighted=True):
     '''Only for Undirected graph'''
     if g.is_directed():
         if weighted:
@@ -137,11 +137,13 @@ def fast_community(g, weighted=False):
             g = g.as_undirected()
     if weighted:
         return g.community_fastgreedy(weights='weight')
+        # return g.community_edge_betweenness(weights='weight')
     else:
         return g.community_fastgreedy()
+        # return g.community_edge_betweenness()
 
 
-def comm_plot(g, clusters, membership=None):
+def comm_plot(g, clusters, lable, membership=None):
     '''
     See: http://stackoverflow.com/questions/23184306/draw-network-and-grouped-vertices-of-the-same-community-or-partition/23185529#23185529
     '''
@@ -156,7 +158,7 @@ def comm_plot(g, clusters, membership=None):
             else:
                 edges_colors.append("black")
         gcopy.delete_edges(edges)
-        layout = gcopy.layout("kk")
+        layout = gcopy.layout("fr")
         g.es["color"] = edges_colors
     else:
         layout = g.layout("kk")
@@ -180,7 +182,7 @@ def comm_plot(g, clusters, membership=None):
     #     for vertex in g.vs():
     #         vertex["color"] = pal.get([membership[vertex.index]])
     #     visual_style["vertex_color"] = g.vs["color"]
-    plot(clusters, **visual_style)
+    plot(clusters, lable, **visual_style)
 
 
 if __name__ == '__main__':

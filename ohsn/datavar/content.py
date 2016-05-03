@@ -91,7 +91,7 @@ def most_entities(dbname, colname):
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    beh_stat('echelon', 'timelines')
+    beh_stat('random', 'timeline')
     # beh_stat('srd', 'timeline')
     # beh_stat('syg', 'timeline')
 
