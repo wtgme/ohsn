@@ -42,11 +42,13 @@ def plot_pdf(ed, rd, yg, mode='degree'):
     plot.plot_pdf_mul_data([rddseq, ygdseq, eddseq], ['--bo', '--r^', '--ks'], mode,  ['Random', 'Young', 'ED'], False)
 
 
-def community_topic(clus, dbname, colname, timename):
+def community_topic(g, clus, dbname, colname, timename):
     for clu in clus:
+        # print '----------------------------------'
         uset = set()
         for v in clu:
-            uset.add(int(v['name']))
+            # print int(g.vs[v]['name'])
+            uset.add(int(g.vs[v]['name']))
         topic_model.topic_model(dbname, colname, timename, uset)
 
 
@@ -67,7 +69,7 @@ def friendship_community(dbname, colname, label):
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
     print fclus.recalculate_modularity()
-    community_topic(fclus, dbname, 'scom', 'stimeline')
+    community_topic(fg, fclus, dbname, 'scom', 'stimeline')
 
     # # fclus = pickle.load(open('data/'+label+'-fcom.pick', 'r'))
     # layout = fg.layout("fr")
@@ -99,7 +101,7 @@ def behavior_community(dbname, colname, label):
     bclus = bcoms.as_clustering()
     gt.summary(bclus)
     print bclus.recalculate_modularity()
-    community_topic(bclus, dbname, 'scom', 'stimeline')
+    community_topic(bg, bclus, dbname, 'scom', 'stimeline')
 
 
     # # gt.comm_plot(bg, fclus, fclus.membership)

@@ -33,8 +33,8 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 def feature_assort_friend(dbname, colname, comname, db_field_names):
     g = grt.load_network(dbname, colname)
-    print 'Assortativity_degree of whole network, ', round(g.assortativity_degree(), 3)
-    node_size = len(g.vs)
+    node_size, edge_size = len(g.vs), len(g.es)
+    print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=False), 3)
     for db_field_name in db_field_names:
         g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
         values = drop_zeros(np.array(g.vs['foi']))
@@ -42,10 +42,11 @@ def feature_assort_friend(dbname, colname, comname, db_field_names):
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             maxv, minv = max(values), min(values)
             vs = g.vs(foi_gt=minv, foi_lt=maxv)
-            t_node_size = len(vs)
             sg = g.subgraph(vs)
-            print db_field_name+',', round(float(t_node_size)/node_size, 3), ',', \
-                round(sg.assortativity_degree(), 3), ',', round(sg.assortativity('foi'), 3)
+            t_node_size, t_edge_size = len(sg.vs), len(sg.es)
+            print db_field_name+',', t_node_size, ',', t_edge_size, \
+                round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
+                round(sg.assortativity_degree(directed=False), 3), ',', round(sg.assortativity('foi', directed=False), 3)
 
 
 def fnet_bmi(dbname, colname, comname, typename, name, field):
