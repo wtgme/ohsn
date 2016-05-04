@@ -33,11 +33,12 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 
 def feature_assort_friend(dbname, colname, comname, db_field_names, directed=True):
-    # g = grt.load_beh_network(dbname, colname)
-    g = grt.load_network(dbname, colname)
+    g = grt.load_beh_network(dbname, colname)
+    # g = grt.load_network(dbname, colname)
     node_size, edge_size = len(g.vs), len(g.es)
     print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=directed), 3)
-    print 'Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Assort_mean, Assort_std, p_value'
+    outputs = list()
+    outputs.append('Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Mean, STD, p_value')
     for db_field_name in db_field_names:
         g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
         raw_values = np.array(g.vs['foi'])
@@ -58,7 +59,7 @@ def feature_assort_friend(dbname, colname, comname, db_field_names, directed=Tru
             #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
             raw_assort = sg.assortativity('foi', directed=directed)
             ass_list = list()
-            for i in xrange(1000):
+            for i in xrange(2000):
                 np.random.shuffle(raw_values)
                 g.vs["foi"] = raw_values
                 vs = g.vs(foi_gt=minv, foi_lt=maxv)
@@ -75,23 +76,21 @@ def feature_assort_friend(dbname, colname, comname, db_field_names, directed=Tru
             # print 'P-value of network, ', round(amean, 3), ',', round(astd, 3) , ',', round(pro, 3)
             if pro >= 1-0.001 or pro <= 0.001:
                 output += '***'
-                print output
+                outputs.append(output)
                 continue
             if pro >= 1-0.01 or pro <= 0.01:
                 output += '**'
-                print output
+                outputs.append(output)
                 continue
             if pro >= 1-0.05 or pro <= 0.05:
                 output += '*'
-                print output
+                outputs.append(output)
                 continue
             else:
-                print output
+                outputs.append(output)
                 continue
-
-
-
-
+    for doc in outputs:
+        print doc
 
 
 def fnet_bmi(dbname, colname, comname, typename, name, field):
@@ -154,4 +153,4 @@ if __name__ == '__main__':
     # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
-    feature_assort_friend(dbname='fed', colname='snet', comname='scom', db_field_names=fields)
+    feature_assort_friend(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
