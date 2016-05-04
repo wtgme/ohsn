@@ -25,13 +25,9 @@ def read_document(dbname, colname, timecol, uset=None):
     ugrex = re.compile(r'(https?://[^\s]+)')  # for url
     documents = list()
 
-    # for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
-    #     passf = True
-    #     if (uset is not None) and (user['id'] not in uset):
-    #         passf = False
-    #     if passf:
-    #             uid = user['id']
-    for uid in uset:
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
+        uid = user['id']
+    # for uid in uset:
         textmass = ""
         for tweet in timelines.find({'user.id': uid}):
             text = tweet['text'].encode('utf8')
@@ -52,6 +48,7 @@ stemmer = EnglishStemmer()
 
 
 def pro_process_text(text):
+    text = text.lower()
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text)
     new_token = list()
@@ -77,15 +74,19 @@ def pre_process(documents):
     # dictionary.save('/tmp/deerwester.dict') # store the dictionary, for future reference
     corpus = [dictionary.doc2bow(text) for text in texts]
     # corpora.MmCorpus.serialize('/tmp/deerwester.mm', corpus) # store to disk, for later use
-    return corpus, dictionary
+    return (corpus, dictionary)
 
 
 def topic_model(dbname, colname, timecol, uset=None):
     documents = read_document(dbname, colname, timecol, uset)
+    print len(documents)
     corpus, dictionary = pre_process(documents)
+    # from pprint import pprint
+    # print (dictionary.token2id)
+    # pprint(corpus)
     lda = models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_topics=20, update_every=1, chunksize=10000, passes=1)
-    lda.print_topics(20)
-
+    lda.print_topics(num_topics=20, num_words=20)
 
 if __name__ == '__main__':
+    # print pro_process_text('A survey of user opinion of computer system response time')
     topic_model('fed', 'scom', 'stimeline')

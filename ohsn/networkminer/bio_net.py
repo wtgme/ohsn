@@ -31,10 +31,11 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     return rightMin + (valueScaled * rightSpan)
 
 
-def feature_assort_friend(dbname, colname, comname, db_field_names):
-    g = grt.load_network(dbname, colname)
+def feature_assort_friend(dbname, colname, comname, db_field_names, directed=True):
+    g = grt.load_beh_network(dbname, colname)
+    # g = grt.load_network(dbname, colname)
     node_size, edge_size = len(g.vs), len(g.es)
-    print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=False), 3)
+    print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=directed), 3)
     for db_field_name in db_field_names:
         g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
         values = drop_zeros(np.array(g.vs['foi']))
@@ -44,9 +45,9 @@ def feature_assort_friend(dbname, colname, comname, db_field_names):
             vs = g.vs(foi_gt=minv, foi_lt=maxv)
             sg = g.subgraph(vs)
             t_node_size, t_edge_size = len(sg.vs), len(sg.es)
-            print db_field_name+',', t_node_size, ',', t_edge_size, \
+            print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
                 round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
-                round(sg.assortativity_degree(directed=False), 3), ',', round(sg.assortativity('foi', directed=False), 3)
+                round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
 
 
 def fnet_bmi(dbname, colname, comname, typename, name, field):
@@ -109,4 +110,4 @@ if __name__ == '__main__':
     # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
-    feature_assort_friend(dbname='fed', colname='snet', comname='scom', db_field_names=fields)
+    feature_assort_friend(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
