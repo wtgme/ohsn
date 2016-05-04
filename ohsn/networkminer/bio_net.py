@@ -12,6 +12,7 @@ from ohsn.util import graph_util as grt
 from ohsn.util import plot_util as splt
 from ohsn.util import io_util as iot
 import numpy as np
+import scipy.stats
 
 
 def drop_zeros(list_a):
@@ -32,22 +33,65 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 
 def feature_assort_friend(dbname, colname, comname, db_field_names, directed=True):
-    g = grt.load_beh_network(dbname, colname)
-    # g = grt.load_network(dbname, colname)
+    # g = grt.load_beh_network(dbname, colname)
+    g = grt.load_network(dbname, colname)
     node_size, edge_size = len(g.vs), len(g.es)
     print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=directed), 3)
+    print 'Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Assort_mean, Assort_std, p_value'
     for db_field_name in db_field_names:
         g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
-        values = drop_zeros(np.array(g.vs['foi']))
-        if len(values)>10:
+        raw_values = np.array(g.vs['foi'])
+        values = drop_zeros(raw_values)
+        if len(values) > 100:
+            output = ''
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             maxv, minv = max(values), min(values)
             vs = g.vs(foi_gt=minv, foi_lt=maxv)
             sg = g.subgraph(vs)
             t_node_size, t_edge_size = len(sg.vs), len(sg.es)
-            print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
-                round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
-                round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
+            output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
+                      + str(round(float(t_node_size)/node_size, 3)) + ',' + str(round(float(t_edge_size)/edge_size, 3))+ ',' \
+                      + str(round(sg.assortativity_degree(directed=directed), 3)) + ',' \
+                      + str(round(sg.assortativity('foi', directed=directed), 3)) + ','
+            # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
+            #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
+            #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
+            raw_assort = sg.assortativity('foi', directed=directed)
+            ass_list = list()
+            for i in xrange(1000):
+                np.random.shuffle(raw_values)
+                g.vs["foi"] = raw_values
+                vs = g.vs(foi_gt=minv, foi_lt=maxv)
+                sg = g.subgraph(vs)
+                # t_node_size, t_edge_size = len(sg.vs), len(sg.es)
+                # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
+                #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
+                #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
+                ass_list.append(sg.assortativity('foi', directed=directed))
+            ass_list = np.array(ass_list)
+            amean, astd = np.mean(ass_list), np.std(ass_list)
+            pro = 1.0 - scipy.stats.norm(loc=amean, scale=astd).cdf(raw_assort)
+            output += str(round(amean, 3)) + ',' + str(round(astd, 3)) + ',' + str(round(pro, 3))
+            # print 'P-value of network, ', round(amean, 3), ',', round(astd, 3) , ',', round(pro, 3)
+            if pro >= 1-0.001 or pro <= 0.001:
+                output += '***'
+                print output
+                continue
+            if pro >= 1-0.01 or pro <= 0.01:
+                output += '**'
+                print output
+                continue
+            if pro >= 1-0.05 or pro <= 0.05:
+                output += '*'
+                print output
+                continue
+            else:
+                print output
+                continue
+
+
+
+
 
 
 def fnet_bmi(dbname, colname, comname, typename, name, field):
@@ -110,4 +154,4 @@ if __name__ == '__main__':
     # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
-    feature_assort_friend(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
+    feature_assort_friend(dbname='fed', colname='snet', comname='scom', db_field_names=fields)
