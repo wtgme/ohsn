@@ -232,8 +232,9 @@ if __name__ == '__main__':
     #     else:
     #         print key
 
-    yearsplit = timeline_split('tyg', 'timeline')
-    pickle.dump(yearsplit, open('data/ygtyear.pick', 'w'))
-    yearsplit = pickle.load(open('data/ygtyear.pick', 'r'))
+    '''Count the published years of tweets '''
+    yearsplit = timeline_split('fed', 'timeline')
+    pickle.dump(yearsplit, open('data/fedtyear.pick', 'w'))
+    # yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
     print yearsplit.keys()
 

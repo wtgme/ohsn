@@ -102,6 +102,33 @@ def add_attribute(g, att_name, dbname, colname, db_field_name):
     return g
 
 
+def add_attributes(g, att_names, dbname, colname, db_field_names):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    for att_name in att_names:
+        g.vs[att_name] = 0.0
+    for x in com.find({}, ['id'] + db_field_names):
+        uid = x['id']
+        exist = True
+        try:
+            v = g.vs.find(name=str(uid))
+        except ValueError:
+            exist = False
+        if exist:
+            for db_field_name in db_field_names:
+                if '.' in db_field_name:
+                    levels = db_field_name.split('.')
+                    t = x.get(levels[0])
+                    for level in levels[1:]:
+                        t = t.get(level)
+                        if t is None:
+                            break
+                    v[att_name] = t
+                else:
+                    v[att_name] = x.get(db_field_name)
+    return g
+
+
 def giant_component(g, mode):
     com = g.clusters(mode=mode)
     print 'The processed network has components:', len(com)

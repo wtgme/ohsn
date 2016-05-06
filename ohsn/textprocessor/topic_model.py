@@ -59,9 +59,8 @@ def pro_process_text(text):
     tokens = tokenizer.tokenize(text)
     words = pos_tag(tokens)
     new_token = list()
-    for word in words:
-        if word[1] is 'NN' or word[1] is 'JJ':
-            token = word[0]
+    for (token, pos) in words:
+        if pos in ['NN', 'JJ']:
             if token not in stopwds:
                 try:
                     st = stemmer.stem(token)
@@ -92,11 +91,14 @@ def pre_process(documents):
 
 
 def topic_model(dbname, colname, timecol, uset=None):
-    documents = read_document(dbname, colname, timecol, uset)
+    # documents = read_document(dbname, colname, timecol, uset)
+    # print len(documents)
+    # pickle.dump(documents, open('data/document.pick', 'w'))
+    documents = pickle.load(open('data/document.pick', 'r'))
     print len(documents)
-    pickle.dump(documents, open('data/document.pick', 'w'))
-    # documents = pickle.load(open('data/document.pick', 'r'))
     corpus, dictionary = pre_process(documents)
+    print corpus
+    print dictionary
     pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
     corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
     lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
