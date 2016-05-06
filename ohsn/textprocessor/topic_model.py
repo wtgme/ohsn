@@ -89,6 +89,11 @@ def pre_process(documents):
     # corpora.MmCorpus.serialize('/tmp/deerwester.mm', corpus) # store to disk, for later use
     return (corpus, dictionary)
 
+def word_vect():
+    sentences = [['first', 'sentence'], ['second', 'sentence']]
+    model = models.Word2Vec(sentences, min_count=1)
+
+
 
 def topic_model(dbname, colname, timecol, uset=None):
     # documents = read_document(dbname, colname, timecol, uset)
@@ -107,4 +112,5 @@ def topic_model(dbname, colname, timecol, uset=None):
 
 if __name__ == '__main__':
     # print pro_process_text('A survey of user opinion of computer system response time')
-    topic_model('fed', 'scom', 'stimeline')
+    # topic_model('fed', 'scom', 'stimeline')
+    word_vect()
