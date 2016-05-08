@@ -121,6 +121,10 @@ def centrality(dbname, scom, BDG, FDG, p, T):
         # print str(node) + ',' + str(dcv) + ',' + str(ngv)
 
 
+def subnetworks(dbname, com, fnet, bnet, sfnet, sbnet):
+    extract_behavior_subnetwork(dbname, com, bnet, sbnet)
+    extract_friend_subnetwork(dbname, com, fnet, sfnet)
+
 if __name__ == '__main__':
 
     db_name = 'tyg'

@@ -111,6 +111,12 @@ def beh_net_stat(dbname, comname, bnetname, btype):
         com.update_one({'id': v}, {'$set': {'net_anal': values}}, upsert=True)
 
 
+def nets_stats(dbname, comname, netname, bnetname):
+    network_stat(dbname, comname, netname, bnetname)
+    for btype in ['retweet', 'reply', 'mention', 'communication']:
+        beh_net_stat(dbname, comname, bnetname, btype)
+
+
 if __name__ == '__main__':
     dbname = 'tyg'
     network_stat(dbname, 'com', 'snet', 'sbnet')

@@ -81,9 +81,8 @@ def pro_process_text(text):
     tokens = tokenizer.tokenize(text)
     words = pos_tag(tokens)
     new_token = list()
-    for word in words:
-        if word[1] is 'NN' or word[1] is 'JJ':
-            token = word[0]
+    for (token, pos) in words:
+        if pos in ['NN', 'JJ']:
             if token not in stopwds:
                 try:
                     st = stemmer.stem(token)
@@ -115,16 +114,29 @@ def pre_process(texts):
     # corpora.MmCorpus.serialize('/tmp/deerwester.mm', corpus) # store to disk, for later use
     return (corpus, dictionary)
 
+def word_vect():
+    sentences = [['first', 'sentence'], ['second', 'sentence']]
+    model = models.Word2Vec(sentences, min_count=1)
+
+
 
 def topic_model(dbname, colname, timecol, uset=None):
     # documents = read_document(dbname, colname, timecol, uset)
     # print len(documents)
     # pickle.dump(documents, open('data/document.pick', 'w'))
+<<<<<<< HEAD
     # documents = pickle.load(open('data/document.pick', 'r'))
     # texts = pro_process_documents(documents)
     texts = read_hashtag(dbname, colname, timecol, uset)
     pickle.dump(texts, open('data/hashtag.pick', 'w'))
     corpus, dictionary = pre_process(texts)
+=======
+    documents = pickle.load(open('data/document.pick', 'r'))
+    print len(documents)
+    corpus, dictionary = pre_process(documents)
+    print corpus
+    print dictionary
+>>>>>>> origin/master
     pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
     corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
     lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
@@ -133,4 +145,5 @@ def topic_model(dbname, colname, timecol, uset=None):
 
 if __name__ == '__main__':
     # print pro_process_text('A survey of user opinion of computer system response time')
-    topic_model('fed', 'scom', 'stimeline')
+    # topic_model('fed', 'scom', 'stimeline')
+    word_vect()
