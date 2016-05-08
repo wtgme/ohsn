@@ -124,19 +124,11 @@ def topic_model(dbname, colname, timecol, uset=None):
     # documents = read_document(dbname, colname, timecol, uset)
     # print len(documents)
     # pickle.dump(documents, open('data/document.pick', 'w'))
-<<<<<<< HEAD
     # documents = pickle.load(open('data/document.pick', 'r'))
     # texts = pro_process_documents(documents)
     texts = read_hashtag(dbname, colname, timecol, uset)
     pickle.dump(texts, open('data/hashtag.pick', 'w'))
     corpus, dictionary = pre_process(texts)
-=======
-    documents = pickle.load(open('data/document.pick', 'r'))
-    print len(documents)
-    corpus, dictionary = pre_process(documents)
-    print corpus
-    print dictionary
->>>>>>> origin/master
     pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
     corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
     lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
