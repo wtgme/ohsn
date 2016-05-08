@@ -16,6 +16,28 @@ import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
+
+def read_hashtag(dbname, colname, timecol, uset=None):
+    db = dbt.db_connect_no_auth(dbname)
+    col = db[colname]
+    timelines = db[timecol]
+
+    hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
+    documents = list()
+
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
+        uid = user['id']
+    # for uid in uset:
+        tags = list()
+        for tweet in timelines.find({'user.id': uid}):
+            text = tweet['text'].encode('utf8').lower().strip()
+            tags += re.findall(hgrex, text)
+            # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+        if len(tags) > 10:
+            documents.append(tags)
+    return documents
+
+
 def read_document(dbname, colname, timecol, uset=None):
     db = dbt.db_connect_no_auth(dbname)
     col = db[colname]
@@ -71,13 +93,16 @@ def pro_process_text(text):
     return new_token
 
 
-def pre_process(documents):
+def pro_process_documents(documents):
     texts = list()
     for document in documents:
         text = pro_process_text(document)
         if len(text) > 0:
             texts.append(text)
-    # texts = [[word for word in pro_process_text(document)] for document in documents]
+    return texts
+
+
+def pre_process(texts):
     from collections import defaultdict
     frequency = defaultdict(int)
     for text in texts:
@@ -92,11 +117,14 @@ def pre_process(documents):
 
 
 def topic_model(dbname, colname, timecol, uset=None):
-    documents = read_document(dbname, colname, timecol, uset)
-    print len(documents)
-    pickle.dump(documents, open('data/document.pick', 'w'))
+    # documents = read_document(dbname, colname, timecol, uset)
+    # print len(documents)
+    # pickle.dump(documents, open('data/document.pick', 'w'))
     # documents = pickle.load(open('data/document.pick', 'r'))
-    corpus, dictionary = pre_process(documents)
+    # texts = pro_process_documents(documents)
+    texts = read_hashtag(dbname, colname, timecol, uset)
+    pickle.dump(texts, open('data/hashtag.pick', 'w'))
+    corpus, dictionary = pre_process(texts)
     pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
     corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
     lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
