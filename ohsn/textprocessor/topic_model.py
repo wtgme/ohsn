@@ -25,9 +25,9 @@ def read_hashtag(dbname, colname, timecol, uset=None):
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
     documents = list()
 
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
-        uid = user['id']
-    # for uid in uset:
+    # for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
+    #     uid = user['id']
+    for uid in uset:
         tags = list()
         for tweet in timelines.find({'user.id': uid}):
             text = tweet['text'].encode('utf8').lower().strip()
@@ -114,6 +114,7 @@ def pre_process(texts):
     # corpora.MmCorpus.serialize('/tmp/deerwester.mm', corpus) # store to disk, for later use
     return (corpus, dictionary)
 
+
 def word_vect():
     sentences = [['first', 'sentence'], ['second', 'sentence']]
     model = models.Word2Vec(sentences, min_count=1)
@@ -127,10 +128,10 @@ def topic_model(dbname, colname, timecol, uset=None):
     # documents = pickle.load(open('data/document.pick', 'r'))
     # texts = pro_process_documents(documents)
     texts = read_hashtag(dbname, colname, timecol, uset)
-    pickle.dump(texts, open('data/hashtag.pick', 'w'))
+    # pickle.dump(texts, open('data/hashtag.pick', 'w'))
     corpus, dictionary = pre_process(texts)
-    pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
-    corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
+    # pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
+    # corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
     lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
     lda.print_topics(num_topics=20, num_words=100)
 

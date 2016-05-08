@@ -44,7 +44,7 @@ def plot_pdf(ed, rd, yg, mode='degree'):
 
 def community_topic(g, clus, dbname, colname, timename):
     for clu in clus:
-        # print '----------------------------------'
+        print '----------------------------------'
         uset = set()
         for v in clu:
             # print int(g.vs[v]['name'])
