@@ -12,6 +12,7 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk import pos_tag
 from nltk.stem.snowball import EnglishStemmer
+import numpy as np
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -24,17 +25,18 @@ def read_hashtag(dbname, colname, timecol, uset=None):
 
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
     documents = list()
-
-    # for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
-    #     uid = user['id']
-    for uid in uset:
+    ids = list()
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
+        uid = user['id']
+    # for uid in uset:
         tags = list()
         for tweet in timelines.find({'user.id': uid}):
             text = tweet['text'].encode('utf8').lower().strip()
             tags += re.findall(hgrex, text)
-            # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
         if len(tags) > 10:
+            ids.append(uid)
             documents.append(tags)
+    pickle.dump(ids, open('data/hash_ids.pick', 'w'))
     return documents
 
 
@@ -46,11 +48,11 @@ def read_document(dbname, colname, timecol, uset=None):
     rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
     mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
     hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
-    # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
     ugrex = re.compile(r'(https?://[^\s]+)')  # for url
     documents = list()
+    ids = list()
 
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']).limit(250):
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
         uid = user['id']
     # for uid in uset:
         textmass = ""
@@ -68,7 +70,9 @@ def read_document(dbname, colname, timecol, uset=None):
         words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
         if len(words) > 50:
+            ids.append(uid)
             documents.append(textmass)
+    pickle.dump(ids, open('data/doc_ids.pick', 'w'))
     return documents
 
 stopwds = stopwords.words('english')
@@ -120,23 +124,36 @@ def word_vect():
     model = models.Word2Vec(sentences, min_count=1)
 
 
+def best_K(corpus, dictionary, mintopic=1, maxtopic=100, step=1):
+    id_scores = {}
+    for i in range(mintopic, maxtopic, step):
+        lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=i, id2word=dictionary)
+        cohences = lda.top_topics(corpus, num_words=20)
+        cosum = 0.0
+        for t, coh in cohences:
+            cosum += coh
+        id_scores[i] = (cosum/len(cohences))
+    print id_scores
+    return max(id_scores.iterkeys(), key=lambda k: id_scores[k])
 
-def topic_model(dbname, colname, timecol, uset=None):
-    # documents = read_document(dbname, colname, timecol, uset)
-    # print len(documents)
-    # pickle.dump(documents, open('data/document.pick', 'w'))
-    # documents = pickle.load(open('data/document.pick', 'r'))
-    # texts = pro_process_documents(documents)
-    texts = read_hashtag(dbname, colname, timecol, uset)
-    # pickle.dump(texts, open('data/hashtag.pick', 'w'))
+
+def topic_model(dbname, colname, timecol, uset=None, dtype='document'):
+    if dtype == 'document':
+        documents = read_document(dbname, colname, timecol, uset)
+        # pickle.dump(documents, open('data/document.pick', 'w'))
+        # documents = pickle.load(open('data/document.pick', 'r'))
+        texts = pro_process_documents(documents)
+    elif dtype == 'hashtag':
+        texts = read_hashtag(dbname, colname, timecol, uset)
     corpus, dictionary = pre_process(texts)
-    # pickle.dump((corpus, dictionary), open('data/corpus.pick', 'w'))
-    # corpus, dictionary = pickle.load(open('data/corpus.pick', 'r'))
-    lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=20, id2word=dictionary)
-    lda.print_topics(num_topics=20, num_words=100)
-
+    pickle.dump((corpus, dictionary), open('data/corups_'+dtype+'.pick', 'w'))
+    best_k = best_K(corpus, dictionary)
+    lda = models.ldamodel.LdaModel(corpus=corpus, num_topics=best_k, id2word=dictionary)
+    # lda.print_topics(num_topics=20, num_words=100)
+    pickle.dump(lda, open('data/lda_'+dtype+'.pick', 'w'))
 
 if __name__ == '__main__':
     # print pro_process_text('A survey of user opinion of computer system response time')
-    # topic_model('fed', 'scom', 'stimeline')
-    word_vect()
+    topic_model('fed', 'scom', 'stimeline')
+    topic_model('fed', 'scom', 'stimeline', 'hashtag')
+    # word_vect()
