@@ -4,6 +4,11 @@ Created on 4:52 PM, 5/2/16
 
 @author: tw
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
+
 from gensim import corpora, models
 from ohsn.util import db_util as dbt
 import pickle
