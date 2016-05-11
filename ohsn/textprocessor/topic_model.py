@@ -121,7 +121,7 @@ def pre_process(texts):
     # dictionary.save('/tmp/deerwester.dict') # store the dictionary, for future reference
     corpus = [dictionary.doc2bow(text) for text in texts]
     # corpora.MmCorpus.serialize('/tmp/deerwester.mm', corpus) # store to disk, for later use
-    return (corpus, dictionary)
+    return corpus, dictionary
 
 
 def word_vect():
