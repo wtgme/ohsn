@@ -124,14 +124,14 @@ if __name__ == '__main__':
     # textp.process_poi(dbname, tmpcom)
 
     '''Core ED'''
-    # dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
-    # analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
-    # fridp.ed_pro(dbname, 'scom', tmpcom, 'net')
-    # process('fed', 'timeline', [2009, 2010, 2011], 1, 'fed')
-    # process('fed', 'timeline', [2012], 2, 'fed')
-    # process('fed', 'timeline', [2013], 3, 'fed')
-    # process('fed', 'timeline', [2014], 4, 'fed')
-    # process('fed', 'timeline', [2015, 2016], 5, 'fed')
+    dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
+    analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
+    fridp.ed_pro(dbname, 'scom', tmpcom, 'net')
+    process('fed', 'timeline', [2009, 2010, 2011], 1, 'fed')
+    process('fed', 'timeline', [2012], 2, 'fed')
+    process('fed', 'timeline', [2013], 3, 'fed')
+    process('fed', 'timeline', [2014], 4, 'fed')
+    process('fed', 'timeline', [2015, 2016], 5, 'fed')
 
     '''YG data'''
     # process('tyg', 'timeline', [2009, 2010, 2011], 1, 'data/ygtyear.pick')
