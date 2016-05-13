@@ -112,7 +112,7 @@ def check_ed(user):
 
 def check_yg(user):
     # prof = user['description']
-    if user['lang'] == 'en' and user['protected'] == False: # and user['verified']==False:
+    if user['lang'] == 'en' and user['protected'] == False and user['verified'] == False:
         name_match = name_pat.search(user['name'].strip())
         # age_match = age_pat.search(prof.strip())
         if name_match and (name_match.group('first') in girl_names):
@@ -221,7 +221,16 @@ def common_word(dbname, colname):
 
 
 if __name__ == '__main__':
-    common_word('fed', 'scom')
+
+    db = dbt.db_connect_no_auth('young')
+    com = db['stream']
+    count = 0
+    for user in com.find():
+        if check_user(user['user'], 'YG'):
+            count += 1
+            print user['user']['screen_name']
+    print count
+    # common_word('fed', 'scom')
 
     # print girl_names, len(girl_names)
 

@@ -16,12 +16,17 @@ Filter tweets with location, but few tweets have location information
 Identify the location of users that post the crawled tweets, only store the users in UK
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 from twython import TwythonStreamer
 import urllib
 import imghdr
 import os
 import ConfigParser
 import datetime
+import ohsn.api.profiles_check as check
 from ohsn.util import db_util as dbutil
 
 config = ConfigParser.ConfigParser()
@@ -39,6 +44,7 @@ DBNAME = 'young'
 COLLECTION = 'stream'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
+user_set = set()
 
 # location_name = ['uk', 'u.k.', 'united kingdom', 'britain', 'england']
 
@@ -83,25 +89,27 @@ def store_tweet(tweet, collection=tweets, pictures=False):
     pre-processing accomplished is coercing date values to datetime.
     """
     # print tweet
-    tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-    collection.insert(tweet)
-    # global location_name
-    # user = tweet.get('user', None)
-    # if user:
-    #     location = user['location']
-    #     if location:
-    #         location = location.lower()
-    #         if any(x in location for x in location_name):
-    #             print location
-    #             tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-    #             tweet['user']['created_at'] = datetime.datetime.strptime(tweet['user']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-    #             # get pictures in tweet...
-    #             if pictures:
-    #                 get_pictures(tweet)
-    #
-    #             #print "TODO: alter the schema of the tweet to match the edge network spec from the network miner..."
-    #             #print "TODO: make the tweet id a unique index to avoid duplicates... db.collection.createIndex( { a: 1 }, { unique: true } )"
-    #             collection.insert(tweet)
+    if check.check_yg(tweet['user']) and tweet['user']['id'] not in user_set:
+        user_set.add(tweet['user']['id'])
+        tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        collection.insert(tweet)
+        # global location_name
+        # user = tweet.get('user', None)
+        # if user:
+        #     location = user['location']
+        #     if location:
+        #         location = location.lower()
+        #         if any(x in location for x in location_name):
+        #             print location
+        #             tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        #             tweet['user']['created_at'] = datetime.datetime.strptime(tweet['user']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        #             # get pictures in tweet...
+        #             if pictures:
+        #                 get_pictures(tweet)
+        #
+        #             #print "TODO: alter the schema of the tweet to match the edge network spec from the network miner..."
+        #             #print "TODO: make the tweet id a unique index to avoid duplicates... db.collection.createIndex( { a: 1 }, { unique: true } )"
+        #             collection.insert(tweet)
 
 
 
@@ -111,7 +119,7 @@ while True:
         # https://dev.twitter.com/streaming/overview/request-parameters                                 
         # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])
         track_list = []
-        with open('keyword.txt', 'r') as fo:
+        with open('keywords.txt', 'r') as fo:
             for line in fo.readlines():
                 track_list.append(line.strip())
         stream.statuses.filter(language=['en'], track=','.join(track_list))
