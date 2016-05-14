@@ -45,6 +45,7 @@ COLLECTION = 'stream'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]
 user_set = set()
+count = 0
 
 # location_name = ['uk', 'u.k.', 'united kingdom', 'britain', 'england']
 
@@ -89,6 +90,9 @@ def store_tweet(tweet, collection=tweets, pictures=False):
     pre-processing accomplished is coercing date values to datetime.
     """
     # print tweet
+    global count
+    print count+1
+    count += 1
     if check.check_yg(tweet['user']) and tweet['user']['id'] not in user_set:
         user_set.add(tweet['user']['id'])
         tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -119,7 +123,7 @@ while True:
         # https://dev.twitter.com/streaming/overview/request-parameters                                 
         # stream.statuses.filter(language=['en'], track=['bulimic, anorexic, ednos, ed-nos, bulimia, anorexia, eating disorder, eating-disorder, eating disordered, eating-disordered, CW, UGW, GW2, GW1, GW'])
         track_list = []
-        with open('keywords.txt', 'r') as fo:
+        with open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'keyword.txt')) as fo:
             for line in fo.readlines():
                 track_list.append(line.strip())
         stream.statuses.filter(language=['en'], track=','.join(track_list))
