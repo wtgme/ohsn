@@ -28,23 +28,23 @@ def extract_users(stream, user_info, size):
             for tweet in stream.find({'user_extracted':{'$exists': False}},
                                     ['id_str', 'user']).limit(min(1000, count, (size-csize))):
                 user = tweet['user']
-                if profiles_check.check_rd(user) == True:
-                    try:
-                        user_info.insert(user)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
+                # if profiles_check.check_rd(user) == True:
+                try:
+                    user_info.insert(user)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
                 stream.update({'id': int(tweet['id_str'])}, {'$set':{"user_extracted": True
                                                     }}, upsert=False)
         csize = user_info.count({})
 
 
 # '''Connect db and stream collections'''
-db = dbt.db_connect_no_auth('random')
+db = dbt.db_connect_no_auth('young')
 stream = db['stream']
 # Extracting users from stream files, add index for id to avoid duplicated users
-db = dbt.db_connect_no_auth('rd')
+# db = dbt.db_connect_no_auth('rd')
 user_info = db['poi']
 user_info.create_index("id", unique=True)
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from sample streams'
 
-extract_users(stream, user_info, 33)
+extract_users(stream, user_info, 3380)

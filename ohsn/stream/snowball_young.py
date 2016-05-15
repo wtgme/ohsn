@@ -37,7 +37,7 @@ ed_net.create_index([("user", pymongo.ASCENDING),
 
 while True:
     ed_seed = profiles_check.seed_all_profile(stream_users)
-    if len(ed_seed)==0:
+    if len(ed_seed) == 0:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
         break
     else:
@@ -47,8 +47,8 @@ while True:
 while True:
     level = 1
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-    following_flag = following.snowball_following(ed_poi, ed_net, level)
+    following_flag = following.snowball_following(ed_poi, ed_net, level, check='YG')
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-    follower_flag = follower.snowball_follower(ed_poi, ed_net, level)
+    follower_flag = follower.snowball_follower(ed_poi, ed_net, level, check='YG')
     if following_flag == False and follower_flag == False:
         break

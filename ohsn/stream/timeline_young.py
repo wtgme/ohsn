@@ -12,7 +12,7 @@ from ohsn.util import db_util as dbt
 
 print 'Job starts.......'
 '''Connecting db and user collection'''
-db = dbt.db_connect_no_auth('yg')
+db = dbt.db_connect_no_auth('young')
 sample_user = db['com']
 sample_time = db['timeline']
 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Connecting db well'
