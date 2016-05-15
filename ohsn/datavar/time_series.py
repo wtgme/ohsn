@@ -26,6 +26,7 @@ import ohsn.textprocessor.description_miner as textp
 import ohsn.networkminer.keyplay as keyp
 import ohsn.networkminer.nets_agg as netagg
 import ohsn.networkminer.friend_pro as fridp
+import activity
 from datetime import datetime
 
 
@@ -67,11 +68,12 @@ def transform_net_data(dbname, colname, newdbname, newcolname):
 
 
 def process(dbname, colname, range, index, f=''):
-    # yearsplit = pickle.load(open(filename, 'r'))
-    # processlist = []
-    # for key in yearsplit:
-    #     if key in range:
-    #         processlist += (yearsplit[key])
+    yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
+    processlist = []
+    for key in yearsplit:
+        if key in range:
+            processlist += (yearsplit[key])
+
     db = dbt.db_connect_no_auth(dbname)
     timelines = db[colname]
 
@@ -90,11 +92,11 @@ def process(dbname, colname, range, index, f=''):
                               ('id', pymongo.DESCENDING)])
     timetem.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    # for tid in processlist:
-    #     # print tid
-    #     status = timelines.find_one({'id': tid})
+    for tid in processlist:
+        # print tid
+        status = timelines.find_one({'id': tid})
     #     # print status
-    for status in timelines.find({}):
+    # for status in timelines.find({}):
         ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         if ts.year in range:
             try:
@@ -124,6 +126,8 @@ if __name__ == '__main__':
     # textp.process_poi(dbname, tmpcom)
 
     '''Core ED'''
+    yearsplit = activity.timeline_split('fed', 'timeline')
+    pickle.dump(yearsplit, open('data/fedtyear.pick', 'w'))
     # dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
     # analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
     # fridp.ed_pro(dbname, 'scom', tmpcom, 'net')
