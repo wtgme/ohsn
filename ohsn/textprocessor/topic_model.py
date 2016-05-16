@@ -159,6 +159,11 @@ def topic_model(dbname, colname, timecol, uset=None, dtype='document'):
 
 if __name__ == '__main__':
     # print pro_process_text('A survey of user opinion of computer system response time')
-    topic_model('fed', 'scom', 'stimeline')
-    topic_model('fed', 'scom', 'stimeline', 'hashtag')
-    # word_vect()
+    # topic_model('fed', 'scom', 'stimeline', dtype='document')
+    # topic_model('fed', 'scom', 'stimeline', dtype='hashtag')
+    word_vect()
+    # dtype = 'document'
+    # lda = pickle.load(open('data/lda_'+dtype+'.pick', 'r'))
+    # lda.print_topics(num_topics=20, num_words=100)
+
+
