@@ -21,7 +21,9 @@ import numpy as np
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
+stopwds = stopwords.words('english')
+stemmer = EnglishStemmer()
+tokenizer = RegexpTokenizer(r'\w+')
 
 def read_hashtag(dbname, colname, timecol, uset=None):
     db = dbt.db_connect_no_auth(dbname)
@@ -42,6 +44,40 @@ def read_hashtag(dbname, colname, timecol, uset=None):
             ids.append(uid)
             documents.append(tags)
     pickle.dump(ids, open('data/hash_ids.pick', 'w'))
+    return documents
+
+
+def read_setence(dbname, colname, timecol, uset=None):
+    db = dbt.db_connect_no_auth(dbname)
+    col = db[colname]
+    timelines = db[timecol]
+
+    rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
+    mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
+    hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
+    ugrex = re.compile(r'(https?://[^\s]+)')  # for url
+    documents = list()
+    ids = list()
+
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
+        uid = user['id']
+    # for uid in uset:
+        for tweet in timelines.find({'user.id': uid}):
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = rtgrex.sub('', text)
+            text = mgrex.sub('', text)
+            text = hgrex.sub('', text)
+            text = ugrex.sub('', text)
+            text = text.strip()
+            if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                text += '.'
+            words = pro_process_sentence(text)
+                # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+            if len(words) > 5:
+                ids.append(uid)
+                documents.append(words)
+    pickle.dump(ids, open('data/sen_ids.pick', 'w'))
     return documents
 
 
@@ -80,10 +116,6 @@ def read_document(dbname, colname, timecol, uset=None):
     pickle.dump(ids, open('data/doc_ids.pick', 'w'))
     return documents
 
-stopwds = stopwords.words('english')
-stemmer = EnglishStemmer()
-tokenizer = RegexpTokenizer(r'\w+')
-
 
 def pro_process_text(text):
     text = text.lower()
@@ -99,6 +131,11 @@ def pro_process_text(text):
                     continue
                 new_token.append(st)
     return new_token
+
+
+def pro_process_sentence(sentence):
+    sentence = sentence.lower()
+    return tokenizer.tokenize(sentence)
 
 
 def pro_process_documents(documents):
@@ -124,9 +161,10 @@ def pre_process(texts):
     return corpus, dictionary
 
 
-def word_vect():
-    sentences = [['first', 'sentence'], ['second', 'sentence']]
-    model = models.Word2Vec(sentences, min_count=1)
+def word_vect(dbname, colname, timecol, uset=None):
+    sentences = read_setence(dbname, colname, timecol, uset)
+    model = models.word2vec.Word2Vec(sentences, workers=8)
+    pickle.dump(model, open('data/word2vec.pick', 'w'))
 
 
 def best_K(corpus, dictionary, mintopic=1, maxtopic=100, step=1):
@@ -158,12 +196,20 @@ def topic_model(dbname, colname, timecol, uset=None, dtype='document'):
     pickle.dump(lda, open('data/lda_'+dtype+'.pick', 'w'))
 
 if __name__ == '__main__':
+    '''Topic Modeling'''
     # print pro_process_text('A survey of user opinion of computer system response time')
     # topic_model('fed', 'scom', 'stimeline', dtype='document')
     # topic_model('fed', 'scom', 'stimeline', dtype='hashtag')
-    word_vect()
-    # dtype = 'document'
+
+    # dtype = 'hashtag'
     # lda = pickle.load(open('data/lda_'+dtype+'.pick', 'r'))
     # lda.print_topics(num_topics=20, num_words=100)
+
+    '''Word2Vec testing'''
+    # word_vect('fed', 'scom', 'stimeline')
+    model = pickle.load(open('data/word2vec.pick', 'r'))
+    for word in model.vocab:
+        print word
+    print model.most_similar(positive=['thinspos', 'thinspo'], negative=['fat'])
 
 
