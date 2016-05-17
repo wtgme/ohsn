@@ -70,6 +70,30 @@ def size_gaint_comp_net_db(db_name, collection='None'):
     return size_gaint_comp(DG)
 
 
+def add_attribute(g, att_name, dbname, colname, db_field_name):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    vdict = {}
+    for node in nx.nodes(g):
+        vdict[node] = 0
+    for x in com.find({db_field_name: {'$exists': True}}, ['id', db_field_name]):
+        uid = x['id']
+        if g.has_node(uid):
+            if '.' in db_field_name:
+                levels = db_field_name.split('.')
+                t = x.get(levels[0])
+                for level in levels[1:]:
+                    t = t.get(level)
+                    if t is None:
+                        break
+                vdict[uid] = int(round(t*100, 0))
+            else:
+                t = x.get(db_field_name)
+                vdict[uid] = int(round(t*100, 0))
+    nx.set_node_attributes(g, att_name, vdict)
+    return g
+
+
 def size_gaint_comp(DG):
     G = get_gaint_comp(DG)
     return size_net(G)

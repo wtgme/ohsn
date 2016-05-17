@@ -139,16 +139,19 @@ def network_mining(poi, timelines, network, level):
     # TODO: change net_anal.tnmined as int not bool for multiple processing
     #### Start to mining relationship network from users' timelines
     while True:
-        count = poi.count({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
-                                             {'net_anal.tnmined': False}], 'level': {'$lte': level}})
+        count = poi.count({'$or': [{'net_anal.tnmined': {'$exists': False}},
+                                            {'net_anal.tnmined': False}]})
+        # count = poi.count({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
+        #                                      {'net_anal.tnmined': False}], 'level': {'$lte': level}})
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
-                                             {'net_anal.tnmined': False}], 'level': {'$lte': level}}, {'id': 1}).limit(250):
-
+        # for user in poi.find({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
+        #                                      {'net_anal.tnmined': False}], 'level': {'$lte': level}}, {'id': 1}).limit(250):
+        for user in poi.find({'$or': [{'net_anal.tnmined': {'$exists': False}},
+                                            {'net_anal.tnmined': False}]}).limit(250):
             for tweet in timelines.find({'user.id': user['id']}):
                 # parse the tweet for mrr edges:
 
@@ -195,9 +198,9 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
                                  ("type", pymongo.ASCENDING),
                                  ("statusid", pymongo.ASCENDING)],
                                 unique=True)
-    sample_poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('net_anal.tnmined', pymongo.ASCENDING),
-                      ('level', pymongo.ASCENDING)], unique=False)
+    # sample_poi.create_index([('timeline_count', pymongo.DESCENDING),
+    #                   ('net_anal.tnmined', pymongo.ASCENDING),
+    #                   ('level', pymongo.ASCENDING)], unique=False)
     # set every poi to have not been analysed.
     sample_poi.update_many({"net_anal.tnmined": True}, {'$set': {"net_anal.tnmined": False}}, upsert=False)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting network dbs well'
@@ -206,7 +209,8 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     network_mining(sample_poi, sample_time, sample_network, level)
 
 if __name__ == '__main__':
-    process_db('fed', 'com', 'timeline', 'bnet', 10000)
+    # process_db('fed', 'com', 'timeline', 'bnet', 10000)
+    process_db('echelon', 'poi', 'timelines', 'bnet', 10000)
     # process_db('sed', 'com', 'timeline', 'bnet', 10)
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
