@@ -5,9 +5,9 @@ Created on 14:56, 03/11/15
 @author: wt
 """
 
-# import sys
-# from os import path
-# sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 import ohsn.util.db_util as dbutil
 import datetime
@@ -80,7 +80,9 @@ def process_db(dbname, colname, timename):
     process(sample_poi, sample_time, 1000)
 
 if __name__ == '__main__':
-    process_db('fed', 'scom', 'stimeline')
+    # process_db('fed', 'scom', 'stimeline')
+    process_db('random', 'com', 'timeline')
+    process_db('young', 'com', 'timeline')
     # process_db('sed', 'com', 'timeline')
     # process_db('srd', 'com', 'timeline')
     # process_db('syg', 'com', 'timeline')

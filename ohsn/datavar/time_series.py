@@ -96,7 +96,7 @@ def process(dbname, colname, range, index, f=''):
         # print tid
         status = timelines.find_one({'id': tid})
     #     # print status
-    # for status in timelines.find({}):
+    # for status in timelines.find({}, no_cursor_timeout=True):
         ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         if ts.year in range:
             try:

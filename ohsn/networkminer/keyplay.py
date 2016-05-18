@@ -127,10 +127,10 @@ def subnetworks(dbname, com, fnet, bnet, sfnet, sbnet):
 
 if __name__ == '__main__':
 
-    db_name = 'tyg'
+    db_name = 'echelon'
     # tweet_ret_times('fed')
     # extract_friend_subnetwork(db_name, 'com', 'net', 'snet')
-    extract_behavior_subnetwork(db_name, 'com', 'bnet', 'sbnet')
+    extract_behavior_subnetwork(db_name, 'poi', 'bnet', 'sbnet')
     # extract_friend_subnetwork(db_name, 'com_t1', 'net', 'snet_t1')
     # extract_friend_subnetwork(db_name, 'com_t2', 'net', 'snet_t2')
     # extract_friend_subnetwork(db_name, 'com_t3', 'net', 'snet_t3')

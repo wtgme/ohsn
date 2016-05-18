@@ -13,9 +13,9 @@ undirect mention: 4
 @author: wt
 """
 
-# import sys
-# from os import path
-# sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 from ohsn.util import db_util as dbutil
 import datetime
 import pymongo

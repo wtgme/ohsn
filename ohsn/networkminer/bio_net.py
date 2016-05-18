@@ -6,7 +6,9 @@ Created on 13:50, 25/04/16
 Import bio infomration into network, see what distribution of bio information in network
 
 """
-
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 from ohsn.util import db_util as dbt
 from ohsn.util import graph_util as grt
 from ohsn.util import net_util as nt
@@ -35,76 +37,83 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 def feature_assort_friend_nt(dbname, colname, comname, db_field_names, directed=True):
     g = nt.load_behavior_network(dbname, colname)
-    # g = grt.load_network(dbname, colname)
+    # g = nt.load_network(dbname, colname)
     node_size, edge_size = g.number_of_nodes(), g.number_of_edges()
     print 'All, ', node_size, ',', edge_size, ',', round(nt.degree_assortativity_coefficient(g, x='out', y='in', weight='weight'), 3)
-    outputs = list()
-    outputs.append('Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Mean, STD, p_value')
-    for db_field_name in db_field_names:
-        g = nt.add_attribute(g, 'foi', dbname, comname, db_field_name)
-        raw_values = nt.get_node_attributes(g, 'foi').values()
-        values = drop_zeros(raw_values)
-        if len(values) > 100:
-            output = ''
-            # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
-            maxv, minv = max(values), min(values)
-            vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
-            sg = g.subgraph(vs)
-            t_node_size, t_edge_size = sg.number_of_nodes(), sg.number_of_edges()
-            output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
-                      + str(round(float(t_node_size)/node_size, 3)) + ',' + str(round(float(t_edge_size)/edge_size, 3))+ ',' \
-                      + str(round(nt.degree_assortativity_coefficient(sg, x='out', y='in', weight='weight'), 3)) + ',' \
-                      + str(round(nt.numeric_assortativity_coefficient(sg, attribute='foi'), 3)) + ','
-            # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
-            #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
-            #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-            raw_assort = nt.numeric_assortativity_coefficient(sg, attribute='foi', nodes=vs)
-            ass_list = list()
-            for i in xrange(1000):
-                np.random.shuffle(raw_values)
-                nt.set_node_attributes(g, 'foi', dict(zip(nt.nodes(g), raw_values)))
-                vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
-                sg = g.subgraph(vs)
-                # t_node_size, t_edge_size = len(sg.vs), len(sg.es)
-                # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
-                #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
-                #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-                ass_list.append(nt.numeric_assortativity_coefficient(sg, attribute='foi'))
-            ass_list = np.array(ass_list)
-            amean, astd = np.mean(ass_list), np.std(ass_list)
-            pro = 1.0 - scipy.stats.norm(loc=amean, scale=astd).cdf(raw_assort)
-            output += str(round(amean, 3)) + ',' + str(round(astd, 3)) + ',' + str(round(pro, 3))
-            # print 'P-value of network, ', round(amean, 3), ',', round(astd, 3) , ',', round(pro, 3)
-            if pro >= 1-0.001 or pro <= 0.001:
-                output += '***'
-                outputs.append(output)
-                continue
-            if pro >= 1-0.01 or pro <= 0.01:
-                output += '**'
-                outputs.append(output)
-                continue
-            if pro >= 1-0.05 or pro <= 0.05:
-                output += '*'
-                outputs.append(output)
-                continue
-            else:
-                outputs.append(output)
-                continue
-    for doc in outputs:
-        print doc
+    # outputs = list()
+    # outputs.append('Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Mean, STD, p_value')
+    # for db_field_name in db_field_names:
+    #     g = nt.add_attribute(g, 'foi', dbname, comname, db_field_name)
+    #     raw_values = nt.get_node_attributes(g, 'foi').values()
+    #     values = drop_zeros(raw_values)
+    #     if len(values) > 100:
+    #         output = ''
+    #         # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
+    #         maxv, minv = max(values), min(values)
+    #         vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
+    #         sg = g.subgraph(vs)
+    #         t_node_size, t_edge_size = sg.number_of_nodes(), sg.number_of_edges()
+    #         output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
+    #                   + str(round(float(t_node_size)/node_size, 3)) + ',' + str(round(float(t_edge_size)/edge_size, 3))+ ',' \
+    #                   + str(round(nt.degree_assortativity_coefficient(sg, x='out', y='in', weight='weight'), 3)) + ',' \
+    #                   + str(round(nt.numeric_assortativity_coefficient(sg, attribute='foi'), 3)) + ','
+    #         # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
+    #         #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
+    #         #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
+    #         raw_assort = nt.numeric_assortativity_coefficient(sg, attribute='foi', nodes=vs)
+    #         ass_list = list()
+    #         for i in xrange(1000):
+    #             np.random.shuffle(raw_values)
+    #             nt.set_node_attributes(g, 'foi', dict(zip(nt.nodes(g), raw_values)))
+    #             vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
+    #             sg = g.subgraph(vs)
+    #             # t_node_size, t_edge_size = len(sg.vs), len(sg.es)
+    #             # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
+    #             #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
+    #             #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
+    #             ass_list.append(nt.numeric_assortativity_coefficient(sg, attribute='foi'))
+    #         ass_list = np.array(ass_list)
+    #         amean, astd = np.mean(ass_list), np.std(ass_list)
+    #         pro = 1.0 - scipy.stats.norm(loc=amean, scale=astd).cdf(raw_assort)
+    #         output += str(round(amean, 3)) + ',' + str(round(astd, 3)) + ',' + str(round(pro, 3))
+    #         # print 'P-value of network, ', round(amean, 3), ',', round(astd, 3) , ',', round(pro, 3)
+    #         if pro >= 1-0.001 or pro <= 0.001:
+    #             output += '***'
+    #             outputs.append(output)
+    #             continue
+    #         if pro >= 1-0.01 or pro <= 0.01:
+    #             output += '**'
+    #             outputs.append(output)
+    #             continue
+    #         if pro >= 1-0.05 or pro <= 0.05:
+    #             output += '*'
+    #             outputs.append(output)
+    #             continue
+    #         else:
+    #             outputs.append(output)
+    #             continue
+    # for doc in outputs:
+    #     print doc
 
 
 def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=True):
     g = grt.load_beh_network(dbname, colname)
     # g = grt.load_network(dbname, colname)
     node_size, edge_size = len(g.vs), len(g.es)
-    print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity_degree(directed=directed), 3)
+
+    print 'All, ', node_size, ',', edge_size, ',', round(g.assortativity(g.strength(g.vs, 'OUT', weights='weight'),
+                                                                         g.strength(g.vs, 'IN', weights='weight'), directed=directed), 3)
     outputs = list()
     outputs.append('Feature, #Node, #Edge, P_node, P_edge, D_assort, F_assort, Mean, STD, p_value')
     for db_field_name in db_field_names:
+        # print 'Processing ' + db_field_name
         g = grt.add_attribute(g, 'foi', dbname, comname, db_field_name)
         raw_values = np.array(g.vs['foi'])
         values = drop_zeros(raw_values)
+        # print g.strength(g.vs, 'OUT', weights='weight')[:10]
+        # print g.strength(g.vs, 'OUT')[:10]
+        # print g.vs[:10]['foi']
+        # print np.array(g.vs[:10]['foi'])*np.array(g.strength(g.vs, 'OUT')[:10])
         if len(values) > 100:
             output = ''
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
@@ -114,14 +123,17 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
             t_node_size, t_edge_size = len(sg.vs), len(sg.es)
             output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
                       + str(round(float(t_node_size)/node_size, 3)) + ',' + str(round(float(t_edge_size)/edge_size, 3))+ ',' \
-                      + str(round(sg.assortativity_degree(directed=directed), 3)) + ',' \
-                      + str(round(sg.assortativity('foi', directed=directed), 3)) + ','
+                      + str(round(sg.assortativity(sg.strength(sg.vs, 'OUT', weights='weight'),
+                                                   sg.strength(sg.vs, 'IN', weights='weight'), directed=directed), 3)) + ',' \
+                      + str(round(sg.assortativity(np.array(sg.strength(sg.vs, 'OUT', weights='weight'))*np.array(sg.vs['foi']),
+                                                   np.array(sg.strength(sg.vs, 'IN', weights='weight'))*np.array(sg.vs['foi']), directed=directed), 3)) + ','
             # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
             #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
             #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-            raw_assort = sg.assortativity('foi', directed=directed)
+            raw_assort = sg.assortativity(np.array(sg.strength(sg.vs, 'OUT', weights='weight'))*np.array(sg.vs['foi']),
+                                                   np.array(sg.strength(sg.vs, 'IN', weights='weight'))*np.array(sg.vs['foi']), directed=directed)
             ass_list = list()
-            for i in xrange(2000):
+            for i in xrange(1000):
                 np.random.shuffle(raw_values)
                 g.vs["foi"] = raw_values
                 vs = g.vs(foi_ge=minv, foi_le=maxv)
@@ -130,7 +142,8 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
                 # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
                 #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
                 #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-                ass_list.append(sg.assortativity('foi', directed=directed))
+                ass_list.append(sg.assortativity(np.array(sg.strength(sg.vs, 'OUT', weights='weight'))*np.array(sg.vs['foi']),
+                                                   np.array(sg.strength(sg.vs, 'IN', weights='weight'))*np.array(sg.vs['foi']), directed=directed))
             ass_list = np.array(ass_list)
             amean, astd = np.mean(ass_list), np.std(ass_list)
             pro = 1.0 - scipy.stats.norm(loc=amean, scale=astd).cdf(raw_assort)
@@ -214,5 +227,6 @@ if __name__ == '__main__':
     # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
-    feature_assort_friend_gt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields, directed=False)
+    feature_assort_friend_gt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
+    feature_assort_friend_gt(dbname='echelon', colname='sbnet', comname='poi', db_field_names=fields)
     # feature_assort_friend_nt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)

@@ -5,6 +5,9 @@ Created on 17:32, 25/02/16
 @author: wt
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import datetime
 import pymongo
 from ohsn.api import timelines
