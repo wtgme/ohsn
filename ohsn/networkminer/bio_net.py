@@ -18,7 +18,7 @@ import scipy.stats
 
 def drop_zeros(list_a):
     # discard the zeros in a list
-    return [i for i in list_a if i>0]
+    return [i for i in list_a if i > -1.0]
 
 
 def translate(value, leftMin, leftMax, rightMin, rightMax):
@@ -48,7 +48,7 @@ def feature_assort_friend_nt(dbname, colname, comname, db_field_names, directed=
             output = ''
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             maxv, minv = max(values), min(values)
-            vs = [n for n in g if (minv < g.node[n]['foi'] < maxv)]
+            vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
             sg = g.subgraph(vs)
             t_node_size, t_edge_size = sg.number_of_nodes(), sg.number_of_edges()
             output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
@@ -63,7 +63,7 @@ def feature_assort_friend_nt(dbname, colname, comname, db_field_names, directed=
             for i in xrange(1000):
                 np.random.shuffle(raw_values)
                 nt.set_node_attributes(g, 'foi', dict(zip(nt.nodes(g), raw_values)))
-                vs = [n for n in g if (minv < g.node[n]['foi'] < maxv)]
+                vs = [n for n in g if (minv <= g.node[n]['foi'] <= maxv)]
                 sg = g.subgraph(vs)
                 # t_node_size, t_edge_size = len(sg.vs), len(sg.es)
                 # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
@@ -109,7 +109,7 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
             output = ''
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             maxv, minv = max(values), min(values)
-            vs = g.vs(foi_gt=minv, foi_lt=maxv)
+            vs = g.vs(foi_ge=minv, foi_le=maxv)
             sg = g.subgraph(vs)
             t_node_size, t_edge_size = len(sg.vs), len(sg.es)
             output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
@@ -124,7 +124,7 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
             for i in xrange(2000):
                 np.random.shuffle(raw_values)
                 g.vs["foi"] = raw_values
-                vs = g.vs(foi_gt=minv, foi_lt=maxv)
+                vs = g.vs(foi_ge=minv, foi_le=maxv)
                 sg = g.subgraph(vs)
                 # t_node_size, t_edge_size = len(sg.vs), len(sg.es)
                 # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
@@ -199,7 +199,6 @@ def frienship(dbname, colname, comname):
         print user, len(friends), poi.intersection(friends)
 
 
-
 def behaviour(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     sbnet = db[colname]
@@ -215,5 +214,5 @@ if __name__ == '__main__':
     # fnet_bmi('fed', 'sbnet', 'scom', 'behaviour', 'gbmi', 'text_anal.gbmi.value')
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
-    # feature_assort_friend_gt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
-    feature_assort_friend_nt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)
+    feature_assort_friend_gt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields, directed=False)
+    # feature_assort_friend_nt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)

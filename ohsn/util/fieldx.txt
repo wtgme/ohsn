@@ -158,73 +158,73 @@ liwc_anal.result.ppron
 liwc_anal.result.i
 liwc_anal.result.we
 liwc_anal.result.you
-liwc_anal.result.shehe
-liwc_anal.result.they
-liwc_anal.result.ipron
-liwc_anal.result.article
-liwc_anal.result.verb
-liwc_anal.result.auxverb
-liwc_anal.result.past
-liwc_anal.result.present
-liwc_anal.result.future
-liwc_anal.result.adverb
-liwc_anal.result.preps
-liwc_anal.result.conj
-liwc_anal.result.negate
-liwc_anal.result.quant
-liwc_anal.result.number
-liwc_anal.result.swear
-liwc_anal.result.social
-liwc_anal.result.family
-liwc_anal.result.friend
-liwc_anal.result.humans
-liwc_anal.result.affect
-liwc_anal.result.posemo
-liwc_anal.result.negemo
-liwc_anal.result.anx
-liwc_anal.result.anger
-liwc_anal.result.sad
-liwc_anal.result.cogmech
-liwc_anal.result.insight
-liwc_anal.result.cause
-liwc_anal.result.discrep
-liwc_anal.result.tentat
-liwc_anal.result.certain
-liwc_anal.result.inhib
-liwc_anal.result.incl
-liwc_anal.result.excl
-liwc_anal.result.percept
-liwc_anal.result.see
-liwc_anal.result.hear
-liwc_anal.result.feel
-liwc_anal.result.bio
-liwc_anal.result.body
-liwc_anal.result.health
-liwc_anal.result.sexual
-liwc_anal.result.ingest
-liwc_anal.result.relativ
-liwc_anal.result.motion
-liwc_anal.result.space
-liwc_anal.result.time
-liwc_anal.result.work
-liwc_anal.result.achieve
-liwc_anal.result.leisure
-liwc_anal.result.home
-liwc_anal.result.money
-liwc_anal.result.relig
-liwc_anal.result.death
-liwc_anal.result.assent
-liwc_anal.result.nonfl
-liwc_anal.result.filler
-liwc_anal.result.Period
-liwc_anal.result.Comma
-liwc_anal.result.Colon
-liwc_anal.result.SemiC
-liwc_anal.result.QMark
-liwc_anal.result.Exclam
-liwc_anal.result.Dash
-liwc_anal.result.Quote
-liwc_anal.result.Apostro
-liwc_anal.result.Parenth
-liwc_anal.result.OtherP
-liwc_anal.result.AllPct
+    liwc_anal.result.shehe
+    liwc_anal.result.they
+    liwc_anal.result.ipron
+    liwc_anal.result.article
+    liwc_anal.result.verb
+    liwc_anal.result.auxverb
+    liwc_anal.result.past
+    liwc_anal.result.present
+    liwc_anal.result.future
+    liwc_anal.result.adverb
+    liwc_anal.result.preps
+    liwc_anal.result.conj
+    liwc_anal.result.negate
+    liwc_anal.result.quant
+    liwc_anal.result.number
+    liwc_anal.result.swear
+    liwc_anal.result.social
+    liwc_anal.result.family
+    liwc_anal.result.friend
+    liwc_anal.result.humans
+    liwc_anal.result.affect
+    liwc_anal.result.posemo
+    liwc_anal.result.negemo
+    liwc_anal.result.anx
+    liwc_anal.result.anger
+    liwc_anal.result.sad
+    liwc_anal.result.cogmech
+    liwc_anal.result.insight
+    liwc_anal.result.cause
+    liwc_anal.result.discrep
+    liwc_anal.result.tentat
+    liwc_anal.result.certain
+    liwc_anal.result.inhib
+    liwc_anal.result.incl
+    liwc_anal.result.excl
+    liwc_anal.result.percept
+    liwc_anal.result.see
+    liwc_anal.result.hear
+    liwc_anal.result.feel
+    liwc_anal.result.bio
+    liwc_anal.result.body
+    liwc_anal.result.health
+    liwc_anal.result.sexual
+    liwc_anal.result.ingest
+    liwc_anal.result.relativ
+    liwc_anal.result.motion
+    liwc_anal.result.space
+    liwc_anal.result.time
+    liwc_anal.result.work
+    liwc_anal.result.achieve
+    liwc_anal.result.leisure
+    liwc_anal.result.home
+    liwc_anal.result.money
+    liwc_anal.result.relig
+    liwc_anal.result.death
+    liwc_anal.result.assent
+    liwc_anal.result.nonfl
+    liwc_anal.result.filler
+    liwc_anal.result.Period
+    liwc_anal.result.Comma
+    liwc_anal.result.Colon
+    liwc_anal.result.SemiC
+    liwc_anal.result.QMark
+    liwc_anal.result.Exclam
+    liwc_anal.result.Dash
+    liwc_anal.result.Quote
+    liwc_anal.result.Apostro
+    liwc_anal.result.Parenth
+    liwc_anal.result.OtherP
+    liwc_anal.result.AllPct

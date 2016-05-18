@@ -75,7 +75,7 @@ def add_attribute(g, att_name, dbname, colname, db_field_name):
     com = db[colname]
     vdict = {}
     for node in nx.nodes(g):
-        vdict[node] = 0
+        vdict[node] = -1
     for x in com.find({db_field_name: {'$exists': True}}, ['id', db_field_name]):
         uid = x['id']
         if g.has_node(uid):

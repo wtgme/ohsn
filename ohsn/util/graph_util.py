@@ -80,7 +80,7 @@ def load_beh_network(db_name, collection='None', btype='communication'):
 def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
-    g.vs[att_name] = 0.0
+    g.vs[att_name] = -1.0
     for x in com.find({db_field_name: {'$exists': True}}, ['id', db_field_name]):
         uid = x['id']
         exist = True
