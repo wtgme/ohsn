@@ -30,6 +30,14 @@ import activity
 from datetime import datetime
 
 
+def timeline_date(dbname, timename):
+    db = dbt.db_connect_no_auth(dbname)
+    timeline = db[timename]
+    for tweet in timeline.find({'created_at_date': {'$exists': False}}, no_cursor_timeout=True):
+        ts = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        timeline.update_one({'id': tweet['id']}, {'$set': {'created_at_date': ts}}, upsert=False)
+
+
 def timeline(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[colname]
@@ -67,12 +75,12 @@ def transform_net_data(dbname, colname, newdbname, newcolname):
         netn.insert(status)
 
 
-def process(dbname, colname, range, index, f=''):
-    yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
-    processlist = []
-    for key in yearsplit:
-        if key in range:
-            processlist += (yearsplit[key])
+def process(dbname, colname, index, start=None, end=None, f=''):
+    # yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
+    # processlist = []
+    # for key in yearsplit:
+    #     if key in range:
+    #         processlist += (yearsplit[key])
 
     db = dbt.db_connect_no_auth(dbname)
     timelines = db[colname]
@@ -92,21 +100,24 @@ def process(dbname, colname, range, index, f=''):
                               ('id', pymongo.DESCENDING)])
     timetem.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    for tid in processlist:
-        # print tid
-        status = timelines.find_one({'id': tid}, no_cursor_timeout=True)
+    # for tid in processlist:
+    #     # print tid
+    #     status = timelines.find_one({'id': tid}, no_cursor_timeout=True)
     #     # print status
-    # for status in timelines.find({}, no_cursor_timeout=True):
-        ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-        if ts.year in range:
-            try:
-                timetem.insert(status)
-            except pymongo.errors.DuplicateKeyError:
-                pass
-            user = status['user']
-            user['level'] = 1
-            user['timeline_count'] = timetem.count({'user.id': user['id']})
-            comtem.replace_one({'id': user['id']}, user, upsert=True)
+    # quests = {'$exists': True}
+    # if start is not None:
+    #     quests['$gte'] = start
+    # if end is not None:
+    #     quests['$lt'] = end
+    for status in timelines.find({'created_at_date': {'$gte': start, '$lt': end}}, no_cursor_timeout=True):
+        try:
+            timetem.insert(status)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+        user = status['user']
+        user['level'] = 1
+        user['timeline_count'] = timetem.count({'user.id': user['id']})
+        comtem.replace_one({'id': user['id']}, user, upsert=True)
 
     analysis(dbname, tmpbnet, tmpcom, tmpsbnet, tmpsfnet, tmptimeline)
 
@@ -126,16 +137,16 @@ if __name__ == '__main__':
     # textp.process_poi(dbname, tmpcom)
 
     '''Core ED'''
-    yearsplit = activity.timeline_split('fed', 'timeline')
-    pickle.dump(yearsplit, open('data/fedtyear.pick', 'w'))
+    timeline_date('fed', 'timeline')
     # dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
     # analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
     # fridp.ed_pro(dbname, 'scom', tmpcom, 'net')
     # process('fed', 'timeline', [2009, 2010, 2011], 1, 'fed')
-    process('fed', 'timeline', [2012], 2, 'fed')
-    process('fed', 'timeline', [2013], 3, 'fed')
-    process('fed', 'timeline', [2014], 4, 'fed')
-    process('fed', 'timeline', [2015, 2016], 5, 'fed')
+    # process('fed', 'timeline', 1, start=datetime(2000, 1, 1), end=datetime(2012, 1, 1), f='fed')
+    process('fed', 'timeline', 2, start=datetime(2012, 1, 1), end=datetime(2013, 1, 1), f='fed')
+    process('fed', 'timeline', 3, start=datetime(2013, 1, 1), end=datetime(2014, 1, 1), f='fed')
+    process('fed', 'timeline', 4, start=datetime(2014, 1, 1), end=datetime(2015, 1, 1), f='fed')
+    process('fed', 'timeline', 5, start=datetime(2015, 1, 1), end=datetime(2017, 1, 1), f='fed')
 
     '''YG data'''
     # process('tyg', 'timeline', [2009, 2010, 2011], 1, 'data/ygtyear.pick')

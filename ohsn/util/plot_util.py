@@ -20,18 +20,20 @@ def significant(data, observed, name):
     pval = (np.sum(data > absobserved) +
             np.sum(data < -absobserved))/float(len(data))
     print pval
-    tmax = np.percentile(data, 1-pval)
-    tmin = np.percentile(data, pval)
-    print 'Test pvalue', tmax, tmin, observed
+    tmax = np.percentile(data, (1-np.sum(data > absobserved)/float(len(data)))*100)
+    tmin = np.percentile(data, 100* np.sum(data > absobserved)/float(len(data)))
+    print 'Test pvalue', tmin, tmax, observed
     xmax = np.percentile(data, 97.5)
     xmin = np.percentile(data, 2.5)
-    pylab.title('Empirical null distribution in the assortativity of ' + name)
+    pylab.title('Empirical assortativity distribution of ' + name.split('.')[1].upper())
     pylab.hist(data, bins=100, histtype='step', normed=True)
-    pylab.axvline(observed, c='green', linewidth=3, label='p='+str(round(pval, 3)))
+    pylab.axvline(observed, c='green', linewidth=3, label='Observed')
     # pylab.axvline(-observed, c='green', linewidth=3, label='-Observed')
     pylab.axvline(xmax, c='red', linestyle='-.', linewidth=3, label='p=0.05')
-    pylab.axvline(xmin, c='red', linestyle='-.', linewidth=3, label='p=-0.05')
-    # pylab.text(60, .025, 'p ='+str(round(pval, 3)), fontsize=16)
+    pylab.axvline(xmin, c='red', linestyle='-.', linewidth=3)
+    strx = 'p '+str(round(pval, 3))
+    print strx
+    pylab.text(2, 30, strx, fontsize=15)
     pylab.legend()
     pylab.grid(True)
     pylab.show()

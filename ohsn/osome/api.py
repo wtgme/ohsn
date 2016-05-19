@@ -6,6 +6,7 @@ Created on 10:54 PM, 5/18/16
 """
 import unirest
 import urllib
+import ssl
 
 # unirest.timeout(10)
 def callback_function(response):
@@ -71,12 +72,12 @@ def tweet_ids(start, end, q):
     end = urllib.quote(end.encode('utf8'))
     q = urllib.quote(q.encode('utf8'))
     print start, end, q
-    response = unirest.get("https://osome-public.p.mashape.com/tweet-id",
-      headers={
-        "X-Mashape-Key": "G8LtuZOPOwmshZf6jTvEGxob5QuZp10kxV4jsnAvnOb4uilKkG",
-        "Accept": "application/json"
-      },
-      params={"end": end, "q": q, "start": start }
+    response = unirest.get("https://osome-public.p.mashape.com/tweet-id?",
+        headers={
+            "X-Mashape-Key": "G8LtuZOPOwmshZf6jTvEGxob5QuZp10kxV4jsnAvnOb4uilKkG",
+            "Accept": "application/json"
+        },
+      params={ "start": start, "end": end, "q": q}
     )
     print response.code # The HTTP status code
     print response.headers # The HTTP headers

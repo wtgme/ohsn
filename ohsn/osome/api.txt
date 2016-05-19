@@ -1,0 +1,882 @@
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #eatingdisorder
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:02 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -159
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/815dae78-f610-4887-a077-58ba781af786', u'job_id': u'815dae78-f610-4887-a077-58ba781af786'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #eatingdisorder
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:02 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -160
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/6285cfe2-1c6a-4094-8a4b-7b2f29d0fc2d', u'job_id': u'6285cfe2-1c6a-4094-8a4b-7b2f29d0fc2d'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #eatingdisorder
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:03 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -161
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/f334e1c4-b434-4c19-b10c-266b2bde287c', u'job_id': u'f334e1c4-b434-4c19-b10c-266b2bde287c'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #eatingdisorder
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:03 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -162
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/8317660a-d98d-4a34-9880-be3a1d1dd640', u'job_id': u'8317660a-d98d-4a34-9880-be3a1d1dd640'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #anorexia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:03 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -163
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/1ea81b9b-7077-408e-8a19-462fbdf41793', u'job_id': u'1ea81b9b-7077-408e-8a19-462fbdf41793'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #anorexia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:04 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -164
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/df83c6eb-21f1-4cce-9bcd-5b79cb753e09', u'job_id': u'df83c6eb-21f1-4cce-9bcd-5b79cb753e09'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #bulimia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:04 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -165
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/cda87b54-b7cb-4c90-bb23-94ae3874eb02', u'job_id': u'cda87b54-b7cb-4c90-bb23-94ae3874eb02'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #bulimia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:05 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -166
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/e87a0918-9c51-453e-9fb1-0045cfff83a6', u'job_id': u'e87a0918-9c51-453e-9fb1-0045cfff83a6'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #anorexic
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:05 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -167
+Content-Length: 128
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/faaa49ea-499a-409a-816a-2a8350b4f2fb', u'job_id': u'faaa49ea-499a-409a-816a-2a8350b4f2fb'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #anorexic
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:05 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -168
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/3d5c224a-de86-4da9-b13e-4205648b66c1', u'job_id': u'3d5c224a-de86-4da9-b13e-4205648b66c1'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #ana
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:06 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -169
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/aea524ec-cb99-403f-ad77-f27d233be677', u'job_id': u'aea524ec-cb99-403f-ad77-f27d233be677'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #ana
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:06 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -170
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/ac6c43e9-f2da-4951-84ca-c438b38b9e25', u'job_id': u'ac6c43e9-f2da-4951-84ca-c438b38b9e25'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #bulimic
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:07 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -171
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/d655191f-d268-4079-825a-c957d8f8ea6b', u'job_id': u'd655191f-d268-4079-825a-c957d8f8ea6b'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #bulimic
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:07 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -172
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/cb7dda06-4e6c-4545-9728-99e5648f6098', u'job_id': u'cb7dda06-4e6c-4545-9728-99e5648f6098'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #anorexianervosa
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:07 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -173
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/9075f7b4-7345-4f61-be8a-463c70b889cd', u'job_id': u'9075f7b4-7345-4f61-be8a-463c70b889cd'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #anorexianervosa
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:08 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -174
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/3d92f6dc-341c-42ac-87c2-fb7f6730104e', u'job_id': u'3d92f6dc-341c-42ac-87c2-fb7f6730104e'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #mia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:08 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -175
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/c48a3ed7-17c0-4dd2-8d72-61315ce0994c', u'job_id': u'c48a3ed7-17c0-4dd2-8d72-61315ce0994c'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #mia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:08 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -176
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/5eb7fd01-d68d-4db5-a76e-843843aa274b', u'job_id': u'5eb7fd01-d68d-4db5-a76e-843843aa274b'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #thinspo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:09 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -177
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/986db5e0-6b29-4691-bca6-9e14606e1898', u'job_id': u'986db5e0-6b29-4691-bca6-9e14606e1898'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #thinspo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:09 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -178
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/d5b84c71-3b45-4482-9e1f-f72808a8a692', u'job_id': u'd5b84c71-3b45-4482-9e1f-f72808a8a692'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #bulemia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:10 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -179
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/a600b73f-7ed2-4bbf-807a-68952303c0c0', u'job_id': u'a600b73f-7ed2-4bbf-807a-68952303c0c0'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #bulemia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:10 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -180
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/5b3f0b9e-30e8-4de3-b335-fe441fbd0682', u'job_id': u'5b3f0b9e-30e8-4de3-b335-fe441fbd0682'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #purge
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:10 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -181
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/87bf4006-1a3e-4ac5-a981-576810a2a5d9', u'job_id': u'87bf4006-1a3e-4ac5-a981-576810a2a5d9'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #purge
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:11 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -182
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/0e0218f9-e772-420b-89a9-a538c4e4b0a6', u'job_id': u'0e0218f9-e772-420b-89a9-a538c4e4b0a6'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #bulimianervosa
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:11 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -183
+Content-Length: 132
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/ac05a413-d899-4624-aabf-e274fa41bd4d', u'job_id': u'ac05a413-d899-4624-aabf-e274fa41bd4d'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #bulimianervosa
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:12 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -184
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/a97d60a8-0b85-40bb-b1bf-716c0d297482', u'job_id': u'a97d60a8-0b85-40bb-b1bf-716c0d297482'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #binge
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:12 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -185
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/f08d65eb-8cee-4f85-876f-43434d1dd033', u'job_id': u'f08d65eb-8cee-4f85-876f-43434d1dd033'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #binge
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:12 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -186
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/683dfbad-d05d-4585-aa00-d60c8c018281', u'job_id': u'683dfbad-d05d-4585-aa00-d60c8c018281'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #selfharm
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:13 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -187
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/f3a99fd7-1190-486c-b69f-d273ef57dae9', u'job_id': u'f3a99fd7-1190-486c-b69f-d273ef57dae9'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #selfharm
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:13 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -188
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/c4376fd7-6545-44b7-8823-861eed95324f', u'job_id': u'c4376fd7-6545-44b7-8823-861eed95324f'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #ednos
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:14 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -189
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/db7c825c-3338-4f30-8d49-0fc5bb0ee10d', u'job_id': u'db7c825c-3338-4f30-8d49-0fc5bb0ee10d'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #ednos
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:14 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -190
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/0ca2b747-c599-44a7-b4cb-551493a8d956', u'job_id': u'0ca2b747-c599-44a7-b4cb-551493a8d956'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #edprobs
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:14 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -191
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/730451c4-2631-4d94-ae35-44183c15f308', u'job_id': u'730451c4-2631-4d94-ae35-44183c15f308'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #edprobs
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:15 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -192
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/fcb11975-34e8-4669-ba68-6bdd00b3cff5', u'job_id': u'fcb11975-34e8-4669-ba68-6bdd00b3cff5'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #edprob
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:15 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -193
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/6b82fa60-faed-471e-95eb-f41544282382', u'job_id': u'6b82fa60-faed-471e-95eb-f41544282382'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #edprob
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:15 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -194
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/d1684878-d7ac-424b-8b4d-6ea5c12e0da2', u'job_id': u'd1684878-d7ac-424b-8b4d-6ea5c12e0da2'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #proana
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:16 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -195
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/c72c52ae-283b-45c9-9cf1-833cb0212047', u'job_id': u'c72c52ae-283b-45c9-9cf1-833cb0212047'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #proana
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:16 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -196
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/7c251580-d271-495d-97a4-4b5c567ea715', u'job_id': u'7c251580-d271-495d-97a4-4b5c567ea715'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #anamia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:17 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -197
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/c741fb8c-7025-4067-bcea-74d55c86369e', u'job_id': u'c741fb8c-7025-4067-bcea-74d55c86369e'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #anamia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:17 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -198
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/b198b0e8-86bd-4578-8d01-6092c7e05030', u'job_id': u'b198b0e8-86bd-4578-8d01-6092c7e05030'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #promia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:17 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -199
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/6101cc0f-5bf5-429e-95c9-564694de64df', u'job_id': u'6101cc0f-5bf5-429e-95c9-564694de64df'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #promia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:18 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -200
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/a7fa23f0-e156-48f4-89be-b7bba84017e0', u'job_id': u'a7fa23f0-e156-48f4-89be-b7bba84017e0'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #askanamia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:18 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -201
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/bf7c7a51-68c8-4c7a-b9ad-76d1cabb6620', u'job_id': u'bf7c7a51-68c8-4c7a-b9ad-76d1cabb6620'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #askanamia
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:19 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -202
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/72086dd9-ddcf-4674-aba9-439988cfaf54', u'job_id': u'72086dd9-ddcf-4674-aba9-439988cfaf54'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #bonespo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:19 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -203
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/0c374f9b-2ea9-4c70-baa6-5e11e6b17250', u'job_id': u'0c374f9b-2ea9-4c70-baa6-5e11e6b17250'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #bonespo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:19 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -204
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/a423e5bb-98c8-4665-bb98-a028a92e92e0', u'job_id': u'a423e5bb-98c8-4665-bb98-a028a92e92e0'}
+-------------------------------------
+Time Series: 2011-01-01 2016-05-01 #legspo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:20 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -205
+Content-Length: 129
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/2d54a411-dd50-4f91-82da-5bbdf4a135b3', u'job_id': u'2d54a411-dd50-4f91-82da-5bbdf4a135b3'}
+-------------------------------------
+User Post Count: 2011-01-01 2016-05-01 #legspo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:20 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -206
+Content-Length: 131
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/301685f0-751e-4354-8d68-fc26063b7c76', u'job_id': u'301685f0-751e-4354-8d68-fc26063b7c76'}
+-------------------------------------
+Tweet Counts: 2011-01-01 2016-05-01 #eatingdisorder,#eatingdisorder,#anorexia,#bulimia,#anorexic,#ana,#bulimic,#anorexianervosa,#mia,#thinspo,#bulemia,#purge,#bulimianervosa,#binge,#selfharm,#ednos,#edprobs,#edprob,#proana,#anamia,#promia,#askanamia,#bonespo,#legspo
+200
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: HEAD, GET, OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 21600
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 19 May 2016 15:43:21 GMT
+Server: Mashape/5.0.6
+Vary: Accept-Encoding,User-Agent
+X-RateLimit-requests-Limit: 100
+X-RateLimit-requests-Remaining: -207
+Content-Length: 130
+Connection: Close
+
+{u'result_url': u'http://osome.iuni.iu.edu/moe/api/mashape/result/2e492165-2940-4884-903f-b2f020cebb89', u'job_id': u'2e492165-2940-4884-903f-b2f020cebb89'}
