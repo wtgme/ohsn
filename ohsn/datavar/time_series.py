@@ -94,7 +94,7 @@ def process(dbname, colname, range, index, f=''):
 
     for tid in processlist:
         # print tid
-        status = timelines.find_one({'id': tid})
+        status = timelines.find_one({'id': tid}, timeout=False)
     #     # print status
     # for status in timelines.find({}, no_cursor_timeout=True):
         ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')

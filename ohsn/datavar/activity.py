@@ -50,7 +50,7 @@ def timeline_split(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[colname]
     yeartw = {}
-    for status in timeline.find(no_cursor_timeout=True):
+    for status in timeline.find(timeout=False):
         ts = datetime.strptime(status['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         tid = status['id']
         tlist = yeartw.get(ts.year, [])
