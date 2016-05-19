@@ -159,7 +159,7 @@ def fast_community(g, weighted=True):
     '''Only for Undirected graph'''
     if g.is_directed():
         if weighted:
-            g = g.as_undirected(combine_edges='sum')
+            g = g.as_undirected(combine_edges=dict(weight="sum"))
         else:
             g = g.as_undirected()
     if weighted:

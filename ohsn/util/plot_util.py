@@ -12,6 +12,30 @@ from networkx import *
 from sklearn.metrics import mean_squared_error
 from matplotlib import cm
 import matplotlib as mpl
+import pylab
+
+
+def significant(data, observed, name):
+    absobserved = abs(observed)
+    pval = (np.sum(data > absobserved) +
+            np.sum(data < -absobserved))/float(len(data))
+    print pval
+    tmax = np.percentile(data, 1-pval)
+    tmin = np.percentile(data, pval)
+    print 'Test pvalue', tmax, tmin, observed
+    xmax = np.percentile(data, 97.5)
+    xmin = np.percentile(data, 2.5)
+    pylab.title('Empirical null distribution in the assortativity of ' + name)
+    pylab.hist(data, bins=100, histtype='step', normed=True)
+    pylab.axvline(observed, c='green', linewidth=3, label='p='+str(round(pval, 3)))
+    # pylab.axvline(-observed, c='green', linewidth=3, label='-Observed')
+    pylab.axvline(xmax, c='red', linestyle='-.', linewidth=3, label='p=0.05')
+    pylab.axvline(xmin, c='red', linestyle='-.', linewidth=3, label='p=-0.05')
+    # pylab.text(60, .025, 'p ='+str(round(pval, 3)), fontsize=16)
+    pylab.legend()
+    pylab.grid(True)
+    pylab.show()
+    # pylab.savefig('examples/permutation.png')
 
 
 def mean_bin(list_x, list_y, linear_bins=False):
