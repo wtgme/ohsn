@@ -11,6 +11,7 @@ Cannot detect the change of user. Disgard
 
 from twython import TwythonStreamer
 import ConfigParser
+import os
 
 
 class user_stream(TwythonStreamer):

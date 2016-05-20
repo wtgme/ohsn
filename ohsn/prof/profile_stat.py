@@ -9,11 +9,11 @@ Compare the difference from their prof information
 
 """
 
-# import sys
-# from os import path
-# sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
-from ohsn import util as plot
+from ohsn.util import plot_util as plot
 from ohsn.util import statis_util
 import ohsn.util.io_util as io
 import pickle
@@ -99,11 +99,12 @@ def liwc_feature_stat():
 
 def profile_feature_stat():
     fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+    filter = {'timeline_count': {'$exists': True}}
     for field in fields:
         print '=====================', field
-        feds = io.get_field_values('fed', field)
-        randoms = io.get_field_values('random', field)
-        youngs = io.get_field_values('young', field)
+        feds = io.get_values_one_field('fed', 'scom', field, filter)
+        randoms = io.get_values_one_field('random', 'scom', field, filter)
+        youngs = io.get_values_one_field('young', 'scom', field, filter)
 
         comm = statis_util.comm_stat(feds)
         print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
@@ -116,15 +117,15 @@ def profile_feature_stat():
               + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
         print '\\hline'
 
-        z = statis_util.z_test(randoms, feds)
-        print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        z = statis_util.z_test(youngs, feds)
-        print 'z-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
-              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        z = statis_util.z_test(youngs, randoms)
-        print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-              + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        # z = statis_util.z_test(randoms, feds)
+        # print 'z-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+        #       + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        # z = statis_util.z_test(youngs, feds)
+        # print 'z-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+        #       + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        # z = statis_util.z_test(youngs, randoms)
+        # print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+        #       + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
 
         print '\\hline'
         z = statis_util.ks_test(randoms, feds)
@@ -136,11 +137,12 @@ def profile_feature_stat():
         z = statis_util.ks_test(youngs, randoms)
         print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        plot.plot_pdf_mul_data([randoms, youngs, feds], ['--bo', '--r^', '--ks'], field,  ['Random', 'Younger', 'ED'], False)
+        plot.plot_pdf_mul_data([feds, randoms, youngs], ['--gs', '--bo', '--r^'], field,  ['ED', 'Random', 'Younger'],
+                               linear_bins=False, central=False, savefile=field+'.pdf')
 
 
-
-liwc_feature_stat()
-
+if __name__ == '__main__':
+    # liwc_feature_stat()
+    profile_feature_stat()
 
 

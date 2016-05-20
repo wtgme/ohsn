@@ -42,7 +42,7 @@ def get_fields_one_doc(x, fields):
 def get_values_one_field(dbname, colname, fieldname, filt={}):
     poi = dbt.db_connect_col(dbname, colname)
     values = []
-    for item in poi.find(filt, [fieldname]):
+    for item in poi.find(filt, [fieldname], no_cursor_timeout=True):
         values.append(item[fieldname])
     return values
 

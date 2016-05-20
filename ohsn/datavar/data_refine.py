@@ -65,13 +65,14 @@ def trans(db1, db2):
             except pymongo.errors.DuplicateKeyError:
                 pass
 
+if __name__ == '__main__':
 
-db = dbt.db_connect_no_auth('rd')
-ed_poi1 = db['com']
-netbd = db['net']
-delete_net(ed_poi1, netbd)
-# db2 = dbt.db_connect_no_auth('fed')
-# ed_poi2 = db2['poi']
-# trans(ed_poi1, ed_poi2)
-# ed_net = db['net_ed_all']
+    db = dbt.db_connect_no_auth('rd')
+    ed_poi1 = db['com']
+    netbd = db['net']
+    delete_net(ed_poi1, netbd)
+    # db2 = dbt.db_connect_no_auth('fed')
+    # ed_poi2 = db2['poi']
+    # trans(ed_poi1, ed_poi2)
+    # ed_net = db['net_ed_all']
 

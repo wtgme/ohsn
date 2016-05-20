@@ -31,15 +31,17 @@ def check():
         #     user = ycol.find_one({'id': uid}, ['screen_name'])
         print user['screen_name']
 
-# check()
+if __name__ == '__main__':
 
-a = 696189699430289409
-print a
-# b = float(a)
-# print b
-# print nstr(mpf(b), 50)
+    # check()
 
-# print int(696189699430289409)
-#
-# a = np.array([6.9618969943e+17], dtype='int64')
-# print a
+    a = 696189699430289409
+    print a
+    # b = float(a)
+    # print b
+    # print nstr(mpf(b), 50)
+
+    # print int(696189699430289409)
+    #
+    # a = np.array([6.9618969943e+17], dtype='int64')
+    # print a

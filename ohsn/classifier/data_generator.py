@@ -101,33 +101,34 @@ def liwc_feature_output(field_names, file_name, dbname, label, outids=False):
     if outids:
         pickle.dump(uids, open(file_name+'_ids.data', 'w'))
 
+if __name__ == '__main__':
 
-# ygimage = image_main_color('young', 'com')
-# pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
-# ygimage = pickle.load(open('data/ygimage.pick', 'r'))
-# print len(ygimage)
-# labels = map_color_label(ygimage)
-# pickle.dump(labels, open('data/yglabels.pick', 'w'))
-# labels = pickle.load(open('data/yglabels.pick', 'r'))
-# print labels
-# senti = map_label_senti(labels)
-# pickle.dump(senti, open('data/ygsentis.pick', 'w'))
-senti = pickle.load(open('data/ygsentis.pick', 'r'))
-LIWC = io.read_fields()
-print len(LIWC)
-print len(senti)
-print senti
-color_classify(senti, LIWC, 'data/ygcolor', 'young')
+    # ygimage = image_main_color('young', 'com')
+    # pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
+    # ygimage = pickle.load(open('data/ygimage.pick', 'r'))
+    # print len(ygimage)
+    # labels = map_color_label(ygimage)
+    # pickle.dump(labels, open('data/yglabels.pick', 'w'))
+    # labels = pickle.load(open('data/yglabels.pick', 'r'))
+    # print labels
+    # senti = map_label_senti(labels)
+    # pickle.dump(senti, open('data/ygsentis.pick', 'w'))
+    senti = pickle.load(open('data/ygsentis.pick', 'r'))
+    LIWC = io.read_fields()
+    print len(LIWC)
+    print len(senti)
+    print senti
+    color_classify(senti, LIWC, 'data/ygcolor', 'young')
 
 
-# LIWC = io.read_fields()
-# common = pickle.load(open('data/common.pick', 'r'))
-# fields = LIWC[common]
-# print len(LIWC[common])
-# print fields
-#
-# # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
-# # fed, random, young
-# liwc_feature_output(fields, 'data/test', 'fed', '', True)
+    # LIWC = io.read_fields()
+    # common = pickle.load(open('data/common.pick', 'r'))
+    # fields = LIWC[common]
+    # print len(LIWC[common])
+    # print fields
+    #
+    # # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
+    # # fed, random, young
+    # liwc_feature_output(fields, 'data/test', 'fed', '', True)
 
 
