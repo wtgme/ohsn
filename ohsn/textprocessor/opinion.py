@@ -35,10 +35,10 @@ def data_4_opinionfinder(dbname, comname, timename, outpath, filter={}):
             text = text.strip()
             if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
                 text += '.'
-		
-            if len(text) > 5:
-                documents.append(text)
-        if len(documents)>0:
+            words = text.split()
+            if len(words) > 5:
+                documents.append(' '.join(words))
+        if len(documents) > 0:
             with open(outpath+'/'+user+'.data', 'w') as fo:
                 for document in documents:
                     fo.write(document+'\n')
