@@ -179,13 +179,15 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
                         log_min_size, log_max_size, num=number_of_bins)))
     hist, edges = np.histogram(data, bins, density=True)
     bin_centers = (edges[1:]+edges[:-1])/2.0
-    new_x, new_y = [], []
-    # filter_limit = np.amax(hist) * 0.01
-    for index in xrange(len(hist)):
-        if hist[index] != 0:
-            new_x.append(bin_centers[index])
-            new_y.append(hist[index])
-    return new_x, new_y
+    hist[hist==0] = np.nan
+    return bin_centers, hist
+    # new_x, new_y = [], []
+    # # filter_limit = np.amax(hist) * 0.01
+    # for index in xrange(len(hist)):
+    #     if hist[index] != 0:
+    #         new_x.append(bin_centers[index])
+    #         new_y.append(hist[index])
+    # return new_x, new_y
 
 
 def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
@@ -212,31 +214,31 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     # print np.sum(hist*np.diff(edges))
     # hist = hist / hist.sum()
     bin_centers = (edges[1:]+edges[:-1])/2.0
-    new_x, new_y = [], []
-    filter_limit = np.amax(hist) * 0.01
-    for index in xrange(len(hist)):
-        if hist[index] >= filter_limit:
-            new_x.append(bin_centers[index])
-            new_y.append(hist[index])
-    return new_x, new_y
+    hist[hist==0] = np.nan
+    return bin_centers, hist
+    # new_x, new_y = [], []
+    # filter_limit = np.amax(hist) * 0.01
+    # for index in xrange(len(hist)):
+    #     if hist[index] >= filter_limit:
+    #         new_x.append(bin_centers[index])
+    #         new_y.append(hist[index])
+    # return new_x, new_y
 
 
-def pdf_plot_one_data(data, name, linear_bins=True, title=None, central=False, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None, **kwargs):
+def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, fit_end=1, savefile=None, **kwargs):
     print 'Original length', len(data)
     data = drop_zeros(data)
     print 'Stripped length', len(data)
     # plt.gcf()
     # data = outstrength
-    if not xmin:
-        if central:
-            xmin = np.percentile(data, 2.5)
-        else:
-            xmin = min(data)
-    if not xmax:
-        if central:
-            xmax = np.percentile(data, 97.5)
-        else:
-            xmax = max(data)
+    if central:
+        xmin = np.percentile(data, 2.5)
+    else:
+        xmin = min(data)
+    if central:
+        xmax = np.percentile(data, 97.5)
+    else:
+        xmax = max(data)
     # list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     # plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
@@ -256,8 +258,6 @@ def pdf_plot_one_data(data, name, linear_bins=True, title=None, central=False, x
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
     ax.grid(True)
-    if title:
-        ax.set_title(title)
     if savefile is None:
         plt.show()
     else:
@@ -265,20 +265,18 @@ def pdf_plot_one_data(data, name, linear_bins=True, title=None, central=False, x
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, central=True, min_x=None, max_x=None, savefile=None, **kwargs):
+def plot_pdf_mul_data(lists, denots, labels=None, linear_bins=True, central=False, savefile=None, **kwargs):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
-    if not max_x:
-        if central:
-            max_x = max([np.percentile(lista, 97.5) for lista in lists])
-        else:
-            max_x = max([max(lista) for lista in lists])
-    if not min_x:
-        if central:
-            min_x = min([np.percentile(lista, 2.5) for lista in lists])
-        else:
-            min_x = min([min(lista) for lista in lists])
+    if central:
+        max_x = max([np.percentile(lista, 97.5) for lista in lists])
+    else:
+        max_x = max([max(lista) for lista in lists])
+    if central:
+        min_x = min([np.percentile(lista, 2.5) for lista in lists])
+    else:
+        min_x = min([min(lista) for lista in lists])
 
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     plt.plot(list_x, list_y, denots[0], label=labels[0])
