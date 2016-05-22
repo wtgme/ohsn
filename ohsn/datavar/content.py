@@ -8,6 +8,9 @@ retweet, mention, reply behaviour analysis
 hashtag, retweet analysis
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbt
 import ohsn.util.plot_util as plot
