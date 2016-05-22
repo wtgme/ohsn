@@ -166,12 +166,13 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     if not xmin:
         xmin = min(data)
     if linear_bins:
-        print xmin, xmax
+        # print xmin, xmax
         bins = range(int(xmin), int(xmax))
     else:
         log_min_size = np.log10(xmin)
         log_max_size = np.log10(xmax)
         number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+        # print log_min_size, log_max_size, number_of_bins
         bins = np.unique(
                 np.floor(
                     np.logspace(
@@ -220,24 +221,28 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     return new_x, new_y
 
 
-def pdf_plot_one_data(data, name, linear_bins=True, title=None, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None):
+def pdf_plot_one_data(data, name, linear_bins=True, title=None, central=False, xmin=None, xmax=None, fit_start=1, fit_end=1, savefile=None, **kwargs):
     print 'Original length', len(data)
     data = drop_zeros(data)
     print 'Stripped length', len(data)
     # plt.gcf()
     # data = outstrength
-    if not xmax:
-        xmax = np.percentile(data, 97.5)
-        # xmax = max(data)
     if not xmin:
-        xmin = np.percentile(data, 2.5)
-        # xmin = min(data)
+        if central:
+            xmin = np.percentile(data, 2.5)
+        else:
+            xmin = min(data)
+    if not xmax:
+        if central:
+            xmax = np.percentile(data, 97.5)
+        else:
+            xmax = max(data)
     # list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     # plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
-    if fit_start!=fit_end:
+    if fit_start != fit_end:
         list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
         ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
     if linear_bins == False:
@@ -260,7 +265,7 @@ def pdf_plot_one_data(data, name, linear_bins=True, title=None, xmin=None, xmax=
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, central=True, min_x=None, max_x=None, savefile=None):
+def plot_pdf_mul_data(lists, denots, field, labels=None, linear_bins=True, central=True, min_x=None, max_x=None, savefile=None, **kwargs):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
