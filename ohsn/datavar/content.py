@@ -24,7 +24,7 @@ def beh_stat(dbname, comname, colname, filename):
     tweet_all, retweet_all, dmention_all, udmention_all, reply_all, hashtag_all, url_all, quota_all, count_sum_all = \
         0, 0, 0, 0, 0, 0, 0, 0, 0
     user_staits = {}
-    for user in com.find(['id'], no_cursor_timeout=True):
+    for user in com.find({}, ['id'], no_cursor_timeout=True):
         tweet, retweet, dmention, udmention, reply, hashtag, url, quota, count_sum = 0, 0, 0, 0, 0, 0, 0, 0, 0
         for status in timeline.find({'user.id': user['id']}, no_cursor_timeout=True):
             count_sum += 1
