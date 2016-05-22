@@ -14,39 +14,71 @@ import ohsn.util.plot_util as plot
 import pickle
 
 
-def beh_stat(dbname, colname):
+def beh_stat(dbname, comname, colname, filename):
     db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
     timeline = db[colname]
-    tweet, retweet, dmention, udmention, reply, count_sum = 0, 0, 0, 0, 0, 0
-    for status in timeline.find({}):
-        count_sum += 1
-        if 'retweeted_status' in status:
-            retweet += 1
-        else:
-            tweet += 1
-        if len(status['entities']['user_mentions']) > 0:
-            udmention_list = []
-            replyf, udmentionf, dmentionf = False, False, False
-            # get user mentions in retweet
-            if ('retweeted_status' in status) and len(status['retweeted_status']['entities']['user_mentions'])>0:
-                for udmention_item in status['retweeted_status']['entities']['user_mentions']:
-                    udmention_list.append(udmention_item['id'])
+    tweet_all, retweet_all, dmention_all, udmention_all, reply_all, hashtag_all, url_all, quota_all, count_sum_all = \
+        0, 0, 0, 0, 0, 0, 0, 0, 0
+    user_staits = {}
+    for user in com.find(['id'], no_cursor_timeout=True):
+        tweet, retweet, dmention, udmention, reply, hashtag, url, quota, count_sum = 0, 0, 0, 0, 0, 0, 0, 0, 0
+        for status in timeline.find({'user.id': user['id']}, no_cursor_timeout=True):
+            count_sum += 1
+            count_sum_all += 1
+            if 'retweeted_status' in status:
+                retweet += 1
+                retweet_all += 1
+            else:
+                tweet += 1
+                tweet_all += 1
+            if len(status['entities']['user_mentions']) > 0:
+                udmention_list = []
+                replyf, udmentionf, dmentionf = False, False, False
+                # get user mentions in retweet
+                if ('retweeted_status' in status) and len(status['retweeted_status']['entities']['user_mentions'])>0:
+                    for udmention_item in status['retweeted_status']['entities']['user_mentions']:
+                        udmention_list.append(udmention_item['id'])
 
-            for mention in status['entities']['user_mentions']:
-                if ('in_reply_to_user_id' in status) and (mention['id'] == status['in_reply_to_user_id']): # reply
-                    replyf = True
-                elif mention['id'] in udmention_list:  # mentions in Retweet content; undirected mention
-                    udmentionf = True
-                else:  # original mentions; directed mention
-                    dmentionf = True
-            if replyf:
-                reply += 1
-            if udmentionf:
-                udmention += 1
-            if dmentionf:
-                dmention += 1
-    print tweet, retweet, dmention, udmention, reply, count_sum
-    print float(tweet)/count_sum, float(retweet)/count_sum, float(dmention)/count_sum, float(udmention)/count_sum, float(reply)/count_sum
+                for mention in status['entities']['user_mentions']:
+                    if ('in_reply_to_user_id' in status) and (mention['id'] == status['in_reply_to_user_id']): # reply
+                        replyf = True
+                    elif mention['id'] in udmention_list:  # mentions in Retweet content; undirected mention
+                        udmentionf = True
+                    else:  # original mentions; directed mention
+                        dmentionf = True
+                if replyf:
+                    reply += 1
+                    reply_all += 1
+                if udmentionf:
+                    udmention += 1
+                    udmention_all += 1
+                if dmentionf:
+                    dmention += 1
+                    dmention_all += 1
+            if len(status['entities']['hashtags']) > 0:
+                hashtag += 1
+                hashtag_all += 1
+            if len(status['entities']['urls']) > 0:
+                url += 1
+                url_all += 1
+            if 'quoted_status' in status:
+                quota += 1
+                quota_all += 1
+        user_staits[user['id']] = (tweet, retweet, dmention,
+                                   udmention, reply, hashtag, url, quota, count_sum)
+    user_staits[-1] = (tweet_all, retweet_all, dmention_all, udmention_all,
+                       reply_all, hashtag_all, url_all, quota_all, count_sum_all)
+    pickle.dump(user_staits, open('data/'+filename+'.pick', 'w'))
+        # print tweet, retweet, dmention, udmention, reply, hashtag, url, quota, count_sum
+        # print 'Tweet Ratio, ', tweet, float(tweet)/count_sum
+        # print 'Rtweet Ratio, ', retweet, float(retweet)/count_sum
+        # print 'DMention Ratio, ', dmention, float(dmention)/count_sum
+        # print 'UDMention Ratio, ', udmention, float(udmention)/count_sum
+        # print 'Reply Ratio, ', reply, float(reply)/count_sum
+        # print 'Hashtag Ratio, ', hashtag, float(hashtag)/count_sum
+        # print 'URL Ratio, ', url, float(url)/count_sum
+        # print 'Quota Ratio, ', quota, float(quota)/count_sum
 
 
 def most_retweet(dbname, colname):
@@ -91,9 +123,9 @@ def most_entities(dbname, colname):
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    beh_stat('random', 'timeline')
-    # beh_stat('srd', 'timeline')
-    # beh_stat('syg', 'timeline')
+    beh_stat('fed', 'scom', 'stimeline', 'edbev')
+    beh_stat('random', 'com', 'timeline', 'rdbev')
+    beh_stat('young', 'com', 'timeline', 'ygbev')
 
     # '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')
