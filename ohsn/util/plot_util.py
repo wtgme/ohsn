@@ -255,13 +255,13 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
         xmax = np.percentile(data, 97.5)
     else:
         xmax = max(data)
-    # list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
-    # plt.plot(list_x, list_y, 'k+', label='Raw '+name)
     ax = plt.gca()
+    list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
+    ax.plot(list_x, list_y, 'g+', label='Raw '+name)
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     ax.plot(list_x, list_y, '--bo', label='Binned '+name)
     if fit_start != fit_end:
-        list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
+        list_fit_x, list_fit_y, coe = lr_ls(list_x, list_y, fit_start, fit_end)
         ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
     if linear_bins == False:
         ax.set_xscale("log")

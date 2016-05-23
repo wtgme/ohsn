@@ -139,7 +139,7 @@ def profile_feature_stat():
         print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
-                               linear_bins=False, central=False, fit=False, savefile=field+'.pdf')
+                               linear_bins=False, central=False, fit=True, savefile=field+'.pdf')
 
 def profile_feature_dependence():
     fields = ['friends_count', 'statuses_count', 'followers_count']
