@@ -127,8 +127,8 @@ def most_entities(dbname, colname):
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
     beh_stat('fed', 'scom', 'stimeline', 'edbev')
-    beh_stat('random', 'com', 'timeline', 'rdbev')
-    beh_stat('young', 'com', 'timeline', 'ygbev')
+    beh_stat('random', 'scom', 'timeline', 'rdbev')
+    beh_stat('young', 'scom', 'timeline', 'ygbev')
 
     # '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')

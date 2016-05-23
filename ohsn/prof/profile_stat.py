@@ -17,6 +17,8 @@ from ohsn.util import plot_util as plot
 from ohsn.util import statis_util
 import ohsn.util.io_util as io
 import pickle
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def liwc_feature_stat():
@@ -99,12 +101,12 @@ def liwc_feature_stat():
 
 def profile_feature_stat():
     fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
-    filter = {'timeline_count': {'$exists': True}}
+    filter = {}
     for field in fields:
         print '=====================', field
-        feds = io.get_values_one_field('fed', 'scom', field, filter)
-        randoms = io.get_values_one_field('random', 'scom', field, filter)
-        youngs = io.get_values_one_field('young', 'scom', field, filter)
+        feds = np.array(io.get_values_one_field('fed', 'scom', field, filter))+1
+        randoms = np.array(io.get_values_one_field('random', 'scom', field, filter))+1
+        youngs = np.array(io.get_values_one_field('young', 'scom', field, filter))+1
 
         comm = statis_util.comm_stat(feds)
         print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
@@ -127,23 +129,60 @@ def profile_feature_stat():
         # print 'z-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
         #       + ' & z-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
 
-        print '\\hline'
         z = statis_util.ks_test(randoms, feds)
         print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         z = statis_util.ks_test(youngs, feds)
-        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$:' + str(z[1]) \
+        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
         z = statis_util.ks_test(youngs, randoms)
         print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        plot.plot_pdf_mul_data([feds, randoms, youngs], ['--gs', '--bo', '--r^'], field,  ['ED', 'Random', 'Younger'],
-                               linear_bins=False, central=False, savefile=field+'.pdf')
+        plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
+                               linear_bins=False, central=False, fit=False, savefile=field+'.pdf')
 
-
+def profile_feature_dependence():
+    fields = ['friends_count', 'statuses_count', 'followers_count']
+    for i in xrange(len(fields)):
+        fi = fields[i]
+        for j in xrange(i+1, len(fields)):
+            fj = fields[j]
+            print '=========================Dependence :', fi, fj
+            ax = plt.gca()
+            for db, color, mark, label in [('fed', 'g', 's', 'ED'),
+                                           ('random', 'b', 'o', 'Random'),
+                                           ('young', 'r', '^', 'Young')]:
+                print '++++++++++++++++++++++++++Dependence :', fi, fj, db
+                fivalue = np.array(io.get_values_one_field(db, 'scom', fi))
+                fjvalue = np.array(io.get_values_one_field(db, 'scom', fj))
+                fivalue += 1
+                fjvalue += 1
+                xmeans, ymeans = plot.mean_bin(fivalue, fjvalue)
+                ax.scatter(xmeans, ymeans, s=50, c=color, marker=mark, label=label)
+                fit_start = min(fivalue)
+                fit_end = max(fivalue)
+                # fit_start = np.percentile(fivalue, 2.5)
+                # fit_end = np.percentile(fivalue, 97.5)
+                xfit, yfit, cof = plot.lr_ls(xmeans, ymeans, fit_start, fit_end)
+                ax.plot(xfit, yfit, c=color, linewidth=2, linestyle='--')
+                ax.annotate(r'$k_y \propto {k_x}^{'+str(round(cof, 2))+'}$',
+                 xy=(xfit[-15], yfit[-15]),  xycoords='data',
+                 xytext=(28, -30), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+            ax.set_xscale("log")
+            ax.set_yscale("log")
+            ax.set_ylabel(fj)
+            ax.set_xlabel(fi)
+            ax.set_xlim(xmin=1)
+            ax.set_ylim(ymin=1)
+            handles, labels = ax.get_legend_handles_labels()
+            leg = ax.legend(handles, labels, loc=4)
+            leg.draw_frame(True)
+            plt.savefig(fi+'-'+fj+'.pdf')
+            plt.clf()
 
 if __name__ == '__main__':
     # liwc_feature_stat()
     profile_feature_stat()
-
+    # profile_feature_dependence()
 

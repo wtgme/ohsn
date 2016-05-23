@@ -24,7 +24,7 @@ def z_test(list1, list2):
 
 def ks_test(list1, list2):
     d, p = stats.ks_2samp(list1, list2)
-    return len(list1), len(list2), round(d, 3), round(p, 3)
+    return len(list1), len(list2), round(d, 3), round(p, 4)
 
 
 def comm_stat(lista):

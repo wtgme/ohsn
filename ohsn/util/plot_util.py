@@ -13,6 +13,7 @@ from sklearn.metrics import mean_squared_error
 from matplotlib import cm
 import matplotlib as mpl
 import pylab
+import powerlaw_fit
 
 
 def significant(data, observed, name):
@@ -46,10 +47,10 @@ def mean_bin(list_x, list_y, linear_bins=False):
     xmin = min(list_x)
     xmax = max(list_x)
     if linear_bins:
-        bins = range(int(xmin), int(xmax+1))
+        bins = range(int(xmin), int(xmax))
     else:
         log_min_size = np.log10(xmin)
-        log_max_size = np.log10(xmax+1)
+        log_max_size = np.log10(xmax)
         number_of_bins = np.ceil((log_max_size-log_min_size)*10)
         bins = np.unique(
                 np.floor(
@@ -90,6 +91,20 @@ def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
     return (list_x, list_y)
 
 
+def lr_ls_short(list_x, list_y):
+    X = np.asarray(list_x, dtype=float)
+    Y = np.asarray(list_y, dtype=float)
+    logX = np.log10(X)
+    logY = np.log10(Y)
+    A = np.vstack([logX, np.ones(len(logX))]).T
+    m, c = np.linalg.lstsq(A, logY)[0]
+    logY_fit = m*logX + c
+    print m, c
+    # print 'Fitting RMSE(log):', rmse(logY, logY_fit)
+    # print 'Fitting RMSE(raw):', rmse(Y, np.power(10, logY_fit))
+    return m, c, list_x, np.power(10, logY_fit)
+
+
 def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
@@ -97,13 +112,14 @@ def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     logX = np.log10(X)
     logY = np.log10(Y)
     coefficients = np.polyfit(logX, logY, 1)
+    print coefficients
     polynomial = np.poly1d(coefficients)
     print 'Polynomial(', fit_start, fit_end, '):',  polynomial
     logY_fit = polynomial(logX)
     print 'Fitting RMSE(log):', rmse(logY, logY_fit)
     print 'Fitting RMSE(raw):', rmse(Y, np.power(10, logY_fit))
     # print Y
-    return (list_x, np.power(10, logY_fit))
+    return (list_x, np.power(10, logY_fit), coefficients[0])
     # return logX, logY_fit
 
 
@@ -265,7 +281,7 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, denots, labels=None, linear_bins=True, central=False, savefile=None, **kwargs):
+def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True, central=False, fit=False, savefile=None, **kwargs):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
@@ -277,20 +293,33 @@ def plot_pdf_mul_data(lists, denots, labels=None, linear_bins=True, central=Fals
         min_x = min([np.percentile(lista, 2.5) for lista in lists])
     else:
         min_x = min([min(lista) for lista in lists])
-
+    ax = plt.gca()
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
-    plt.plot(list_x, list_y, denots[0], label=labels[0])
-
+    ax.plot(list_x, list_y, colors[0]+marks[0], label=labels[0])
+    if fit:
+        list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, min(lists[0]), max(lists[0]))
+        ax.plot(list_fit_x, list_fit_y, colors[0]+'--', label='Fitted '+labels[0])
+        ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
+                 xy=(list_fit_x[-5], list_fit_y[-5]),  xycoords='data',
+                 xytext=(28, -30), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
     for i in xrange(len(lists[1:])):
         ax = plt.gca()
         list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
-        ax.plot(list_x, list_y, denots[i+1], label=labels[i+1])
+        ax.plot(list_x, list_y, colors[i+1]+marks[i+1], label=labels[i+1])
+        if fit:
+            list_fit_x, list_fit_y = lr_ls(list_x, list_y, min(lists[i+1]), max(lists[i+1]))
+            ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', label='Fitted '+labels[i+1])
+            ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
+                 xy=(list_fit_x[-5], list_fit_y[-5]),  xycoords='data',
+                 xytext=(28, -30), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
     if linear_bins == False:
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel('k')
+    ax.set_xlabel('k('+field+')')
     ax.set_ylabel('p(k)')
 
     # ax.set_title('Comparison of probability density functions on '+field)

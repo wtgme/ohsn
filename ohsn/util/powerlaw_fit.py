@@ -32,13 +32,13 @@ def fit_powerlaw(data):
     # pylab.show()
 
 if __name__ == '__main__':
-    # followers = io.get_values_one_field(dbname='fed', colname='scom', fieldname='followers_count', filt={})
+    # followers = io.get_values_one_field(dbname='random', colname='scom', fieldname='followers_count', filt={})
     # pickle.dump(followers, open('data/follower.pick', 'w'))
     followers = pickle.load(open('data/follower.pick', 'r'))
 
 
 
     # print s
-    fit_powerlaw(followers)
+    min = fit_powerlaw(followers)
 
-    pltt.pdf_plot_one_data(followers, 'test', linear_bins=False, fit_start=1089, fit_end=max(followers))
+    pltt.pdf_plot_one_data(followers, 'test', linear_bins=False, fit_start=min, fit_end=max(followers))
