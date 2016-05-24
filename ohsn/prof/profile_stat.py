@@ -100,9 +100,14 @@ def liwc_feature_stat():
 
 
 def profile_feature_stat():
-    fields = ['followers_count', 'friends_count', 'favourites_count', 'statuses_count']
+    # 'favourites_count'
+    fields = ['followers_count', 'friends_count', 'statuses_count']
     filter = {}
-    for field in fields:
+    fitranges = [[(200, 100000), (1000, 100000000), (800, 10000000)],
+                     [(700, 10000), (800, 10000000), (800, 1000000)],
+                     [(800, 100000), (20000, 10000000), (10000, 10000000)]]
+    for i in range(len(fields)):
+        field = fields[i]
         print '=====================', field
         feds = np.array(io.get_values_one_field('fed', 'scom', field, filter))+1
         randoms = np.array(io.get_values_one_field('random', 'scom', field, filter))+1
@@ -138,8 +143,9 @@ def profile_feature_stat():
         z = statis_util.ks_test(youngs, randoms)
         print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+
         plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
-                               linear_bins=False, central=False, fit=True, savefile=field+'.pdf')
+                               linear_bins=False, central=False, fit=True, fitranges=fitranges[i], savefile=field+'.pdf')
 
 def profile_feature_dependence():
     fields = ['friends_count', 'statuses_count', 'followers_count']
@@ -149,6 +155,7 @@ def profile_feature_dependence():
             fj = fields[j]
             print '=========================Dependence :', fi, fj
             ax = plt.gca()
+            i = 0
             for db, color, mark, label in [('fed', 'g', 's', 'ED'),
                                            ('random', 'b', 'o', 'Random'),
                                            ('young', 'r', '^', 'Young')]:
@@ -167,8 +174,9 @@ def profile_feature_dependence():
                 ax.plot(xfit, yfit, c=color, linewidth=2, linestyle='--')
                 ax.annotate(r'$k_y \propto {k_x}^{'+str(round(cof, 2))+'}$',
                  xy=(xfit[-15], yfit[-15]),  xycoords='data',
-                 xytext=(28, -30), textcoords='offset points', fontsize=20,
+                 xytext=(28+(i)*10, -30-(i)*10), textcoords='offset points', fontsize=20,
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+                i += 1
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_ylabel(fj)

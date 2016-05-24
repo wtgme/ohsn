@@ -88,7 +88,7 @@ def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
                 new_x.append(list_x[index])
                 new_y.append(list_y[index])
         list_x, list_y = new_x, new_y
-    return (list_x, list_y)
+    return (np.array(list_x), np.array(list_y))
 
 
 def lr_ls_short(list_x, list_y):
@@ -111,15 +111,15 @@ def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     Y = np.asarray(list_y, dtype=float)
     logX = np.log10(X)
     logY = np.log10(Y)
-    coefficients = np.polyfit(logX, logY, 1)
-    print coefficients
+    idx = np.isfinite(logX) & np.isfinite(logY)
+    coefficients = np.polyfit(logX[idx], logY[idx], 1)
     polynomial = np.poly1d(coefficients)
     print 'Polynomial(', fit_start, fit_end, '):',  polynomial
-    logY_fit = polynomial(logX)
-    print 'Fitting RMSE(log):', rmse(logY, logY_fit)
-    print 'Fitting RMSE(raw):', rmse(Y, np.power(10, logY_fit))
+    logY_fit = polynomial(logX[idx])
+    print 'Fitting RMSE(log):', rmse(logY[idx], logY_fit)
+    print 'Fitting RMSE(raw):', rmse(Y[idx], np.power(10, logY_fit))
     # print Y
-    return (list_x, np.power(10, logY_fit), coefficients[0])
+    return (list_x[idx], np.power(10, logY_fit), coefficients[0])
     # return logX, logY_fit
 
 
@@ -183,7 +183,10 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # print xmin, xmax
-        bins = range(int(xmin), int(xmax))
+        if (xmax-xmin) > 5000:
+            bins = np.linspace(xmin, xmax, num=(xmax-xmin)/10)
+        else:
+            bins = range(int(xmin), int(xmax))
     else:
         log_min_size = np.log10(xmin)
         log_max_size = np.log10(xmax)
@@ -249,17 +252,15 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
     # data = outstrength
     if central:
         xmin = np.percentile(data, 2.5)
-    else:
-        xmin = min(data)
-    if central:
         xmax = np.percentile(data, 97.5)
     else:
+        xmin = min(data)
         xmax = max(data)
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
-    ax.plot(list_x, list_y, 'g+', label='Raw '+name)
+    ax.plot(list_x, list_y, 'k+', label='Raw '+name)
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
-    ax.plot(list_x, list_y, '--bo', label='Binned '+name)
+    ax.plot(list_x, list_y, 'bo', label='Binned '+name)
     if fit_start != fit_end:
         list_fit_x, list_fit_y, coe = lr_ls(list_x, list_y, fit_start, fit_end)
         ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted '+name)
@@ -281,39 +282,46 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
         plt.clf()
 
 
-def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True, central=False, fit=False, savefile=None, **kwargs):
+def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True, central=False, fit=False, fitranges=None, savefile=None, **kwargs):
     lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
     if central:
-        max_x = max([np.percentile(lista, 97.5) for lista in lists])
+        max_x = np.max([np.percentile(listx, 97.5) for listx in lists])
+        min_x = np.min([np.percentile(listx, 2.5) for listx in lists])
     else:
-        max_x = max([max(lista) for lista in lists])
-    if central:
-        min_x = min([np.percentile(lista, 2.5) for lista in lists])
-    else:
-        min_x = min([min(lista) for lista in lists])
+        max_x = np.max([np.max(listx) for listx in lists])
+        min_x = np.min([np.min(listx) for listx in lists])
     ax = plt.gca()
+    print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     ax.plot(list_x, list_y, colors[0]+marks[0], label=labels[0])
     if fit:
-        list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, min(lists[0]), max(lists[0]))
-        ax.plot(list_fit_x, list_fit_y, colors[0]+'--', label='Fitted '+labels[0])
+        if fitranges:
+            fitmin, finmax = fitranges[0]
+        else:
+            fitmin, finmax = powerlaw_fit.fit_powerlaw(lists[0]), max(lists[0])
+        list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
+        ax.plot(list_fit_x, list_fit_y, colors[0]+'--', linewidth=2, label='Fitted '+labels[0])
         ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
-                 xy=(list_fit_x[-5], list_fit_y[-5]),  xycoords='data',
-                 xytext=(28, -30), textcoords='offset points', fontsize=20,
+                 xy=(list_fit_x[-10], list_fit_y[-10]),  xycoords='data',
+                 xytext=(-100, -40), textcoords='offset points', fontsize=20,
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
     for i in xrange(len(lists[1:])):
         ax = plt.gca()
         list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
         ax.plot(list_x, list_y, colors[i+1]+marks[i+1], label=labels[i+1])
         if fit:
-            list_fit_x, list_fit_y = lr_ls(list_x, list_y, min(lists[i+1]), max(lists[i+1]))
-            ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', label='Fitted '+labels[i+1])
+            if fitranges:
+                fitmin, finmax = fitranges[i+1]
+            else:
+                fitmin, finmax = powerlaw_fit.fit_powerlaw(lists[i+1]), max(lists[i+1])
+            list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
+            ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', linewidth=2, label='Fitted '+labels[i+1])
             ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
-                 xy=(list_fit_x[-5], list_fit_y[-5]),  xycoords='data',
-                 xytext=(28, -30), textcoords='offset points', fontsize=20,
-                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+                 xy=(list_fit_x[-6], list_fit_y[-6]),  xycoords='data',
+                 xytext=(-140-i*60, -30-i*35), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.8"))
     if linear_bins == False:
         ax.set_xscale("log")
         ax.set_yscale("log")

@@ -14,10 +14,12 @@ import pylab
 
 def fit_powerlaw(data):
     fit = powerlaw.Fit(data)
-    print 'Fitting alpha', fit.power_law.alpha
-    print 'Fitting sigma', fit.power_law.sigma
-    print 'Fitting Likehood, pvalue', fit.distribution_compare('power_law', 'exponential')
-    print 'Minx', fit.xmin
+    print '---------Begin Power-Law Fitting----------------------'
+    print '---Fitting alpha', fit.power_law.alpha
+    print '---Fitting sigma', fit.power_law.sigma
+    print '---Fitting Likehood, pvalue', fit.distribution_compare('power_law', 'exponential')
+    print '---Minx', fit.xmin
+    print '---------End Power-Law Fitting-----------------------'
     return fit.xmin
     # print 'Fixed minx', fit.fixed_xmin
     # print 'Alpha', fit.alpha
@@ -32,7 +34,7 @@ def fit_powerlaw(data):
     # pylab.show()
 
 if __name__ == '__main__':
-    # followers = io.get_values_one_field(dbname='random', colname='scom', fieldname='followers_count', filt={})
+    # followers = io.get_values_one_field(dbname='young', colname='scom', fieldname='followers_count', filt={})
     # pickle.dump(followers, open('data/follower.pick', 'w'))
     followers = pickle.load(open('data/follower.pick', 'r'))
 
