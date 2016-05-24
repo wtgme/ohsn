@@ -137,13 +137,13 @@ if __name__ == '__main__':
     # textp.process_poi(dbname, tmpcom)
 
     '''Core ED'''
-    timeline_date('fed', 'timeline')
+    # timeline_date('fed', 'timeline')
     # dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
     # analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
     # fridp.ed_pro(dbname, 'scom', tmpcom, 'net')
     # process('fed', 'timeline', [2009, 2010, 2011], 1, 'fed')
     # process('fed', 'timeline', 1, start=datetime(2000, 1, 1), end=datetime(2012, 1, 1), f='fed')
-    process('fed', 'timeline', 2, start=datetime(2012, 1, 1), end=datetime(2013, 1, 1), f='fed')
+    # process('fed', 'timeline', 2, start=datetime(2012, 1, 1), end=datetime(2013, 1, 1), f='fed')
     process('fed', 'timeline', 3, start=datetime(2013, 1, 1), end=datetime(2014, 1, 1), f='fed')
     process('fed', 'timeline', 4, start=datetime(2014, 1, 1), end=datetime(2015, 1, 1), f='fed')
     process('fed', 'timeline', 5, start=datetime(2015, 1, 1), end=datetime(2017, 1, 1), f='fed')
