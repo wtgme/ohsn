@@ -210,7 +210,8 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
 
 if __name__ == '__main__':
     # process_db('fed', 'com', 'timeline', 'bnet', 10000)
-    process_db('echelon', 'poi', 'timelines', 'bnet', 10000)
+    process_db('random', 'scom', 'timeline', 'bnet', 10000)
+    process_db('young', 'scom', 'timeline', 'bnet', 10000)
     # process_db('sed', 'com', 'timeline', 'bnet', 10)
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
