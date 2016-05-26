@@ -12,7 +12,7 @@ https://api.twitter.com/1.1/search/tweets.json?q=%23freebandnames&since_id=24012
 """
 
 import ohsn.util.twitter_util as twutil
-import ohsn.util.db_util as dbt
+# import ohsn.util.db_util as dbt
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
 import time
