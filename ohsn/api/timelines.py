@@ -45,10 +45,16 @@ def store_tweets(tweets_to_save, collection):
     pre-processing accomplished is coercing date values to datetime.
     """
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Size of Stored Timelines: ' + str(len(tweets_to_save))
-    try:
-        collection.insert(tweets_to_save)
-    except pymongo.errors.DuplicateKeyError:
-            pass
+    for tweet in tweets_to_save:
+        tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        try:
+            collection.insert(tweet)
+        except pymongo.errors.DuplicateKeyError:
+                pass
+    # try:
+    #     collection.insert(tweets_to_save)
+    # except pymongo.errors.DuplicateKeyError:
+    #         pass
 
 
 # Test rate_limit is OK? If not, sleep till to next reset time
