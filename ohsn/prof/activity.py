@@ -6,12 +6,16 @@ Created on 3:35 PM, 4/11/16
 Plot the distribution of timeline, i.e., how many tweets are there in each period
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbt
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import calendar
+import content
 import pickle
 
 
@@ -43,6 +47,21 @@ def create_time(dbname, colname):
         # print user['created_at']
         # print '-----------------------'
     # print max(created_time.values()), min(created_time.values())
+    return created_time
+
+
+def posts_per_day(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    created_time = []
+    for user in com.find({}, no_cursor_timeout=True):
+        ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        if 'status' in user:
+            tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            delta = tts.date() - ts.date()
+            days = delta.days+1
+            timecount = float(user['statuses_count'])
+            created_time.append(timecount/days)
     return created_time
 
 
@@ -91,6 +110,7 @@ def timeline_time(dbname, colname, timename):
 
 
 def relative_time(creat_time, post_time):
+    '''Ages of tweets from create time'''
     dates = []
     oldest, oldcre, oldpost = 0, datetime.now(), datetime.now()
     for key in post_time.keys():
@@ -232,9 +252,17 @@ if __name__ == '__main__':
     #     else:
     #         print key
 
-    '''Count the published years of tweets '''
-    yearsplit = timeline_split('fed', 'timeline')
-    pickle.dump(yearsplit, open('data/fedtyear.pick', 'w'))
-    # yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
-    print yearsplit.keys()
+    # '''Count the published years of tweets '''
+    # yearsplit = timeline_split('fed', 'timeline')
+    # pickle.dump(yearsplit, open('data/fedtyear.pick', 'w'))
+    # # yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
+    # print yearsplit.keys()
+
+
+    '''Plot post number per day'''
+    ed = posts_per_day('fed', 'scom')
+    rd = posts_per_day('random', 'scom')
+    yg = posts_per_day('young', 'scom')
+
+    content.compore_distribution('activity', ed, rd, yg)
 

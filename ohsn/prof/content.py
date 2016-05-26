@@ -161,38 +161,39 @@ def plot_distribution(edbev, rdbev, ygbev):
     ygvalues = ygvalues/(ygvalues[:, -1][:, None])
     print edvalues.shape, rdvalues.shape, ygvalues.shape
     row, col = edvalues.shape
-    fields = ['tweet', 'retweet', 'mention', 'dmention', 'reply', 'hashtag', 'url', 'quota']
+    fields = ['Tweet', 'Retweet', 'Mention', 'UDmention', 'Reply', 'Hashtag', 'URL', 'Quota']
     for i in xrange(col-1):
         feds = edvalues[:, i]
         randoms = rdvalues[:, i]
         youngs = ygvalues[:, i]
         field = fields[i]
-        comm = statis_util.comm_stat(feds)
-        print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
-              + ' & ' + str(comm[2])+ ' & ' + str(comm[3]) + '\\\\'
-        comm = statis_util.comm_stat(randoms)
-        print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
-              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
-        comm = statis_util.comm_stat(youngs)
-        print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
-              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
-        print '\\hline'
-        z = statis_util.ks_test(randoms, feds)
-        print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        z = statis_util.ks_test(youngs, feds)
-        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-        z = statis_util.ks_test(youngs, randoms)
-        print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
-
-        plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
-                               linear_bins=True, central=True, fit=False, fitranges=None, savefile=field+'.pdf')
+        compore_distribution(field, feds, randoms, youngs)
 
 
-
-
+def compore_distribution(field, feds, randoms, youngs):
+    print '---------------Compare ' + field + '---------------------'
+    comm = statis_util.comm_stat(feds)
+    print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
+          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
+    comm = statis_util.comm_stat(randoms)
+    print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
+          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
+    comm = statis_util.comm_stat(youngs)
+    print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
+          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
+    print '\\hline'
+    z = statis_util.ks_test(randoms, feds)
+    print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
+    z = statis_util.ks_test(youngs, feds)
+    print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
+    z = statis_util.ks_test(youngs, randoms)
+    print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
+    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+                           ['ED', 'Random', 'Younger'],
+                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 if __name__ == '__main__':

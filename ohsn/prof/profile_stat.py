@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+
 def liwc_feature_stat():
     fields = io.read_fields()
     # test_ids = np.array(pickle.load(open('test_ids.data', 'r')))

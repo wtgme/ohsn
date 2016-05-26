@@ -19,14 +19,11 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import pymongo
 from ohsn.util import db_util as dbt
-import pickle
 import ohsn.lexiconsmaster.liwc_timeline_processor as liwcp
 import ohsn.networkminer.timeline_network_miner as netp
 import ohsn.textprocessor.description_miner as textp
 import ohsn.networkminer.keyplay as keyp
 import ohsn.networkminer.nets_agg as netagg
-import ohsn.networkminer.friend_pro as fridp
-import activity
 from datetime import datetime
 
 
