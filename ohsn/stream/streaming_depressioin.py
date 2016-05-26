@@ -17,10 +17,9 @@ Identify the location of users that post the crawled tweets, only store the user
 """
 
 import sys
-
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 from twython import TwythonStreamer
-
-sys.path.append('..')
 import urllib
 import imghdr
 import os
@@ -118,9 +117,10 @@ while True:
         #     for line in fo.readlines():
         #         track_list.append(line.strip())
         # Depression: http://psychcentral.com/lib/types-and-symptoms-of-depression/
-        stream.statuses.filter(language=['en'], track=[
-            'dysthymia', 'dysthymic', 'bipolar', 'peripartum', 'postpartum', 'melancholic',
-            'atypical', 'catatonic'])
+        # stream.statuses.filter(language=['en'], track=[
+        #     'dysthymia', 'dysthymic', 'bipolar', 'peripartum', 'postpartum', 'melancholic',
+        #     'atypical', 'catatonic'])
+        stream.statuses.filter(language=['en'], track=['#MyDepressionLooksLike'])
 
     except Exception as detail:
         print str(detail)
