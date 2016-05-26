@@ -158,7 +158,7 @@ def profile_feature_dependence():
             i = 0
             for db, color, mark, label in [('fed', 'g', 's', 'ED'),
                                            ('random', 'b', 'o', 'Random'),
-                                           ('young', 'r', '^', 'Young')]:
+                                           ('young', 'r', '^', 'Younger')]:
                 print '++++++++++++++++++++++++++Dependence :', fi, fj, db
                 fivalue = np.array(io.get_values_one_field(db, 'scom', fi))
                 fjvalue = np.array(io.get_values_one_field(db, 'scom', fj))
@@ -192,5 +192,5 @@ def profile_feature_dependence():
 if __name__ == '__main__':
     # liwc_feature_stat()
     profile_feature_stat()
-    # profile_feature_dependence()
+    profile_feature_dependence()
 

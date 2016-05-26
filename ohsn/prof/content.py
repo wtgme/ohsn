@@ -14,7 +14,9 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 from ohsn.util import db_util as dbt
 import ohsn.util.plot_util as plot
+from ohsn.util import statis_util
 import pickle
+import numpy as np
 
 
 def beh_stat(dbname, comname, colname, filename):
@@ -123,12 +125,84 @@ def most_entities(dbname, colname):
     return tags, mentions
 
 
+def plot_distribution(edbev, rdbev, ygbev):
+    eds = pickle.load(open('data/'+edbev+'.pick', 'r'))
+    rds = pickle.load(open('data/'+rdbev+'.pick', 'r'))
+    ygs = pickle.load(open('data/'+ygbev+'.pick', 'r'))
+    print 'All statistics values, and ratios'
+    print eds[-1]
+    print rds[-1]
+    print ygs[-1]
+    print np.asarray(eds[-1], float)/eds[-1][-1]
+    print np.asarray(rds[-1], float)/rds[-1][-1]
+    print np.asarray(ygs[-1], float)/ygs[-1][-1]
+    '''Remove overall statistics'''
+    del eds[-1]
+    del rds[-1]
+    del ygs[-1]
+    edvalues, rdvalues, ygvalues = np.asarray(eds.values(), float), \
+                                   np.asarray(rds.values(), float), \
+                                   np.asarray(ygs.values(), float)
+
+    print edvalues.shape, rdvalues.shape, ygvalues.shape
+    print 'Non zero values in all tweet numbers'
+    print np.count_nonzero(edvalues[:, -1])
+    print np.count_nonzero(rdvalues[:, -1])
+    print np.count_nonzero(ygvalues[:, -1])
+
+    print 'Remove all zero values'
+    edvalues = edvalues[~np.all(edvalues == 0, axis=1)]
+    rdvalues = rdvalues[~np.all(rdvalues == 0, axis=1)]
+    ygvalues = ygvalues[~np.all(ygvalues == 0, axis=1)]
+
+    print 'Calculate ratios for each behavior (column)'
+    edvalues = edvalues/(edvalues[:, -1][:, None])
+    rdvalues = rdvalues/(rdvalues[:, -1][:, None])
+    ygvalues = ygvalues/(ygvalues[:, -1][:, None])
+    print edvalues.shape, rdvalues.shape, ygvalues.shape
+    row, col = edvalues.shape
+    fields = ['tweet', 'retweet', 'mention', 'dmention', 'reply', 'hashtag', 'url', 'quota']
+    for i in xrange(col-1):
+        feds = edvalues[:, i]
+        randoms = rdvalues[:, i]
+        youngs = ygvalues[:, i]
+        field = fields[i]
+        comm = statis_util.comm_stat(feds)
+        print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3]) + '\\\\'
+        comm = statis_util.comm_stat(randoms)
+        print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        comm = statis_util.comm_stat(youngs)
+        print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
+              + ' & ' + str(comm[2])+ ' & ' + str(comm[3])+ '\\\\'
+        print '\\hline'
+        z = statis_util.ks_test(randoms, feds)
+        print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, feds)
+        print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+        z = statis_util.ks_test(youngs, randoms)
+        print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
+              + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
+
+        plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
+                               linear_bins=True, central=True, fit=False, fitranges=None, savefile=field+'.pdf')
+
+
+
+
+
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    beh_stat('fed', 'scom', 'stimeline', 'edbev')
-    beh_stat('random', 'scom', 'timeline', 'rdbev')
-    beh_stat('young', 'scom', 'timeline', 'ygbev')
+    # beh_stat('fed', 'scom', 'stimeline', 'edbev')
+    # beh_stat('random', 'scom', 'timeline', 'rdbev')
+    # beh_stat('young', 'scom', 'timeline', 'ygbev')
+
+    '''Plot distribution of bahavior ratio'''
+    plot_distribution('edbev', 'rdbev', 'ygbev')
 
     # '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')
