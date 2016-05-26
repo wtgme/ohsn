@@ -6,6 +6,7 @@ Created on 10:03 PM, 3/3/16
 
 Returns a collection of up to 100 user IDs belonging to users 
 who have retweeted the tweet specified by the id parameter.
+https://dev.twitter.com/docs/api/1.1/get/statuses/retweeters/ids
 """
 
 import ohsn.util.twitter_util as twutil

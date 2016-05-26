@@ -74,8 +74,8 @@ usernames = {'needingbones', 'anasecretss', 'tiinyterry'}
 
 try:
     
-    Fix this....
-    why aien;t it returning tweets that our ed's have had retweeted?
+    # Fix this....
+    # why aien;t it returning tweets that our ed's have had retweeted?
     
     tweeties = tweets.find(None, sort=[('retweet_count',-1)])
     for tweet in tweeties:
