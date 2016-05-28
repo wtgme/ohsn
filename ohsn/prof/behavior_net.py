@@ -11,7 +11,6 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 import ohsn.util.graph_util as gt
-import ohsn.util.db_util as dbt
 import pickle
 import ohsn.util.io_util as iot
 
@@ -20,6 +19,8 @@ def bahavior_net(dbname, comname, bnetname, btype):
     userlist = iot.get_values_one_field(dbname, comname, 'id',
                                         {'timeline_count': {'$gt': 0}})
     return gt.load_all_beh_network(userlist, dbname, bnetname, btype)
+
+
 
 if __name__ == '__main__':
     dbnames = ['fed', 'random', 'young']
