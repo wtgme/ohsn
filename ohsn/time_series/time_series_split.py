@@ -4,7 +4,7 @@ Created on 16:54, 21/04/16
 
 @author: wt
 1. active.py split timeline by years
-2. time_series.py split timelines (as well as the users posting timelines) into sperate collection
+2. time_series_split.py split timelines (as well as the users posting timelines) into sperate collection
     processing with LIWC, behaviour network extaction, and bio information extraction
 3. keyplay.py obtain subnets (behavior and friendship) within the coms. calculte centrality included in nets_agg.py
 4. description_minier.py calculate cbmi and gbmi
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # textp.process_poi(dbname, tmpcom)
 
     '''Core ED'''
-    # timeline_date('fed', 'timeline')
+    timeline_date('fed', 'timeline')
     # dbname, tmpcom, tmptimeline, tmpbnet = 'fed', 'com', 'timeline', 'fedbnet'
     # analysis(dbname, tmpbnet, tmpcom, 'fedsbnet', 'fedsnet', tmptimeline)
     # fridp.ed_pro(dbname, 'scom', tmpcom, 'net')

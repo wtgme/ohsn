@@ -21,10 +21,10 @@ text_anal.cw.value
 text_anal.lw.value
 text_anal.hw.value
 text_anal.h.value
-    text_anal.a.value
-    text_anal.bmi.value
-    text_anal.cbmi.value
-    text_anal.gbmi.value
+text_anal.a.value
+text_anal.bmi.value
+text_anal.cbmi.value
+text_anal.gbmi.value
     text_anal.edword_count.value
     net_anal.ed_proportion.follower_no
     net_anal.ed_proportion.following_no

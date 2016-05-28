@@ -43,47 +43,14 @@ def get_values_one_field(dbname, colname, fieldname, filt={}):
     poi = dbt.db_connect_col(dbname, colname)
     values = []
     for item in poi.find(filt, [fieldname], no_cursor_timeout=True):
-        values.append(item[fieldname])
-    return values
-
-
-def get_field_values(db_name, colname, field):
-    db = dbt.db_connect_no_auth(db_name)
-    poi = db[colname]
-    counts = []
-    for user in poi.find({'level': 1}, [field]):
-        counts.append(user[field])
-    return counts
-
-
-def get_mlvs_field_values(db_name, flag, field):
-    db = dbt.db_connect_no_auth(db_name)
-    poi = db['com']
-    counts = []
-    tag_names = field.split('.')
-    for v in poi.find({'level': 1, flag: {'$exists': True}}, [field]):
-        # print v
-        counts.append(v[tag_names[0]][tag_names[1]])
-    return counts
-
-def get_mlvs_field_values_uids(db_name, uids, flag, field):
-    db = dbt.db_connect_no_auth(db_name)
-    poi = db['com']
-    counts = []
-    tag_names = field.split('.')
-    for uid in uids:
-        v = poi.find_one({'id': uid, flag: {'$exists': True}}, [field])
-        if v is None:
-            continue
+        if '.' in fieldname:
+            levels = fieldname.split('.')
+            t = item.get(levels[0])
+            for level in levels[1:]:
+                t = t.get(level)
+            values.append(t)
         else:
-            counts.append(v[tag_names[0]][tag_names[1]])
-    return counts
-
-
-def get_sublevel_values(results, field):
-    values = []
-    for result in results:
-        values.append(result[field])
+            values.append(item.get(fieldname))
     return values
 
 
