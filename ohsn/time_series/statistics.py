@@ -16,6 +16,7 @@ import ohsn.util.plot_util as plot
 import ohsn.util.statis_util as stt
 import ohsn.util.io_util as iot
 import numpy as np
+from datetime import datetime
 import matplotlib.pyplot as plt
 
 
@@ -54,9 +55,20 @@ def avg_liwc(dbname):
         else:
             ax.set_ylabel(tokens[-1])
         ax.grid(True)
-        plt.savefig(field+'.pdf')
+        plt.savefig('data/'+field+'.pdf')
         plt.clf()
 
 
+def get_period(dbname, timename, newtimename):
+    db = dbt.db_connect_no_auth(dbname)
+    timeline = db[timename]
+    newtimeline = db[newtimename]
+    start = datetime(2013, 7, 25)
+    end=datetime(2013, 7, 29)
+    for status in timeline.find({'created_at_date': {'$gte': start, '$lt': end}}, no_cursor_timeout=True):
+        newtimeline.insert(status)
+
+
 if __name__ == '__main__':
-    avg_liwc('fed')
+    # avg_liwc('fed')
+    get_period('fed', 'timeline', 'ptimeline')
