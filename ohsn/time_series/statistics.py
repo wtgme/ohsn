@@ -40,7 +40,7 @@ def avg_liwc(dbname):
         ind = [y+1 for y in range(len(results))]
         means = [np.mean(result) for result in results]
         stds = [np.std(result) for result in results]
-        ax.errorbar(ind, means, fmt='--o--', capthick=3)
+        ax.errorbar(ind, means, stds, fmt='--o--', capthick=3)
         ax.violinplot(results, showmeans=False, showextrema=True)
         ax.set_xticks(ind)
         # for i in ind:
@@ -69,6 +69,13 @@ def get_period(dbname, timename, newtimename):
         newtimeline.insert(status)
 
 
+def read_timeline(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    col = db[colname]
+    for status in col.find():
+        print status['user']['screen_name'].encode('utf-8'), status['text'].encode('utf-8'), status['created_at']
+
 if __name__ == '__main__':
     # avg_liwc('fed')
-    get_period('fed', 'timeline', 'ptimeline')
+    # get_period('fed', 'timeline', 'ptimeline')
+    read_timeline('fed', 'ptimeline')

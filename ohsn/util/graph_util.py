@@ -80,6 +80,7 @@ def load_all_beh_network(userlist, db_name, collection='None', btype='communicat
     g.es["weight"] = edges.values()
     return g
 
+
 def load_beh_network(db_name, collection='None', btype='communication'):
     '''
     behavior network: directed weighted network
