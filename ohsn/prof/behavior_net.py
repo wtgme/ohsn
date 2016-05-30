@@ -22,8 +22,9 @@ def bahavior_net(dbname, comname, bnetname, btype):
     return gt.load_all_beh_network(userlist, dbname, bnetname, btype)
 
 
-def netstatis(g):
+def netstatis(g, userlist):
     g = g.as_undirected(combine_edges=dict(weight="sum"))
+
     node_n = g.vcount()
     edge_m = g.ecount()
     degree_mean = np.mean(g.indegree())
@@ -38,18 +39,31 @@ def netstatis(g):
     cluster_co_avg = g.transitivity_avglocal_undirected()
     assort = g.assortativity_degree(directed=False)
 
+    gnode = g.vs["name"]
+    target_nodes = list(set(userlist).intersection(gnode))
+    # print target_nodes
+    divsersity = np.array(g.diversity(target_nodes, 'weight'))
+    divsersity[np.isnan(divsersity)] = 0
+    divsersity[divsersity == -np.inf] = 0
+    # print divsersity, max(divsersity), min(divsersity)
+    divsersity_mean = np.mean(divsersity)
+    divsersity_std = np.std(divsersity)
+    # print divsersity_mean, divsersity_std
+
     print node_n, edge_m, round(degree_mean, 3), round(degree_std, 3), round(density, 3), \
         round(avg_path, 3), comp_count, round(giant_comp_r, 3), round(cluster_co_global, 3), \
-        round(cluster_co_avg, 3), round(assort, 3)
+        round(cluster_co_avg, 3), round(assort, 3), round(divsersity_mean, 3), round(divsersity_std, 3)
 
 if __name__ == '__main__':
     dbnames = ['fed', 'random', 'young']
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all']
     for dbname in dbnames:
+        userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
+                                        {'timeline_count': {'$gt': 0}})
         for behavior in behaviors:
             # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
             # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
             print dbname, behavior
             g = pickle.load(open('data/'+dbname+'_'+behavior+'.pick', 'r'))
-            netstatis(g)
+            netstatis(g, userlist)
 
