@@ -121,6 +121,37 @@ def load_beh_network(db_name, collection='None', btype='communication'):
     return g
 
 
+def load_hashtag_network(db_name, collection='None'):
+    '''
+    Friendship network: directed network
+    Edge: user---------> follower
+    '''
+    if collection is 'None':
+        cols = db_name
+    else:
+        db = dbt.db_connect_no_auth(db_name)
+        cols = db[collection]
+    name_map, edges = {}, {}
+    for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+        n1 = row['user']['id_str']
+        hashtags = row['entities']['hashtags']
+        if len(hashtags) > 0:
+            for hashtag in hashtags:
+                n2 = hashtag['text']
+                n1id = name_map.get(n1, len(name_map))
+                name_map[n1] = n1id
+                n2id = name_map.get(n2, len(name_map))
+                name_map[n2] = n2id
+                wt = edges.get((n1id, n2id), 0)
+                edges[(n1id, n2id)] = wt + 1
+    g = Graph(len(name_map), directed=True)
+    #get key list of dict according to value ranking
+    g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    g.add_edges(edges.keys())
+    g.es["weight"] = edges.values()
+    return g
+
+
 def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
