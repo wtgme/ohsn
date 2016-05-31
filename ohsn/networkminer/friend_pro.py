@@ -20,6 +20,10 @@ def target_set(dbname, comname):
 
 
 def friend_dis(dbname, comname, netname, tagets):
+    #he returned list from Graph.neighbors always includes the input vertex,
+    # while those from predecessors and successors don’t.
+    # So the size of returned list from neighbors is always larger
+    # 1 than those from other two methods.
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     g = gt.load_network(dbname, netname)

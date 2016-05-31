@@ -32,11 +32,21 @@ def hashtag_net():
         # g = gt.load_hashtag_network(dbname, timename)
         # pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
         g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
+        # g.vs["strength"] = g.strength(g.vs, mode='OUT', loops=False, weights='weight')
         gnode = g.vs["name"]
+        # for node in g.vs.select(strength_gt=5):
+        #     gnode.append(node['name'])
         target_nodes = list(set(userlist).intersection(gnode))
-        # print target_nodes
+        # for node in target_nodes:
+        #     if not np.isfinite(g.diversity(node, 'weight')):
+        #         neis = g.neighbors(node, mode='OUT')
+        #         print '---------------------'
+        #         print g.vs[neis]["name"]
+        #         for nei in neis:
+        #             print g[node, nei]
+        #         print g.diversity(node, 'weight')
         divs = np.array(g.diversity(target_nodes, 'weight'))
-        divs = divs[np.isfinite(divs)]
+        divs[~np.isfinite(divs)] = 0.0
         # print divsersity, max(divsersity), min(divsersity)
         divs_mean = np.mean(divs)
         divs_std = np.std(divs)
@@ -66,7 +76,8 @@ def netstatis(g, userlist):
     target_nodes = list(set(userlist).intersection(gnode))
     # print target_nodes
     divs = np.array(g.diversity(target_nodes, 'weight'))
-    divs = divs[np.isfinite(divs)]
+    divs[~np.isfinite(divs)] = 0.0
+    # divs = divs[np.isfinite(divs)]
     # print divsersity, max(divsersity), min(divsersity)
     divs_mean = np.mean(divs)
     divs_std = np.std(divs)
