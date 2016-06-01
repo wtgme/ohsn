@@ -137,7 +137,7 @@ def load_hashtag_network(db_name, collection='None'):
         hashtags = row['entities']['hashtags']
         if len(hashtags) > 0:
             for hashtag in hashtags:
-                n2 = hashtag['text']
+                n2 = hashtag['text'].lower()
                 n1id = name_map.get(n1, len(name_map))
                 name_map[n1] = n1id
                 n2id = name_map.get(n2, len(name_map))

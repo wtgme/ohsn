@@ -29,8 +29,8 @@ def hashtag_net():
     for dbname, timename in dbnames:
         userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-        # g = gt.load_hashtag_network(dbname, timename)
-        # pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
+        g = gt.load_hashtag_network(dbname, timename)
+        pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
         g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
         # g.vs["strength"] = g.strength(g.vs, mode='OUT', loops=False, weights='weight')
         gnode = g.vs["name"]
@@ -38,13 +38,13 @@ def hashtag_net():
         #     gnode.append(node['name'])
         target_nodes = list(set(userlist).intersection(gnode))
         # for node in target_nodes:
-        #     if not np.isfinite(g.diversity(node, 'weight')):
-        #         neis = g.neighbors(node, mode='OUT')
-        #         print '---------------------'
-        #         print g.vs[neis]["name"]
-        #         for nei in neis:
-        #             print g[node, nei]
-        #         print g.diversity(node, 'weight')
+        #     # if not np.isfinite(g.diversity(node, 'weight')):
+        #     neis = g.neighbors(node, mode='OUT')
+        #     print '---------------------'
+        #     print g.vs[neis]["name"]
+        #     for nei in neis:
+        #         print g[node, nei]
+        #     print g.diversity(node, 'weight')
         divs = np.array(g.diversity(target_nodes, 'weight'))
         divs[~np.isfinite(divs)] = 0.0
         # print divsersity, max(divsersity), min(divsersity)
@@ -89,18 +89,18 @@ def netstatis(g, userlist):
 
 if __name__ == '__main__':
 
-    dbnames = ['fed', 'random', 'young']
-    behaviors = ['retweet', 'reply', 'mention', 'communication', 'all']
-    for dbname in dbnames:
-        userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
-                                        {'timeline_count': {'$gt': 0}})
-        for behavior in behaviors:
-            # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
-            # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
-            print dbname, behavior
-            g = pickle.load(open('data/'+dbname+'_'+behavior+'.pick', 'r'))
-            netstatis(g, userlist)
+    # dbnames = ['fed', 'random', 'young']
+    # behaviors = ['retweet', 'reply', 'mention', 'communication', 'all']
+    # for dbname in dbnames:
+    #     userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
+    #                                     {'timeline_count': {'$gt': 0}})
+    #     for behavior in behaviors:
+    #         # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
+    #         # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    #         print dbname, behavior
+    #         g = pickle.load(open('data/'+dbname+'_'+behavior+'.pick', 'r'))
+    #         netstatis(g, userlist)
 
     ###do hashtag network###
-    # hashtag_net()
+    hashtag_net()
 
