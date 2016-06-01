@@ -11,6 +11,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 import ohsn.util.graph_util as gt
+import ohsn.util.db_util as dbt
 import pickle
 import ohsn.util.io_util as iot
 import numpy as np
@@ -22,6 +23,22 @@ def bahavior_net(dbname, comname, bnetname, btype):
     return gt.load_all_beh_network(userlist, dbname, bnetname, btype)
 
 
+def extract_hashtags():
+    dbnames = [('fed', 'stimeline'),
+               ('random', 'timeline'),
+               ('young', 'timeline')]
+    with open('data/hashtags.data', 'w') as fw:
+        for dbname, timename in dbnames:
+            db = dbt.db_connect_no_auth(dbname)
+            cols = db[timename]
+            for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+                hashtags = row['entities']['hashtags']
+                hlist = list()
+                for hashtag in hashtags:
+                    hlist.append(hashtag['text'].lower())
+                fw.write((dbname + '\t' + row['id_str'] + '\t' + row['user']['id_str'] + '\t' + ' '.join(hlist) + '\n').encode('utf-8'))
+
+
 def hashtag_net():
     dbnames = [('fed', 'stimeline'),
                ('random', 'timeline'),
@@ -29,7 +46,7 @@ def hashtag_net():
     for dbname, timename in dbnames:
         userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-        g = gt.load_hashtag_network(dbname, timename)
+        g = gt.load_user_hashtag_network(dbname, timename)
         pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
         g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
         # g.vs["strength"] = g.strength(g.vs, mode='OUT', loops=False, weights='weight')
@@ -102,5 +119,6 @@ if __name__ == '__main__':
     #         netstatis(g, userlist)
 
     ###do hashtag network###
-    hashtag_net()
+    # hashtag_net()
 
+    extract_hashtags()

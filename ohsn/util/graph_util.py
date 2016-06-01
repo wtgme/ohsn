@@ -121,10 +121,10 @@ def load_beh_network(db_name, collection='None', btype='communication'):
     return g
 
 
-def load_hashtag_network(db_name, collection='None'):
+def load_user_hashtag_network(db_name, collection='None'):
     '''
-    Friendship network: directed network
-    Edge: user---------> follower
+    User-Hashtag network: weighted directed network
+    Edge: user---------> hashtag
     '''
     if collection is 'None':
         cols = db_name
@@ -135,16 +135,52 @@ def load_hashtag_network(db_name, collection='None'):
     for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
         n1 = row['user']['id_str']
         hashtags = row['entities']['hashtags']
-        if len(hashtags) > 0:
-            for hashtag in hashtags:
-                n2 = hashtag['text'].lower()
+        # if len(hashtags) > 0:
+        for hashtag in hashtags:
+            # need no .encode('utf-8')
+            n2 = hashtag['text'].lower()
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            wt = edges.get((n1id, n2id), 0)
+            edges[(n1id, n2id)] = wt + 1
+    g = Graph(len(name_map), directed=True)
+    #get key list of dict according to value ranking
+    g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    g.add_edges(edges.keys())
+    g.es["weight"] = edges.values()
+    return g
+
+
+def load_hashtag_coocurrent_network(db_name, collection='None'):
+    '''
+    Hashtag Co-occurrence Network: weighted undirected network
+    Edge: Hashtag --------- Hashtag
+    '''
+    if collection is 'None':
+        cols = db_name
+    else:
+        db = dbt.db_connect_no_auth(db_name)
+        cols = db[collection]
+    name_map, edges = {}, {}
+    for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+        hashtags = row['entities']['hashtags']
+        # add self-loop for hashtags occurs alone
+        if len(hashtags) == 1:
+            hashtags.append(hashtags[0])
+        for i in xrange(len(hashtags)):
+            # need no .encode('utf-8')
+            n1 = hashtags[i]['text'].lower()
+            for j in xrange(i+1, len(hashtags)):
+                n2 = hashtags[j]['text'].lower()
                 n1id = name_map.get(n1, len(name_map))
                 name_map[n1] = n1id
                 n2id = name_map.get(n2, len(name_map))
                 name_map[n2] = n2id
                 wt = edges.get((n1id, n2id), 0)
                 edges[(n1id, n2id)] = wt + 1
-    g = Graph(len(name_map), directed=True)
+    g = Graph(len(name_map), directed=False)
     #get key list of dict according to value ranking
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(edges.keys())
