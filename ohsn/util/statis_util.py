@@ -19,17 +19,17 @@ def z_test(list1, list2):
     z = (mu1-mu2)/(np.sqrt(s1**2/n1 + s2**2/n2))
     from scipy.stats import norm
     pval = 2*(1 - norm.cdf(abs(z)))
-    return n1, n2, round(z, 3), round(pval, 4)
+    return n1, n2, z, pval
 
 
 def ks_test(list1, list2):
     d, p = stats.ks_2samp(list1, list2)
-    return len(list1), len(list2), round(d, 3), round(p, 4)
+    return len(list1), len(list2), (d), (p)
 
 
 def comm_stat(lista):
     # return the min, max, mean and std
-    return round(np.amin(lista), 2), round(np.amax(lista), 2), round(np.mean(lista), 2), round(np.std(lista),2)
+    return (np.amin(lista)), (np.amax(lista)), (np.mean(lista)), (np.std(lista))
 
 
 def mode(lst):
