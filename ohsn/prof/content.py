@@ -159,6 +159,11 @@ def plot_distribution(edbev, rdbev, ygbev):
     edvalues = edvalues/(edvalues[:, -1][:, None])
     rdvalues = rdvalues/(rdvalues[:, -1][:, None])
     ygvalues = ygvalues/(ygvalues[:, -1][:, None])
+
+    # edvalues[~np.isfinite(edvalues)] = 0.0
+    # rdvalues[~np.isfinite(rdvalues)] = 0.0
+    # ygvalues[~np.isfinite(ygvalues)] = 0.0
+
     print edvalues.shape, rdvalues.shape, ygvalues.shape
     row, col = edvalues.shape
     fields = ['Tweet', 'Retweet', 'Mention', 'UDmention', 'Reply', 'Hashtag', 'URL', 'Quota']
@@ -171,29 +176,42 @@ def plot_distribution(edbev, rdbev, ygbev):
 
 
 def compore_distribution(field, feds, randoms, youngs):
-    print '---------------Compare ' + field + '---------------------'
-    comm = statis_util.comm_stat(feds)
-    print 'ED & ' + str(comm[0]) + ' & ' + str(comm[1]) \
-          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
-    comm = statis_util.comm_stat(randoms)
-    print 'Random &' + str(comm[0]) + ' & ' + str(comm[1]) \
-          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
-    comm = statis_util.comm_stat(youngs)
-    print 'Younger &' + str(comm[0]) + ' & ' + str(comm[1]) \
-          + ' & ' + str(comm[2]) + ' & ' + str(comm[3]) + '\\\\'
-    print '\\hline'
-    z = statis_util.ks_test(randoms, feds)
-    print 'ks-test(Random, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
-    z = statis_util.ks_test(youngs, feds)
-    print 'ks-test(Younger, ED): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
-    z = statis_util.ks_test(youngs, randoms)
-    print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
-          + ' & ks-value: ' + str(z[2]) + ' & p-value: ' + str(z[3]) + '\\\\'
-    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
-                           ['ED', 'Random', 'Younger'],
-                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
+    # print '---------------Compare ' + field + '---------------------'
+    edcomm = statis_util.comm_stat(feds)
+    rdcomm = statis_util.comm_stat(randoms)
+    ygcomm = statis_util.comm_stat(youngs)
+    ed_rdz = statis_util.ks_test(randoms, feds)
+    ed_ygz = statis_util.ks_test(youngs, feds)
+    yg_rdz = statis_util.ks_test(youngs, randoms)
+    pvalue = max(ed_rdz[3], ed_ygz[3])
+    s = ''
+    if pvalue<0.05:
+        s = '*'
+    if pvalue<0.01:
+        s = '**'
+    if pvalue<0.001:
+        s = '***'
+
+    print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %s \\\\' \
+          % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], s)
+
+    # print 'ED & ' + str(edcomm[0]) + ' & ' + str(edcomm[1]) \
+    #       + ' & ' + str(edcomm[2]) + ' & ' + str(edcomm[3]) + '\\\\'
+    # print 'Random &' + str(rdcomm[0]) + ' & ' + str(rdcomm[1]) \
+    #       + ' & ' + str(rdcomm[2]) + ' & ' + str(rdcomm[3]) + '\\\\'
+    # print 'Younger &' + str(ygcomm[0]) + ' & ' + str(ygcomm[1]) \
+    #       + ' & ' + str(ygcomm[2]) + ' & ' + str(ygcomm[3]) + '\\\\'
+    # print '\\hline'
+    # print 'ks-test(Random, ED): & $n_1$: ' + str(ed_rdz[0]) + ' & $n_2$: ' + str(ed_rdz[1]) \
+    #       + ' & ks-value: ' + str(ed_rdz[2]) + ' & p-value: ' + str(ed_rdz[3]) + '\\\\'
+    # print 'ks-test(Younger, ED): & $n_1$: ' + str(ed_ygz[0]) + ' & $n_2$: ' + str(ed_ygz[1]) \
+    #       + ' & ks-value: ' + str(ed_ygz[2]) + ' & p-value: ' + str(ed_ygz[3]) + '\\\\'
+    # print 'ks-test(Younger, Random): & $n_1$: ' + str(yg_rdz[0]) + ' & $n_2$: ' + str(yg_rdz[1]) \
+    #       + ' & ks-value: ' + str(yg_rdz[2]) + ' & p-value: ' + str(yg_rdz[3]) + '\\\\'
+    #
+    # plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+    #                        ['ED', 'Random', 'Younger'],
+    #                        linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 if __name__ == '__main__':

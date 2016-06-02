@@ -17,6 +17,7 @@ import ohsn.util.io_util as iot
 import numpy as np
 import scipy.stats as stat
 import matplotlib.pyplot as plt
+from content import compore_distribution
 
 
 def bahavior_net(dbname, comname, bnetname, btype):
@@ -94,65 +95,78 @@ def netstatis(g, userlist):
     # print node_n, edge_m, round(degree_mean, 3), round(degree_std, 3), round(density, 3), \
     #     round(avg_path, 3), comp_count, round(giant_comp_r, 3), round(cluster_co_global, 3), \
     #     round(cluster_co_avg, 3), round(assort, 3), \
-    print len(target_nodes), np.mean(degreess), np.std(degreess),\
-    np.mean(strengths), np.std(strengths),\
-        np.mean(divs), np.std(divs)
+    # print len(target_nodes), np.mean(degreess), np.std(degreess),\
+    # np.mean(strengths), np.std(strengths),\
+    #     np.mean(divs), np.std(divs)
+    return divs
+
 
 def plot_diversity():
-    N = 5
-    menMeans = (20, 35, 30, 35, 27)
-    menStd =   (2, 3, 4, 1, 2)
+    N = 4
+    edMeans = (2.90, 1.94, 2.06, 2.65)
+    edStd =   (1.47, 1.27, 1.24, 1.31)
+
+    rdMeans = (4.39, 3.33, 3.37, 3.85)
+    rdStd =   (1.58, 1.53, 1.46, 1.51)
+
+    ygMeans = (3.91, 3.14, 3.35, 4.16)
+    ygStd =   (1.51, 1.41, 1.44, 1.64)
 
     ind = np.arange(N)  # the x locations for the groups
-    width = 0.35       # the width of the bars
+    width = 0.25       # the width of the bars
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    rects1 = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
-
-    womenMeans = (25, 32, 34, 20, 25)
-    womenStd =   (3, 5, 2, 3, 3)
-    rects2 = ax.bar(ind+width, womenMeans, width, color='y', yerr=womenStd)
+    rects1 = ax.bar(ind, edMeans, width, color='g', yerr=edStd, hatch='//', edgecolor='black')
+    rects2 = ax.bar(ind+width, rdMeans, width, color='b', yerr=rdStd, hatch='.', edgecolor='black')
+    rects3 = ax.bar(ind+2*width, ygMeans, width, color='r', yerr=ygStd, hatch='\\\\', edgecolor='black')
 
     # add some
     ax.set_ylabel('Diversity')
     # ax.set_title('Scores by group and gender')
-    ax.set_xticks(ind+width)
-    ax.set_xticklabels( ('G1', 'G2', 'G3', 'G4', 'G5') )
+    ax.set_xticks(ind+1.5*width)
+    ax.set_xticklabels( ('Retweet', 'Reply', 'Mention', 'Hashtag') )
 
-    ax.legend( (rects1[0], rects2[0]), ('Men', 'Women') )
+    ax.legend( (rects1[0], rects2[0], rects3[0]), ('ED', 'Random', 'Younger'), ncol=6 )
 
     def autolabel(rects):
         # attach some text labels
         for rect in rects:
             height = rect.get_height()
-            ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
+            ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%.2f'%(height),
                     ha='center', va='bottom')
 
     autolabel(rects1)
     autolabel(rects2)
+    autolabel(rects3)
 
     plt.show()
 
 
+def devide_db(dbname, behavior):
+    userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
+                                        {'timeline_count': {'$gt': 0}})
+    # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
+    # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    # print dbname, behavior
+    g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
+    netstatis(g, userlist)
+
 
 if __name__ == '__main__':
 
-    # dbnames = ['fed', 'random', 'young']
-    # behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
-    # for behavior in behaviors:
-    #     for dbname in dbnames:
-    #         userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
-    #                                     {'timeline_count': {'$gt': 0}})
-    #         # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
-    #         # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
-    #         print dbname, behavior
-    #         g = pickle.load(open('data/'+dbname+'_'+behavior+'.pick', 'r'))
-    #         netstatis(g, userlist)
+    dbnames = ['fed', 'random', 'young']
+    behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
+    for behavior in behaviors:
+        ed = devide_db(dbnames[0], behavior)
+        rd = devide_db(dbnames[1], behavior)
+        yg = devide_db(dbnames[2], behavior)
+        compore_distribution(behavior, ed, rd, yg)
+
 
     ###do hashtag network###
     # hashtag_net()
 
     # extract_hashtags()
 
-    plot_diversity()
+    # plot_diversity()
