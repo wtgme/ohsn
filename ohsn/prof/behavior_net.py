@@ -79,9 +79,10 @@ def netstatis(g, userlist):
 
     gnode = g.vs.select()["name"]
     target_nodes = list(set(userlist).intersection(gnode))
+
     strengths = np.array(g.strength(target_nodes, mode='OUT', loops=False, weights='weight'))
-    maxv, minv = np.percentile(strengths, 97.5), np.percentile(strengths, 2.5)
-    # maxv, minv = max(strengths), min(strengths)
+    # maxv, minv = np.percentile(strengths, 97.5), np.percentile(strengths, 2.5)
+    maxv, minv = max(strengths), min(strengths)
     index = np.logical_and(strengths >= minv, strengths <= maxv)
     target_nodes = np.asarray(target_nodes, dtype=str)[index]
 
@@ -143,14 +144,14 @@ def plot_diversity():
     plt.show()
 
 
-def devide_db(dbname, behavior):
+def diversity_db(dbname, behavior):
     userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
                                         {'timeline_count': {'$gt': 0}})
     # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
     # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     # print dbname, behavior
     g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
-    netstatis(g, userlist)
+    return netstatis(g, userlist)
 
 
 if __name__ == '__main__':
@@ -158,9 +159,9 @@ if __name__ == '__main__':
     dbnames = ['fed', 'random', 'young']
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors:
-        ed = devide_db(dbnames[0], behavior)
-        rd = devide_db(dbnames[1], behavior)
-        yg = devide_db(dbnames[2], behavior)
+        ed = diversity_db(dbnames[0], behavior)
+        rd = diversity_db(dbnames[1], behavior)
+        yg = diversity_db(dbnames[2], behavior)
         compore_distribution(behavior, ed, rd, yg)
 
 

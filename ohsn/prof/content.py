@@ -15,8 +15,38 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 from ohsn.util import db_util as dbt
 import ohsn.util.plot_util as plot
 from ohsn.util import statis_util
+import ohsn.util.io_util as io
 import pickle
 import numpy as np
+
+
+def get_one_value(diclist, field):
+    values = []
+    for data in diclist:
+        value = data.get(field, 0.0)
+        values.append(value)
+    return values
+
+def liwc_feature_stat():
+    fields = io.read_fields()
+    field_name = 'liwc_anal.result'
+    filter = {'liwc_anal.result.WC': {'$exists': True}}
+    # edsa = io.get_values_one_field('fed', 'scom', field_name, filter)
+    # randomsa = io.get_values_one_field('random', 'scom', field_name, filter)
+    # youngsa = io.get_values_one_field('young', 'scom', field_name, filter)
+    # pickle.dump(edsa, open('data/fedsa.pick', 'w'))
+    # pickle.dump(randomsa, open('data/randomsa.pick', 'w'))
+    # pickle.dump(youngsa, open('data/youngsa.pick', 'w'))
+    edsa = pickle.load(open('data/fedsa.pick', 'r'))
+    randomsa = pickle.load(open('data/randomsa.pick', 'r'))
+    youngsa = pickle.load(open('data/youngsa.pick', 'r'))
+    print len(edsa), len(randomsa), len(youngsa)
+    for field in fields:
+        keys = field.split('.')
+        eds = get_one_value(edsa, keys[2])
+        randoms = get_one_value(randomsa, keys[2])
+        youngs = get_one_value(youngsa, keys[2])
+        compore_distribution(keys[2], eds, randoms, youngs)
 
 
 def beh_stat(dbname, comname, colname, filename):
@@ -175,6 +205,16 @@ def plot_distribution(edbev, rdbev, ygbev):
         compore_distribution(field, feds, randoms, youngs)
 
 
+def pvalue(p):
+    s = ''
+    if p<0.01:
+        s = '*'
+    if p<0.001:
+        s = '**'
+    if p<0.0001:
+        s = '***'
+    return s
+
 def compore_distribution(field, feds, randoms, youngs):
     # print '---------------Compare ' + field + '---------------------'
     edcomm = statis_util.comm_stat(feds)
@@ -183,17 +223,10 @@ def compore_distribution(field, feds, randoms, youngs):
     ed_rdz = statis_util.ks_test(randoms, feds)
     ed_ygz = statis_util.ks_test(youngs, feds)
     yg_rdz = statis_util.ks_test(youngs, randoms)
-    pvalue = max(ed_rdz[3], ed_ygz[3])
-    s = ''
-    if pvalue<0.05:
-        s = '*'
-    if pvalue<0.01:
-        s = '**'
-    if pvalue<0.001:
-        s = '***'
-
-    print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %s \\\\' \
-          % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], s)
+    if min(ed_rdz[2], ed_ygz[2])>yg_rdz[2]:
+        print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s & %.2f%s & %.2f%s \\\\' \
+              % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], ed_rdz[2],
+                 pvalue(ed_rdz[3]), ed_ygz[2], pvalue(ed_ygz[3]), yg_rdz[2], pvalue(yg_rdz[3]))
 
     # print 'ED & ' + str(edcomm[0]) + ' & ' + str(edcomm[1]) \
     #       + ' & ' + str(edcomm[2]) + ' & ' + str(edcomm[3]) + '\\\\'
@@ -209,9 +242,9 @@ def compore_distribution(field, feds, randoms, youngs):
     # print 'ks-test(Younger, Random): & $n_1$: ' + str(yg_rdz[0]) + ' & $n_2$: ' + str(yg_rdz[1]) \
     #       + ' & ks-value: ' + str(yg_rdz[2]) + ' & p-value: ' + str(yg_rdz[3]) + '\\\\'
     #
-    # plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
-    #                        ['ED', 'Random', 'Younger'],
-    #                        linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
+    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+                           ['ED', 'Random', 'Younger'],
+                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 if __name__ == '__main__':
@@ -221,9 +254,9 @@ if __name__ == '__main__':
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
     '''Plot distribution of bahavior ratio'''
-    plot_distribution('edbev', 'rdbev', 'ygbev')
+    # plot_distribution('edbev', 'rdbev', 'ygbev')
 
-    # '''retweet IDs and publishers' IDs of retweets'''
+    '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')
     # rdrt, rdrte = most_retweet('srd', 'timeline')
     # ygrt, ygrte = most_retweet('syg', 'timeline')
@@ -243,7 +276,7 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edrt.values(), rdrt.values(), ygrt.values()], ['--bo', '--r^', '--ks'], 'retweets',  ['ED', 'Random', 'Young'], False)
     # plot.plot_pdf_mul_data([edrte.values(), rdrte.values(), ygrte.values()], ['--bo', '--r^', '--ks'], 'publishers of retweets',  ['ED', 'Random', 'Young'], False)
 
-    # '''Hashtags in tweets'''
+    '''Hashtags in tweets'''
     # edtags, edments = most_entities('sed', 'timeline')
     # rdtags, rdments = most_entities('srd', 'timeline')
     # ygtags, ygments = most_entities('syg', 'timeline')
@@ -254,3 +287,6 @@ if __name__ == '__main__':
     # print sum(edtags.values()), sum(rdtags.values()), sum(ygtags.values())
     # plot.plot_pdf_mul_data([edtags.values(), rdtags.values(), ygtags.values()], ['--bo', '--r^', '--ks'], 'Hashtags',  ['ED', 'Random', 'Young'], False)
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
+
+    '''LIWC features'''
+    liwc_feature_stat()

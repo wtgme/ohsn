@@ -216,7 +216,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmin = min(data)
     if linear_bins:
         # bins = range(int(xmin), int(xmax))
-        bins = np.linspace(xmin, xmax, num=20)
+        bins = np.linspace(xmin, xmax, num=35)
         # bins = np.unique(
         #         np.floor(
         #             np.linspace(
@@ -302,7 +302,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         else:
             fitmin, finmax = powerlaw_fit.fit_powerlaw(lists[0]), max(lists[0])
         list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
-        ax.plot(list_fit_x, list_fit_y, colors[0]+'--', linewidth=2, label='Fitted '+labels[0])
+        ax.plot(list_fit_x, list_fit_y, colors[0]+'--', linewidth=2)
         ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
                  xy=(list_fit_x[-10], list_fit_y[-10]),  xycoords='data',
                  xytext=(-100, -40), textcoords='offset points', fontsize=20,
@@ -317,7 +317,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
             else:
                 fitmin, finmax = powerlaw_fit.fit_powerlaw(lists[i+1]), max(lists[i+1])
             list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
-            ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', linewidth=2, label='Fitted '+labels[i+1])
+            ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', linewidth=2)
             ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
                  xy=(list_fit_x[-6], list_fit_y[-6]),  xycoords='data',
                  xytext=(-140-i*60, -30-i*35), textcoords='offset points', fontsize=20,
@@ -327,14 +327,15 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel('r('+field+')')
-    ax.set_ylabel('p(r)')
-
-    # ax.set_title('Comparison of probability density functions on '+field)
+    ax.set_xlabel('k('+field+')')
+    ax.set_ylabel('p(k)')
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
     ax.set_autoscale_on(True)
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
+    # plt.rcParams['xtick.labelsize'] = 20
     # plt.savefig('echelon-smaple-'+field+'.pdf')
     # plt.clf()
     if savefile is None:
