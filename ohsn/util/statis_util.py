@@ -11,6 +11,12 @@ import math
 import scipy.stats as stats
 
 
+def central_data(data):
+    maxv = np.percentile(data, 97.5)
+    minv = np.percentile(data, 2.5)
+    return [x for x in data if minv < x < maxv]
+
+
 def z_test(list1, list2):
     # z-test for two lists
     n1, n2 = len(list1), len(list2)

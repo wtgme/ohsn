@@ -215,6 +215,7 @@ def pvalue(p):
         s = '***'
     return s
 
+
 def compore_distribution(field, feds, randoms, youngs):
     # print '---------------Compare ' + field + '---------------------'
     edcomm = statis_util.comm_stat(feds)
@@ -254,7 +255,7 @@ if __name__ == '__main__':
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
     '''Plot distribution of bahavior ratio'''
-    # plot_distribution('edbev', 'rdbev', 'ygbev')
+    plot_distribution('edbev', 'rdbev', 'ygbev')
 
     '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')

@@ -304,7 +304,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
         ax.plot(list_fit_x, list_fit_y, colors[0]+'--', linewidth=2)
         ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
-                 xy=(list_fit_x[-10], list_fit_y[-10]),  xycoords='data',
+                 xy=(list_fit_x[-6], list_fit_y[-6]),  xycoords='data',
                  xytext=(-100, -40), textcoords='offset points', fontsize=20,
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
     for i in xrange(len(lists[1:])):
@@ -319,7 +319,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
             list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
             ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', linewidth=2)
             ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
-                 xy=(list_fit_x[-6], list_fit_y[-6]),  xycoords='data',
+                 xy=(list_fit_x[-10], list_fit_y[-10]),  xycoords='data',
                  xytext=(-140-i*60, -30-i*35), textcoords='offset points', fontsize=20,
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.8"))
     if linear_bins == False:

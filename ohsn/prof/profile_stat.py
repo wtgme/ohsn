@@ -16,8 +16,10 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 from ohsn.util import plot_util as plot
 from ohsn.util import statis_util
 import ohsn.util.io_util as io
+import ohsn.util.db_util as dbt
 import pickle
 import numpy as np
+from datetime import datetime
 import matplotlib.pyplot as plt
 
 
@@ -69,6 +71,7 @@ def profile_feature_stat():
         plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
                                linear_bins=False, central=False, fit=True, fitranges=fitranges[i], savefile=field+'.pdf')
 
+
 def profile_feature_dependence():
     fields = ['friends_count', 'statuses_count', 'followers_count']
     for i in xrange(len(fields)):
@@ -113,7 +116,45 @@ def profile_feature_dependence():
             plt.savefig(fi+'-'+fj+'.pdf')
             plt.clf()
 
+
+def gagement(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    for user in com.find({'status': {'$exists': True}}):
+        engage = {}
+        ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        delta = tts.date() - ts.date()
+        days = delta.days+1
+        status_count = float(user['statuses_count'])
+        friend_count = float(user['friends_count'])
+        follower_count = float(user['followers_count'])
+        try:
+            engage['status_day'] = status_count/days
+            engage['friend_day'] = friend_count/days
+            engage['follower_day'] = follower_count/days
+            engage['status_friend'] = status_count/friend_count
+            engage['follower_status'] = follower_count/status_count
+            engage['follower_friend'] = follower_count/friend_count
+            com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
+        except ZeroDivisionError:
+            continue
+
+
+
+
+
 if __name__ == '__main__':
     # profile_feature_stat()
-    profile_feature_dependence()
+    # profile_feature_dependence()
+    # gagement('fed', 'scom')
+    # gagement('random', 'scom')
+    # gagement('young', 'scom')
+    ts = datetime.strptime('Sat Jul 04 06:23:37 +0000 2015', '%a %b %d %H:%M:%S +0000 %Y')
+    tts = datetime.strptime('Sun Mar 13 23:44:56 +0000 2016', '%a %b %d %H:%M:%S +0000 %Y')
+    delta = tts.date() - ts.date()
+    days = delta.days+1
+    print days
+
+
 

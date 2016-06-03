@@ -29,7 +29,7 @@ def fit_powerlaw(data):
     # print 'Fixed minx', fit.fixed_xmin
     # print 'Alpha', fit.alpha
     # print 'Devision', fit.D
-    figCCDF = fit.plot_pdf(color='b', linewidth=2)
+    # figCCDF = fit.plot_pdf(color='b', linewidth=2)
     # fit.power_law.plot_pdf(color='b', linestyle='--', ax=figCCDF)
     # pylab.show()
 

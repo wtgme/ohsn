@@ -17,6 +17,8 @@ import ohsn.util.io_util as iot
 import numpy as np
 import scipy.stats as stat
 import matplotlib.pyplot as plt
+import ohsn.util.plot_util as plot
+import ohsn.util.statis_util as stats
 from content import compore_distribution
 
 
@@ -102,16 +104,19 @@ def netstatis(g, userlist):
     return divs
 
 
-def plot_diversity():
-    N = 4
-    edMeans = (2.90, 1.94, 2.06, 2.65)
-    edStd =   (1.47, 1.27, 1.24, 1.31)
-
-    rdMeans = (4.39, 3.33, 3.37, 3.85)
-    rdStd =   (1.58, 1.53, 1.46, 1.51)
-
-    ygMeans = (3.91, 3.14, 3.35, 4.16)
-    ygStd =   (1.51, 1.41, 1.44, 1.64)
+def plot_error_bars(data):
+    # edMeans = (2.90, 1.94, 2.06, 2.65)
+    # edStd =   (1.47, 1.27, 1.24, 1.31)
+    #
+    # rdMeans = (4.39, 3.33, 3.37, 3.85)
+    # rdStd =   (1.58, 1.53, 1.46, 1.51)
+    #
+    # ygMeans = (3.91, 3.14, 3.35, 4.16)
+    # ygStd =   (1.51, 1.41, 1.44, 1.64)
+    N = len(data[0])
+    edMeans, edStd = data[0], data[1]
+    rdMeans, rdStd = data[2], data[3]
+    ygMeans, ygStd = data[4], data[5]
 
     ind = np.arange(N)  # the x locations for the groups
     width = 0.25       # the width of the bars
@@ -123,10 +128,11 @@ def plot_diversity():
     rects3 = ax.bar(ind+2*width, ygMeans, width, color='r', yerr=ygStd, hatch='\\\\', edgecolor='black')
 
     # add some
-    ax.set_ylabel('Diversity')
+    ax.set_ylabel('Counts/Day')
     # ax.set_title('Scores by group and gender')
     ax.set_xticks(ind+1.5*width)
-    ax.set_xticklabels( ('Retweet', 'Reply', 'Mention', 'Hashtag') )
+    ax.set_xticklabels(('Friends', 'Statuses', 'Followers'))
+    # ax.set_xticklabels(fields)
 
     ax.legend( (rects1[0], rects2[0], rects3[0]), ('ED', 'Random', 'Younger'), ncol=6 )
 
@@ -136,7 +142,6 @@ def plot_diversity():
             height = rect.get_height()
             ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%.2f'%(height),
                     ha='center', va='bottom')
-
     autolabel(rects1)
     autolabel(rects2)
     autolabel(rects3)
@@ -156,18 +161,44 @@ def diversity_db(dbname, behavior):
 
 if __name__ == '__main__':
 
-    dbnames = ['fed', 'random', 'young']
-    behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
-    for behavior in behaviors:
-        ed = diversity_db(dbnames[0], behavior)
-        rd = diversity_db(dbnames[1], behavior)
-        yg = diversity_db(dbnames[2], behavior)
-        compore_distribution(behavior, ed, rd, yg)
+    '''Compare diversity of behaviors'''
+    # dbnames = ['fed', 'random', 'young']
+    # behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
+    # for behavior in behaviors:
+    #     ed = diversity_db(dbnames[0], behavior)
+    #     rd = diversity_db(dbnames[1], behavior)
+    #     yg = diversity_db(dbnames[2], behavior)
+    #     compore_distribution(behavior, ed, rd, yg)
 
 
     ###do hashtag network###
     # hashtag_net()
 
+    '''Extract hashtags from timelines'''
     # extract_hashtags()
 
-    # plot_diversity()
+    '''Plot diversity '''
+    # plot_error_bars()
+
+    '''Plot activity'''
+    dbnames = ['fed', 'random', 'young']
+    # data = []
+    # for dbname in dbnames:
+    #     values = iot.get_values_one_field(dbname, 'scom', 'engage', {'engage': {'$exists': True}})
+    #     friends, statuses, followers = [], [], []
+    #     for value in values:
+    #         friends.append(value['friend_day'])
+    #         statuses.append(value['status_day'])
+    #         followers.append(value['follower_day'])
+    #     data.append([np.mean(friends), np.mean(statuses), np.mean(followers)])
+    #     data.append([np.std(friends), np.std(statuses), np.std(followers)])
+    # plot_error_bars(data)
+
+
+    for field, name in [('friend_day', 'friends/day'), ('status_day', 'statuses/day'), ('follower_day', 'followers/day')]:
+        data = []
+        for dbname in dbnames:
+            data.append(iot.get_values_one_field(dbname, 'scom', 'engage.'+field, {'engage': {'$exists': True}}))
+        plot.plot_pdf_mul_data(data, name, ['g', 'b', 'r'], ['s', 'o', '^'],
+                           ['ED', 'Random', 'Younger'],
+                           linear_bins=False, central=False, fit=True, fitranges=None, savefile=field + '.pdf')
