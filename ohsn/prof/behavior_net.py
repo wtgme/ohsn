@@ -61,7 +61,9 @@ def hashtag_net():
         g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
 
 
-def netstatis(g, userlist):
+def netstatis(dbname, behavior, g, userlist):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db['scom']
     g = g.as_undirected(combine_edges=dict(weight="sum"))
 
     # node_n = g.vcount()
@@ -82,17 +84,26 @@ def netstatis(g, userlist):
     gnode = g.vs.select()["name"]
     target_nodes = list(set(userlist).intersection(gnode))
 
-    strengths = np.array(g.strength(target_nodes, mode='OUT', loops=False, weights='weight'))
-    # maxv, minv = np.percentile(strengths, 97.5), np.percentile(strengths, 2.5)
-    maxv, minv = max(strengths), min(strengths)
-    index = np.logical_and(strengths >= minv, strengths <= maxv)
-    target_nodes = np.asarray(target_nodes, dtype=str)[index]
+    # strengths = np.array(g.strength(target_nodes, mode='OUT', loops=False, weights='weight'))
+    # # maxv, minv = np.percentile(strengths, 97.5), np.percentile(strengths, 2.5)
+    # maxv, minv = max(strengths), min(strengths)
+    # index = np.logical_and(strengths >= minv, strengths <= maxv)
+    # target_nodes = np.asarray(target_nodes, dtype=str)[index]
 
     degreess = g.degree(target_nodes, mode='OUT', loops=False)
-    strengths = g.strength(target_nodes, mode='OUT', loops=False, weights='weight')
+    # strengths = g.strength(target_nodes, mode='OUT', loops=False, weights='weight')
 
     # print target_nodes
     divs = np.array(g.diversity(target_nodes, 'weight'))*np.log(degreess)
+
+    '''Store in DB'''
+    for node in target_nodes:
+        user = com.find_one({'id': int(node)})
+        data = user.get('behaviors', {})
+        data[behavior+'_div'] = g.diversity(node, 'weight')*\
+                                     np.log(g.degree(node, mode='OUT', loops=False))
+        com.update_one({'id': id}, {'$set': {'behavior': data}}, upsert=False)
+
     divs[~np.isfinite(divs)] = 0.0
 
     # print node_n, edge_m, round(degree_mean, 3), round(degree_std, 3), round(density, 3), \
@@ -101,6 +112,8 @@ def netstatis(g, userlist):
     # print len(target_nodes), np.mean(degreess), np.std(degreess),\
     # np.mean(strengths), np.std(strengths),\
     #     np.mean(divs), np.std(divs)
+
+
     return divs
 
 
@@ -156,19 +169,19 @@ def diversity_db(dbname, behavior):
     # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     # print dbname, behavior
     g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
-    return netstatis(g, userlist)
+    return netstatis(dbname, behavior, g, userlist)
 
 
 if __name__ == '__main__':
 
     '''Compare diversity of behaviors'''
-    # dbnames = ['fed', 'random', 'young']
-    # behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
-    # for behavior in behaviors:
-    #     ed = diversity_db(dbnames[0], behavior)
-    #     rd = diversity_db(dbnames[1], behavior)
-    #     yg = diversity_db(dbnames[2], behavior)
-    #     compore_distribution(behavior, ed, rd, yg)
+    dbnames = ['fed', 'random', 'young']
+    behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
+    for behavior in behaviors:
+        ed = diversity_db(dbnames[0], behavior)
+        rd = diversity_db(dbnames[1], behavior)
+        yg = diversity_db(dbnames[2], behavior)
+        # compore_distribution(behavior, ed, rd, yg)
 
 
     ###do hashtag network###
@@ -181,7 +194,7 @@ if __name__ == '__main__':
     # plot_error_bars()
 
     '''Plot activity'''
-    dbnames = ['fed', 'random', 'young']
+    # dbnames = ['fed', 'random', 'young']
     # data = []
     # for dbname in dbnames:
     #     values = iot.get_values_one_field(dbname, 'scom', 'engage', {'engage': {'$exists': True}})
@@ -195,10 +208,10 @@ if __name__ == '__main__':
     # plot_error_bars(data)
 
 
-    for field, name in [('friend_day', 'friends/day'), ('status_day', 'statuses/day'), ('follower_day', 'followers/day')]:
-        data = []
-        for dbname in dbnames:
-            data.append(iot.get_values_one_field(dbname, 'scom', 'engage.'+field, {'engage': {'$exists': True}}))
-        plot.plot_pdf_mul_data(data, name, ['g', 'b', 'r'], ['s', 'o', '^'],
-                           ['ED', 'Random', 'Younger'],
-                           linear_bins=False, central=False, fit=True, fitranges=None, savefile=field + '.pdf')
+    # for field, name in [('friend_day', 'friends/day'), ('status_day', 'statuses/day'), ('follower_day', 'followers/day')]:
+    #     data = []
+    #     for dbname in dbnames:
+    #         data.append(iot.get_values_one_field(dbname, 'scom', 'engage.'+field, {'engage': {'$exists': True}}))
+    #     plot.plot_pdf_mul_data(data, name, ['g', 'b', 'r'], ['s', 'o', '^'],
+    #                        ['ED', 'Random', 'Younger'],
+    #                        linear_bins=False, central=False, fit=True, fitranges=None, savefile=field + '.pdf')

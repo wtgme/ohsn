@@ -283,7 +283,7 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
 
 
 def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True, central=False, fit=False, fitranges=None, savefile=None, **kwargs):
-    lists = [drop_zeros(a) for a in lists]
+    # lists = [drop_zeros(a) for a in lists]
     if labels is None:
         labels = ['x'+str(i+1) for i in xrange(len(lists))]
     if central:

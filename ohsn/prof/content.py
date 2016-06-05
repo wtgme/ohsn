@@ -27,26 +27,30 @@ def get_one_value(diclist, field):
         values.append(value)
     return values
 
-def liwc_feature_stat():
+
+def feature_stat(field_name, filter, dumped=True):
     fields = io.read_fields()
-    field_name = 'liwc_anal.result'
-    filter = {'liwc_anal.result.WC': {'$exists': True}}
-    # edsa = io.get_values_one_field('fed', 'scom', field_name, filter)
-    # randomsa = io.get_values_one_field('random', 'scom', field_name, filter)
-    # youngsa = io.get_values_one_field('young', 'scom', field_name, filter)
-    # pickle.dump(edsa, open('data/fedsa.pick', 'w'))
-    # pickle.dump(randomsa, open('data/randomsa.pick', 'w'))
-    # pickle.dump(youngsa, open('data/youngsa.pick', 'w'))
-    edsa = pickle.load(open('data/fedsa.pick', 'r'))
-    randomsa = pickle.load(open('data/randomsa.pick', 'r'))
-    youngsa = pickle.load(open('data/youngsa.pick', 'r'))
+    # field_name = 'liwc_anal.result'
+    # filter = {'liwc_anal.result.WC': {'$exists': True}}
+    if dumped:
+        edsa = pickle.load(open('data/fed_'+field_name+'.pick', 'r'))
+        randomsa = pickle.load(open('data/random_'+field_name+'.pick', 'r'))
+        youngsa = pickle.load(open('data/young_'+field_name+'.pick', 'r'))
+    else:
+        edsa = io.get_values_one_field('fed', 'scom', field_name, filter)
+        randomsa = io.get_values_one_field('random', 'scom', field_name, filter)
+        youngsa = io.get_values_one_field('young', 'scom', field_name, filter)
+        pickle.dump(edsa, open('data/fed_'+field_name+'.pick', 'w'))
+        pickle.dump(randomsa, open('data/random_'+field_name+'.pick', 'w'))
+        pickle.dump(youngsa, open('data/young_'+field_name+'.pick', 'w'))
+
     print len(edsa), len(randomsa), len(youngsa)
     for field in fields:
         keys = field.split('.')
-        eds = get_one_value(edsa, keys[2])
-        randoms = get_one_value(randomsa, keys[2])
-        youngs = get_one_value(youngsa, keys[2])
-        compore_distribution(keys[2], eds, randoms, youngs)
+        eds = get_one_value(edsa, keys[-1])
+        randoms = get_one_value(randomsa, keys[-1])
+        youngs = get_one_value(youngsa, keys[-1])
+        compore_distribution(keys[-1], eds, randoms, youngs)
 
 
 def beh_stat(dbname, comname, colname, filename):
@@ -114,6 +118,30 @@ def beh_stat(dbname, comname, colname, filename):
         # print 'Hashtag Ratio, ', hashtag, float(hashtag)/count_sum
         # print 'URL Ratio, ', url, float(url)/count_sum
         # print 'Quota Ratio, ', quota, float(quota)/count_sum
+
+
+def store_ratio_behavoir(dbname, colname, filename):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    stats = pickle.load(open('data/'+filename+'.pick', 'r'))
+    del stats[-1]
+    for id in stats.keys():
+        values = stats[id]
+        data = com.find_one({'id': id})
+        behaviors = data.get('behaviors', {})
+        try:
+            behaviors['tweet_pro'] = float(values[0])/values[-1]
+            behaviors['retweet_pro'] = float(values[1])/values[-1]
+            behaviors['dmention_pro'] = float(values[2])/values[-1]
+            behaviors['udmention_pro'] = float(values[3])/values[-1]
+            behaviors['reply_pro'] = float(values[4])/values[-1]
+            behaviors['hashtag_pro'] = float(values[5])/values[-1]
+            behaviors['url_pro'] = float(values[6])/values[-1]
+            behaviors['quota_pro'] = float(values[7])/values[-1]
+            com.update_one({'id': id}, {'$set': {'behavior': behaviors}}, upsert=False)
+        except ZeroDivisionError:
+            continue
+
 
 
 def most_retweet(dbname, colname):
@@ -224,10 +252,10 @@ def compore_distribution(field, feds, randoms, youngs):
     ed_rdz = statis_util.ks_test(randoms, feds)
     ed_ygz = statis_util.ks_test(youngs, feds)
     yg_rdz = statis_util.ks_test(youngs, randoms)
-    if min(ed_rdz[2], ed_ygz[2])>yg_rdz[2]:
-        print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s & %.2f%s & %.2f%s \\\\' \
-              % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], ed_rdz[2],
-                 pvalue(ed_rdz[3]), ed_ygz[2], pvalue(ed_ygz[3]), yg_rdz[2], pvalue(yg_rdz[3]))
+    # if min(ed_rdz[2], ed_ygz[2])>yg_rdz[2]:
+    print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s & %.2f%s & %.2f%s \\\\' \
+          % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], ed_rdz[2],
+             pvalue(ed_rdz[3]), ed_ygz[2], pvalue(ed_ygz[3]), yg_rdz[2], pvalue(yg_rdz[3]))
 
     # print 'ED & ' + str(edcomm[0]) + ' & ' + str(edcomm[1]) \
     #       + ' & ' + str(edcomm[2]) + ' & ' + str(edcomm[3]) + '\\\\'
@@ -254,8 +282,12 @@ if __name__ == '__main__':
     # beh_stat('random', 'scom', 'timeline', 'rdbev')
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
+    store_ratio_behavoir('fed', 'scom', 'edbev')
+    store_ratio_behavoir('random', 'scom', 'rdbev')
+    store_ratio_behavoir('young', 'scom', 'ygbev')
+
     '''Plot distribution of bahavior ratio'''
-    plot_distribution('edbev', 'rdbev', 'ygbev')
+    # plot_distribution('edbev', 'rdbev', 'ygbev')
 
     '''retweet IDs and publishers' IDs of retweets'''
     # edrt, edrte = most_retweet('sed', 'timeline')
@@ -290,4 +322,5 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
     '''LIWC features'''
-    liwc_feature_stat()
+    # feature_stat('liwc_anal.result', {'liwc_anal.result.WC': {'$exists': True}})
+    # feature_stat('engage', {'engage.statuses_count': {'$exists': True}}, dumped=True)

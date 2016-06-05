@@ -130,12 +130,16 @@ def gagement(dbname, colname):
         friend_count = float(user['friends_count'])
         follower_count = float(user['followers_count'])
         try:
-            engage['status_day'] = status_count/days
-            engage['friend_day'] = friend_count/days
-            engage['follower_day'] = follower_count/days
-            engage['status_friend'] = status_count/friend_count
-            engage['follower_status'] = follower_count/status_count
-            engage['follower_friend'] = follower_count/friend_count
+            engage['statuses_day'] = np.log(1 + status_count/days)
+            engage['friends_day'] = np.log(1 + friend_count/days)
+            engage['followers_day'] = np.log(1 + follower_count/days)
+            engage['friends_count'] = np.log(friend_count + 1)
+            engage['statuses_count'] = np.log(status_count + 1)
+            engage['followers_count'] = np.log(follower_count + 1)
+            engage['social_status'] = np.log(max(1, follower_count)/max(1, friend_count))
+            engage['information_productivity'] = np.log(1 + status_count/max(1, friend_count))
+            engage['information_attractiveness'] = np.log(1 + follower_count/max(1, status_count))
+            engage['information_influence'] = np.log(1 + follower_count*status_count/max(1, friend_count))
             com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
         except ZeroDivisionError:
             continue
@@ -147,14 +151,14 @@ def gagement(dbname, colname):
 if __name__ == '__main__':
     # profile_feature_stat()
     # profile_feature_dependence()
-    # gagement('fed', 'scom')
-    # gagement('random', 'scom')
-    # gagement('young', 'scom')
-    ts = datetime.strptime('Sat Jul 04 06:23:37 +0000 2015', '%a %b %d %H:%M:%S +0000 %Y')
-    tts = datetime.strptime('Sun Mar 13 23:44:56 +0000 2016', '%a %b %d %H:%M:%S +0000 %Y')
-    delta = tts.date() - ts.date()
-    days = delta.days+1
-    print days
+    gagement('fed', 'scom')
+    gagement('random', 'scom')
+    gagement('young', 'scom')
+    # ts = datetime.strptime('Sat Jul 04 06:23:37 +0000 2015', '%a %b %d %H:%M:%S +0000 %Y')
+    # tts = datetime.strptime('Sun Mar 13 23:44:56 +0000 2016', '%a %b %d %H:%M:%S +0000 %Y')
+    # delta = tts.date() - ts.date()
+    # days = delta.days+1
+    # print days
 
 
 
