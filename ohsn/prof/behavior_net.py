@@ -100,8 +100,11 @@ def netstatis(dbname, behavior_name, g, userlist):
     for node in target_nodes:
         user = com.find_one({'id': int(node)})
         data = user.get('behavior', {})
-        data[behavior_name+'_div'] = g.diversity(node, 'weight')*\
+        diver = g.diversity(node, 'weight')*\
                                      np.log(g.degree(node, mode='OUT', loops=False))
+        if not np.isfinite(diver):
+            diver = 0.0
+        data[behavior_name+'_div'] = diver
         com.update_one({'id': int(node)}, {'$set': {'behavior': data}}, upsert=False)
 
     divs[~np.isfinite(divs)] = 0.0
