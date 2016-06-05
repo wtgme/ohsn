@@ -61,7 +61,7 @@ def hashtag_net():
         g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
 
 
-def netstatis(dbname, behavior, g, userlist):
+def netstatis(dbname, behavior_name, g, userlist):
     db = dbt.db_connect_no_auth(dbname)
     com = db['scom']
     g = g.as_undirected(combine_edges=dict(weight="sum"))
@@ -99,10 +99,10 @@ def netstatis(dbname, behavior, g, userlist):
     '''Store in DB'''
     for node in target_nodes:
         user = com.find_one({'id': int(node)})
-        data = user.get('behaviors', {})
-        data[behavior+'_div'] = g.diversity(node, 'weight')*\
+        data = user.get('behavior', {})
+        data[behavior_name+'_div'] = g.diversity(node, 'weight')*\
                                      np.log(g.degree(node, mode='OUT', loops=False))
-        com.update_one({'id': id}, {'$set': {'behavior': data}}, upsert=False)
+        com.update_one({'id': int(node)}, {'$set': {'behavior': data}}, upsert=False)
 
     divs[~np.isfinite(divs)] = 0.0
 

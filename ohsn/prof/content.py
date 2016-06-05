@@ -128,7 +128,7 @@ def store_ratio_behavoir(dbname, colname, filename):
     for id in stats.keys():
         values = stats[id]
         data = com.find_one({'id': id})
-        behaviors = data.get('behaviors', {})
+        behaviors = data.get('behavior', {})
         try:
             behaviors['tweet_pro'] = float(values[0])/values[-1]
             behaviors['retweet_pro'] = float(values[1])/values[-1]
