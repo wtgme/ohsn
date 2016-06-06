@@ -97,11 +97,11 @@ def netstatis(dbname, behavior_name, g, userlist):
     divs = np.array(g.diversity(target_nodes, 'weight'))*np.log(degreess)
 
     '''Store in DB'''
-    for node in target_nodes:
+    for i in len(target_nodes):
+        node = target_nodes[i]
         user = com.find_one({'id': int(node)})
         data = user.get('behavior', {})
-        diver = g.diversity(node, 'weight')*\
-                                     np.log(g.degree(node, mode='OUT', loops=False))
+        diver = divs[i]
         if not np.isfinite(diver):
             diver = 0.0
         data[behavior_name+'_div'] = diver
@@ -115,7 +115,6 @@ def netstatis(dbname, behavior_name, g, userlist):
     # print len(target_nodes), np.mean(degreess), np.std(degreess),\
     # np.mean(strengths), np.std(strengths),\
     #     np.mean(divs), np.std(divs)
-
 
     return divs
 
