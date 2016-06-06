@@ -97,7 +97,7 @@ def netstatis(dbname, behavior_name, g, userlist):
     divs = np.array(g.diversity(target_nodes, 'weight'))*np.log(degreess)
 
     '''Store in DB'''
-    for i in len(target_nodes):
+    for i in xrange(len(target_nodes)):
         node = target_nodes[i]
         user = com.find_one({'id': int(node)})
         data = user.get('behavior', {})
