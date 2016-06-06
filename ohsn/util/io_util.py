@@ -30,9 +30,13 @@ def get_fields_one_doc(x, fields):
     for field in fields:
         if '.' in field:
             levels = field.split('.')
-            t = x.get(levels[0])
+            t = x.get(levels[0], {})
             for level in levels[1:]:
+                # print level
                 t = t.get(level)
+                if t is None:
+                    t = 0.0
+                    break
             values.append(t)
         else:
             values.append(x.get(field))
@@ -45,9 +49,13 @@ def get_values_one_field(dbname, colname, fieldname, filt={}):
     for item in poi.find(filt, [fieldname], no_cursor_timeout=True):
         if '.' in fieldname:
             levels = fieldname.split('.')
-            t = item.get(levels[0])
+            t = item.get(levels[0], {})
             for level in levels[1:]:
                 t = t.get(level)
+                if t is None:
+                    t = 0.0
+                    break
+
             values.append(t)
         else:
             values.append(item.get(fieldname))

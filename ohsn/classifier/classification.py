@@ -122,7 +122,8 @@ def plot_pclassification(pclares):
     plt.show()
 # plot_pclassification('data/test_pclass.pick')
 
+if __name__ == '__main__':
 
-classification('data/train.data', 'data/test.data',
-               'data/test_id_class.pick', 'data/test_class.pick')
-plot_classification('data/test_class.pick')
+    classification('data/train.data', 'data/test.data',
+                   'data/test_id_class.pick', 'data/test_class.pick')
+    plot_classification('data/test_class.pick')

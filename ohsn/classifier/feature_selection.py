@@ -108,7 +108,7 @@ def rfecv(X, y, kernel='linear', class_weight=None):
 
 def mlrfecv(X, y, kernel='linear', class_weight=None):
     classif = OneVsRestClassifier(SVC(kernel=kernel, class_weight=class_weight))
-    mrfecv = RFECV(estimator  =classif, step=1, cv=StratifiedKFold(y, 5),
+    mrfecv = RFECV(estimator =classif, step=1, cv=StratifiedKFold(y, 5),
                   scoring='f1_samples')
     rfecv.fit(X, y)
     print("Optimal number of features : %d" % mrfecv.n_features_)
@@ -183,13 +183,17 @@ def mlsvm_cv(X, y, kernel='linear'):
     print("F1_samples: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
     return scores
 
-def svm_cv(X, y, kernel='linear'):
+
+def svm_cv(X, y, kernel='linear', balance=True):
     # Cross validation with SVM
-    clf = SVC(kernel=kernel)
+    if balance:
+        clf = SVC(kernel=kernel, class_weight='balanced')
+    else:
+        clf = SVC(kernel=kernel)
     #When the cv argument is an integer, cross_val_score
     # uses the KFold or StratifiedKFold strategies by default,
     # the latter being used if the estimator derives from ClassifierMixin.
-    scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=5)
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=8)
     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
     return scores
 
@@ -212,7 +216,7 @@ def fs_svm(X, y):
             print i+1, LIWC[i]
 
 
-def  convert_fields(LIWC, rank):
+def convert_fields(LIWC, rank):
     # Convert ranking IDs to feature names and rank them
     rf = {}
     for i in xrange(len(rank)):
@@ -241,11 +245,11 @@ def  convert_fields(LIWC, rank):
 def load_scale_data(file_path, multilabeltf=False):
     X, y = load_svmlight_file(file_path, multilabel=multilabeltf)
     X = X.toarray()
-    # X = preprocessing.scale(X)
+    X = preprocessing.scale(X)
     # min_max_scaler = preprocessing.MinMaxScaler()
     # X = min_max_scaler.fit_transform(X_dentise)
-    # if multilabeltf == True:
-    #     y = MultiLabelBinarizer().fit_transform(y)
+    if multilabeltf == True:
+        y = MultiLabelBinarizer().fit_transform(y)
     return (X, y)
 
 
@@ -355,7 +359,6 @@ def liwc_color_sig():
     print ranking2
     convert_fields(LIWC, ranking2)
 
-liwc_color_sig()
 
 def liwc_color_bar(fieldname):
     X, y = load_scale_data('data/ygcolor.data', True)
@@ -395,8 +398,6 @@ def liwc_color_bar(fieldname):
     # plt.savefig(fieldname+'-color-ratio.pdf')
     # plt.clf()
 
-# for name in ['anger', 'sad', 'anx', 'posemo', 'negemo']:
-#     liwc_color_bar(name)
 
 
 def balanced():
@@ -405,7 +406,7 @@ def balanced():
     # # pickle.dump(ref1, open('data/ref.p', 'wb'))
     # ref1 = pickle.load(open('data/ref.p', 'rb'))
     # rfecv1 = rfecv(X1, y1)
-    # rfecv2 = rfecv(X1, y1, class_weight='balanced')
+    rfecv2 = rfecv(X1, y1, class_weight='balanced')
     rfecv1 = pickle.load(open('data/rfecv1.pick', 'r'))
     rfecv2 = pickle.load(open('data/rfecv2.pick', 'r'))
     scores = list()
@@ -426,3 +427,6 @@ def cvrfe():
     cvs.append(pickle.load(open('data/ed-nyg-time-refcv.pick', 'r')))
     plot_rfecvs(cvs, ['ED-NRD-Time', 'ED-NYG-Time'])
 
+
+if __name__ == '__main__':
+   cvrfe()

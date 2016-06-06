@@ -129,20 +129,20 @@ def gagement(dbname, colname):
         status_count = float(user['statuses_count'])
         friend_count = float(user['friends_count'])
         follower_count = float(user['followers_count'])
-        try:
-            engage['statuses_day'] = np.log(1 + status_count/days)
-            engage['friends_day'] = np.log(1 + friend_count/days)
-            engage['followers_day'] = np.log(1 + follower_count/days)
-            engage['friends_count'] = np.log(friend_count + 1)
-            engage['statuses_count'] = np.log(status_count + 1)
-            engage['followers_count'] = np.log(follower_count + 1)
-            engage['social_status'] = np.log(max(1, follower_count)/max(1, friend_count))
-            engage['information_productivity'] = np.log(1 + status_count/max(1, friend_count))
-            engage['information_attractiveness'] = np.log(1 + follower_count/max(1, status_count))
-            engage['information_influence'] = np.log(1 + follower_count*status_count/max(1, friend_count))
-            com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
-        except ZeroDivisionError:
-            continue
+        # try:
+        engage['statuses_day'] = np.log(1 + status_count/days)
+        engage['friends_day'] = np.log(1 + friend_count/days)
+        engage['followers_day'] = np.log(1 + follower_count/days)
+        engage['friends_count'] = np.log(friend_count + 1)
+        engage['statuses_count'] = np.log(status_count + 1)
+        engage['followers_count'] = np.log(follower_count + 1)
+        engage['social_status'] = np.log(max(1, follower_count)/max(1, friend_count))
+        engage['information_productivity'] = np.log(1 + status_count/max(1, friend_count))
+        engage['information_attractiveness'] = np.log(1 + follower_count/max(1, status_count))
+        engage['information_influence'] = np.log(1 + follower_count*status_count/max(1, friend_count))
+        com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
+        # except ZeroDivisionError:
+        #     continue
 
 
 
