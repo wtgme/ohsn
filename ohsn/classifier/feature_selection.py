@@ -95,7 +95,7 @@ def rfecv(X, y, kernel='linear', class_weight=None):
     # recursive feature elimination with SVM
     # CV to find the best set of features
     # Create the RFE object and compute a cross-validated score.
-    svc = SVC(kernel=kernel, class_weight=class_weight)
+    svc = SVC(kernel=kernel, class_weight='balanced')
     # The "accuracy" scoring is proportional to the number of correct
     # classifications
     # Tested: StratifiedKFold works for imbalanced labeled data.
@@ -119,24 +119,28 @@ def plot_rfecvs(rfecvs, labels):
     # Plot number of features VS. cross-validation scores
     plt.figure()
     marker = itertools.cycle((',', '+', '.', 'o', '*'))
-    plt.xlabel("Number of features selected")
-    plt.ylabel("Cross validation score (nb of correct classifications)")
+    plt.xlabel("#Features")
+    plt.ylabel("Cross validation accuracy")
     for i in xrange(len(rfecvs)):
         rfecv = rfecvs[i]
         label = labels[i]
         c = np.random.rand(3)
 
         plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_,
-                 label=label+' ('+str(rfecv.n_features_)+', '+str(round(rfecv.grid_scores_[rfecv.n_features_-1], 4))+')',
-                 c=c, marker=marker.next()
+                 label=('%s (#F = %d, acc. = %0.2f%)' % label, rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]*100),
+                 c=c, marker=marker.next(), lw=2
                  )
         plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c)
         # plt.annotate(str(rfecv.n_features_)+', '+str(rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xytext=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]-0.2)
         #              )
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
     plt.legend(loc="best")
     plt.grid()
+    plt.savefig('refcv.pdf')
+    plt.clf()
     plt.show()
 
 
@@ -417,15 +421,20 @@ def balanced():
 
 def cvrfe():
     cvs = list()
-    # X1, y1 = load_scale_data('data/ed-nrd-time.data')
-    # refcv = rfecv(X1, y1)
-    # pickle.dump(refcv, open('data/ed-nrd-time-refcv.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-nrd-time-refcv.pick', 'r')))
-    # X2, y2 = load_scale_data('data/ed-nyg-time.data')
-    # refcv2 = rfecv(X2, y2)
-    # pickle.dump(refcv2, open('data/ed-nyg-time-refcv.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-nyg-time-refcv.pick', 'r')))
-    plot_rfecvs(cvs, ['ED-NRD-Time', 'ED-NYG-Time'])
+    X1, y1 = load_scale_data('data/ed-random.data')
+    refcv = rfecv(X1, y1)
+    pickle.dump(refcv, open('data/ed-random-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-random-refcv.pick', 'r')))
+    X2, y2 = load_scale_data('data/ed-young.data')
+    refcv2 = rfecv(X2, y2)
+    pickle.dump(refcv2, open('data/ed-young-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-young-refcv.pick', 'r')))
+
+    X3, y3 = load_scale_data('data/random-young.data')
+    refcv3 = rfecv(X3, y3)
+    pickle.dump(refcv3, open('data/random-young-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/random-young-refcv.pick', 'r')))
+    plot_rfecvs(cvs, ['ED-Random', 'ED-Younger', 'Random-Younger'])
 
 
 if __name__ == '__main__':

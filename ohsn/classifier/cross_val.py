@@ -78,23 +78,32 @@ def cross_val_roc_plot(X, y):
     plt.legend(loc="lower right")
     plt.show()
 
-if __name__ == '__main__':
-    X, y = load_scale_data('data/ed-random.data')
+
+def roc_plot(datafile, savename):
+    X, y = load_scale_data(datafile)
     ax = plt.gca()
-    ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6), label='Luck')
+    ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:9], y)
-    ax.plot(mean_fpr, mean_tpr, 'r--', label='Soc. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2)
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 10:20], y)
-    ax.plot(mean_fpr, mean_tpr, 'g--', label='Beh. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'g--+', label='Beh. (area = %0.2f)' % mean_auc, lw=2)
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
-    ax.plot(mean_fpr, mean_tpr, 'b--', label='Psy. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'b--.', label='Psy. (area = %0.2f)' % mean_auc, lw=2)
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    ax.plot(mean_fpr, mean_tpr, 'k--', label='All (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'k--*', label='All (area = %0.2f)' % mean_auc, lw=2)
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
     ax.set_xlabel('False Positive Rate')
     ax.set_ylabel('True Positive Rate')
     ax.legend(loc="lower right")
-    # plt.savefig('ed-random-roc.pdf')
-    plt.show()
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
+    plt.savefig(savename)
+    plt.clf()
+
+if __name__ == '__main__':
+      roc_plot('data/ed-random.data', 'ed-random-roc.pdf')
+      roc_plot('data/ed-young.data', 'ed-young-roc.pdf')
+      roc_plot('data/random-young.data', 'young-random-roc.pdf')
+
 
