@@ -85,7 +85,7 @@ def ref(X, y, n_features_to_select=1, kernel='linear'):
     return (selector)
 
 
-def rfecv(X, y, kernel='linear', class_weight=None):
+def rfecv(X, y, kernel='linear'):
     # RFECV currently only support linear models with a coef_ attribute.
     # It should probably be possible generalized to use the feature_importances_
     # recursive feature elimination with SVM
@@ -96,7 +96,7 @@ def rfecv(X, y, kernel='linear', class_weight=None):
     # classifications
     # Tested: StratifiedKFold works for imbalanced labeled data.
     rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 5),
-                  scoring='roc_auc')
+                  scoring='accuracy')
     rfecv.fit(X, y)
     print("Optimal number of features : %d" % rfecv.n_features_)
     return (rfecv)
@@ -189,17 +189,27 @@ def mlsvm_cv(X, y, kernel='linear'):
     return scores
 
 
-def svm_cv(X, y, kernel='linear', balance=True):
+def svm_cv(X, y, kernel='linear'):
     # Cross validation with SVM
-    if balance:
-        clf = SVC(kernel=kernel, class_weight='balanced')
-    else:
-        clf = SVC(kernel=kernel)
+    clf = SVC(kernel=kernel, class_weight='balanced')
     #When the cv argument is an integer, cross_val_score
     # uses the KFold or StratifiedKFold strategies by default,
     # the latter being used if the estimator derives from ClassifierMixin.
-    scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=8)
-    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=5)
+    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
+
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='precision_weighted', cv=5, n_jobs=5)
+    print("Precision: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
+
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='recall_weighted', cv=5, n_jobs=5)
+    print("Recall: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
+
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='f1_weighted', cv=5, n_jobs=5)
+    print("F1: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
+
+    # scores = cross_validation.cross_val_score(clf, X, y, scoring='roc_auc_weighted', cv=5, n_jobs=5)
+    # print("AUC: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
+
     return scores
 
 
@@ -259,6 +269,7 @@ def load_scale_data(file_path, multilabeltf=False):
 
 
 def common_features():
+    '''Need no scoring metrics'''
     LIWC = iot.read_fields()
     LIWC = [line.strip().split('.')[-1] for line in LIWC]
     X1, y1 = load_scale_data('data/ed-random.data')
@@ -423,29 +434,53 @@ def balanced():
 
 
 def cvrfe():
+    ''' evaluate performance with reducing features
+    Need a scoring metric'''
     cvs = list()
-    X1, y1 = load_scale_data('data/ed-random.data')
-    refcv = rfecv(X1, y1)
     '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
-    pickle.dump(refcv, open('data/ed-random-refcvAUC.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-random-refcvAUC.pick', 'r')))
-
-    X2, y2 = load_scale_data('data/ed-young.data')
-    refcv2 = rfecv(X2, y2)
-    pickle.dump(refcv2, open('data/ed-young-refcvAUC.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-young-refcvAUC.pick', 'r')))
+    # X1, y1 = load_scale_data('data/ed-random.data')
+    # refcv = rfecv(X1, y1)
+    # pickle.dump(refcv, open('data/ed-random-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-random-refcv.pick', 'r')))
+    #
+    # X2, y2 = load_scale_data('data/ed-young.data')
+    # refcv2 = rfecv(X2, y2)
+    # pickle.dump(refcv2, open('data/ed-young-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-young-refcv.pick', 'r')))
 
     X3, y3 = load_scale_data('data/random-young.data')
     refcv3 = rfecv(X3, y3)
-    pickle.dump(refcv3, open('data/random-young-refcvAUC.pick', 'w'))
-    cvs.append(pickle.load(open('data/random-young-refcvAUC.pick', 'r')))
+    pickle.dump(refcv3, open('data/random-young-refcv.pick', 'w'))
+    cvs.append(pickle.load(open('data/random-young-refcv.pick', 'r')))
 
     plot_rfecvs(cvs, ['ED-Random', 'ED-Younger', 'Random-Younger'])
 
 
+def cvevluate():
+    '''Calculate metrics with cross validations'''
+    # X1, y1 = load_scale_data('data/ed-random.data')
+    # X2, y2 = load_scale_data('data/ed-young.data')
+    X3, y3 = load_scale_data('data/random-young.data')
+    # print 'ED-Random'
+    # svm_cv(X1, y1)
+    # print 'ED-Younger'
+    # svm_cv(X2, y2)
+    print 'Random-Younger'
+    svm_cv(X3, y3)
+
+
 if __name__ == '__main__':
-    cvrfe()
+    # cvrfe()
     # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
+    # cvevluate()
+
+    rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '
+    rank2 = 'ingest; leisure; friends_count; statuses_count; information_productivity; feel; percept; see; hear; dmention_pro; tweet_pro; quote_pro; home; i; information_influence; followers_count; statuses_day; health; bio; work; retweet_pro; mention_div; humans; body; reply_pro; reply_div; relativ; conj; verb; present; sexual; negemo; swear; affect; OtherP; Dash; Colon; Comma; money; death; Exclam; achieve; QMark; url_pro; excl; article; social; relig; funct; preps; ipron; adverb; time; incl; cogmech; space; motion; inhib; social_status; anger; Sixltr; followers_day; Apostro; WPS; Quote; hashtag_div; future; quant; shehe; information_attractiveness; posemo; assent; friend; Parenth; cause; ppron; Dic; number; certain; friends_day; negate; insight; Period; AllPct; past; family; tentat; filler; we; you; they; nonfl; discrep; sad; SemiC; auxverb; anx; pronoun; WC; retweet_div; hashtag_pro; '
+    feature1 = rank1.split(';')
+    feature2 = rank2.split(';')
+    print feature1[:20]
+    print feature2[:20]
+    print list(set(feature1[:20]).intersection(set(feature2[:20])))

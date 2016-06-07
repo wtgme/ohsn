@@ -104,8 +104,8 @@ def profile_feature_dependence():
                 i += 1
             ax.set_xscale("log")
             ax.set_yscale("log")
-            ax.set_ylabel(fj)
-            ax.set_xlabel(fi)
+            ax.set_ylabel(fj.split('_')[0])
+            ax.set_xlabel(fi.split('_')[0])
             ax.set_xlim(xmin=1)
             ax.set_ylim(ymin=1)
             handles, labels = ax.get_legend_handles_labels()
@@ -133,10 +133,10 @@ def gagement(dbname, colname):
         engage['statuses_day'] = np.log(1 + status_count/days)
         engage['friends_day'] = np.log(1 + friend_count/days)
         engage['followers_day'] = np.log(1 + follower_count/days)
-        engage['friends_count'] = np.log(friend_count + 1)
-        engage['statuses_count'] = np.log(status_count + 1)
-        engage['followers_count'] = np.log(follower_count + 1)
-        engage['social_status'] = np.log(max(1, follower_count)/max(1, friend_count))
+        engage['friend_count'] = np.log(friend_count + 1)
+        engage['statuse_count'] = np.log(status_count + 1)
+        engage['follower_count'] = np.log(follower_count + 1)
+        engage['social_contribution'] = np.log(max(1, follower_count)/max(1, friend_count))
         engage['information_productivity'] = np.log(1 + status_count/max(1, friend_count))
         engage['information_attractiveness'] = np.log(1 + follower_count/max(1, status_count))
         engage['information_influence'] = np.log(1 + follower_count*status_count/max(1, friend_count))
@@ -149,11 +149,12 @@ def gagement(dbname, colname):
 
 
 if __name__ == '__main__':
-    # profile_feature_stat()
-    # profile_feature_dependence()
-    gagement('fed', 'scom')
-    gagement('random', 'scom')
-    gagement('young', 'scom')
+    profile_feature_stat()
+    profile_feature_dependence()
+    # gagement('fed', 'scom')
+    # gagement('random', 'scom')
+    # gagement('young', 'scom')
+
     # ts = datetime.strptime('Sat Jul 04 06:23:37 +0000 2015', '%a %b %d %H:%M:%S +0000 %Y')
     # tts = datetime.strptime('Sun Mar 13 23:44:56 +0000 2016', '%a %b %d %H:%M:%S +0000 %Y')
     # delta = tts.date() - ts.date()
