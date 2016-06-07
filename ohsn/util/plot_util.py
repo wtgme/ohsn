@@ -292,6 +292,8 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     else:
         max_x = np.max([np.max(listx) for listx in lists])
         min_x = np.min([np.min(listx) for listx in lists])
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
     ax = plt.gca()
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
@@ -333,8 +335,6 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)
     ax.set_autoscale_on(True)
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
     # plt.rcParams['xtick.labelsize'] = 20
     # plt.savefig('echelon-smaple-'+field+'.pdf')
     # plt.clf()

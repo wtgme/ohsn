@@ -13,7 +13,11 @@ the “argmax” of the scores may not be the argmax of the probabilities. (E.g.
 a sample may be labeled by predict as belonging to a class that has probability <½ according to predict_proba.)
 Platt’s method is also known to have theoretical issues. So using SVR.
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
+import ohsn.util.io_util as iot
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -32,14 +36,6 @@ import pickle
 import itertools
 from sklearn.metrics import f1_score
 
-
-def read_field():
-    # read feature names in use
-    fileds = []
-    with open('fieldx.txt', 'r') as fo:
-        for line in fo.readlines():
-            fileds.append(line.strip().split('.')[-1])
-    return np.array(fileds)
 
 
 def pac_svc(X_digits, y_digits):
@@ -83,7 +79,7 @@ def pac_svc(X_digits, y_digits):
 def ref(X, y, n_features_to_select=1, kernel='linear'):
     # specify the desired number of features
     # return the masks and ranking of selected features
-    estimator = SVC(kernel=kernel)
+    estimator = SVC(kernel=kernel, class_weight='balanced')
     selector = RFE(estimator, n_features_to_select=n_features_to_select, step=1)
     selector = selector.fit(X, y)
     return (selector)
@@ -100,7 +96,7 @@ def rfecv(X, y, kernel='linear', class_weight=None):
     # classifications
     # Tested: StratifiedKFold works for imbalanced labeled data.
     rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 5),
-                  scoring='accuracy')
+                  scoring='roc_auc')
     rfecv.fit(X, y)
     print("Optimal number of features : %d" % rfecv.n_features_)
     return (rfecv)
@@ -118,30 +114,35 @@ def mlrfecv(X, y, kernel='linear', class_weight=None):
 def plot_rfecvs(rfecvs, labels):
     # Plot number of features VS. cross-validation scores
     plt.figure()
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
     marker = itertools.cycle((',', '+', '.', 'o', '*'))
     plt.xlabel("#Features")
-    plt.ylabel("Cross validation accuracy")
+    plt.ylabel("Cross validation AUC")
     for i in xrange(len(rfecvs)):
         rfecv = rfecvs[i]
         label = labels[i]
         c = np.random.rand(3)
 
         plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_,
-                 label=('%s (#F = %d, acc. = %0.2f%)' % label, rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]*100),
+                 label=label,
                  c=c, marker=marker.next(), lw=2
                  )
-        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c)
+        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c, lw=2)
+        plt.annotate('Best: (' + str(rfecv.n_features_) + ', ' + str(round(rfecv.grid_scores_[rfecv.n_features_-1]*100, 2))+'%)',
+                 xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),  xycoords='data',
+                 xytext=(10*(i+1), -30*(i+1)), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
         # plt.annotate(str(rfecv.n_features_)+', '+str(rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xytext=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]-0.2)
         #              )
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
     plt.legend(loc="best")
     plt.grid()
+    plt.show()
     plt.savefig('refcv.pdf')
     plt.clf()
-    plt.show()
+
 
 
 def plot_errorbar(score_means, score_stds, labels):
@@ -208,7 +209,7 @@ def fs_svm(X, y):
     model = SelectFromModel(lsvc, prefit=True)
     X_new = model.transform(X)
 
-    LIWC = read_field()
+    LIWC = iot.read_fields()
     print 'Original feature size', X.shape
     print 'New feature size', X_new.shape
     sample_X = X[0]
@@ -258,25 +259,27 @@ def load_scale_data(file_path, multilabeltf=False):
 
 
 def common_features():
-    LIWC = read_field()
-    X1, y1 = load_scale_data('data/ed-nrd-time.data')
-    X2, y2 = load_scale_data('data/ed-nyg-time.data')
+    LIWC = iot.read_fields()
+    LIWC = [line.strip().split('.')[-1] for line in LIWC]
+    X1, y1 = load_scale_data('data/ed-random.data')
+    X2, y2 = load_scale_data('data/ed-young.data')
 
-    # ref1 = ref(X1, y1, 32)
-    # support1, ranking1 = ref1.support_, ref1.ranking_
-    # convert_fields(LIWC, ranking1)
-    #
-    ref2 = ref(X2, y2, 34)
-    # support2, ranking2 = ref2.support_, ref2.ranking_
-    # convert_fields(LIWC, ranking2)
+    '''Feature rankings'''
+    ref1 = ref(X1, y1)
+    support1, ranking1 = ref1.support_, ref1.ranking_
+    convert_fields(LIWC, ranking1)
+
+    ref2 = ref(X2, y2)
+    support2, ranking2 = ref2.support_, ref2.ranking_
+    convert_fields(LIWC, ranking2)
     # # X3, y3 = load_scale_data('data/ed-all-liwc.data')
     # # ref3 = ref(X3, y3, 69)
     # # support3, ranking3 = ref3.support_, ref3.ranking_
     # # convert_fields(LIWC, ranking3)
-    #
-    # comm = np.logical_and(support1, support2)
-    # convert_fields(LIWC, comm)
-    # pickle.dump(comm, open('data/common-time.pick', 'w'))
+
+    comm = np.logical_and(support1, support2)
+    convert_fields(LIWC, comm)
+    pickle.dump(comm, open('data/ed-random-young-common.pick', 'w'))
     # svm_cv(X1[:, support1], y1)
     # svm_cv(X2[:, support2], y2)
     # # svm_cv(X3[:, support3], y3)
@@ -284,8 +287,9 @@ def common_features():
     # svm_cv(X2[:, comm], y2)
     # svm_cv(X3[:, comm], y3)
 
-    comm = pickle.load(open('data/common-time.pick', 'r'))
-    print X1[:, comm].shape
+    '''Classify with common features'''
+    # comm = pickle.load(open('data/common-time.pick', 'r'))
+    # print X1[:, comm].shape
     # ref1 = ref(X1[:, comm], y1)
     # ref2 = ref(X2[:, comm], y2)
     # convert_fields(LIWC[comm], ref1.ranking_)
@@ -331,7 +335,7 @@ def mlcvrfe():
 
 def liwc_color_sig():
     X, y = load_scale_data('data/ygcolor.data', True)
-    LIWC = read_field()
+    LIWC = iot.read_fields()
     flags = list()
     for yi in y:
         if yi[0]==yi[1] and yi[1]==yi[2]:
@@ -369,7 +373,7 @@ def liwc_color_bar(fieldname):
     group = 10
     # print X.shape
     y = np.array(y).ravel()
-    LIWC = read_field()
+    LIWC = iot.read_fields()
     T = X[:, np.argwhere(LIWC == fieldname).ravel()]
     T = np.repeat(T, 3)
     # fig, ax = plt.subplots()
@@ -403,7 +407,6 @@ def liwc_color_bar(fieldname):
     # plt.clf()
 
 
-
 def balanced():
     X1, y1 = load_scale_data('data/ed-all-liwc.data')
     # # ref1 = ref(X1, y1, 38)
@@ -423,19 +426,26 @@ def cvrfe():
     cvs = list()
     X1, y1 = load_scale_data('data/ed-random.data')
     refcv = rfecv(X1, y1)
-    pickle.dump(refcv, open('data/ed-random-refcv.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-random-refcv.pick', 'r')))
+    '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
+    pickle.dump(refcv, open('data/ed-random-refcvAUC.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-random-refcvAUC.pick', 'r')))
+
     X2, y2 = load_scale_data('data/ed-young.data')
     refcv2 = rfecv(X2, y2)
-    pickle.dump(refcv2, open('data/ed-young-refcv.pick', 'w'))
-    cvs.append(pickle.load(open('data/ed-young-refcv.pick', 'r')))
+    pickle.dump(refcv2, open('data/ed-young-refcvAUC.pick', 'w'))
+    cvs.append(pickle.load(open('data/ed-young-refcvAUC.pick', 'r')))
 
     X3, y3 = load_scale_data('data/random-young.data')
     refcv3 = rfecv(X3, y3)
-    pickle.dump(refcv3, open('data/random-young-refcv.pick', 'w'))
-    cvs.append(pickle.load(open('data/random-young-refcv.pick', 'r')))
+    pickle.dump(refcv3, open('data/random-young-refcvAUC.pick', 'w'))
+    cvs.append(pickle.load(open('data/random-young-refcvAUC.pick', 'r')))
+
     plot_rfecvs(cvs, ['ED-Random', 'ED-Younger', 'Random-Younger'])
 
 
 if __name__ == '__main__':
-   cvrfe()
+    cvrfe()
+    # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
+    #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
+    #             ['ED-Random', 'ED-Younger'])
+    # common_features()

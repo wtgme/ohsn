@@ -137,11 +137,10 @@ def store_ratio_behavoir(dbname, colname, filename):
             behaviors['reply_pro'] = float(values[4])/values[-1]
             behaviors['hashtag_pro'] = float(values[5])/values[-1]
             behaviors['url_pro'] = float(values[6])/values[-1]
-            behaviors['quota_pro'] = float(values[7])/values[-1]
+            behaviors['quote_pro'] = float(values[7])/values[-1]
             com.update_one({'id': id}, {'$set': {'behavior': behaviors}}, upsert=False)
         except ZeroDivisionError:
             continue
-
 
 
 def most_retweet(dbname, colname):

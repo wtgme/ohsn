@@ -163,7 +163,7 @@ behavior.dmention_pro
 behavior.reply_pro
 behavior.hashtag_pro
 behavior.url_pro
-behavior.quota_pro
+behavior.quote_pro
 behavior.retweet_div
 behavior.reply_div
 behavior.mention_div
