@@ -6,9 +6,14 @@ Created on 16:00, 01/02/16
 
 Conduct statistics on how much bio-information the data provides.
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbutil
 from ohsn.util import plot_util as plot
+from ohsn.util import io_util as iot
+
 
 
 def bio_statis(dbname, colname):
@@ -108,36 +113,26 @@ def ed_bio_sta(dbname, colname):
     #     print user['id'], user['screen_name'], user['description']
 
 
-def plot_bio(dbname, colname, w1, w2):
-    db = dbutil.db_connect_no_auth(dbname)
-    ed_poi = db[colname]
-    gws = []
-    cws = []
-    for user in ed_poi.find({
-                             'text_anal.'+w1+'.value':{'$exists': True},
-                             'text_anal.'+w2+'.value':{'$exists': True}
-                            }):
-        value = user['text_anal'][w1]['value']
-        value2 = user['text_anal'][w2]['value']
-        gws.append(value)
-        cws.append(value2)
-        # print '-----------------------------------------------'
-        # print  user['description']
-        # print 'age', value, value2
-
-
-    # for user in ed_poi.find({'text_anal.cw.value':{'$exists': True}}):
-    #     gws.append(user['text_anal']['cw']['value'])
-
-    print min(gws), max(gws), len(gws)
-    print min(cws), max(cws), len(cws)
-    # plot.pdf_plot_one_data(gws, 'height', 100, 200)
-    # plot.pdf_plot_one_data(cws, 'hw', 20, 200)
-    # plot.plot_pdf_mul_data(gws, cws, 25, 200, 'lw', 'hw')
-    plot.plot_pdf_mul_data([gws, cws], ['--bo', '--r^'], 'GCW',  ['HW', 'LW'], True)
-
+def plot_bio(dbname, colname, fields, names):
+    datas = list()
+    for field in fields:
+        datas.append(iot.get_values_one_field(dbname, colname, field, {field: {'$exists': True}}))
+    plot.plot_pdf_mul_data(datas, 'Age', ['g-', 'b-', 'r-', 'k-'], ['s', 'o', '^', '*'],
+                           names, linear_bins=True, central=True, fit=False, fitranges=None, savefile='age' + '.pdf')
 
 
 if __name__ == '__main__':
     # ed_bio_sta('fed', 'scom')
-    plot_bio('fed', 'scom', 'hw', 'lw')
+    fields = [
+                  # 'text_anal.gw.value',
+                  # 'text_anal.cw.value',
+                  # 'text_anal.edword_count.value',
+                  # 'text_anal.h.value',
+                  'text_anal.a.value',
+                  # 'text_anal.bmi.value',
+                  # 'text_anal.cbmi.value',
+                  # 'text_anal.gbmi.value',
+                  # 'text_anal.lw.value',
+                  # 'text_anal.hw.value'
+    ]
+    plot_bio('fed', 'scom', fields, ['Age'])
