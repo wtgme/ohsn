@@ -86,7 +86,7 @@ def ed_bio_sta(dbname, colname):
     print 'All count:', all_count
     for name in biolist:
         count = ed_poi.count({name:{'$exists': True}})
-        percent = float(count)/all_count
+        percent = float(count)/all_count*100
         print ('%s, %d, %.2f' % (name, count, percent))
 
     # count = ed_poi.count({"$or":[{biolist[0]:{'$exists': True}},
