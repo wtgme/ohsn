@@ -198,8 +198,8 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
                         log_min_size, log_max_size, num=number_of_bins)))
     hist, edges = np.histogram(data, bins, density=True)
     bin_centers = (edges[1:]+edges[:-1])/2.0
-    hist[hist==0] = np.nan
-    return bin_centers, hist
+    # hist[hist==0] = np.nan
+    return bin_centers[hist!=0], hist[hist!=0]
     # new_x, new_y = [], []
     # # filter_limit = np.amax(hist) * 0.01
     # for index in xrange(len(hist)):
@@ -233,8 +233,8 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     # print np.sum(hist*np.diff(edges))
     # hist = hist / hist.sum()
     bin_centers = (edges[1:]+edges[:-1])/2.0
-    hist[hist==0] = np.nan
-    return bin_centers, hist
+    # hist[hist==0] = np.nan
+    return bin_centers[hist!=0], hist[hist!=0]
     # new_x, new_y = [], []
     # filter_limit = np.amax(hist) * 0.01
     # for index in xrange(len(hist)):
@@ -298,6 +298,15 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     ax.plot(list_x, list_y, colors[0]+marks[0], label=labels[0])
+    '''add cut-offs for bmi'''
+    # bmilist = [(16.5, 'T'), (18.7, 'U'), (21.4, 'M'), (25.0, 'O')]
+    # for i in xrange(len(bmilist)):
+    #     n, t = bmilist[i]
+    #     c = np.random.rand(3)
+    #     ax.axvline(n, linestyle='dashdot', c=c, lw=3)
+    #     ax.annotate(t, xy=(n, 0.155),  xycoords='data',
+    #                  xytext=(-40*(i+1), -30*(i+1)), textcoords='offset points', fontsize=20,
+    #                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
     if fit:
         if fitranges:
             fitmin, finmax = fitranges[0]
@@ -329,8 +338,8 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel(field)
-    ax.set_ylabel('Proportion')
+    ax.set_xlabel('k('+field+')')
+    ax.set_ylabel('p(k)')
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)

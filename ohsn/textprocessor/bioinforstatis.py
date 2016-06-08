@@ -117,8 +117,8 @@ def plot_bio(dbname, colname, fields, names):
     datas = list()
     for field in fields:
         datas.append(iot.get_values_one_field(dbname, colname, field, {field: {'$exists': True}}))
-    plot.plot_pdf_mul_data(datas, 'Age', ['g-', 'b-', 'r-', 'k-'], ['s', 'o', '^', '*'],
-                           names, linear_bins=True, central=True, fit=False, fitranges=None, savefile='age' + '.pdf')
+    plot.plot_pdf_mul_data(datas, 'BMI', ['g-', 'b-', 'r-', 'k-'], ['s', 'o', '^', '*'],
+                           names, linear_bins=True, central=True, fit=False, fitranges=None, savefile='bmi' + '.pdf')
 
 
 if __name__ == '__main__':
@@ -128,11 +128,11 @@ if __name__ == '__main__':
                   # 'text_anal.cw.value',
                   # 'text_anal.edword_count.value',
                   # 'text_anal.h.value',
-                  'text_anal.a.value',
+                  # 'text_anal.a.value',
                   # 'text_anal.bmi.value',
-                  # 'text_anal.cbmi.value',
-                  # 'text_anal.gbmi.value',
+                  'text_anal.cbmi.value',
+                  'text_anal.gbmi.value',
                   # 'text_anal.lw.value',
                   # 'text_anal.hw.value'
     ]
-    plot_bio('fed', 'scom', fields, ['Age'])
+    plot_bio('fed', 'scom', fields, ['CBMI', 'GBMI'])
