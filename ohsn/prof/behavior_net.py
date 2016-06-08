@@ -84,6 +84,7 @@ def netstatis(dbname, behavior_name, g, userlist):
     gnode = g.vs.select()["name"]
     target_nodes = list(set(userlist).intersection(gnode))
 
+    '''Remove nodes with tailed strength'''
     # strengths = np.array(g.strength(target_nodes, mode='OUT', loops=False, weights='weight'))
     # # maxv, minv = np.percentile(strengths, 97.5), np.percentile(strengths, 2.5)
     # maxv, minv = max(strengths), min(strengths)

@@ -9,6 +9,7 @@ from igraph import *
 import db_util as dbt
 import plot_util as splot
 import pickle
+import numpy as np
 
 
 def load_network(db_name, collection='None'):
@@ -321,6 +322,25 @@ def comm_plot(g, clusters, lable, membership=None):
     #         vertex["color"] = pal.get([membership[vertex.index]])
     #     visual_style["vertex_color"] = g.vs["color"]
     plot(clusters, lable, **visual_style)
+
+
+def net_stat(g):
+    node_n = g.vcount()
+    edge_m = g.ecount()
+    degree_mean = np.mean(g.indegree())
+    degree_std = np.std(g.indegree())
+    density = g.density()
+    avg_path = g.average_path_length()
+    components = g.clusters()
+    comp_count = len(components)
+    giant_comp = components.giant()
+    giant_comp_r = float(giant_comp.vcount())/node_n
+    cluster_co_global = g.transitivity_undirected()
+    cluster_co_avg = g.transitivity_avglocal_undirected()
+    assort = g.assortativity_degree(directed=False)
+    print node_n, edge_m, round(degree_mean, 3), round(degree_std, 3), round(density, 3), \
+        round(avg_path, 3), comp_count, round(giant_comp_r, 3), round(cluster_co_global, 3), \
+        round(cluster_co_avg, 3), round(assort, 3)
 
 
 if __name__ == '__main__':

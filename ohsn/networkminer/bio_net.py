@@ -36,6 +36,7 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 
 
 def feature_assort_friend_nt(dbname, colname, comname, db_field_names, directed=True):
+    '''Using networkx as tool'''
     g = nt.load_behavior_network(dbname, colname)
     # g = nt.load_network(dbname, colname)
     node_size, edge_size = g.number_of_nodes(), g.number_of_edges()
@@ -97,7 +98,8 @@ def feature_assort_friend_nt(dbname, colname, comname, db_field_names, directed=
 
 
 def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=True):
-    '''Assigning values different from zero or one to the adjacency matrix will be translated to one,
+    '''Using iGraph
+    Assigning values different from zero or one to the adjacency matrix will be translated to one,
     unless the graph is weighted, in which case the numbers will be treated as weights
     '''
     g = grt.load_beh_network(dbname, colname)
@@ -133,8 +135,7 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
             # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
             #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
             #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-            raw_assort = sg.assortativity('foi',
-                                         'foi', directed=directed)
+            raw_assort = sg.assortativity('foi', 'foi', directed=directed)
             ass_list = list()
             for i in xrange(2000):
                 np.random.shuffle(raw_values)
@@ -145,8 +146,7 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
                 # print db_field_name+',', t_node_size, ',', t_edge_size, ',', \
                 #     round(float(t_node_size)/node_size, 3), ',', round(float(t_edge_size)/edge_size, 3), ',',  \
                 #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
-                ass_list.append(sg.assortativity('foi',
-                                               'foi', directed=directed))
+                ass_list.append(sg.assortativity('foi', 'foi', directed=directed))
             ass_list = np.array(ass_list)
             amean, astd = np.mean(ass_list), np.std(ass_list)
             splt.significant(ass_list, raw_assort, db_field_name)
@@ -221,7 +221,7 @@ def frienship(dbname, colname, comname):
 def behaviour(dbname, colname):
     db = dbt.db_connect_no_auth(dbname)
     sbnet = db[colname]
-    users = sset()
+    users = set()
     for rel in sbnet.find({'type': {'$in': [2, 3]}}):
         users.add(rel['id0'])
         users.add(rel['id1'])
@@ -234,5 +234,5 @@ if __name__ == '__main__':
     # behaviour('fed', 'sbnet')
     fields = iot.read_fields()
     feature_assort_friend_gt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields, directed=False)
-    feature_assort_friend_gt(dbname='echelon', colname='sbnet', comname='poi', db_field_names=fields, directed=False)
+    # feature_assort_friend_gt(dbname='echelon', colname='sbnet', comname='poi', db_field_names=fields, directed=False)
     # feature_assort_friend_nt(dbname='fed', colname='sbnet', comname='scom', db_field_names=fields)

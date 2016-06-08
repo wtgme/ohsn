@@ -26,6 +26,8 @@ import matplotlib.pyplot as plt
 def profile_feature_stat():
     # 'favourites_count'
     fields = ['friends_count', 'followers_count', 'statuses_count']
+    names = ['following', 'follower', 'tweet']
+
     filter = {}
     fitranges = [[(200, 100000), (1000, 100000000), (800, 10000000)],
                      [(700, 10000), (800, 10000000), (800, 1000000)],
@@ -68,16 +70,20 @@ def profile_feature_stat():
         print 'ks-test(Younger, Random): & $n_1$: ' + str(z[0]) + ' & $n_2$: ' + str(z[1]) \
               + ' & ks-value: ' + str(z[2])+ ' & p-value: ' + str(z[3])+ '\\\\'
 
-        plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
+        plot.plot_pdf_mul_data([feds, randoms, youngs], names[i], ['g', 'b', 'r'], ['s', 'o', '^'], ['ED', 'Random', 'Younger'],
                                linear_bins=False, central=False, fit=True, fitranges=fitranges[i], savefile=field+'.pdf')
 
 
 def profile_feature_dependence():
     fields = ['friends_count', 'statuses_count', 'followers_count']
+    names = ['following', 'tweet', 'follower']
+
     for i in xrange(len(fields)):
         fi = fields[i]
+        ni = names[i]
         for j in xrange(i+1, len(fields)):
             fj = fields[j]
+            nj = names[j]
             print '=========================Dependence :', fi, fj
             ax = plt.gca()
             i = 0
@@ -104,8 +110,8 @@ def profile_feature_dependence():
                 i += 1
             ax.set_xscale("log")
             ax.set_yscale("log")
-            ax.set_ylabel(fj.split('_')[0])
-            ax.set_xlabel(fi.split('_')[0])
+            ax.set_ylabel('k('+ni+')')
+            ax.set_xlabel('k('+nj+')')
             ax.set_xlim(xmin=1)
             ax.set_ylim(ymin=1)
             handles, labels = ax.get_legend_handles_labels()

@@ -329,7 +329,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel('k('+field.split('_')[0]+')')
+    ax.set_xlabel('k('+field+')')
     ax.set_ylabel('p(k)')
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
