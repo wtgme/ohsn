@@ -195,7 +195,7 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
 def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
-    g.vs[att_name] = -1.0
+    g.vs[att_name] = -1000000000.0
     for x in com.find({db_field_name: {'$exists': True}}, ['id', db_field_name]):
         uid = x['id']
         exist = True

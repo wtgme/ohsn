@@ -234,11 +234,11 @@ def plot_distribution(edbev, rdbev, ygbev):
 
 def pvalue(p):
     s = ''
-    if p<0.01:
+    if p <= 0.01:
         s = '*'
-    if p<0.001:
+    if p <= 0.001:
         s = '**'
-    if p<0.0001:
+    if p <= 0.0001:
         s = '***'
     return s
 
@@ -281,9 +281,9 @@ if __name__ == '__main__':
     # beh_stat('random', 'scom', 'timeline', 'rdbev')
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
-    store_ratio_behavoir('fed', 'scom', 'edbev')
-    store_ratio_behavoir('random', 'scom', 'rdbev')
-    store_ratio_behavoir('young', 'scom', 'ygbev')
+    # store_ratio_behavoir('fed', 'scom', 'edbev')
+    # store_ratio_behavoir('random', 'scom', 'rdbev')
+    # store_ratio_behavoir('young', 'scom', 'ygbev')
 
     '''Plot distribution of bahavior ratio'''
     # plot_distribution('edbev', 'rdbev', 'ygbev')
@@ -321,5 +321,5 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
     '''LIWC features'''
-    # feature_stat('liwc_anal.result', {'liwc_anal.result.WC': {'$exists': True}})
-    # feature_stat('engage', {'engage.statuses_count': {'$exists': True}}, dumped=True)
+    feature_stat('liwc_anal.result', {'liwc_anal.result.WC': {'$exists': True}})
+    feature_stat('engage', {'engage.statuses_count': {'$exists': True}}, dumped=True)

@@ -22,7 +22,7 @@ def significant(data, observed, name):
             np.sum(data < -absobserved))/float(len(data))
     print pval
     tmax = np.percentile(data, (1-np.sum(data > absobserved)/float(len(data)))*100)
-    tmin = np.percentile(data, 100* np.sum(data > absobserved)/float(len(data)))
+    tmin = np.percentile(data, 100 * np.sum(data > absobserved)/float(len(data)))
     print 'Test pvalue', tmin, tmax, observed
     xmax = np.percentile(data, 97.5)
     xmin = np.percentile(data, 2.5)

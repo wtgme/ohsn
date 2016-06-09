@@ -184,7 +184,7 @@ if __name__ == '__main__':
         ed = diversity_db(dbnames[0], behavior)
         rd = diversity_db(dbnames[1], behavior)
         yg = diversity_db(dbnames[2], behavior)
-        # compore_distribution(behavior, ed, rd, yg)
+        compore_distribution(behavior, ed, rd, yg)
 
 
     ###do hashtag network###
