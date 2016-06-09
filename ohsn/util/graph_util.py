@@ -7,6 +7,7 @@ Created on 20:05, 07/04/16
 
 from igraph import *
 import db_util as dbt
+import powerlaw_fit
 import plot_util as splot
 import pickle
 import numpy as np
@@ -40,6 +41,7 @@ def load_network(db_name, collection='None'):
 
 def load_all_beh_network(userlist, db_name, collection='None', btype='communication'):
     '''
+    All interctions of a user
     behavior network: directed weighted network
     Tweet: 0
     Retweet: 1;
@@ -84,6 +86,7 @@ def load_all_beh_network(userlist, db_name, collection='None', btype='communicat
 
 def load_beh_network(db_name, collection='None', btype='communication'):
     '''
+    only interaction among poi
     behavior network: directed weighted network
     Tweet: 0
     Retweet: 1;
@@ -327,20 +330,19 @@ def comm_plot(g, clusters, lable, membership=None):
 def net_stat(g):
     node_n = g.vcount()
     edge_m = g.ecount()
-    degree_mean = np.mean(g.indegree())
-    degree_std = np.std(g.indegree())
+    # degree_mean = np.mean(g.indegree())
+    # degree_std = np.std(g.indegree())
     density = g.density()
-    avg_path = g.average_path_length()
-    components = g.clusters()
+    avg_path = g.average_path_length(directed=True, unconn=True)
+    components = g.clusters(mode=WEAK)
     comp_count = len(components)
     giant_comp = components.giant()
     giant_comp_r = float(giant_comp.vcount())/node_n
     cluster_co_global = g.transitivity_undirected()
-    cluster_co_avg = g.transitivity_avglocal_undirected()
-    assort = g.assortativity_degree(directed=False)
-    print node_n, edge_m, round(degree_mean, 3), round(degree_std, 3), round(density, 3), \
-        round(avg_path, 3), comp_count, round(giant_comp_r, 3), round(cluster_co_global, 3), \
-        round(cluster_co_avg, 3), round(assort, 3)
+    # cluster_co_avg = g.transitivity_avglocal_undirected()
+    recip = g.reciprocity()
+    assort = g.assortativity_degree(directed=True)
+    print '%d, %d, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
 
 
 if __name__ == '__main__':

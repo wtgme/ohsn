@@ -20,7 +20,8 @@ def fit_powerlaw(data):
     print '---Fitting Likehood, pvalue', fit.distribution_compare('power_law', 'exponential')
     print '---Minx', fit.xmin
     print '---------End Power-Law Fitting-----------------------'
-    return fit.xmin
+    # return fit.xmin
+    return fit.power_law.alpha
     # print 'Fixed minx', fit.fixed_xmin
     # print 'Alpha', fit.alpha
     # print 'Devision', fit.D
