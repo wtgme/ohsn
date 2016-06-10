@@ -110,8 +110,8 @@ def profile_feature_dependence():
                 i += 1
             ax.set_xscale("log")
             ax.set_yscale("log")
-            ax.set_ylabel('k('+ni+')')
-            ax.set_xlabel('k('+nj+')')
+            ax.set_ylabel('k('+nj+')')
+            ax.set_xlabel('k('+ni+')')
             ax.set_xlim(xmin=1)
             ax.set_ylim(ymin=1)
             handles, labels = ax.get_legend_handles_labels()
@@ -150,12 +150,8 @@ def gagement(dbname, colname):
         # except ZeroDivisionError:
         #     continue
 
-
-
-
-
 if __name__ == '__main__':
-    profile_feature_stat()
+    # profile_feature_stat()
     profile_feature_dependence()
     # gagement('fed', 'scom')
     # gagement('random', 'scom')
