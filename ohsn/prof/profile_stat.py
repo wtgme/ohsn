@@ -85,6 +85,8 @@ def profile_feature_dependence():
             fj = fields[j]
             nj = names[j]
             print '=========================Dependence :', fi, fj
+            plt.rcParams['legend.fontsize'] = 20
+            plt.rcParams['axes.labelsize'] = 20
             ax = plt.gca()
             i = 0
             for db, color, mark, label in [('fed', 'g', 's', 'ED'),
@@ -117,8 +119,6 @@ def profile_feature_dependence():
             handles, labels = ax.get_legend_handles_labels()
             leg = ax.legend(handles, labels, loc=4)
             leg.draw_frame(True)
-            plt.rcParams['legend.fontsize'] = 20
-            plt.rcParams['axes.labelsize'] = 20
             plt.savefig(fi+'-'+fj+'.pdf')
             plt.clf()
 
@@ -151,7 +151,7 @@ def gagement(dbname, colname):
         #     continue
 
 if __name__ == '__main__':
-    # profile_feature_stat()
+    profile_feature_stat()
     profile_feature_dependence()
     # gagement('fed', 'scom')
     # gagement('random', 'scom')
