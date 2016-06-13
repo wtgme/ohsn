@@ -131,7 +131,7 @@ def plot_rfecvs(rfecvs, labels):
         plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c, lw=2)
         plt.annotate('Best: (' + str(rfecv.n_features_) + ', ' + str(round(rfecv.grid_scores_[rfecv.n_features_-1]*100, 2))+'%)',
                  xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),  xycoords='data',
-                 xytext=(10*(i+1), -30*(i+1)), textcoords='offset points', fontsize=20,
+                 xytext=(-30, -30*(i+1)), textcoords='offset points', fontsize=20,
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
         # plt.annotate(str(rfecv.n_features_)+', '+str(rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),
@@ -448,9 +448,9 @@ def cvrfe():
     # pickle.dump(refcv2, open('data/ed-young-refcv.pick', 'w'))
     cvs.append(pickle.load(open('data/ed-young-refcv.pick', 'r')))
 
-    X3, y3 = load_scale_data('data/random-young.data')
-    refcv3 = rfecv(X3, y3)
-    pickle.dump(refcv3, open('data/random-young-refcv.pick', 'w'))
+    # X3, y3 = load_scale_data('data/random-young.data')
+    # refcv3 = rfecv(X3, y3)
+    # pickle.dump(refcv3, open('data/random-young-refcv.pick', 'w'))
     cvs.append(pickle.load(open('data/random-young-refcv.pick', 'r')))
 
     plot_rfecvs(cvs, ['ED-Random', 'ED-Younger', 'Random-Younger'])
@@ -470,17 +470,18 @@ def cvevluate():
 
 
 if __name__ == '__main__':
-    # cvrfe()
+    cvrfe()
     # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
     # cvevluate()
 
-    rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '
-    rank2 = 'ingest; leisure; friends_count; statuses_count; information_productivity; feel; percept; see; hear; dmention_pro; tweet_pro; quote_pro; home; i; information_influence; followers_count; statuses_day; health; bio; work; retweet_pro; mention_div; humans; body; reply_pro; reply_div; relativ; conj; verb; present; sexual; negemo; swear; affect; OtherP; Dash; Colon; Comma; money; death; Exclam; achieve; QMark; url_pro; excl; article; social; relig; funct; preps; ipron; adverb; time; incl; cogmech; space; motion; inhib; social_status; anger; Sixltr; followers_day; Apostro; WPS; Quote; hashtag_div; future; quant; shehe; information_attractiveness; posemo; assent; friend; Parenth; cause; ppron; Dic; number; certain; friends_day; negate; insight; Period; AllPct; past; family; tentat; filler; we; you; they; nonfl; discrep; sad; SemiC; auxverb; anx; pronoun; WC; retweet_div; hashtag_pro; '
-    feature1 = rank1.split(';')
-    feature2 = rank2.split(';')
-    print feature1[:20]
-    print feature2[:20]
-    print list(set(feature1[:20]).intersection(set(feature2[:20])))
+    '''Common used features'''
+    # rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '
+    # rank2 = 'ingest; leisure; friends_count; statuses_count; information_productivity; feel; percept; see; hear; dmention_pro; tweet_pro; quote_pro; home; i; information_influence; followers_count; statuses_day; health; bio; work; retweet_pro; mention_div; humans; body; reply_pro; reply_div; relativ; conj; verb; present; sexual; negemo; swear; affect; OtherP; Dash; Colon; Comma; money; death; Exclam; achieve; QMark; url_pro; excl; article; social; relig; funct; preps; ipron; adverb; time; incl; cogmech; space; motion; inhib; social_status; anger; Sixltr; followers_day; Apostro; WPS; Quote; hashtag_div; future; quant; shehe; information_attractiveness; posemo; assent; friend; Parenth; cause; ppron; Dic; number; certain; friends_day; negate; insight; Period; AllPct; past; family; tentat; filler; we; you; they; nonfl; discrep; sad; SemiC; auxverb; anx; pronoun; WC; retweet_div; hashtag_pro; '
+    # feature1 = rank1.split(';')
+    # feature2 = rank2.split(';')
+    # print feature1[:20]
+    # print feature2[:20]
+    # print list(set(feature1[:20]).intersection(set(feature2[:20])))
