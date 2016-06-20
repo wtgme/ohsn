@@ -108,7 +108,7 @@ def profile_feature_dependence():
                 ax.annotate(r'$k_y \propto {k_x}^{'+str(round(cof, 2))+'}$',
                  xy=(xfit[-15], yfit[-15]),  xycoords='data',
                  xytext=(28+(i)*10, -30-(i)*10), textcoords='offset points', fontsize=20,
-                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+                 arrowprops=dict(arrowstyle="->"))
                 i += 1
             ax.set_xscale("log")
             ax.set_yscale("log")

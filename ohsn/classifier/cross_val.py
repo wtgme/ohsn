@@ -90,22 +90,22 @@ def roc_plot(datafile, savename):
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:9], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc.pick', 'r'))
-    ax.plot(mean_fpr, mean_tpr, 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 10:20], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'beh.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'beh.pick', 'r'))
-    ax.plot(mean_fpr, mean_tpr, 'g--+', label='Beh. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'g--+', label='Beh. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc.pick', 'r'))
-    ax.plot(mean_fpr, mean_tpr, 'b--.', label='Psy. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'b--.', label='Psy. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all.pick', 'r'))
-    ax.plot(mean_fpr, mean_tpr, 'k--*', label='All. (area = %0.2f)' % mean_auc, lw=2)
+    ax.plot(mean_fpr, mean_tpr, 'k--*', label='All. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])

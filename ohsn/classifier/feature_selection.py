@@ -116,7 +116,7 @@ def plot_rfecvs(rfecvs, labels):
     plt.figure()
     plt.rcParams['axes.labelsize'] = 20
     plt.rcParams['legend.fontsize'] = 20
-    marker = itertools.cycle((',', '+', '.', 'o', '*'))
+    marker = itertools.cycle((',', '+', 'o', '.', '*'))
     plt.xlabel("#Features")
     plt.ylabel("Cross validation AUC")
     for i in xrange(len(rfecvs)):
@@ -132,7 +132,7 @@ def plot_rfecvs(rfecvs, labels):
         plt.annotate('Best: (' + str(rfecv.n_features_) + ', ' + str(round(rfecv.grid_scores_[rfecv.n_features_-1]*100, 2))+'%)',
                  xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),  xycoords='data',
                  xytext=(-30, -30*(i+1)), textcoords='offset points', fontsize=20,
-                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+                 arrowprops=dict(arrowstyle="->"))
         # plt.annotate(str(rfecv.n_features_)+', '+str(rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),
         #              xytext=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]-0.2)
@@ -470,7 +470,7 @@ def cvevluate():
 
 
 if __name__ == '__main__':
-    cvrfe()
+    # cvrfe()
     # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])

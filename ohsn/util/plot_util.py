@@ -317,7 +317,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
                  xy=(list_fit_x[-6], list_fit_y[-6]),  xycoords='data',
                  xytext=(-100, -40), textcoords='offset points', fontsize=20,
-                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+                 arrowprops=dict(arrowstyle="->"))
     for i in xrange(len(lists[1:])):
         ax = plt.gca()
         list_x, list_y = pdf_fix_bin(lists[i+1], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
@@ -330,9 +330,9 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
             list_fit_x, list_fit_y, cof = lr_ls(list_x, list_y, fitmin, finmax)
             ax.plot(list_fit_x, list_fit_y, colors[i+1]+'--', linewidth=2)
             ax.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
-                 xy=(list_fit_x[-10], list_fit_y[-10]),  xycoords='data',
+                 xy=(list_fit_x[-9], list_fit_y[-9]),  xycoords='data',
                  xytext=(-140-i*60, -30-i*35), textcoords='offset points', fontsize=20,
-                 arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.8"))
+                 arrowprops=dict(arrowstyle="->"))
     if linear_bins == False:
         ax.set_xscale("log")
         ax.set_yscale("log")
