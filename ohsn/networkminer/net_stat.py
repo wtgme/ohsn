@@ -55,11 +55,11 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
                       + str(sg.assortativity('foi', 'foi', directed=directed)) + ','
             raw_assort = sg.assortativity('foi', 'foi', directed=directed)
             ass_list = list()
-            for i in xrange(2000):
-                np.random.shuffle(values)
-                sg.vs["foi"] = values
-                # vs = g.vs(foi_ge=minv, foi_le=maxv)
-                # sg = g.subgraph(vs)
+            for i in xrange(1000):
+                np.random.shuffle(raw_values)
+                g.vs["foi"] = raw_values
+                vs = g.vs(foi_ge=minv, foi_le=maxv)
+                sg = g.subgraph(vs)
                 ass_list.append(sg.assortativity('foi', 'foi', directed=directed))
             ass_list = np.array(ass_list)
             amean, astd = np.mean(ass_list), np.std(ass_list)
@@ -95,16 +95,16 @@ def network_stats(dbname, com, fnet, bnet):
     # fnetwork = gt.load_network(dbname, fnet)
     # gt.net_stat(fnetwork)
     # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
-    # pickle.dump(outputs, open('data/fnet_assort.pick', 'w'))
-    outputs = pickle.load(open('data/fnet_assort.pick', 'r'))
+    # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
+    outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
     display(outputs, 101)
     for beh in ['retweet', 'reply', 'mention']:
         # bnetwork = gt.load_beh_network(dbname, bnet, beh)
         print beh
         # gt.net_stat(bnetwork)
         # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
-        # pickle.dump(outputs, open('data/'+beh+'_assort.pick', 'w'))
-        outputs = pickle.load(open('data/'+beh+'_assort.pick', 'r'))
+        # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
+        outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
         display(outputs, 101)
 
 
