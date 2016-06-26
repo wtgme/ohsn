@@ -82,6 +82,7 @@ def cross_val_roc_plot(X, y):
 
 def roc_plot(datafile, savename):
     X, y = load_scale_data(datafile)
+
     plt.rcParams['axes.labelsize'] = 20
     plt.rcParams['legend.fontsize'] = 20
     ax = plt.gca()
@@ -117,8 +118,8 @@ def roc_plot(datafile, savename):
     plt.clf()
 
 if __name__ == '__main__':
-      roc_plot('data/ed-random.data', 'ed-random-roc.pdf')
-      roc_plot('data/ed-young.data', 'ed-young-roc.pdf')
-      roc_plot('data/random-young.data', 'random-young-roc.pdf')
+    roc_plot('data/ed-random.data', 'ed-random-roc.pdf')
+    roc_plot('data/ed-young.data', 'ed-young-roc.pdf')
+    roc_plot('data/random-young.data', 'random-young-roc.pdf')
 
 
