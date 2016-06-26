@@ -28,29 +28,39 @@ def get_one_value(diclist, field):
     return values
 
 
-def feature_stat(field_name, filter, dumped=True):
+def feature_stat(dumped=False):
     fields = io.read_fields()
-    # field_name = 'liwc_anal.result'
-    # filter = {'liwc_anal.result.WC': {'$exists': True}}
-    if dumped:
-        edsa = pickle.load(open('data/fed_'+field_name+'.pick', 'r'))
-        randomsa = pickle.load(open('data/random_'+field_name+'.pick', 'r'))
-        youngsa = pickle.load(open('data/young_'+field_name+'.pick', 'r'))
-    else:
-        edsa = io.get_values_one_field('fed', 'scom', field_name, filter)
-        randomsa = io.get_values_one_field('random', 'scom', field_name, filter)
-        youngsa = io.get_values_one_field('young', 'scom', field_name, filter)
-        pickle.dump(edsa, open('data/fed_'+field_name+'.pick', 'w'))
-        pickle.dump(randomsa, open('data/random_'+field_name+'.pick', 'w'))
-        pickle.dump(youngsa, open('data/young_'+field_name+'.pick', 'w'))
-
-    print len(edsa), len(randomsa), len(youngsa)
+    print len(fields)
+    assert isinstance(fields, object)
     for field in fields:
         keys = field.split('.')
-        eds = get_one_value(edsa, keys[-1])
-        randoms = get_one_value(randomsa, keys[-1])
-        youngs = get_one_value(youngsa, keys[-1])
+        filter = {field: {'$exists': True}}
+        eds = io.get_values_one_field('fed', 'scom', field, filter)
+        randoms = io.get_values_one_field('random', 'scom', field, filter)
+        youngs = io.get_values_one_field('young', 'scom', field, filter)
         compore_distribution(keys[-1], eds, randoms, youngs)
+
+    # field_name = 'liwc_anal.result'
+    # filter = {'liwc_anal.result.WC': {'$exists': True}}
+    # if dumped:
+    #     edsa = pickle.load(open('data/fed_'+field_name+'.pick', 'r'))
+    #     randomsa = pickle.load(open('data/random_'+field_name+'.pick', 'r'))
+    #     youngsa = pickle.load(open('data/young_'+field_name+'.pick', 'r'))
+    # else:
+    #     edsa = io.get_values_one_field('fed', 'scom', field_name, filter)
+    #     randomsa = io.get_values_one_field('random', 'scom', field_name, filter)
+    #     youngsa = io.get_values_one_field('young', 'scom', field_name, filter)
+    #     pickle.dump(edsa, open('data/fed_'+field_name+'.pick', 'w'))
+    #     pickle.dump(randomsa, open('data/random_'+field_name+'.pick', 'w'))
+    #     pickle.dump(youngsa, open('data/young_'+field_name+'.pick', 'w'))
+    #
+    # print len(edsa), len(randomsa), len(youngsa)
+    # for field in fields:
+    #     keys = field.split('.')
+    #     eds = get_one_value(edsa, keys[-1])
+    #     randoms = get_one_value(randomsa, keys[-1])
+    #     youngs = get_one_value(youngsa, keys[-1])
+    #     compore_distribution(keys[-1], eds, randoms, youngs)
 
 
 def beh_stat(dbname, comname, colname, filename):
@@ -234,11 +244,11 @@ def plot_distribution(edbev, rdbev, ygbev):
 
 def pvalue(p):
     s = ''
-    if p <= 0.01:
+    if p <= 0.01/101:
         s = '*'
-    if p <= 0.001:
+    if p <= 0.001/101:
         s = '**'
-    if p <= 0.0001:
+    if p <= 0.0001/101:
         s = '***'
     return s
 
@@ -269,10 +279,10 @@ def compore_distribution(field, feds, randoms, youngs):
     #       + ' & ks-value: ' + str(ed_ygz[2]) + ' & p-value: ' + str(ed_ygz[3]) + '\\\\'
     # print 'ks-test(Younger, Random): & $n_1$: ' + str(yg_rdz[0]) + ' & $n_2$: ' + str(yg_rdz[1]) \
     #       + ' & ks-value: ' + str(yg_rdz[2]) + ' & p-value: ' + str(yg_rdz[3]) + '\\\\'
-    #
-    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
-                           ['ED', 'Random', 'Younger'],
-                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
+
+    # plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+    #                        ['ED', 'Random', 'Younger'],
+    #                        linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 if __name__ == '__main__':
@@ -321,5 +331,4 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
     '''LIWC features'''
-    feature_stat('liwc_anal.result', {'liwc_anal.result.WC': {'$exists': True}})
-    feature_stat('engage', {'engage.statuses_count': {'$exists': True}}, dumped=True)
+    feature_stat()
