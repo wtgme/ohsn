@@ -37,18 +37,15 @@ import itertools
 from sklearn.metrics import f1_score
 
 
-
 def pac_svc(X_digits, y_digits):
     # PCA and SVM test best number of components
     svc = SVC(kernel="linear")
-
     pca = decomposition.PCA()
     pipe = Pipeline(steps=[('pca', pca), ('svc', svc)])
 
     ###############################################################################
     # Plot the PCA spectrum
     pca.fit(X_digits)
-
     plt.figure(1)
     plt.clf()
     # plt.axes([.2, .2, .7, .7])
@@ -61,15 +58,12 @@ def pac_svc(X_digits, y_digits):
 
     ###############################################################################
     # Prediction
-
-    n_components = [10, 20, 30, 40, 50, 60, 70, 80]
-
+    n_components = range(10, 102, 10)
     #Parameters of pipelines can be set using ‘__’ separated parameter names:
-
     estimator = GridSearchCV(pipe,
                              dict(pca__n_components=n_components))
     estimator.fit(X_digits, y_digits)
-
+    print estimator.best_estimator_.named_steps['pca'].n_components
     plt.axvline(estimator.best_estimator_.named_steps['pca'].n_components,
                 linestyle=':', label='n_components chosen')
     plt.legend(prop=dict(size=12))
@@ -458,16 +452,19 @@ def cvrfe():
 
 def cvevluate():
     '''Calculate metrics with cross validations'''
-    # X1, y1 = load_scale_data('data/ed-random.data')
-    # X2, y2 = load_scale_data('data/ed-young.data')
+    X1, y1 = load_scale_data('data/ed-random.data')
+    X2, y2 = load_scale_data('data/ed-young.data')
     X3, y3 = load_scale_data('data/random-young.data')
     # print 'ED-Random'
     # svm_cv(X1, y1)
     # print 'ED-Younger'
     # svm_cv(X2, y2)
-    print 'Random-Younger'
-    svm_cv(X3, y3)
-
+    # print 'Random-Younger'
+    # svm_cv(X3, y3)
+    '''PCA '''
+    # pac_svc(X1, y1)
+    # pac_svc(X2, y2)
+    pac_svc(X3, y3)
 
 if __name__ == '__main__':
     # cvrfe()
@@ -476,6 +473,7 @@ if __name__ == '__main__':
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
     # cvevluate()
+    cvevluate()
 
     '''Common used features'''
     # rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '
