@@ -110,9 +110,9 @@ def plot_rfecvs(rfecvs, labels):
     plt.figure()
     plt.rcParams['axes.labelsize'] = 20
     plt.rcParams['legend.fontsize'] = 20
-    marker = itertools.cycle((',', '+', 'o', '.', '*'))
+    marker = itertools.cycle((',', 'x', 'o', '.', '*'))
     plt.xlabel("#Features")
-    plt.ylabel("Cross validation AUC")
+    plt.ylabel("Cross validation accuracy")
     for i in xrange(len(rfecvs)):
         rfecv = rfecvs[i]
         label = labels[i]
@@ -122,7 +122,7 @@ def plot_rfecvs(rfecvs, labels):
                  label=label,
                  c=c, marker=marker.next(), lw=2
                  )
-        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c, lw=2)
+        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c, lw=4)
         plt.annotate('Best: (' + str(rfecv.n_features_) + ', ' + str(round(rfecv.grid_scores_[rfecv.n_features_-1]*100, 2))+'%)',
                  xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),  xycoords='data',
                  xytext=(-30, -30*(i+1)), textcoords='offset points', fontsize=20,
@@ -467,13 +467,13 @@ def cvevluate():
     pac_svc(X3, y3)
 
 if __name__ == '__main__':
-    # cvrfe()
+    cvrfe()
     # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
     # cvevluate()
-    cvevluate()
+    # cvevluate()
 
     '''Common used features'''
     # rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '

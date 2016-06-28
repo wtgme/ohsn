@@ -91,21 +91,22 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
 
 def network_stats(dbname, com, fnet, bnet):
     fields = iot.read_fields()
+    print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
     print 'Following'
-    fnetwork = gt.load_network(dbname, fnet)
+    # fnetwork = gt.load_network(dbname, fnet)
     gt.net_stat(fnetwork)
-    outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
-    pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
-    # outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
-    display(outputs, 101)
+    # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
+    # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
+    outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
+    display(outputs, 100)
     for beh in ['retweet', 'reply', 'mention']:
         print beh
-        bnetwork = gt.load_beh_network(dbname, bnet, beh)
-        gt.net_stat(bnetwork)
-        outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
-        pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
-        # outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
-        display(outputs, 101)
+        # bnetwork = gt.load_beh_network(dbname, bnet, beh)
+        # gt.net_stat(bnetwork)
+        # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
+        # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
+        outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
+        display(outputs, 100)
 
 
 if __name__ == '__main__':
