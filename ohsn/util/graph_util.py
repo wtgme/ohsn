@@ -105,12 +105,12 @@ def load_beh_network(db_name, collection='None', btype='communication'):
     name_map, edges = {}, {}
     # for row in cols.find({}):
     for row in cols.find({'type': {'$in': btype_dic[btype]}}, no_cursor_timeout=True):
-        if btype is 'retweet':
-            n2 = str(row['id0'])
-            n1 = str(row['id1'])
-        else:
-            n1 = str(row['id0'])
-            n2 = str(row['id1'])
+        # if btype is 'retweet':
+        #     n2 = str(row['id0'])
+        #     n1 = str(row['id1'])
+        # else:
+        n1 = str(row['id0'])
+        n2 = str(row['id1'])
         if n1 != n2:
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
