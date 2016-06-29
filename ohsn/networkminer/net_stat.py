@@ -24,9 +24,13 @@ def drop_initials(list_a):
 def display(data, topk=5):
     sorted_x = sorted(data.items(), key=operator.itemgetter(1))
     sorted_x.reverse()
+    count = 0
     for i in xrange(topk):
-        if 'text_anal' in sorted_x[i][0]:
+        # if 'text_anal' in sorted_x[i][0]:
+        if sorted_x[i][0].endswith('*'):
+            count += 1
             print sorted_x[i][0]
+    print float(count)/101
 
 def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
     '''Using iGraph
@@ -94,19 +98,19 @@ def network_stats(dbname, com, fnet, bnet):
     print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
     print 'Following'
     fnetwork = gt.load_network(dbname, fnet)
-    gt.net_stat(fnetwork)
+    # gt.net_stat(fnetwork)
     # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
     # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
-    # outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
-    # display(outputs, 100)
+    outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
+    display(outputs, 101)
     for beh in ['retweet', 'reply', 'mention']:
         print beh
         bnetwork = gt.load_beh_network(dbname, bnet, beh)
-        gt.net_stat(bnetwork)
+        # gt.net_stat(bnetwork)
         # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
         # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
-        # outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
-        # display(outputs, 100)
+        outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
+        display(outputs, 101)
 
 
 if __name__ == '__main__':
