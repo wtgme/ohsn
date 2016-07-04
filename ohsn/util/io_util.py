@@ -4,6 +4,9 @@ Created on 12:59 PM, 3/1/16
 
 @author: tw
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbt
 import numpy as np
@@ -65,3 +68,15 @@ def get_values_one_field(dbname, colname, fieldname, filt={}):
 def most_common(lst):
     return max(set(lst), key=lst.count)
 
+
+def print_tweets(dbname, timeline):
+    db = dbt.db_connect_no_auth(dbname)
+    time = db[timeline]
+    for tweet in time.find():
+        try:
+            print tweet['text']
+        except UnicodeEncodeError:
+            pass
+
+if __name__ == '__main__':
+    print_tweets('fed', 'stimeline')

@@ -98,6 +98,7 @@ def network_stats(dbname, com, fnet, bnet):
     print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
     print 'Following'
     fnetwork = gt.load_network(dbname, fnet)
+    # fnetwork.write_adjacency('friendship.csv', ';')
     # gt.net_stat(fnetwork)
     # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
     # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
