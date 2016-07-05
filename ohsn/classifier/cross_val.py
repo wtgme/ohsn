@@ -89,9 +89,9 @@ def roc_plot(datafile, savename, pca_num=10):
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
     '''social status features'''
-    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:9], y)
-    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc.pick', 'r'))
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:5], y)
+    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
+    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     '''Behavioral pattern features'''
@@ -107,9 +107,12 @@ def roc_plot(datafile, savename, pca_num=10):
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--.', label='Psy. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     '''All features'''
-    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all.pick', 'r'))
+    '''Remove social impact features'''
+    X_short = np.delete(X, [6,7,8,9], 1)
+
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X_short, y)
+    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
+    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--x', label='All. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     '''PCA'''
@@ -118,8 +121,8 @@ def roc_plot(datafile, savename, pca_num=10):
     # X = pca.fit_transform(X)
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'red.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'red.pick', 'r'))
-    ax.plot(mean_fpr, mean_tpr, 'c--*', label='Red. (area = %0.2f)' % mean_auc, lw=2, ms=10)
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'red.pick', 'r'))
+    # ax.plot(mean_fpr, mean_tpr, 'c--*', label='Red. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
@@ -132,7 +135,7 @@ def roc_plot(datafile, savename, pca_num=10):
     plt.clf()
 
 if __name__ == '__main__':
-    # roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
-    # roc_plot('data/ed-young.data', 'ed-young-roc.pdf', 70)
+    roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
+    roc_plot('data/ed-young.data', 'ed-young-roc.pdf', 70)
     roc_plot('data/random-young.data', 'random-young-roc.pdf', 100)
 

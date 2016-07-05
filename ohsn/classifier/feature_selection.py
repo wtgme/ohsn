@@ -455,25 +455,28 @@ def cvevluate():
     X1, y1 = load_scale_data('data/ed-random.data')
     X2, y2 = load_scale_data('data/ed-young.data')
     X3, y3 = load_scale_data('data/random-young.data')
-    # print 'ED-Random'
-    # svm_cv(X1, y1)
-    # print 'ED-Younger'
-    # svm_cv(X2, y2)
-    # print 'Random-Younger'
-    # svm_cv(X3, y3)
+    X1 = np.delete(X1, [6,7,8,9], 1)
+    X2 = np.delete(X2, [6,7,8,9], 1)
+    X3 = np.delete(X3, [6,7,8,9], 1)
+    print 'ED-Random'
+    svm_cv(X1, y1)
+    print 'ED-Younger'
+    svm_cv(X2, y2)
+    print 'Random-Younger'
+    svm_cv(X3, y3)
     '''PCA '''
     # pac_svc(X1, y1)
     # pac_svc(X2, y2)
-    pac_svc(X3, y3)
+    # pac_svc(X3, y3)
 
 if __name__ == '__main__':
-    cvrfe()
+    # cvrfe()
     # plot_rfecvs([pickle.load(open('data/ed-random-refcv.pick', 'r')),
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
-    # cvevluate()
-    # cvevluate()
+    cvevluate()
+
 
     '''Common used features'''
     # rank1 = 'Quote; quote_pro; posemo; affect; negemo; OtherP; ingest; Period; Colon; we; AllPct; social_status; friends_count; followers_count; ppron; bio; health; body; sexual; swear; social; money; Dash; information_attractiveness; information_productivity; percept; feel; statuses_count; friends_day; followers_day; relativ; see; hear; leisure; retweet_div; relig; mention_div; conj; Apostro; tweet_pro; dmention_pro; home; i; humans; time; inhib; hashtag_div; auxverb; statuses_day; reply_pro; reply_div; ipron; article; excl; motion; Sixltr; Dic; funct; death; retweet_pro; shehe; they; WC; WPS; past; QMark; Comma; quant; anx; friend; tentat; hashtag_pro; insight; incl; work; sad; anger; achieve; url_pro; family; filler; nonfl; adverb; certain; verb; you; preps; cogmech; SemiC; information_influence; number; pronoun; present; Exclam; future; assent; discrep; cause; Parenth; space; negate; '
