@@ -244,11 +244,11 @@ def plot_distribution(edbev, rdbev, ygbev):
 
 def pvalue(p):
     s = ''
-    if p <= 0.01/101:
+    if p <= 0.01/97:
         s = '*'
-    if p <= 0.001/101:
+    if p <= 0.001/97:
         s = '**'
-    if p <= 0.0001/101:
+    if p <= 0.0001/97:
         s = '***'
     return s
 

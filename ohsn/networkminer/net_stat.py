@@ -22,15 +22,22 @@ def drop_initials(list_a):
 
 
 def display(data, topk=5):
+    # elist = ['engage.social_contribution',
+    # 'engage.information_productivity',
+    # 'engage.information_attractiveness',
+    # 'engage.information_influence']
     sorted_x = sorted(data.items(), key=operator.itemgetter(1))
     sorted_x.reverse()
     count = 0
     for i in xrange(topk):
         # if 'text_anal' in sorted_x[i][0]:
+        # tokens = sorted_x[i][0].split(',')
+        # if sorted_x[i][0].endswith('*') and tokens[0] not in elist:
         if sorted_x[i][0].endswith('*'):
             count += 1
             print sorted_x[i][0]
     print float(count)/101
+
 
 def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
     '''Using iGraph
