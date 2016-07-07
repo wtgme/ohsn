@@ -82,15 +82,15 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
             # print pval
             output += str(raw_assort) + ',' + str(amean) + ',' + str(astd) + ',' + str(zscore) + ',' + str(pval)
             print output
-            if pval <= 0.001:
+            if pval < 0.001:
                 output += '***'
                 outputs[output] = abs(zscore)
                 continue
-            if pval <= 0.01:
+            if pval < 0.01:
                 output += '**'
                 outputs[output] = abs(zscore)
                 continue
-            if pval <= 0.05:
+            if pval < 0.05:
                 output += '*'
                 outputs[output] = abs(zscore)
                 continue
