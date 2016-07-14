@@ -292,21 +292,32 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     else:
         max_x = np.max([np.max(listx) for listx in lists])
         min_x = np.min([np.min(listx) for listx in lists])
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['axes.labelsize'] = 15
+    plt.rcParams['xtick.labelsize'] = 25
+    plt.rcParams['ytick.labelsize'] = 25
+    plt.rcParams['legend.fontsize'] = 30
+    plt.rcParams['lines.markersize'] = 15
     ax = plt.gca()
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
     ax.plot(list_x, list_y, colors[0]+marks[0], label=labels[0])
-    '''add cut-offs for bmi'''
+
+    # '''Plot mean age'''
+    # ax.axvline(np.mean(lists[0]), linestyle='dashdot', c='r', lw=6)
+    # ax.annotate('Mean', xy=(np.mean(lists[0]), 0.25),  xycoords='data',
+    #                  xytext=(-60, -50), textcoords='offset points', fontsize=30,
+    #                  arrowprops=dict(arrowstyle="->"))
+
+    # '''add cut-offs for bmi'''
     # bmilist = [(16.5, 'T'), (18.7, 'U'), (21.4, 'M'), (25.0, 'O')]
     # for i in xrange(len(bmilist)):
     #     n, t = bmilist[i]
     #     c = np.random.rand(3)
-    #     ax.axvline(n, linestyle='dashdot', c=c, lw=3)
+    #     ax.axvline(n, linestyle='dashdot', c=c, lw=6)
     #     ax.annotate(t, xy=(n, 0.155),  xycoords='data',
-    #                  xytext=(-40*(i+1), -30*(i+1)), textcoords='offset points', fontsize=20,
-    #                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+    #                  xytext=(40*((4-i)+1), -30*((4-i)+1)), textcoords='offset points', fontsize=30,
+    #                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.2"))
+
     if fit:
         if fitranges:
             fitmin, finmax = fitranges[0]
