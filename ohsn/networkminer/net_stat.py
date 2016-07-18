@@ -22,21 +22,24 @@ def drop_initials(list_a):
 
 
 def display(data, topk=5):
-    # elist = ['engage.social_contribution',
-    # 'engage.information_productivity',
-    # 'engage.information_attractiveness',
-    # 'engage.information_influence']
+    elist = ['engage.social_contribution',
+    'engage.information_productivity',
+    'engage.information_attractiveness',
+    'engage.information_influence']
     sorted_x = sorted(data.items(), key=operator.itemgetter(1))
     sorted_x.reverse()
     count = 0
     for i in xrange(topk):
         # if 'text_anal' in sorted_x[i][0]:
-        # tokens = sorted_x[i][0].split(',')
-        # if sorted_x[i][0].endswith('*') and tokens[0] not in elist:
-        if sorted_x[i][0].endswith('*'):
+
+        '''Exclude social impacts measures'''
+        tokens = sorted_x[i][0].split(',')
+        if sorted_x[i][0].endswith('*') and tokens[0] not in elist and float(tokens[-2])>0:
+        # '''Count all'''
+        # if sorted_x[i][0].endswith('*'):
             count += 1
             print sorted_x[i][0]
-    print float(count)/101
+    print float(count)/(101-4)
 
 
 def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
@@ -104,10 +107,10 @@ def network_stats(dbname, com, fnet, bnet):
     fields = iot.read_fields()
     print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
     print 'Following'
-    fnetwork = gt.load_network(dbname, fnet)
+    # fnetwork = gt.load_network(dbname, fnet)
 
     '''Out put file for Gephi'''
-    fnetwork.write_dot('friendship.DOT')
+    # fnetwork.write_dot('friendship.DOT')
 
     # gt.net_stat(fnetwork)
     # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
@@ -116,7 +119,7 @@ def network_stats(dbname, com, fnet, bnet):
     display(outputs, 101)
     for beh in ['retweet', 'reply', 'mention']:
         print beh
-        bnetwork = gt.load_beh_network(dbname, bnet, beh)
+        # bnetwork = gt.load_beh_network(dbname, bnet, beh)
         # gt.net_stat(bnetwork)
         # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
         # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
