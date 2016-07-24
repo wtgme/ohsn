@@ -84,13 +84,16 @@ def roc_plot(datafile, savename, pca_num=10):
     X, y = load_scale_data(datafile)
 
     plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['xtick.labelsize'] = 20
+    plt.rcParams['ytick.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 25
+    plt.rcParams['lines.markersize'] = 30
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
     '''social status features'''
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:5], y)
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:5], y)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
@@ -110,8 +113,8 @@ def roc_plot(datafile, savename, pca_num=10):
     '''Remove social impact features'''
     X_short = np.delete(X, [6,7,8,9], 1)
 
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X_short, y)
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X_short, y)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--x', label='All. (area = %0.2f)' % mean_auc, lw=2, ms=10)
 
