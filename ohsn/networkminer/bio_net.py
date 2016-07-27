@@ -137,7 +137,7 @@ def feature_assort_friend_gt(dbname, colname, comname, db_field_names, directed=
             #     round(sg.assortativity_degree(directed=directed), 3), ',', round(sg.assortativity('foi', directed=directed), 3)
             raw_assort = sg.assortativity('foi', 'foi', directed=directed)
             ass_list = list()
-            for i in xrange(2000):
+            for i in xrange(3000):
                 np.random.shuffle(raw_values)
                 g.vs["foi"] = raw_values
                 vs = g.vs(foi_ge=minv, foi_le=maxv)
