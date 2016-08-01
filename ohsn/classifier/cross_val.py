@@ -87,7 +87,7 @@ def roc_plot(datafile, savename, pca_num=10):
     plt.rcParams['xtick.labelsize'] = 20
     plt.rcParams['ytick.labelsize'] = 20
     plt.rcParams['legend.fontsize'] = 25
-    plt.rcParams['lines.markersize'] = 35
+    plt.rcParams['lines.markersize'] = 50
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
