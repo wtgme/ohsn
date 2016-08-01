@@ -87,7 +87,7 @@ def roc_plot(datafile, savename, pca_num=10):
     plt.rcParams['xtick.labelsize'] = 20
     plt.rcParams['ytick.labelsize'] = 20
     plt.rcParams['legend.fontsize'] = 25
-    plt.rcParams['lines.markersize'] = 30
+    plt.rcParams['lines.markersize'] = 35
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
@@ -95,19 +95,19 @@ def roc_plot(datafile, savename, pca_num=10):
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:5], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=2, ms=10)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''Behavioral pattern features'''
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 10:20], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'beh.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'beh.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--+', label='Beh. (area = %0.2f)' % mean_auc, lw=2, ms=10)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Beh. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''LIWC features'''
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--.', label='Psy. (area = %0.2f)' % mean_auc, lw=2, ms=10)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='Psy. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''All features'''
     '''Remove social impact features'''
@@ -116,7 +116,7 @@ def roc_plot(datafile, savename, pca_num=10):
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X_short, y)
     # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--x', label='All. (area = %0.2f)' % mean_auc, lw=2, ms=10)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--*', label='All. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''PCA'''
     # from sklearn import decomposition
