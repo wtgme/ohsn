@@ -81,6 +81,21 @@ def check_ed_profile(profile):
         return False
 
 
+def check_ed_related_profile(profile):
+    profile = profile.strip().lower().replace("-", "").replace('_', '')
+    tokens = tokenizer_stoprm(profile)
+    dio_flag = False
+    for token in tokens:
+        if token in ed_keywords_list: # for single words
+            dio_flag = True
+    for dio in ed_keywords_list:
+        if ' ' in dio and dio in profile: # for phrases
+            dio_flag = True
+
+    return dio_flag
+
+
+
 def check_depression_profile(profile):
     profile = profile.strip().lower().replace("-", "").replace('_', '')
     tokens = tokenizer_stoprm(profile)
