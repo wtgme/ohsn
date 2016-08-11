@@ -28,20 +28,17 @@ def bahavior_net(dbname, comname, bnetname, btype):
     return gt.load_all_beh_network(userlist, dbname, bnetname, btype)
 
 
-def extract_hashtags():
-    dbnames = [('fed', 'stimeline'),
-               ('random', 'timeline'),
-               ('young', 'timeline')]
+def extract_hashtags(dbname, timename):
     with open('data/hashtags.data', 'w') as fw:
-        for dbname, timename in dbnames:
-            db = dbt.db_connect_no_auth(dbname)
-            cols = db[timename]
-            for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
-                hashtags = row['entities']['hashtags']
-                hlist = list()
-                for hashtag in hashtags:
-                    hlist.append(hashtag['text'].lower())
-                fw.write((dbname + '\t' + row['id_str'] + '\t' + row['user']['id_str'] + '\t' + ' '.join(hlist) + '\n').encode('utf-8'))
+        db = dbt.db_connect_no_auth(dbname)
+        cols = db[timename]
+        for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+            hashtags = row['entities']['hashtags']
+            hlist = list()
+            for hashtag in hashtags:
+                hlist.append(hashtag['text'].lower())
+            fw.write((dbname + '\t' + row['id_str'] + '\t' + row['user']['id_str'] + '\t' + ' '.join(hlist) + '\n').encode('utf-8'))
+
 
 def entropy(strenths):
     pros = np.asarray(strenths, np.float64)/sum(strenths)
@@ -49,21 +46,17 @@ def entropy(strenths):
     return entropy, entropy/np.log(len(strenths))
 
 
-def hashtag_net():
-    dbnames = [('fed', 'stimeline'),
-               ('random', 'timeline'),
-               ('young', 'timeline')]
-    for dbname, timename in dbnames:
-        userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
-                                        {'timeline_count': {'$gt': 0}})
-        # g = gt.load_user_hashtag_network(dbname, timename)
-        # pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
-        g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
+def hashtag_net(dbname, comname, timename):
+    userlist = iot.get_values_one_field(dbname, comname, 'id_str',
+                                    {'timeline_count': {'$gt': 0}})
+    g = gt.load_user_hashtag_network(dbname, timename)
+    pickle.dump(g, open('data/'+dbname+'_hashtag.pick', 'w'))
+    # g = pickle.load(open('data/'+dbname+'_hashtag.pick', 'r'))
 
 
 def netstatis(dbname, behavior_name, g, userlist):
     db = dbt.db_connect_no_auth(dbname)
-    com = db['scom']
+    com = db['com']
     g = g.as_undirected(combine_edges=dict(weight="sum"))
 
     # node_n = g.vcount()
@@ -165,33 +158,42 @@ def plot_error_bars(data):
     plt.show()
 
 
-def diversity_db(dbname, behavior):
-    userlist = iot.get_values_one_field(dbname, 'com', 'id_str',
+def diversity_db(dbname, comname, behavior):
+    userlist = iot.get_values_one_field(dbname, comname, 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-    g = bahavior_net(dbname, 'com', 'bnet', behavior)
+    g = bahavior_net(dbname, comname, 'bnet', behavior)
     pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     # print dbname, behavior
     # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
-    return netstatis(dbname, behavior, g, userlist)
+    # return netstatis(dbname, behavior, g, userlist)
+    return True
 
 
 if __name__ == '__main__':
 
+    # '''Extract hashtags from timelines'''
+    # dbnames = [('fed', 'stimeline'),
+    #            ('random', 'timeline'),
+    #            ('young', 'timeline')]
+    # for dbname, colname in dbnames:
+    #     extract_hashtags(dbname, colname)
+
+
+    ###do hashtag network###
+    hashtag_net('fed', 'com', 'timeline')
+
     '''Compare diversity of behaviors'''
     dbnames = ['fed', 'random', 'young']
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
-    for behavior in behaviors:
+    for behavior in behaviors[:4]:
         ed = diversity_db(dbnames[0], behavior)
         # rd = diversity_db(dbnames[1], behavior)
         # yg = diversity_db(dbnames[2], behavior)
         # compore_distribution(behavior, ed, rd, yg)
 
 
-    ###do hashtag network###
-    # hashtag_net()
 
-    '''Extract hashtags from timelines'''
-    # extract_hashtags()
+
 
     '''Plot diversity '''
     # plot_error_bars()
