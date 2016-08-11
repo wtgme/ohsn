@@ -80,9 +80,9 @@ def process_db(dbname, colname, timename):
     process(sample_poi, sample_time, 1000)
 
 if __name__ == '__main__':
-    # process_db('fed', 'scom', 'stimeline')
-    process_db('random', 'com', 'timeline')
-    process_db('young', 'com', 'timeline')
+    process_db('fed', 'com', 'timeline')
+    # process_db('random', 'com', 'timeline')
+    # process_db('young', 'com', 'timeline')
     # process_db('sed', 'com', 'timeline')
     # process_db('srd', 'com', 'timeline')
     # process_db('syg', 'com', 'timeline')

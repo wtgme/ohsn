@@ -19,7 +19,7 @@ import scipy.stats as stat
 import matplotlib.pyplot as plt
 import ohsn.util.plot_util as plot
 import ohsn.util.statis_util as stats
-from content import compore_distribution
+from tweet_types import compore_distribution
 
 
 def bahavior_net(dbname, comname, bnetname, btype):
@@ -166,12 +166,12 @@ def plot_error_bars(data):
 
 
 def diversity_db(dbname, behavior):
-    userlist = iot.get_values_one_field(dbname, 'scom', 'id_str',
+    userlist = iot.get_values_one_field(dbname, 'com', 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-    # g = bahavior_net(dbname, 'scom', 'bnet', behavior)
-    # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    g = bahavior_net(dbname, 'com', 'bnet', behavior)
+    pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     # print dbname, behavior
-    g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
+    # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
     return netstatis(dbname, behavior, g, userlist)
 
 
@@ -182,9 +182,9 @@ if __name__ == '__main__':
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors:
         ed = diversity_db(dbnames[0], behavior)
-        rd = diversity_db(dbnames[1], behavior)
-        yg = diversity_db(dbnames[2], behavior)
-        compore_distribution(behavior, ed, rd, yg)
+        # rd = diversity_db(dbnames[1], behavior)
+        # yg = diversity_db(dbnames[2], behavior)
+        # compore_distribution(behavior, ed, rd, yg)
 
 
     ###do hashtag network###

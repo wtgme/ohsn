@@ -64,10 +64,6 @@ def load_all_beh_network(userlist, db_name, collection='None', btype='communicat
     name_map, edges = {}, {}
     # for row in cols.find({}):
     for row in cols.find({'type': {'$in': btype_dic[btype]}, 'id0':{'$in': userlist}}, no_cursor_timeout=True):
-        # if btype is 'retweet':
-        #     n2 = str(row['id0'])
-        #     n1 = str(row['id1'])
-        # else:
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:

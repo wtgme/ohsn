@@ -287,11 +287,11 @@ def compore_distribution(field, feds, randoms, youngs):
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    # beh_stat('fed', 'scom', 'stimeline', 'edbev')
+    beh_stat('fed', 'com', 'timeline', 'fedbev')
     # beh_stat('random', 'scom', 'timeline', 'rdbev')
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
-    # store_ratio_behavoir('fed', 'scom', 'edbev')
+    store_ratio_behavoir('fed', 'com', 'fedbev')
     # store_ratio_behavoir('random', 'scom', 'rdbev')
     # store_ratio_behavoir('young', 'scom', 'ygbev')
 
@@ -330,5 +330,5 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edtags.values(), rdtags.values(), ygtags.values()], ['--bo', '--r^', '--ks'], 'Hashtags',  ['ED', 'Random', 'Young'], False)
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
-    '''LIWC features'''
-    feature_stat()
+    # '''LIWC features'''
+    # feature_stat()

@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import calendar
-import content
+import tweet_types
 import pickle
 
 
@@ -264,5 +264,5 @@ if __name__ == '__main__':
     rd = posts_per_day('random', 'scom')
     yg = posts_per_day('young', 'scom')
 
-    content.compore_distribution('activity', ed, rd, yg)
+    tweet_types.compore_distribution('activity', ed, rd, yg)
 

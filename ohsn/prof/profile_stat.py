@@ -151,9 +151,9 @@ def gagement(dbname, colname):
         #     continue
 
 if __name__ == '__main__':
-    profile_feature_stat()
-    profile_feature_dependence()
-    # gagement('fed', 'scom')
+    # profile_feature_stat()
+    # profile_feature_dependence()
+    gagement('fed', 'com')
     # gagement('random', 'scom')
     # gagement('young', 'scom')
 
