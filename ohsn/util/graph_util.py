@@ -188,19 +188,22 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
     else:
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
-    name_map, edges = {}, {}
+    name_map, edges, node_weight = {}, {}, {}
     for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
         hashtags = row['entities']['hashtags']
+        print hashtags
         # add self-loop for hashtags occurs alone
-        if len(hashtags) == 1:
-            hashtags.append(hashtags[0])
+        # if len(hashtags) == 1:
+        #     hashtags.append(hashtags[0])
         for i in xrange(len(hashtags)):
             # need no .encode('utf-8')
-            n1 = hashtags[i]['text'].lower()
+            n1 = hashtags[i]['text'].encode('utf-8').lower()
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            w = node_weight.get(n1id, 0)
+            node_weight[n1id] = w + 1
             for j in xrange(i+1, len(hashtags)):
-                n2 = hashtags[j]['text'].lower()
-                n1id = name_map.get(n1, len(name_map))
-                name_map[n1] = n1id
+                n2 = hashtags[j]['text'].encode('utf-8').lower()
                 n2id = name_map.get(n2, len(name_map))
                 name_map[n2] = n2id
                 wt = edges.get((n1id, n2id), 0)
@@ -208,6 +211,7 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
     g = Graph(len(name_map), directed=False)
     #get key list of dict according to value ranking
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    g.vs["weight"] = node_weight.values()
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
     return g
