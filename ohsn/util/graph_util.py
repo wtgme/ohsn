@@ -7,10 +7,8 @@ Created on 20:05, 07/04/16
 
 from igraph import *
 import db_util as dbt
+from random import randint
 import powerlaw_fit
-import plot_util as splot
-import pickle
-import numpy as np
 
 
 def load_network(db_name, collection='None'):
@@ -44,15 +42,13 @@ def load_network_subset(uset_list, db_name, collection='None'):
     Friendship network: directed network
     Edge: user---------> follower
     '''
-    print len(uset_list)
     if collection is 'None':
         cols = db_name
     else:
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, set()
-    for row in cols.find({'user': {'$in': uset_list}, 'follower': {'$in': uset_list}}, no_cursor_timeout=True):
-        print row
+    for row in cols.find({'$and': [{'user': {'$in': uset_list}}, {'follower': {'$in': uset_list}}]}, no_cursor_timeout=True):
         n1 = str(row['follower'])
         n2 = str(row['user'])
 
@@ -92,7 +88,7 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
         cols = db[collection]
     name_map, edges = {}, {}
     # for row in cols.find({}):
-    for row in cols.find({'type': {'$in': btype_dic[btype]}, 'id0': {'$in': userlist}, 'id1': {'$in': userlist}}, no_cursor_timeout=True):
+    for row in cols.find({'$and': [{'type': {'$in': btype_dic[btype]}}, {'id0': {'$in': userlist}}, {'id1': {'$in': userlist}}]}, no_cursor_timeout=True):
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:
@@ -330,27 +326,25 @@ def comm_plot(g, clusters, lable, membership=None):
         layout = gcopy.layout("fr")
         g.es["color"] = edges_colors
     else:
-        layout = g.layout("kk")
-        g.es["color"] = "gray"
+        layout = g.layout("fr")
+        g.es["color"] = "black"
+    shape_dict = {0: "circle", 1: "rectangle"}
     visual_style = {}
-    visual_style["vertex_label_dist"] = 0
-    visual_style["vertex_shape"] = "circle"
+    visual_style["vertex_shape"] = [shape_dict[flag] for flag in g.vs["rec"]]
     visual_style["edge_color"] = g.es["color"]
-    # visual_style["bbox"] = (4000, 2500)
-    # visual_style["vertex_size"] = 30
+    visual_style["vertex_size"] = 7
+    visual_style["edge_arrow_size"] = 0.2
+    visual_style["edge_arrow_width"] = 0.2
     visual_style["layout"] = layout
     visual_style["bbox"] = (1024, 768)
-    # visual_style["margin"] = 40
-    # visual_style["edge_label"] = g.es["weight"]
-    # for vertex in g.vs():
-    #     vertex["label"] = vertex.index
-    # if membership is not None:
-    #     pal = ClusterColoringPalette(n=max(membership)+1)
-    #     # for i in range(0, max(membership)+1):
-    #     #     colors.append('%06X' % randint(0, 0xFFFFFF))
-    #     for vertex in g.vs():
-    #         vertex["color"] = pal.get([membership[vertex.index]])
-    #     visual_style["vertex_color"] = g.vs["color"]
+    visual_style["margin"] = 20
+    if membership is not None:
+        colors = []
+        for i in range(0, max(membership)+1):
+            colors.append('%06X' % randint(0, 0xFFFFFF))
+        for vertex in g.vs():
+            vertex["color"] = str('#') + colors[membership[vertex.index]]
+        visual_style["vertex_color"] = g.vs["color"]
     plot(clusters, lable, **visual_style)
 
 

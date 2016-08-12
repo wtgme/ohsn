@@ -24,7 +24,7 @@ if __name__ == '__main__':
         count1 = search.count()
         search_api.search_query('#MyDepressionLooksLike', search)
         count2 = search.count()
-        if count2 > count1:
+        if count2 >= count1:
             time.sleep(60*60*12)
             continue
         else:

@@ -46,34 +46,85 @@ def ed_user(dbname, colname):
     return user_lit
 
 
-def network(dbname, colname):
-    # ed_usersd = ed_user(dbname, colname)
-    # pickle.dump(ed_usersd, open('data/ed_users.pick', 'w'))
-    ed_usersd = pickle.load(open('data/ed_users.pick', 'r'))
+def network(dbname, colname, netname):
+    # # ed_usersd = ed_user(dbname, colname)
+    # # pickle.dump(ed_usersd, open('data/ed_users.pick', 'w'))
+    # ed_usersd = pickle.load(open('data/ed_users.pick', 'r'))
+    #
+    # # rec_usersd = rec_user(dbname, colname)
+    # # pickle.dump(rec_usersd, open('data/rec_users.pick', 'w'))
+    # rec_usersd = pickle.load(open('data/rec_users.pick', 'r'))
+    #
+    #
+    # inlist = list(set(ed_usersd).union(set(rec_usersd)))
+    #
+    # print len(inlist)
+    # g = gt.load_network_subset(inlist, dbname, netname)
+    # g.vs['rec'] = 0
+    # for uid in rec_usersd:
+    #     exist = True
+    #     try:
+    #         v = g.vs.find(name=str(uid))
+    #     except ValueError:
+    #         exist = False
+    #     if exist:
+    #         v['rec'] = 1
+    # pickle.dump(g, open('data/rec_friendship.pick', 'w'))
+    g = pickle.load(open('data/rec_friendship.pick', 'r'))
+    # g.write_gml('data/rec_friendship.GML')
+    # g.write_dot('data/rec_friendship.DOT')
 
-    # rec_usersd = rec_user(dbname, colname)
-    # pickle.dump(rec_usersd, open('data/rec_users.pick', 'w'))
-    rec_usersd = pickle.load(open('data/rec_users.pick', 'r'))
+    comm = gt.fast_community(g, False)
+    fclus = comm.as_clustering()
+    gt.comm_plot(g, fclus, 'rec_friend_fr.pdf', fclus.membership)
 
-    inlist = list(set(ed_usersd).union(set(rec_usersd)))
-    print len(inlist)
-    g = gt.load_network_subset(inlist, dbname, colname)
-    g.vs['rec'] = 0
-    for uid in rec_usersd:
-        exist = True
-        try:
-            v = g.vs.find(name=str(uid))
-        except ValueError:
-            exist = False
-        if exist:
-            v['rec'] = 1
-    g.write_dot('data/rec_friendship.DOT')
+    # plot_graph(g)
 
+
+def plot_graph(g):
+    layout = g.layout("fr")
+    color_dict = {0: "blue", 1: "red"}
+    visual_style = {}
+    visual_style["vertex_size"] = 5
+    visual_style["vertex_color"] = [color_dict[flag] for flag in g.vs["rec"]]
+    # visual_style["edge_width"] = [1 + 2 * int(is_formal) for is_formal in g.es["is_formal"]]
+    visual_style["margin"] = 20
+    visual_style["bbox"] = (1024, 768)
+    visual_style["edge_arrow_size"] = 0.2
+    visual_style["edge_arrow_width"] = 0.2
+    visual_style["layout"] = layout
+    gt.plot(g, **visual_style)
+
+
+def benetwork(dbname, type, netname):
+    # ed_usersd = pickle.load(open('data/ed_users.pick', 'r'))
+    # rec_usersd = pickle.load(open('data/rec_users.pick', 'r'))
+    # inlist = list(set(ed_usersd).union(set(rec_usersd)))
+    # g = gt.load_beh_network_subset(inlist, dbname, netname, type)
+    # g.vs['rec'] = 0
+    # for uid in rec_usersd:
+    #     exist = True
+    #     try:
+    #         v = g.vs.find(name=str(uid))
+    #     except ValueError:
+    #         exist = False
+    #     if exist:
+    #         v['rec'] = 1
+    # pickle.dump(g, open('data/rec_'+type+'.pick', 'w'))
+    g = pickle.load(open('data/rec_'+type+'.pick', 'r'))
+    # plot_graph(g)
+    comm = gt.fast_community(g, True)
+    fclus = comm.as_clustering()
+    gt.comm_plot(g, fclus, 'rec_'+type+'_fr.pdf', fclus.membership)
 
 
 if __name__ == '__main__':
     # ed_users = ed_user('fed', 'com')
     # rec_users = rec_user('fed', 'com')
     # print len(set(ed_users).intersection(rec_users))
-    network('fed', 'com')
+    network('fed', 'com', 'net')
+    types = ['retweet', 'reply', 'mention', 'communication', 'all']
+    for type in types:
+        benetwork('fed', type, 'bnet')
+
 

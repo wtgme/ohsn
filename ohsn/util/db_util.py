@@ -4,7 +4,6 @@ Created on 20:34, 26/10/15
 
 @author: wt
 """
-
 import pymongo
 import ConfigParser
 import os
@@ -61,4 +60,20 @@ def db_connect_col(dbname, colname):
 # collection = DBConnectNOAuth('twitter_test', 'streamtrack')
 
 if __name__ == '__main__':
-    pass
+    db = db_connect_no_auth('fed')
+    net = db['com']
+    print net.count({'net_anal.tnmined': {'$exists': False},'net_anal.tnmined': False})
+    # print net.count({'net_anal.tnmined': {'$exists': False}})
+    # print net.count({'net_anal.tnmined': False})
+    print net.count({'$and': [{'net_anal.tnmined': {'$exists': False}},
+                                            {'net_anal.tnmined': False}]})
+    # print net.count({'$or': [{'net_anal.tnmined': {'$exists': False}},
+    #                                         {'net_anal.tnmined': False}]})
+
+    # com = db['scom']
+    # ulist = []
+    # for user in com.find({'timeline_count': {'$gt': 0}}):
+    #     ulist.append(user['id'])
+    # print len(ulist)
+    # print net.count({'$and': [{'type': {'$in': [1]}}, {'id0': {'$in': ulist}}]})
+    # print net.count({'type': {'$in': [1]}, 'id0': {'$in': ulist}})
