@@ -42,8 +42,26 @@ def extract_hashtags(dbname, timename):
 
 def entropy(strenths):
     pros = np.asarray(strenths, np.float64)/sum(strenths)
-    entropy = stat.entropy(pros)
-    return entropy, entropy/np.log(len(strenths))
+    return stat.entropy(pros)
+
+
+def tag_entroy(dbname, comname, timename):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    time = db[timename]
+    for user in com.find({'timeline_count': {'$gt': 0}}, no_cursor_timeout=True):
+        tag_map = {}
+        for tweet in time.find({'user.id': user['id'], '$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+            hashtags = tweet['entities']['hashtags']
+            for hashtag in hashtags:
+                key = hashtag['text'].lower()
+                val = tag_map.get(key, 0)
+                tag_map[key] = val + 1
+        ent = entropy(tag_map.values())
+        data = user.get('behavior', {})
+        data['hashtag_div'] = ent
+        com.update_one({'id': user['id']}, {'$set': {'behavior': data}}, upsert=False)
+
 
 
 def hashtag_net(dbname, comname, timename):
@@ -180,10 +198,11 @@ if __name__ == '__main__':
 
 
     ###do hashtag network###
-    hashtag_net('fed', 'com', 'timeline')
-
+    # hashtag_net('fed', 'com', 'timeline')
+    tag_entroy('fed', 'com', 'timeline')
     '''Compare diversity of behaviors'''
     dbnames = ['fed', 'random', 'young']
+
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:
         ed = diversity_db(dbnames[0], behavior)
