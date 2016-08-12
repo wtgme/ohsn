@@ -25,8 +25,8 @@ def load_network(db_name, collection='None'):
         cols = db[collection]
     name_map, edges = {}, set()
     for row in cols.find():
-        n2 = str(row['user'])
         n1 = str(row['follower'])
+        n2 = str(row['user'])
         n1id = name_map.get(n1, len(name_map))
         name_map[n1] = n1id
         n2id = name_map.get(n2, len(name_map))
@@ -39,7 +39,36 @@ def load_network(db_name, collection='None'):
     return g
 
 
-def load_all_beh_network(userlist, db_name, collection='None', btype='communication'):
+def load_network_subset(uset_list, db_name, collection='None'):
+    '''
+    Friendship network: directed network
+    Edge: user---------> follower
+    '''
+    print len(uset_list)
+    if collection is 'None':
+        cols = db_name
+    else:
+        db = dbt.db_connect_no_auth(db_name)
+        cols = db[collection]
+    name_map, edges = {}, set()
+    for row in cols.find({'user': {'$in': uset_list}, 'follower': {'$in': uset_list}}, no_cursor_timeout=True):
+        print row
+        n1 = str(row['follower'])
+        n2 = str(row['user'])
+
+        n1id = name_map.get(n1, len(name_map))
+        name_map[n1] = n1id
+        n2id = name_map.get(n2, len(name_map))
+        name_map[n2] = n2id
+        edges.add((n1id, n2id))
+    g = Graph(len(name_map), directed=True)
+    g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    g.add_edges(list(edges))
+    g.es["weight"] = 1
+    return g
+
+
+def load_beh_network_subset(userlist, db_name, collection='None', btype='communication'):
     '''
     All interctions of a user
     behavior network: directed weighted network
@@ -63,7 +92,7 @@ def load_all_beh_network(userlist, db_name, collection='None', btype='communicat
         cols = db[collection]
     name_map, edges = {}, {}
     # for row in cols.find({}):
-    for row in cols.find({'type': {'$in': btype_dic[btype]}, 'id0':{'$in': userlist}}, no_cursor_timeout=True):
+    for row in cols.find({'type': {'$in': btype_dic[btype]}, 'id0': {'$in': userlist}, 'id1': {'$in': userlist}}, no_cursor_timeout=True):
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:
@@ -101,10 +130,6 @@ def load_beh_network(db_name, collection='None', btype='communication'):
     name_map, edges = {}, {}
     # for row in cols.find({}):
     for row in cols.find({'type': {'$in': btype_dic[btype]}}, no_cursor_timeout=True):
-        # if btype is 'retweet':
-        #     n2 = str(row['id0'])
-        #     n1 = str(row['id1'])
-        # else:
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:

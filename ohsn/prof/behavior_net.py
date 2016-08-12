@@ -25,7 +25,7 @@ from tweet_types import compore_distribution
 def bahavior_net(dbname, comname, bnetname, btype):
     userlist = iot.get_values_one_field(dbname, comname, 'id',
                                         {'timeline_count': {'$gt': 0}})
-    return gt.load_all_beh_network(userlist, dbname, bnetname, btype)
+    return gt.load_beh_network_subset(userlist, dbname, bnetname, btype)
 
 
 def extract_hashtags(dbname, timename):
