@@ -8,6 +8,7 @@ Created on 20:05, 07/04/16
 from igraph import *
 import db_util as dbt
 from random import randint
+import numpy as np
 import powerlaw_fit
 
 
@@ -268,6 +269,7 @@ def add_attributes(g, att_names, dbname, colname, db_field_names):
 
 
 def giant_component(g, mode):
+    ###must be either STRONG or WEAK
     com = g.clusters(mode=mode)
     print 'The processed network has components:', len(com)
     return com.giant()
@@ -339,11 +341,12 @@ def comm_plot(g, clusters, lable, membership=None):
     visual_style["bbox"] = (1024, 768)
     visual_style["margin"] = 20
     if membership is not None:
-        colors = []
-        for i in range(0, max(membership)+1):
-            colors.append('%06X' % randint(0, 0xFFFFFF))
+        # colors = []
+        # for i in range(0, max(membership)+1):
+        #     colors.append('%06X' % randint(0, 0xFFFFFF))
+        pal = ClusterColoringPalette(max(membership)+1)
         for vertex in g.vs():
-            vertex["color"] = str('#') + colors[membership[vertex.index]]
+            vertex["color"] = pal.get([membership[vertex.index]])
         visual_style["vertex_color"] = g.vs["color"]
     plot(clusters, lable, **visual_style)
 
@@ -364,6 +367,14 @@ def net_stat(g):
     recip = g.reciprocity()
     assort = g.assortativity_degree(directed=True)
     print '%d, %d, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
+
+
+def most_pagerank(g, n=10):
+    ranks = g.pagerank()
+    arr = np.array(ranks)
+    # print (-arr).argsort()[:n]
+    # print arr[(-arr).argsort()[:n]]
+    return g.vs[(-arr).argsort()[:n].tolist()]['name']
 
 
 if __name__ == '__main__':

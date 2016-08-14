@@ -199,13 +199,13 @@ if __name__ == '__main__':
 
     ###do hashtag network###
     # hashtag_net('fed', 'com', 'timeline')
-    tag_entroy('fed', 'com', 'timeline')
-    '''Compare diversity of behaviors'''
+    # tag_entroy('fed', 'com', 'timeline')
+    # '''Compare diversity of behaviors'''
     dbnames = ['fed', 'random', 'young']
 
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:
-        ed = diversity_db(dbnames[0], behavior)
+        ed = diversity_db(dbnames[0], 'com', behavior)
         # rd = diversity_db(dbnames[1], behavior)
         # yg = diversity_db(dbnames[2], behavior)
         # compore_distribution(behavior, ed, rd, yg)
