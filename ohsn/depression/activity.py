@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import calendar, pickle
+import pandas as pd
 
 
 def add_months(sourcedate, months):
@@ -22,6 +23,12 @@ def add_months(sourcedate, months):
     day = min(sourcedate.day, calendar.monthrange(year, month)[1])
     return datetime(year, month, day)
 
+def add_day(sourcedate, days):
+    month = sourcedate.month - 1
+    year = int(sourcedate.year + month / 12)
+    month = month % 12 + 1
+    day = min(sourcedate.day + days, calendar.monthrange(year, month)[1])
+    return datetime(year, month, day)
 
 def month_bins(datemin, datemax, length=1):
     dates = [datemin]
@@ -34,26 +41,30 @@ def month_bins(datemin, datemax, length=1):
     dates.append(datemax)
     return dates
 
-def month_bins(datemin, datemax, length=1):
+
+def day_bin(datemin, datemax, length=1):
     dates = [datemin]
-    datec = datemin
-    next_date = add_months(datec, length)
-    while next_date < datemax:
+    next_date = datetime(datemin.year, datemin.month, datemin.day+length)
+    while next_date <= datemax:
         dates.append(next_date)
-        datec = next_date
-        next_date = add_months(datec, length)
-    dates.append(datemax)
+        next_date = datetime(next_date.year, next_date.month, next_date.day+length)
     return dates
+
 
 def plot_time(data, length=1, title=None):
     '''date(2012, 10, 6).toordinal() - date(2012, 9, 25).toordinal()'''
     mpl_data = mdates.date2num(data)
-    datemin = datetime(min(data).year, min(data).month, 1)
-    datemax = datetime(max(data).year, max(data).month+1, 1) - timedelta(days=1)
-    print min(data), max(data), len(data)
-    print datemin, datemax
-    print max(data)+1
-    bins = month_bins(min(data), max(data)+1, length)
+    '''Bin by Month'''
+    # datemin = datetime(min(data).year, min(data).month, 1)
+    # datemax = datetime(max(data).year, max(data).month+1, 1) - timedelta(days=1)
+    # print min(data), max(data), len(data)
+    # print datemin, datemax
+    # bins = month_bins(datemin, datemax, length)
+
+    '''Bin by Day'''
+    datemin = min(data)
+    datemax = max(data)
+    bins = day_bin(datemin, datemax, 1)
 
     years = mdates.YearLocator()   # every year
     months = mdates.MonthLocator()  # every month
@@ -83,7 +94,10 @@ def timeline(dbname, timename):
     return dates
 
 if __name__ == '__main__':
-    dates = timeline('depression', 'search')
-    pickle.dump(dates, open('data/date.pick', 'w'))
+    # dates = timeline('depression', 'search')
+    # pickle.dump(dates, open('data/date.pick', 'w'))
     dates = pickle.load(open('data/date.pick', 'r'))
-    plot_time(dates, length=1, title='Depression')
+    # plot_time(dates, length=1, title='Depression')
+
+    ts = pd.Series(dates)
+    ts.groupby(ts.dt.date).count().plot(kind="bar")
