@@ -14,6 +14,8 @@ import ohsn.util.io_util as iot
 import numpy as np
 import pickle
 import operator
+import ohsn.util.statis_util as st
+import ohsn.util.plot_util as pt
 
 
 def drop_initials(list_a):
@@ -40,6 +42,33 @@ def display(data, topk=5):
             count += 1
             print sorted_x[i][0]
     print float(count)/(101-4)
+
+
+def rank_feature(gc, dbname, comname, db_field_names, directed=True):
+    g = gt.giant_component(gc, 'WEAK')
+    ranks = g.pagerank(weights='weight')
+    g.vs['rank'] = ranks
+
+    # cor = st.tau_coef(g.degree(type="in"), g.vs['rank'])
+    # print 'Indegree' + '\t' + str(cor[0]) + '\t' + str(cor[1])
+    # cor = st.tau_coef(g.degree(type="out"), g.vs['rank'])
+    # print 'Outdegree' + '\t' + str(cor[0]) + '\t' + str(cor[1])
+
+    for db_field_name in db_field_names:
+        # print 'Processing ' + db_field_name
+        g = gt.add_attribute(g, 'foi', dbname, comname, db_field_name)
+        raw_values = np.array(g.vs['foi'])
+        values = drop_initials(raw_values)
+
+        if len(values) > 100:
+            # maxv, minv = max(values), min(values)
+            maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
+            vs = g.vs(foi_ge=minv, foi_le=maxv)
+            sg = g.subgraph(vs)
+            cor = st.tau_coef(sg.vs['foi'], sg.vs['rank'])
+            print db_field_name + '\t' + str(len(sg.vs)) + '\t' + str(len(sg.es)) + '\t' + str(cor[0]) + '\t' + str(cor[1])
+            pt.correlation(sg.vs['rank'], sg.vs['foi'], 'PageRank', 'Feature', 'data/'+db_field_name+'.pdf')
+
 
 
 def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
@@ -114,17 +143,19 @@ def network_stats(dbname, com, fnet, bnet):
 
     gt.net_stat(fnetwork)
     # outputs = feature_assort_friend(fnetwork, dbname, com, fields, directed=True)
+    outputs = rank_feature(fnetwork, dbname, com, fields, directed=True)
     # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
     # outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
     # display(outputs, 101)
     # for beh in ['retweet', 'reply', 'mention']:
     #     print beh
-    #     # bnetwork = gt.load_beh_network(dbname, bnet, beh)
-    #     # gt.net_stat(bnetwork)
+    #     bnetwork = gt.load_beh_network(dbname, bnet, beh)
+    #     gt.net_stat(bnetwork)
     #     # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
+    #     outputs = rank_feature(bnetwork, dbname, com, fields, directed=True)
     #     # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
-    #     outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
-    #     display(outputs, 101)
+    #     # outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
+    #     # display(outputs, 101)
 
 
 if __name__ == '__main__':

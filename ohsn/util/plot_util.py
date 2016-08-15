@@ -14,6 +14,8 @@ from matplotlib import cm
 import matplotlib as mpl
 import pylab
 import powerlaw_fit
+import seaborn as sns
+import scipy.stats as stats
 
 
 def significant(data, observed, name):
@@ -149,12 +151,12 @@ def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000, savefile=None
     ax.scatter(xmeans, ymeans, s=50, c='#fdbb84', marker='o', label='binned '+l)
     xfit, yfit = lr_ls(xmeans, ymeans, start, end)
     ax.plot(xfit, yfit, c='#e34a33', linewidth=2, linestyle='--', label='Fitted '+l)
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+    # ax.set_xscale("log")
+    # ax.set_yscale("log")
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
-    ax.set_xlim(xmin=1)
-    ax.set_ylim(ymin=1)
+    # ax.set_xlim(xmin=1)
+    # ax.set_ylim(ymin=1)
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=4)
     leg.draw_frame(True)
@@ -448,5 +450,23 @@ def hist2d(x, y, nx, ny):
     fig.colorbar(H[3], ax=ax)
     plt.show()
 
+
+def correlation(x, y, xlabel, ylabel, savefile):
+    x = np.array(x)
+    y = np.array(y)
+    # maxx, minx = np.percentile(x, 97.5), np.percentile(x, 2.5)
+    maxx, minx = max(x), min(x)
+    # maxx, minx = np.percentile(y, 97.5), np.percentile(y, 2.5)
+    maxy, miny = max(y), min(y)
+    g = (sns.jointplot(x, y, stat_func=stats.kendalltau, kind="reg", xlim=(minx, maxx), ylim=(miny, maxy)).set_axis_labels(xlabel, ylabel))
+    plt.savefig(savefile)
+    plt.clf()
+    plt.close()
+
 if __name__ == '__main__':
-    pass
+    sns.set(style="darkgrid", color_codes=True)
+    tips = sns.load_dataset("tips")
+    print tips
+    g = (sns.jointplot("total_bill", "tip", data=tips, stat_func=stats.kendalltau, kind="reg",
+                  xlim=(0, 60), ylim=(0, 12), color="b", size=7))
+    plt.show()

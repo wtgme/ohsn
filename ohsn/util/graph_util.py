@@ -369,8 +369,8 @@ def net_stat(g):
     print '%d, %d, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
 
 
-def most_pagerank(g, n=10):
-    ranks = g.pagerank()
+def most_pagerank(g, n=10, weight=None):
+    ranks = g.pagerank(weights=weight)
     arr = np.array(ranks)
     # print (-arr).argsort()[:n]
     # print arr[(-arr).argsort()[:n]]

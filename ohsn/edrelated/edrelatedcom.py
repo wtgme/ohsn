@@ -91,8 +91,8 @@ def network(dbname, colname, netname):
     gc = gt.giant_component(rg, 'WEAK')
     comm = gt.fast_community(gc, False)
     fclus = comm.as_clustering(2)
-    communit_topinflu(fclus)
-    gt.comm_plot(gc, fclus, 'rec_friend_fr.pdf', fclus.membership)
+    communit_topinflu(fclus, None)
+    # gt.comm_plot(gc, fclus, 'rec_friend_fr.pdf', fclus.membership)
 
     # plot_graph(g)
 
@@ -118,11 +118,11 @@ def benetwork(dbname, type, netname):
     gc = gt.giant_component(rg, 'WEAK')
     comm = gt.fast_community(gc, True)
     fclus = comm.as_clustering(2)
-    communit_topinflu(fclus)
-    gt.comm_plot(gc, fclus, 'rec_'+type+'_fr.pdf', fclus.membership)
+    communit_topinflu(fclus, 'weight')
+    # gt.comm_plot(gc, fclus, 'rec_'+type+'_fr.pdf', fclus.membership)
 
 
-def communit_topinflu(fclus):
+def communit_topinflu(fclus, weight):
     for g in fclus.subgraphs():
         n = g.vcount()
         rec_n = len(g.vs.select(rec_eq=1))
@@ -130,7 +130,7 @@ def communit_topinflu(fclus):
         print n, float(rec_n) / n, float(ed_n) / n
         db = dbt.db_connect_no_auth('fed')
         com = db['com']
-        for uid in gt.most_pagerank(g, 15):
+        for uid in gt.most_pagerank(g, 15, weight):
             user = com.find_one({'id': int(uid)}, ['id', 'screen_name', 'name', 'description'])
             print str(user['id']) + '\t' + user['screen_name'].encode('utf-8') + '\t' + user['name'].encode('utf-8') +'\t'+ ' '.join(user['description'].split()).encode('utf-8')
 

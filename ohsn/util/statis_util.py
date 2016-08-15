@@ -42,6 +42,7 @@ def mode(lst):
     # find the mode of a list
     return max(set(lst), key=lst.count)
 
+
 def tau_coef(x1, x2):
     tau, p_value = stats.kendalltau(x1, x2)
     return (tau, p_value)
@@ -49,19 +50,22 @@ def tau_coef(x1, x2):
 
 def pearson(x, y):
     # calculate the pearson correlation of two list
-    n = len(x)
-    avg_x = float(sum(x))/n
-    avg_y = float(sum(y))/n
-    diffprod = 0.0
-    xdiff2 = 0.0
-    ydiff2 = 0.0
-    for idx in range(n):
-        xdiff = x[idx] - avg_x
-        ydiff = y[idx] - avg_y
-        diffprod += xdiff*ydiff
-        xdiff2 += xdiff*xdiff
-        ydiff2 += ydiff*ydiff
-    return diffprod/math.sqrt(xdiff2*ydiff2)
+    # n = len(x)
+    # avg_x = float(sum(x))/n
+    # avg_y = float(sum(y))/n
+    # diffprod = 0.0
+    # xdiff2 = 0.0
+    # ydiff2 = 0.0
+    # for idx in range(n):
+    #     xdiff = x[idx] - avg_x
+    #     ydiff = y[idx] - avg_y
+    #     diffprod += xdiff*ydiff
+    #     xdiff2 += xdiff*xdiff
+    #     ydiff2 += ydiff*ydiff
+    # return diffprod/math.sqrt(xdiff2*ydiff2)
+    return stats.pearsonr(x, y)
+
+
 
 if __name__ == '__main__':
     l1 = [1,2,6,7,8,10,3,4,5,9]
