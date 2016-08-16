@@ -46,8 +46,12 @@ def display(data, topk=5):
 
 def rank_feature(gc, dbname, comname, db_field_names, directed=True):
     g = gt.giant_component(gc, 'WEAK')
-    ranks = g.pagerank(weights='weight')
-    g.vs['rank'] = ranks
+
+    g.vs['nt'] = g.degree(type="in")
+    netatt = g.vs['nt']
+
+    # ranks = g.pagerank(weights='weight')
+    # g.vs['rank'] = ranks
 
     # cor = st.tau_coef(g.degree(type="in"), g.vs['rank'])
     # print 'Indegree' + '\t' + str(cor[0]) + '\t' + str(cor[1])
@@ -65,9 +69,19 @@ def rank_feature(gc, dbname, comname, db_field_names, directed=True):
             maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             vs = g.vs(foi_ge=minv, foi_le=maxv)
             sg = g.subgraph(vs)
-            cor = st.tau_coef(sg.vs['foi'], sg.vs['rank'])
-            print db_field_name + '\t' + str(len(sg.vs)) + '\t' + str(len(sg.es)) + '\t' + str(cor[0]) + '\t' + str(cor[1])
-            pt.correlation(sg.vs['rank'], sg.vs['foi'], 'PageRank', 'Feature', 'data/'+db_field_name+'.pdf')
+
+            maxd, mind = np.percentile(netatt, 97.5), np.percentile(netatt, 2.5)
+            vs = sg.vs(nt_ge=mind, nt_le=maxd)
+            sg = sg.subgraph(vs)
+
+            cor = st.tau_coef(sg.vs['foi'], sg.vs['nt'])
+            print db_field_name + '\t' + str(len(sg.vs)) + '\t' + str(len(sg.es)) + '\t'\
+                  + str(min(netatt)) + '\t' + str(max(netatt)) + '\t' + str(mind) + '\t'\
+                  +str(maxd) + '\t' \
+                  + str(min(values)) + '\t' + str(max(values)) + '\t' + str(minv) + '\t'\
+                  +str(maxv) + '\t'\
+                  + str(cor[0]) + '\t' + str(cor[1])
+            # pt.correlation(sg.vs['nt'], sg.vs['foi'], 'Indegree', 'Feature', 'data/'+db_field_name+'.pdf')
 
 
 
@@ -134,7 +148,8 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
 
 def network_stats(dbname, com, fnet, bnet):
     fields = iot.read_fields()
-    print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
+    # print ('Feature, #Nodes, #Edges, %Nodes, %Edges, D_assort, F_assort, F_assort, Mean, STD, z_sore, p_value')
+    print ('Network_Feature \t #Nodes \t #Edges \t X_Min \t X_Max \t X_P2.5 \t X_P97.5 \t Y_Min \t Y_Max \t Y_P2.5 \t Y_P97.5 \t Tau_coef \t p_value')
     print 'Following'
     fnetwork = gt.load_network(dbname, fnet)
 
@@ -147,15 +162,15 @@ def network_stats(dbname, com, fnet, bnet):
     # pickle.dump(outputs, open('data/fnet_assort_all.pick', 'w'))
     # outputs = pickle.load(open('data/fnet_assort_all.pick', 'r'))
     # display(outputs, 101)
-    # for beh in ['retweet', 'reply', 'mention']:
-    #     print beh
-    #     bnetwork = gt.load_beh_network(dbname, bnet, beh)
-    #     gt.net_stat(bnetwork)
-    #     # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
-    #     outputs = rank_feature(bnetwork, dbname, com, fields, directed=True)
-    #     # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
-    #     # outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
-    #     # display(outputs, 101)
+    for beh in ['retweet', 'reply', 'mention']:
+        print beh
+        bnetwork = gt.load_beh_network(dbname, bnet, beh)
+        gt.net_stat(bnetwork)
+        # outputs = feature_assort_friend(bnetwork, dbname, com, fields, directed=True)
+        outputs = rank_feature(bnetwork, dbname, com, fields, directed=True)
+        # pickle.dump(outputs, open('data/'+beh+'_assort_all.pick', 'w'))
+        # outputs = pickle.load(open('data/'+beh+'_assort_all.pick', 'r'))
+        # display(outputs, 101)
 
 
 if __name__ == '__main__':
