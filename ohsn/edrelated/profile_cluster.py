@@ -19,11 +19,11 @@ def read_profile(dbname, comname):
     db = dbt.db_connect_no_auth(dbname)
     col = db[comname]
     documents = []
-    for user in col.find({}, ['id', 'description']):
+    for user in col.find({}, ['id_str', 'description']):
         profile = user['description'].encode('utf8').lower()
         tokens = tknzr.tokenize(profile)
         if len(tokens) > 5:
-            sentence = doc2vec.TaggedDocument(words=tokens, tags=[user['id']])
+            sentence = doc2vec.TaggedDocument(words=tokens, tags=[user['id_str']])
             documents.append(sentence)
     return documents
 
@@ -34,9 +34,9 @@ def cluster(documents):
 
 
 if __name__ == '__main__':
-    docs = read_profile('fed', 'com')
-    cluster(docs)
+#    docs = read_profile('fed', 'com')
+#    cluster(docs)
     model = doc2vec.Doc2Vec.load('prof2vec')
-    print model.most_similar(2578594609)
+    print model.most_similar('2578594609')
 
 
