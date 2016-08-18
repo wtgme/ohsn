@@ -136,14 +136,14 @@ def communit_topinflu(fclus, weight):
 
 
 if __name__ == '__main__':
-    # ed_users = ed_user('fed', 'com')
-    # rec_users = rec_user('fed', 'com')
-    # print len(set(ed_users).intersection(rec_users))
-    print 'Friendship'
-    network('fed', 'com', 'net')
-    types = ['retweet', 'reply', 'mention', 'communication', 'all']
-    for type in types:
-        print type
-        benetwork('fed', type, 'bnet')
+    ed_users = ed_user('fed', 'com')
+    rec_users = rec_user('fed', 'com')
+    print len(set(ed_users).intersection(rec_users))
+    # print 'Friendship'
+    # network('fed', 'com', 'net')
+    # types = ['retweet', 'reply', 'mention', 'communication', 'all']
+    # for type in types:
+    #     print type
+    #     benetwork('fed', type, 'bnet')
 
 

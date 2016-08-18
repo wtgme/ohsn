@@ -140,7 +140,7 @@ def gagement(dbname, colname):
         engage['friends_day'] = np.log(1 + friend_count/days)
         engage['followers_day'] = np.log(1 + follower_count/days)
         engage['friend_count'] = np.log(friend_count + 1)
-        engage['statuse_count'] = np.log(status_count + 1)
+        engage['status_count'] = np.log(status_count + 1)
         engage['follower_count'] = np.log(follower_count + 1)
         engage['social_contribution'] = np.log(max(1, follower_count)/max(1, friend_count))
         engage['information_productivity'] = np.log(1 + status_count/max(1, friend_count))

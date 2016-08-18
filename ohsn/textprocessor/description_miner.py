@@ -23,7 +23,7 @@ import numpy as np
 
 MIN_RESOLUTION = datetime.timedelta(seconds=86400)
 
-KEYWORDS = ['anorexic',
+KEYWORDS = set(['anorexic',
             'anorexia',
             'anorexia-purging',
             'hypergymnasia',
@@ -40,12 +40,12 @@ KEYWORDS = ['anorexic',
             'ed-nos',
             'bulimic',
             'bulimia',
-            'depressed',
-            'depression',
-            'depressive',
-            'anxiety',
-            'anxieties',
-            'ocd',
+            # 'depressed',
+            # 'depression',
+            # 'depressive',
+            # 'anxiety',
+            # 'anxieties',
+            # 'ocd',
             'suicidal',
             'skinny',
             'thin',
@@ -69,7 +69,12 @@ KEYWORDS = ['anorexic',
             'purging',
             'purge',
             'clean',
-            'insomnia']
+            'insomnia',
+            'eat', 'eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
+                'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
+                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm',
+                'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
+                'askanamia', 'bonespo', 'legspo'])
 
 VERSION = 0.01
 
@@ -606,8 +611,8 @@ def process_test_results():
 
 
 if __name__ == '__main__':
-    process_poi('fed', 'scom')
-    inference_stat('fed', 'scom')
+    process_poi('fed', 'com')
+    # inference_stat('fed', 'com')
     # process_poi('sed', 'com')
     # process_poi('srd', 'com')
     # process_poi('syg', 'com')

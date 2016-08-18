@@ -179,11 +179,11 @@ def plot_error_bars(data):
 def diversity_db(dbname, comname, behavior):
     userlist = iot.get_values_one_field(dbname, comname, 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-    g = bahavior_net(dbname, comname, 'bnet', behavior)
-    pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
-    # print dbname, behavior
-    # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
-    # return netstatis(dbname, behavior, g, userlist)
+    # g = bahavior_net(dbname, comname, 'bnet', behavior)
+    # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    print dbname, behavior
+    g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
+    return netstatis(dbname, behavior, g, userlist)
     return True
 
 

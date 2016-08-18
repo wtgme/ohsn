@@ -4,7 +4,11 @@ Created on 10:43 AM, 3/6/16
 
 @author: tw
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
+import ohsn.util.db_util as dbt
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
 from sklearn.svm import SVR, SVC
@@ -55,10 +59,12 @@ def classification(train, test, outclss):
     X_test, y_test = load_svmlight_file(test)
     X_test = X_test.toarray()
     X_test = scaler.transform(X_test)
-    svc_lin = SVC(kernel='linear')
+    svc_lin = SVC(kernel='linear', class_weight='balanced')
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
     # pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outclss, 'w'))
+    pickle.dump(y_test[y_lin==1], open('ed-rel.pick', 'w'))
+    print y_test[y_lin==1].astype('str')
 
 
 def plot_classification(clares):
@@ -122,8 +128,21 @@ def plot_pclassification(pclares):
     plt.show()
 # plot_pclassification('data/test_pclass.pick')
 
+def predict_verify(dbname, comname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    pred_users = pickle.load(open('ed-rel.pick', 'r'))
+    for uid in pred_users:
+        user = com.find_one({'id': int(uid)})
+        print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
+
+
+
+
 if __name__ == '__main__':
 
-    classification('data/train.data', 'data/test.data',
-                   'data/test_id_class.pick', 'data/test_class.pick')
-    plot_classification('data/test_class.pick')
+    # classification('data/ed-random.data', 'data/ed-rel.data',
+    #                'data/test_id_class.pick')
+    # plot_classification('data/test_id_class.pick')
+
+    predict_verify('fed', 'com')

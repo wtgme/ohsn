@@ -6,8 +6,13 @@ Created on 8:15 PM, 2/27/16
 Export data from mongodb for classification and feature analysis
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as io
+from ohsn.edrelated import edrelatedcom
 from ohsn import prof as ic
 import pickle
 import urllib2
@@ -73,16 +78,16 @@ def color_classify(userlabels, field_names, file_name, dbname):
     fw.close()
 
 
-def feature_output(field_names, file_name, dbname, label, outids=False):
-    fw = open(file_name+'.data', 'a')
+def feature_output(field_names, file_name, dbname, label, outids=False, userset=[]):
+    fw = open(file_name+'.data', 'w')
     db = dbt.db_connect_no_auth(dbname)
-    poi = db['scom']
+    poi = db['com']
     index = 0
     maxsize = 10000000000000000
     uids = list()
     # exclude_set = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
 
-    for x in poi.find({'liwc_anal.result.WC': {'$exists': True}
+    for x in poi.find({'text_anal.edword_count.value': {'$gt': 0}, 'liwc_anal.result.WC': {'$exists': True}
                        # 'timeline_count': {'$gt': 100},
                        # 'level': {'$gt': 1}
                        }):
@@ -91,7 +96,7 @@ def feature_output(field_names, file_name, dbname, label, outids=False):
                 label = str(index+1)
                 uids.append(int(x['id']))
             values = io.get_fields_one_doc(x, field_names)
-            outstr = label + ' '
+            outstr = x['id_str'] + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
@@ -99,6 +104,13 @@ def feature_output(field_names, file_name, dbname, label, outids=False):
     fw.close()
     if outids:
         pickle.dump(uids, open(file_name+'_ids.data', 'w'))
+
+
+def potential_users(dbname, comname):
+    ed_users = edrelatedcom.ed_user(dbname, comname)
+    rec_users = edrelatedcom.rec_user(dbname, comname)
+    return list(set(ed_users).union(set(rec_users)))
+
 
 if __name__ == '__main__':
 
@@ -128,6 +140,7 @@ if __name__ == '__main__':
     #
     # # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
     # # fed, random, young
-    feature_output(fields, 'data/random-young', 'young', '-1', False)
+    # users = potential_users('fed', 'com')
+    feature_output(fields, 'data/ed-rel', 'fed', '0', False)
 
 

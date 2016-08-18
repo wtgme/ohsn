@@ -16,15 +16,15 @@
     time_zone
     verified
     description
-text_anal.gw.value
-text_anal.cw.value
-text_anal.lw.value
-text_anal.hw.value
-text_anal.h.value
-text_anal.a.value
-text_anal.bmi.value
-text_anal.cbmi.value
-text_anal.gbmi.value
+    text_anal.gw.value
+    text_anal.cw.value
+    text_anal.lw.value
+    text_anal.hw.value
+    text_anal.h.value
+    text_anal.a.value
+    text_anal.bmi.value
+    text_anal.cbmi.value
+    text_anal.gbmi.value
     text_anal.edword_count.value
     net_anal.ed_proportion.follower_no
     net_anal.ed_proportion.following_no
@@ -147,31 +147,31 @@ text_anal.gbmi.value
     net_anal.communication_net.eigenvector_centrality_weighted
     net_anal.communication_net.katz_centrality
     net_anal.communication_net.katz_centrality_weighted
-    engage.friend_count
-    engage.status_count
-    engage.follower_count
-    engage.friends_day
-    engage.statuses_day
-    engage.followers_day
-    engage.social_contribution
-    engage.information_productivity
-    engage.information_attractiveness
-    engage.information_influence
-    behavior.tweet_pro
-    behavior.retweet_pro
-    behavior.dmention_pro
-    behavior.reply_pro
-    behavior.hashtag_pro
-    behavior.url_pro
-    behavior.quote_pro
-    behavior.retweet_div
-    behavior.reply_div
-    behavior.mention_div
-    behavior.hashtag_div
-    liwc_anal.result.WC
-    liwc_anal.result.WPS
-    liwc_anal.result.Sixltr
-    liwc_anal.result.Dic
+engage.friend_count
+engage.status_count
+engage.follower_count
+engage.friends_day
+engage.statuses_day
+engage.followers_day
+engage.social_contribution
+engage.information_productivity
+engage.information_attractiveness
+engage.information_influence
+behavior.tweet_pro
+behavior.retweet_pro
+behavior.dmention_pro
+behavior.reply_pro
+behavior.hashtag_pro
+behavior.url_pro
+behavior.quote_pro
+behavior.retweet_div
+behavior.reply_div
+behavior.mention_div
+behavior.hashtag_div
+liwc_anal.result.WC
+liwc_anal.result.WPS
+liwc_anal.result.Sixltr
+liwc_anal.result.Dic
     liwc_anal.result.Numerals
 liwc_anal.result.funct
 liwc_anal.result.pronoun
