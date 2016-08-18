@@ -14,6 +14,7 @@ from gensim.models import doc2vec
 
 tknzr = TweetTokenizer()
 
+
 def read_profile(dbname, comname):
     db = dbt.db_connect_no_auth(dbname)
     col = db[comname]
@@ -22,17 +23,20 @@ def read_profile(dbname, comname):
         profile = user['description'].encode('utf8').lower()
         tokens = tknzr.tokenize(profile)
         if len(tokens) > 5:
-            sentence = doc2vec.LabeledSentence(words=tokens, labels=[user['id']])
+            sentence = doc2vec.TaggedDocument(words=tokens, tags=[user['id']])
             documents.append(sentence)
     return documents
 
+
 def cluster(documents):
-    model = doc2vec.Doc2Vec(documents.values())
+    model = doc2vec.Doc2Vec(documents)
     model.save('prof2vec')
-    model = doc2vec.Doc2Vec.load('prof2vec')
+
 
 if __name__ == '__main__':
     docs = read_profile('fed', 'com')
     cluster(docs)
+    model = doc2vec.Doc2Vec.load('prof2vec')
+    print model.most_similar(2578594609)
 
 
