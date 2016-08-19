@@ -103,9 +103,9 @@ def cluster(model, uids):
     ###############################################################################
 
 if __name__ == '__main__':
-    docs, uids = read_profile('fed', 'com')
-    pickle.dump(uids, open('data/uids.pick', 'w'))
-    docvec(docs)
+    # docs, uids = read_profile('fed', 'com')
+    # pickle.dump(uids, open('data/uids.pick', 'w'))
+    # docvec(docs)
     model = doc2vec.Doc2Vec.load('prof2vec')
     uids = pickle.load(open('data/uids.pick', 'r'))
     # print model.docvecs['4612122917']
