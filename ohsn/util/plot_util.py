@@ -463,6 +463,15 @@ def correlation(x, y, xlabel, ylabel, savefile):
     plt.clf()
     plt.close()
 
+
+def plot_config():
+    plt.rcParams['axes.labelsize'] = 25
+    plt.rcParams['xtick.labelsize'] = 15
+    plt.rcParams['ytick.labelsize'] = 15
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['lines.markersize'] = 15
+    plt.rcParams['lines.linewidth'] = 3
+
 if __name__ == '__main__':
     sns.set(style="darkgrid", color_codes=True)
     tips = sns.load_dataset("tips")
