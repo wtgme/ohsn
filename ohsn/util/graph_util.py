@@ -399,6 +399,8 @@ if __name__ == '__main__':
     # g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
     # g.es['weight'] = 2.0
     g = g.as_undirected(mode="mutual") # collapse
+    print g.clusters()
+    print g.components()
     layout = g.layout("kk")
     plot(g, layout=layout, bbox=(1200, 900))
 

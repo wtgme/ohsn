@@ -38,7 +38,7 @@ def coreness(g):
     plt.show()
 
 
-def k_core_g(g):
+def k_core_g(g, uset=None):
     g = g.as_undirected(mode="collapse")
     print g.summary()
     index = 1
@@ -46,27 +46,30 @@ def k_core_g(g):
     print '------------------------------------'
     gc = g.k_core(index)
     while gc.vcount() > 0:
-        print index
-        print gc.summary()
-        node_n = gc.vcount()
-        edge_m = gc.ecount()
-        density = gc.density()
-        avg_path = gc.average_path_length()
-        components = gc.clusters()
-        comp_count = len(components)
-        giant_comp = components.giant()
-        giant_comp_r = float(giant_comp.vcount())/node_n
-        cluster_co_global = g.transitivity_undirected()
-        stat = [node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global
-                ]
-        stats.append(stat)
+        # print index
+        # print gc.summary()
+        # node_n = gc.vcount()
+        # edge_m = gc.ecount()
+        # density = gc.density()
+        # avg_path = gc.average_path_length()
+        # components = gc.components()
+        # comp_count = len(components)
+        # giant_comp = components.giant()
+        # giant_comp_r = float(giant_comp.vcount())/node_n
+        # cluster_co_global = gc.transitivity_undirected()
+        vset = set(gc.vs["name"])
+        purity = float(len(uset.intersection(vset)))/len(vset)
+        print float(len(uset.intersection(vset)))/len(uset)
+        # stat = [node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, purity
+        #         ]
+        # stats.append(stat)
         index += 1
         gc = g.k_core(index)
-    stats = np.array(stats)
-    names = ['#Nodes', '#Edges', 'G-Density', 'Avg-Path', '#Component', 'Giant Component Ratio', 'Transitivity'
-             ]
-    data = pd.DataFrame(stats, columns=names)
-    data.to_csv('data.csv')
+    # stats = np.array(stats)
+    # names = ['#Nodes', '#Edges', 'G-Density', 'Avg-Path', '#Component', 'Giant Component Ratio', 'Transitivity', 'Purity'
+    #          ]
+    # data = pd.DataFrame(stats, columns=names)
+    # data.to_csv('rdata.csv')
     # pt.plot_config()
     # for i in xrange(stats.shape[1]):
     #     plt.clf()
@@ -77,12 +80,22 @@ def k_core_g(g):
     #     plt.show()
 
 
+def ed_user(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    userlist = []
+    for user in com.find():
+        userlist.append(user['id_str'])
+    return userlist
+
 if __name__ == '__main__':
     # g = gt.load_network('fed', 'net')
     # pickle.dump(g, open('data/fedfried.pick', 'w'))
     g = pickle.load(open('data/fedfried.pick', 'r'))
     print g.summary()
     # coreness(g)
-    k_core_g(g)
+    uset = ed_user('fed', 'scom')
+
+    k_core_g(g, set(uset))
 
 
