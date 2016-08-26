@@ -15,6 +15,7 @@ from sklearn.cluster import AffinityPropagation
 from sklearn.semi_supervised import LabelSpreading
 from sklearn import metrics
 import ohsn.api.profiles_check as check
+import numpy as np
 from sklearn.datasets.samples_generator import make_blobs
 import pickle
 
@@ -57,18 +58,27 @@ def min_sim(model, ulist):
 
 
 def propogation(model, uids, labeled_ids):
-    X, y = [], []
+    X, y1, y2 = [], [], []
+    pool = []
+    for uid in labeled_ids:
+        X.append(model.docvecs[uid])
+        y1.append(1)
     for uid in uids:
         X.append(model.docvecs[uid])
-        if uid in labeled_ids:
-            y.append(1)
-        else:
-            y.append(-1)
+        y2.append(-1)
     label_prop_model = LabelSpreading(kernel='knn', alpha=1.0)
-    label_prop_model.fit(X, y)
-    pickle.dump(label_prop_model, open('data/propagation.pick', 'w'))
-    label_prop_model = pickle.load(open('data/propagation.pick', 'r'))
-    print label_prop_model.transduction_
+    y2 = np.array(y2)
+    y2[0:(len(y1)-1)] = 0
+    for i in xrange(10):
+        np.random.shuffle(y2)
+        label_prop_model.fit(X, y1+y2.tolist())
+        pool.append(label_prop_model.transduction_)
+    pickle.dump(pool, open('data/propagation.pick', 'w'))
+    pool = pickle.load(open('data/propagation.pick', 'r'))
+
+    # pickle.dump(label_prop_model, open('data/propagation.pick', 'w'))
+    # label_prop_model = pickle.load(open('data/propagation.pick', 'r'))
+    # pool.append(label_prop_model.transduction_)
 
 
 def cluster(model, uids):

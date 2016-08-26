@@ -465,6 +465,7 @@ def correlation(x, y, xlabel, ylabel, savefile):
 
 
 def plot_config():
+    sns.set(style="whitegrid")
     plt.rcParams['axes.labelsize'] = 25
     plt.rcParams['xtick.labelsize'] = 15
     plt.rcParams['ytick.labelsize'] = 15
@@ -472,10 +473,33 @@ def plot_config():
     plt.rcParams['lines.markersize'] = 15
     plt.rcParams['lines.linewidth'] = 3
 
+def test():
+    sns.set(style="whitegrid")
+
+    # Load the example Titanic dataset
+    titanic = sns.load_dataset("titanic")
+    print titanic
+
+    # Set up a grid to plot survival probability against several variables
+    g = sns.PairGrid(titanic, y_vars="survived",
+                     x_vars=["class", "sex", "who", "alone"],
+                     size=5, aspect=.5)
+
+    # Draw a seaborn pointplot onto each Axes
+    g.map(sns.pointplot, color=sns.xkcd_rgb["plum"])
+    g.set(ylim=(0, 1))
+    sns.despine(fig=g.fig, left=True)
+    # a = [[1,1,1,1,1], [2,2,2], [3,4,2,4,3,12]]
+    # g = sns.PairGrid(a)
+
+
+
 if __name__ == '__main__':
-    sns.set(style="darkgrid", color_codes=True)
-    tips = sns.load_dataset("tips")
-    print tips
-    g = (sns.jointplot("total_bill", "tip", data=tips, stat_func=stats.kendalltau, kind="reg",
-                  xlim=(0, 60), ylim=(0, 12), color="b", size=7))
+    # sns.set(style="darkgrid", color_codes=True)
+    # tips = sns.load_dataset("tips")
+    # print tips
+    # g = (sns.jointplot("total_bill", "tip", data=tips, stat_func=stats.kendalltau, kind="reg",
+    #               xlim=(0, 60), ylim=(0, 12), color="b", size=7))
+    # plt.show()
+    test()
     plt.show()
