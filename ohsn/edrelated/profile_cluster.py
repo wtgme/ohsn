@@ -64,7 +64,7 @@ def propogation(model, uids, labeled_ids):
             y.append(1)
         else:
             y.append(-1)
-    label_prop_model = LabelSpreading()
+    label_prop_model = LabelSpreading(kernel='knn', alpha=1.0)
     label_prop_model.fit(X, y)
     print label_prop_model.transduction_
 
@@ -121,10 +121,10 @@ def cluster(model, uids):
     ###############################################################################
 
 if __name__ == '__main__':
-    docs, uids, label_ids = read_profile('fed', 'com')
-    pickle.dump(uids, open('data/uids.pick', 'w'))
-    pickle.dump(label_ids, open('data/luids.pick', 'w'))
-    docvec(docs)
+    # docs, uids, label_ids = read_profile('fed', 'com')
+    # pickle.dump(uids, open('data/uids.pick', 'w'))
+    # pickle.dump(label_ids, open('data/luids.pick', 'w'))
+    # docvec(docs)
     model = doc2vec.Doc2Vec.load('prof2vec')
     uids = pickle.load(open('data/uids.pick', 'r'))
     label_ids = pickle.load(open('data/luids.pick', 'r'))
