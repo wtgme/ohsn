@@ -66,6 +66,8 @@ def propogation(model, uids, labeled_ids):
             y.append(-1)
     label_prop_model = LabelSpreading(kernel='knn', alpha=1.0)
     label_prop_model.fit(X, y)
+    pickle.dump(label_prop_model, open('data/propagation.pick', 'w'))
+    label_prop_model = pickle.load(open('data/propagation.pick', 'r'))
     print label_prop_model.transduction_
 
 
