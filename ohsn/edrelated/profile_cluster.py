@@ -12,7 +12,9 @@ from nltk.tokenize import TweetTokenizer
 import ohsn.util.db_util as dbt
 from gensim.models import doc2vec
 from sklearn.cluster import AffinityPropagation
+from sklearn.semi_supervised import LabelSpreading
 from sklearn import metrics
+import ohsn.api.profiles_check as check
 from sklearn.datasets.samples_generator import make_blobs
 import pickle
 
@@ -24,6 +26,7 @@ def read_profile(dbname, comname):
     col = db[comname]
     documents = []
     uids = []
+    label_uids = []
     for user in col.find({}, ['id_str', 'description']):
         profile = user['description'].encode('utf8').lower()
         tokens = tknzr.tokenize(profile)
@@ -31,7 +34,9 @@ def read_profile(dbname, comname):
             sentence = doc2vec.TaggedDocument(words=tokens, tags=[user['id_str']])
             uids.append(user['id_str'])
             documents.append(sentence)
-    return documents, uids
+            if check.check_ed_profile(user['description']):
+                label_uids.append(user['id_str'])
+    return documents, uids, label_uids
 
 
 def docvec(documents):
@@ -49,6 +54,19 @@ def min_sim(model, ulist):
             if sim < mins:
                 mins = sim
     return mins
+
+
+def propogation(model, uids, labeled_ids):
+    X, y = [], []
+    for uid in uids:
+        X.append(model.docvecs[uid])
+        if uid in labeled_ids:
+            y.append(1)
+        else:
+            y.append(-1)
+    label_prop_model = LabelSpreading()
+    label_prop_model.fit(X, y)
+    print label_prop_model.transduction_
 
 
 def cluster(model, uids):
@@ -103,11 +121,13 @@ def cluster(model, uids):
     ###############################################################################
 
 if __name__ == '__main__':
-    # docs, uids = read_profile('fed', 'com')
-    # pickle.dump(uids, open('data/uids.pick', 'w'))
-    # docvec(docs)
+    docs, uids, label_ids = read_profile('fed', 'com')
+    pickle.dump(uids, open('data/uids.pick', 'w'))
+    pickle.dump(label_ids, open('data/luids.pick', 'w'))
+    docvec(docs)
     model = doc2vec.Doc2Vec.load('prof2vec')
     uids = pickle.load(open('data/uids.pick', 'r'))
+    label_ids = pickle.load(open('data/luids.pick', 'r'))
     # print model.docvecs['4612122917']
     # print model.docvecs['3233608771']
     # mins = min_sim(model, uids)
@@ -117,5 +137,7 @@ if __name__ == '__main__':
     # print model.docvecs.n_similarity(['4612122917'], ['1295904486'])
     # print model.docvecs.n_similarity(['4612122917'], ['1344770388'])
     print len(uids)
-    cluster(model, uids)
+    print len(label_ids)
+    # cluster(model, uids)
+    propogation(model, uids, label_ids)
 
