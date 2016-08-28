@@ -64,21 +64,24 @@ def propogation(model, uids, labeled_ids):
         X.append(model.docvecs[uid])
         y1.append(1)
     for uid in uids:
-        X.append(model.docvecs[uid])
-        y2.append(-1)
+        if uid not in labeled_ids:
+            X.append(model.docvecs[uid])
+            y2.append(-1)
     label_prop_model = LabelSpreading(kernel='knn', alpha=1.0)
     y2 = np.array(y2)
     y2[0:(len(y1)-1)] = 0
-    for i in xrange(10):
+    print len(y1) + len(y2)
+    for i in xrange(5):
         np.random.shuffle(y2)
-        label_prop_model.fit(X, y1+y2.tolist())
+        label_prop_model.fit(X, y1 + y2.tolist())
         pool.append(label_prop_model.transduction_)
     pickle.dump(pool, open('data/propagation.pick', 'w'))
     pool = pickle.load(open('data/propagation.pick', 'r'))
-
-    # pickle.dump(label_prop_model, open('data/propagation.pick', 'w'))
-    # label_prop_model = pickle.load(open('data/propagation.pick', 'r'))
-    # pool.append(label_prop_model.transduction_)
+    pool = np.array(pool)
+    for column in pool.T:
+        print column
+        # counts = np.bincount(column)
+        # print np.argmax(counts)
 
 
 def cluster(model, uids):
@@ -133,21 +136,22 @@ def cluster(model, uids):
     ###############################################################################
 
 if __name__ == '__main__':
-    # docs, uids, label_ids = read_profile('fed', 'com')
-    # pickle.dump(uids, open('data/uids.pick', 'w'))
-    # pickle.dump(label_ids, open('data/luids.pick', 'w'))
-    # docvec(docs)
+    docs, uids, label_ids = read_profile('fed', 'com')
+    pickle.dump(uids, open('data/uids.pick', 'w'))
+    pickle.dump(label_ids, open('data/luids.pick', 'w'))
+    docvec(docs)
     model = doc2vec.Doc2Vec.load('prof2vec')
     uids = pickle.load(open('data/uids.pick', 'r'))
     label_ids = pickle.load(open('data/luids.pick', 'r'))
+
     # print model.docvecs['4612122917']
     # print model.docvecs['3233608771']
     # mins = min_sim(model, uids)
-
     # print model.docvecs.most_similar('4612122917')
     # print model.docvecs.n_similarity(['4612122917'], ['630629210'])
     # print model.docvecs.n_similarity(['4612122917'], ['1295904486'])
     # print model.docvecs.n_similarity(['4612122917'], ['1344770388'])
+
     print len(uids)
     print len(label_ids)
     # cluster(model, uids)
