@@ -62,7 +62,7 @@ def process_tweet(dbname, comname, timename, label):
     user_list = iot.get_values_one_field(dbname, comname, 'id', {"timeline_count": {'$gt': 0}, 'lang': 'en'})
     for user in user_list:
         context = ''
-        # print '----------------------------------------'
+        print '----------------------------------------'
         for time in times.find({'user.id': user}).sort([('id', 1)]):
             # print time['created_at']
             if 'retweeted_status' in time:
@@ -72,10 +72,10 @@ def process_tweet(dbname, comname, timename, label):
             else:
                 text = process(time['text'])
                 if text:
-                    print text
+                    print user,time['id'], text
                     # context += text + ' '
                 else:
-                    print '----------------------------'
+                    print user,time['id'], 'None'
 
         # print '__label__'+label+' , ' + context
 
