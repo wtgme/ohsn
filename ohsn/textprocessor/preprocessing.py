@@ -17,6 +17,7 @@ from nltk.tokenize import TweetTokenizer
 from nltk import SnowballStemmer
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
+import string
 
 tknzr = TweetTokenizer()
 stemmer = SnowballStemmer("english")
@@ -26,14 +27,21 @@ hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
 # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
 ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 
+printable = set(string.printable)
+
+
 
 def process(text):
     text = text.encode('utf8')
-    # replace RT, @, # and Http://
+
+    '''replace RT, @, # and Http://'''
     text = rtgrex.sub('', text)
     text = mgrex.sub('', text)
     # text = hgrex.sub('', text)
     text = ugrex.sub('', text)
+
+    '''Remove non-English chars'''
+    text = filter(lambda x: x in printable, text)
 
     tokens = tknzr.tokenize(text)
     words = []
