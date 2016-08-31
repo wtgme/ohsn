@@ -40,7 +40,7 @@ def db_connect_no_auth(DBNAME):
     try:
         conn = pymongo.MongoClient(MONGOAUTH)
         db = conn[DBNAME]
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "Success connected to " + DBNAME
+        # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "Success connected to " + DBNAME
         return db
     except Exception as detail:
         print detail
