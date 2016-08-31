@@ -128,13 +128,16 @@ def plot_pclassification(pclares):
     plt.show()
 # plot_pclassification('data/test_pclass.pick')
 
+
 def predict_verify(dbname, comname):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     pred_users = pickle.load(open('ed-rel.pick', 'r'))
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
-        print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
+        if user['level'] != 1:
+            print user['screen_name'].encode('utf-8')
+        # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
 

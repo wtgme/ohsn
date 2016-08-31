@@ -91,7 +91,7 @@ def k_core_g(g, uset=None):
         # purity = float(len(uset.intersection(vset)))/len(vset)
         # edp = float(len(uset.intersection(vset)))/len(uset)
         if index > 94:
-            print gc.vs["name"]
+            return gc.vs["name"]
         # stat = [node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, purity
         #         ]
         # stats.append(stat)
@@ -120,6 +120,14 @@ def ed_user(dbname, colname):
         userlist.append(user['id_str'])
     return userlist
 
+def verify_core_user(dbname, colname, usetlist):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    for uid in usetlist:
+        user = com.find_one({'id': int(uid)})
+        if user['level'] != 1:
+            print user['screen_name'].encode('utf-8')
+        # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
 if __name__ == '__main__':
@@ -128,9 +136,10 @@ if __name__ == '__main__':
     g = pickle.load(open('data/fedfried.pick', 'r'))
     print g.summary()
     # coreness(g)
-    # uset = ed_user('fed', 'scom')
-    #
+    uset = ed_user('fed', 'scom')
     # k_core_g(g, set(uset))
-    coreness_features(g)
+    core_users = k_core_g(g, set(uset))
+    verify_core_user('fed', 'com', core_users)
+    # coreness_features(g)
 
 
