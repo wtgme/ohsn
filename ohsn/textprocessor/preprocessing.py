@@ -95,6 +95,6 @@ def process_tweet(dbname, comname, timename, label, filename):
     pickle.dump(target_users, open('data/'+filename+'.pick', 'w'))
 
 if __name__ == '__main__':
-    process_tweet('fed', 'scom', 'stimeline', '1', 'ED')
-    process_tweet('random', 'scom', 'timeline', '2', 'Random')
+    process_tweet('fed', 'com', 'timeline', '2', 'Ped')
+    #process_tweet('random', 'scom', 'timeline', '2', 'Random')
 

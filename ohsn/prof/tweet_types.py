@@ -280,18 +280,18 @@ def compore_distribution(field, feds, randoms, youngs):
     # print 'ks-test(Younger, Random): & $n_1$: ' + str(yg_rdz[0]) + ' & $n_2$: ' + str(yg_rdz[1]) \
     #       + ' & ks-value: ' + str(yg_rdz[2]) + ' & p-value: ' + str(yg_rdz[3]) + '\\\\'
 
-    # plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
-    #                        ['ED', 'Random', 'Younger'],
-    #                        linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
+    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+                           ['ED', 'Random', 'Younger'],
+                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''
-    beh_stat('fed', 'com', 'timeline', 'fedbev')
+    # beh_stat('fed', 'com', 'timeline', 'fedbev')
     # beh_stat('random', 'scom', 'timeline', 'rdbev')
     # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
-    store_ratio_behavoir('fed', 'com', 'fedbev')
+    # store_ratio_behavoir('fed', 'com', 'fedbev')
     # store_ratio_behavoir('random', 'scom', 'rdbev')
     # store_ratio_behavoir('young', 'scom', 'ygbev')
 
@@ -330,5 +330,5 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edtags.values(), rdtags.values(), ygtags.values()], ['--bo', '--r^', '--ks'], 'Hashtags',  ['ED', 'Random', 'Young'], False)
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
-    # '''LIWC features'''
-    # feature_stat()
+    # '''compare Distributions of LIWC features'''
+    feature_stat()

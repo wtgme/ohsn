@@ -295,10 +295,10 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         max_x = np.max([np.max(listx) for listx in lists])
         min_x = np.min([np.min(listx) for listx in lists])
     plt.rcParams['axes.labelsize'] = 15
-    plt.rcParams['xtick.labelsize'] = 25
-    plt.rcParams['ytick.labelsize'] = 25
-    plt.rcParams['legend.fontsize'] = 30
-    plt.rcParams['lines.markersize'] = 15
+    plt.rcParams['xtick.labelsize'] = 15
+    plt.rcParams['ytick.labelsize'] = 15
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['lines.markersize'] = 10
     ax = plt.gca()
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
@@ -351,7 +351,7 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel('k('+field+')')
+    ax.set_xlabel('k')
     ax.set_ylabel('p(k)')
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
