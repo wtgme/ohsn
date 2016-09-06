@@ -78,6 +78,7 @@ def monitor_timeline(time_index):
 
 
 def check_change(time_index):
+    """Count how many users have change their profiles, e.g., increase or descrease their follower numbers"""
     db = dbt.db_connect_no_auth('monitor')
     changedb = db['changes']
     changedb.create_index([('dataset', pymongo.ASCENDING),
@@ -89,6 +90,7 @@ def check_change(time_index):
         sample_user = dbs['com']
         sample_time = dbs['timeline']
         sample_net = dbs['net']
+        """ record need to store """
         changes = {'dataset': dataset, 'statis_index': time_index}
         # check prof changes, 'description', 'friends_count', 'followers_count', 'statuses_count'
         for user in sample_user.find({'timeline_scraped_times': time_index, 'timeline_count': {'$gt': 0}}):
@@ -97,12 +99,12 @@ def check_change(time_index):
                                           {'id':1, 'user':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
             if last_tweet:
                 userc = last_tweet['user']
-                # print last_tweet['id']
                 for key in check_keys:
                     if user[key] != userc[key]:
                         value = changes.get(key, 0)
                         value += 1
                         changes[key] = value
+                        """Update newest profiles in user database"""
                         sample_user.update_one({'id': user['id']}, {'$set': {key: userc[key]}}, upsert=False)
                         if 'count' in key:
                             if user[key] < userc[key]:
@@ -114,7 +116,7 @@ def check_change(time_index):
                                 value += 1
                                 changes[key+'_dec'] = value
 
-        # check following changes among users
+        """check following changes among users"""
 
         count = sample_net.count({'scraped_times': time_index})-sample_net.count({'scraped_times': time_index-1})
         changes['net_changes'] = count
