@@ -26,7 +26,7 @@ mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mentio
 hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
 # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
 ugrex = re.compile(r'(https?://[^\s]+)')  # for url
-
+liwc = Liwc()
 
 
 def process(poi, timelines, level):
@@ -46,7 +46,7 @@ def process(poi, timelines, level):
         for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
             textmass = ""
-            liwc = Liwc()
+
             for tweet in timelines.find({'user.id': user['id']}):
                 if 'retweeted_status' in tweet:
                     continue
@@ -66,7 +66,7 @@ def process(poi, timelines, level):
             words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 50:
-                result = Liwc.susmmarize_document(liwc, ' '.join(words))
+                result = liwc.summarize_document(' '.join(words))
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
             else:
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": None}}, upsert=False)

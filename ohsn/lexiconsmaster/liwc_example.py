@@ -25,3 +25,5 @@ full_counts = liwc_lexicon.summarize_document(gettysburg)
 print full_counts
 # liwc_lexicon.print_summarization(full_counts)
 print Liwc.summarize_document(liwc_lexicon, gettysburg)
+print liwc_lexicon.summarize_document('''Four score and seven years ago our fathers brought forth on
+  this continent a new nation''')
