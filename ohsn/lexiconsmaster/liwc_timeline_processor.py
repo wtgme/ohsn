@@ -26,7 +26,7 @@ mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mentio
 hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
 # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
 ugrex = re.compile(r'(https?://[^\s]+)')  # for url
-liwc = Liwc()
+
 
 
 def process(poi, timelines, level):
@@ -46,6 +46,7 @@ def process(poi, timelines, level):
         for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
             textmass = ""
+            liwc = Liwc()
             for tweet in timelines.find({'user.id': user['id']}):
                 if 'retweeted_status' in tweet:
                     continue
