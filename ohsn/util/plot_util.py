@@ -473,6 +473,7 @@ def plot_config():
     plt.rcParams['lines.markersize'] = 15
     plt.rcParams['lines.linewidth'] = 3
 
+
 def test():
     sns.set(style="whitegrid")
 

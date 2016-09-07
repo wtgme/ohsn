@@ -14,6 +14,7 @@ import ohsn.util.plot_util as pt
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import pickle
 
 
 def statis(dbname, colname, keys):
@@ -62,7 +63,58 @@ def statis(dbname, colname, keys):
         plt.clf()
 
 
+def active_user(dbname, comname, timename):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    time = db[timename]
+    date = []
+    for user in com.find({'timeline_count': {'$gt': 0}}):
+        last_tweet = time.find({'user.id': user['id']},
+                    {'id':1, 'user':1, 'created_at': 1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
+        datev = last_tweet['created_at']
+        if isinstance(datev, basestring):
+            datev = datetime.strptime(datev, '%a %b %d %H:%M:%S +0000 %Y')
+        date.append(datetime(datev.year, datev.month, datev.day))
+        # print user['screen_name'], datetime(datev.year, datev.month, datev.day)
+    df = pd.DataFrame({'PED': date}, index=date)
+    df.groupby([df.PED.dt.year, df.PED.dt.month]).count().plot(kind="bar")
+    plt.xlabel('(Year, Month)')
+    plt.ylabel('Count')
+    plt.show()
+
+
+def active_user_list(dbname, comname, timename):
+    db = dbt.db_connect_no_auth(dbname)
+    time = db[timename]
+    com = db[comname]
+    date = []
+    pred_users = pickle.load(open('data/ed-rel.pick', 'r'))
+    for uid in pred_users:
+        user = com.find_one({'id': int(uid)})
+        if user['level'] != 1:
+            last_tweet = time.find({'user.id': int(uid)},
+                        {'id':1, 'user':1, 'created_at': 1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
+            datev = last_tweet['created_at']
+            if isinstance(datev, basestring):
+                datev = datetime.strptime(datev, '%a %b %d %H:%M:%S +0000 %Y')
+            date.append(datetime(datev.year, datev.month, datev.day))
+            # print user['screen_name'], datetime(datev.year, datev.month, datev.day)
+    print len(date)
+    df = pd.DataFrame({'PredictED_nonED': date}, index=date)
+    df.groupby([df.PredictED_nonED.dt.year, df.PredictED_nonED.dt.month]).count().plot(kind="bar")
+    plt.xlabel('(Year, Month)')
+    plt.ylabel('Count')
+    plt.show()
+
+
+
 if __name__ == '__main__':
-    keys = ['description', 'friends_count', 'friends_count_inc', 'friends_count_dec', 'followers_count', 'followers_count_inc', 'followers_count_dec',
-            'statuses_count', 'statuses_count_inc', 'statuses_count_dec', 'net_changes']
-    statis('monitor', 'changes', keys)
+    """Statis Changes"""
+    # keys = ['description', 'friends_count', 'friends_count_inc', 'friends_count_dec', 'followers_count', 'followers_count_inc', 'followers_count_dec',
+    #         'statuses_count', 'statuses_count_inc', 'statuses_count_dec', 'net_changes']
+    # statis('monitor', 'changes', keys)
+
+    """Statis active users"""
+    # active_user('fed', 'com', 'timeline')
+
+    active_user_list('fed', 'com', 'timeline')

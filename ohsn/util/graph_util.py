@@ -40,7 +40,7 @@ def load_network(db_name, collection='None'):
 
 def load_network_subset(uset_list, db_name, collection='None'):
     '''
-    Friendship network: directed network
+    Friendship network: directed network from a user list
     Edge: user---------> follower
     '''
     if collection is 'None':

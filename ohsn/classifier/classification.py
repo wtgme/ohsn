@@ -133,6 +133,7 @@ def predict_verify(dbname, comname):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     pred_users = pickle.load(open('ed-rel.pick', 'r'))
+    print len(pred_users)
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
         if user['level'] != 1:

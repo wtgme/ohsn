@@ -10,9 +10,12 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 from ohsn.util import graph_util as gt
 from ohsn.util import db_util as dbt
+import ohsn.util.io_util as iot
 from ohsn.util import plot_util as plot
-from ohsn.textprocessor import topic_model
+# from ohsn.textprocessor import topic_model
 import pickle
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def core_ed():
@@ -50,6 +53,55 @@ def community_topic(g, clus, dbname, colname, timename):
             # print int(g.vs[v]['name'])
             uset.add(int(g.vs[v]['name']))
         topic_model.topic_model(dbname, colname, timename, uset)
+
+
+def communtiy_feature(dbname, colname):
+    # fg = gt.load_network(dbname, colname)
+    # gt.summary(fg)
+    # pickle.dump(fg, open('data/'+'fed-fg.pick', 'w'))
+    fg = pickle.load(open('data/'+'fed-fg.pick', 'r'))
+
+    # fgc = gt.giant_component(fg, 'WEAK')
+    # gt.summary(fgc)
+    # pickle.dump(fgc, open('data/'+'fed-fgc.pick', 'w'))
+
+    # fcoms = gt.fast_community(fg)
+    # pickle.dump(fcoms, open('data/'+'fed-fcom.pick', 'w'))
+    fcoms = pickle.load(open('data/'+'fed-fcom.pick', 'r'))
+    fclus = fcoms.as_clustering()
+    gt.summary(fclus)
+
+    """Compare difference of features in cummunities"""
+    features = [
+        'liwc_anal.result.bio',
+        'liwc_anal.result.body',
+        'liwc_anal.result.health',
+        'liwc_anal.result.posemo',
+        'liwc_anal.result.negemo',
+        'liwc_anal.result.anx',
+        'liwc_anal.result.anger',
+        'liwc_anal.result.sad'
+                ]
+    therh = 0.1 * fg.vcount()
+    for feature in features:
+        data = []
+        for clu in fclus:
+            if len(clu) > therh:
+                ulist = set()
+                for v in clu:
+                    ulist.add(int(fg.vs[v]['name']))
+                ulist = list(ulist)
+                clu_values = iot.get_values_one_field('fed', 'com', feature, {'id': {'$in': ulist}})
+                data.append(clu_values)
+
+        plot.plot_config()
+        for i in xrange(len(data)):
+            sns.distplot(data[i], hist=False, label=str(i)+':'+str(len(data[i])))
+        plt.xlabel(feature)
+        plt.ylabel('PDF')
+        # plt.show()
+        plt.savefig(feature+'_com.pdf')
+        plt.clf()
 
 
 def friendship_community(dbname, colname, label):
@@ -118,8 +170,8 @@ if __name__ == '__main__':
     # elif sys.argv[1] == 'behavior':
     #     behavior_community('fed', 'snet', 'ED')
 
-    friendship_community('fed', 'snet', 'ED')
-    behavior_community('fed', 'sbnet', 'communi')
+    # friendship_community('fed', 'snet', 'ED')
+    # behavior_community('fed', 'sbnet', 'communi')
     # friendship_community('srd', 'net', 'srd')
     # friendship_community('syg', 'net', 'syg')
 
@@ -172,6 +224,10 @@ if __name__ == '__main__':
     # plot_pdf(ed, rd, yg, 'indegree')
     # plot_pdf(ed, rd, yg, 'outdegree')
     # plot_pdf(ed, rd, yg, 'degree')
+
+
+    """Plot distributions of communities in terms of LIWC features"""
+    communtiy_feature('fed', 'net')
 
 
 
