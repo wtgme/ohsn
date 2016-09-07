@@ -68,3 +68,9 @@
 ohsn/edrelated/prof2vec
 
 *.npy
+
+ohsn/textprocessor/data/.DS_Store
+
+ohsn/.DS_Store
+
+.DS_Store

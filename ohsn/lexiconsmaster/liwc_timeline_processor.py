@@ -21,6 +21,12 @@ import pymongo
 # track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
 
 '''Process the timelines of users in POI'''
+rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
+mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
+hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
+# hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
+ugrex = re.compile(r'(https?://[^\s]+)')  # for url
+liwc = Liwc()
 
 
 def process(poi, timelines, level):
@@ -28,11 +34,6 @@ def process(poi, timelines, level):
     poi.create_index([('timeline_count', pymongo.DESCENDING),
                       ('liwc_anal.mined', pymongo.ASCENDING),
                       ('level', pymongo.ASCENDING)])
-    rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
-    mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
-    hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
-    # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
-    ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 
     while True:
         # How many users whose timelines have not been processed by LIWC
@@ -44,23 +45,27 @@ def process(poi, timelines, level):
 
         for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
-            liwc = Liwc()
             textmass = ""
             for tweet in timelines.find({'user.id': user['id']}):
-                text = tweet['text'].encode('utf8')
-                # replace RT, @, # and Http://
-                text = rtgrex.sub('', text)
-                text = mgrex.sub('', text)
-                text = hgrex.sub('', text)
-                text = ugrex.sub('', text)
-                text = text.strip()
-                if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-                    text += '.'
-                textmass = textmass + " " + text.lower()
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    text = tweet['text'].encode('utf8')
+                    # replace RT, @, # and Http://
+                    text = rtgrex.sub('', text)
+                    text = mgrex.sub('', text)
+                    text = hgrex.sub('', text)
+                    text = ugrex.sub('', text)
+                    text = text.strip()
+                    if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                        text += '.'
+                    textmass += " " + text.lower()
             words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 50:
-                result = Liwc.summarize_document(liwc, ' '.join(words))
+                result = Liwc.susmmarize_document(liwc, ' '.join(words))
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
             else:
                 poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": None}}, upsert=False)
