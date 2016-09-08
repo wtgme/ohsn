@@ -41,6 +41,7 @@ def coreness(g):
 
 
 def coreness_features(g):
+    """Correlation of K-core and feature values"""
     g = g.as_undirected(mode="collapse")
     all_coreness = g.shell_index(mode='ALL')
     g.vs['core'] = all_coreness
@@ -68,7 +69,9 @@ def coreness_features(g):
         # plt.close()
         ##########################################################
 
+
 def k_core_g(g, uset=None):
+    """Statistics of K-core and network features, such as the purity of core ED, the numbers of nodes and edges"""
     g = g.as_undirected(mode="collapse")
     print g.summary()
     index = 1
@@ -120,7 +123,9 @@ def ed_user(dbname, colname):
         userlist.append(user['id_str'])
     return userlist
 
+
 def verify_core_user(dbname, colname, usetlist):
+    """verify the users in the largest K-core"""
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
     for uid in usetlist:

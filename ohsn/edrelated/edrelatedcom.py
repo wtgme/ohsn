@@ -15,6 +15,7 @@ import pickle
 
 
 def rec_user(dbname, colname):
+    """Get recovery users"""
     user_lit = []
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
