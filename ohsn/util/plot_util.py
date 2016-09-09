@@ -466,7 +466,7 @@ def correlation(x, y, xlabel, ylabel, savefile):
 
 def plot_config():
     sns.set(style="whitegrid")
-    plt.rcParams['axes.labelsize'] = 25
+    plt.rcParams['axes.labelsize'] = 16
     plt.rcParams['xtick.labelsize'] = 15
     plt.rcParams['ytick.labelsize'] = 15
     plt.rcParams['legend.fontsize'] = 20

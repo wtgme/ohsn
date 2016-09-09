@@ -15,10 +15,11 @@ import ohsn.util.db_util as dbt
 import seaborn as sns
 import matplotlib.pyplot as plt
 import ohsn.util.graph_util as gt
+import ohsn.util.io_util as iot
 import pickle
 import numpy as np
 import pandas as pd
-
+import ohsn.util.network_io as ntt
 
 def ed_user(dbname, colname):
     user_list = []
@@ -91,9 +92,10 @@ def linked(dbname, comname, netname, k):
 #     print len(results)
 
 
-def triangles():
-    g = pickle.load(open('data/fed-friend.pick', 'r'))
+def triangles(dbname, type):
+    g = ntt.load(dbname, type)
     g = g.as_undirected(mode="collapse")
+
     ed_set = pickle.load(open('data/ed.pick', 'r'))
 
     result = set()
@@ -107,6 +109,11 @@ def triangles():
                 nuj = set(g.neighbors(uj))
                 for v in nui.intersection(nuj):
                     result.add(v)
+
+    ids = [int(g.vs[v]['name']) for v in result]
+    pickle.dump(ids, open('data/'+dbname+type+'triangle.pick', 'w'))
+
+    '''Verify triangle users'''
     db = dbt.db_connect_no_auth('fed')
     com = db['com']
     for v in result:
@@ -114,11 +121,10 @@ def triangles():
         print user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
-
-
-
 if __name__ == '__main__':
     # linked('fed', 'com', 'net', 1)
-    triangles()
+    triangles('fed', 'retweet')
+    triangles('fed', 'reply')
+    triangles('fed', 'mention')
 
 

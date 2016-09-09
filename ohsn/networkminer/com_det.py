@@ -16,6 +16,7 @@ from ohsn.util import plot_util as plot
 import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
+import ohsn.util.network_io as ntt
 
 
 def core_ed():
@@ -55,29 +56,25 @@ def community_topic(g, clus, dbname, colname, timename):
         topic_model.topic_model(dbname, colname, timename, uset)
 
 
-def communtiy_feature(dbname, colname):
-    # fg = gt.load_network(dbname, colname)
-    # gt.summary(fg)
-    # pickle.dump(fg, open('data/'+'fed-fg.pick', 'w'))
-    fg = pickle.load(open('data/'+'fed-fg.pick', 'r'))
+def communtiy_feature(dbname, type):
+    fg = ntt.load(dbname, type)
 
-    # fgc = gt.giant_component(fg, 'WEAK')
-    # gt.summary(fgc)
-    # pickle.dump(fgc, open('data/'+'fed-fgc.pick', 'w'))
-
-    # fcoms = gt.fast_community(fg)
-    # pickle.dump(fcoms, open('data/'+'fed-fcom.pick', 'w'))
-    fcoms = pickle.load(open('data/'+'fed-fcom.pick', 'r'))
+    fcoms = gt.fast_community(fg)
+    pickle.dump(fcoms, open('data/'+dbname+type+'com.pick', 'w'))
+    fcoms = pickle.load(open('data/'+dbname+type+'com.pick', 'r'))
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
 
     """Compare difference of features in cummunities"""
     features = [
+        'liwc_anal.result.i',
+        'liwc_anal.result.we',
         'liwc_anal.result.bio',
         'liwc_anal.result.body',
         'liwc_anal.result.health',
         'liwc_anal.result.posemo',
         'liwc_anal.result.negemo',
+        'liwc_anal.result.ingest',
         'liwc_anal.result.anx',
         'liwc_anal.result.anger',
         'liwc_anal.result.sad'
@@ -91,7 +88,7 @@ def communtiy_feature(dbname, colname):
                 for v in clu:
                     ulist.add(int(fg.vs[v]['name']))
                 ulist = list(ulist)
-                clu_values = iot.get_values_one_field('fed', 'com', feature, {'id': {'$in': ulist}})
+                clu_values = iot.get_values_one_field(dbname, 'com', feature, {'id': {'$in': ulist}})
                 data.append(clu_values)
 
         plot.plot_config()
@@ -100,7 +97,7 @@ def communtiy_feature(dbname, colname):
         plt.xlabel(feature)
         plt.ylabel('PDF')
         # plt.show()
-        plt.savefig(feature+'_com.pdf')
+        plt.savefig(feature+type+'_com.pdf')
         plt.clf()
 
 
@@ -227,7 +224,10 @@ if __name__ == '__main__':
 
 
     """Plot distributions of communities in terms of LIWC features"""
-    communtiy_feature('fed', 'net')
+    communtiy_feature('fed', 'friend')
+    communtiy_feature('fed', 'retweet')
+    communtiy_feature('fed', 'reply')
+    communtiy_feature('fed', 'mention')
 
 
 

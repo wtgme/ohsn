@@ -58,13 +58,17 @@ def classification(train, test, outclss):
     X_train = scaler.transform(X_train)
     X_test, y_test = load_svmlight_file(test)
     X_test = X_test.toarray()
+    # print X_test.shape
+    # for xi in X_test.T:
+    #     print min(xi), max(xi)
     X_test = scaler.transform(X_test)
     svc_lin = SVC(kernel='linear', class_weight='balanced')
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
     # pickle.dump(y_test, open(outid, 'w'))
     pickle.dump(y_lin, open(outclss, 'w'))
-    pickle.dump(y_test[y_lin==1], open('ed-rel.pick', 'w'))
-    print y_test[y_lin==1].astype('str')
+    '''Int to numpy.int will lost precision'''
+    # pickle.dump(y_test[y_lin==1], open('result.pick', 'w'))
+    # print y_test[y_lin==1].astype('str')
 
 
 def plot_classification(clares):
@@ -129,13 +133,18 @@ def plot_pclassification(pclares):
 # plot_pclassification('data/test_pclass.pick')
 
 
-def predict_verify(dbname, comname):
+def predict_verify(dbname, comname, testname, lables_file):
+    lables = pickle.load(open(lables_file, 'r'))
+    ids = pickle.load(open(testname+'_ids.data', 'r'))
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
-    pred_users = pickle.load(open('ed-rel.pick', 'r'))
-    print len(pred_users)
+    pred_users = []
+    for i in xrange(len(ids)):
+        if lables[i] == 1:
+            pred_users.append(ids[i])
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
+        print int(uid)
         if user['level'] != 1:
             print user['screen_name'].encode('utf-8')
         # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
@@ -145,8 +154,8 @@ def predict_verify(dbname, comname):
 
 if __name__ == '__main__':
 
-    # classification('data/ed-random.data', 'data/ed-rel.data',
+    # classification('data/ed-random.data', 'data/ed-tria.data',
     #                'data/test_id_class.pick')
     # plot_classification('data/test_id_class.pick')
 
-    predict_verify('fed', 'com')
+    predict_verify('fed', 'com', 'data/ed-tria', 'data/test_id_class.pick')

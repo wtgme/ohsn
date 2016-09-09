@@ -67,7 +67,7 @@ def load_network_subset(uset_list, db_name, collection='None'):
 
 def load_beh_network_subset(userlist, db_name, collection='None', btype='communication'):
     '''
-    All interctions of a user
+    only interaction among poi
     behavior network: directed weighted network
     Tweet: 0
     Retweet: 1;
@@ -108,7 +108,7 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
 
 def load_beh_network(db_name, collection='None', btype='communication'):
     '''
-    only interaction among poi
+    All interctions of a user
     behavior network: directed weighted network
     Tweet: 0
     Retweet: 1;
