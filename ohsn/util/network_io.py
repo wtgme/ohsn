@@ -9,10 +9,12 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
+
 import ohsn.util.db_util as dbt
 import ohsn.util.graph_util as gt
 import ohsn.util.io_util as iot
 import pickle
+import os
 
 
 def generate(dbname, comname, netname, type):
@@ -26,12 +28,18 @@ def generate(dbname, comname, netname, type):
 
     pickle.dump(g, open('data/'+dbname+type+'.pick', 'w'))
 
-def load(dbname, type):
-    return pickle.load(open('data/'+dbname+type+'.pick', 'r'))
+
+def loadnet(dbname, typename):
+    MYDIR = os.path.dirname(__file__)
+    # print os.path.join(MYDIR, 'data/'+dbname+typename+'.pick')
+    g = pickle.load(open(os.path.join(MYDIR, 'data/'+dbname+typename+'.pick'), 'r'))
+    return g
 
 if __name__ == '__main__':
-    # generate('fed', 'com', 'net', 'follow')
+    generate('fed', 'com', 'net', 'follow')
     generate('fed', 'com', 'bnet', 'retweet')
     generate('fed', 'com', 'bnet', 'reply')
     generate('fed', 'com', 'bnet', 'mention')
+    #
+    g = loadnet('fed', 'follow')
 

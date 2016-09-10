@@ -56,12 +56,12 @@ def community_topic(g, clus, dbname, colname, timename):
         topic_model.topic_model(dbname, colname, timename, uset)
 
 
-def communtiy_feature(dbname, type):
-    fg = ntt.load(dbname, type)
+def communtiy_feature(dbname, typename):
+    fg = ntt.loadnet(dbname, typename)
 
     fcoms = gt.fast_community(fg)
-    pickle.dump(fcoms, open('data/'+dbname+type+'com.pick', 'w'))
-    fcoms = pickle.load(open('data/'+dbname+type+'com.pick', 'r'))
+    pickle.dump(fcoms, open('data/'+dbname+typename+'com.pick', 'w'))
+    fcoms = pickle.load(open('data/'+dbname+typename+'com.pick', 'r'))
     fclus = fcoms.as_clustering()
     gt.summary(fclus)
 
@@ -97,7 +97,7 @@ def communtiy_feature(dbname, type):
         plt.xlabel(feature)
         plt.ylabel('PDF')
         # plt.show()
-        plt.savefig(feature+type+'_com.pdf')
+        plt.savefig(feature+typename+'_com.pdf')
         plt.clf()
 
 
@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
 
     """Plot distributions of communities in terms of LIWC features"""
-    communtiy_feature('fed', 'friend')
+    communtiy_feature('fed', 'follow')
     communtiy_feature('fed', 'retweet')
     communtiy_feature('fed', 'reply')
     communtiy_feature('fed', 'mention')
