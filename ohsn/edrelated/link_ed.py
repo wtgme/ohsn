@@ -96,7 +96,6 @@ def linked(dbname, comname, netname, k):
 def triangles(dbname, type):
     g = ntt.loadnet(dbname, type)
     g = g.as_undirected(mode="collapse")
-    vnames = set(g.vs["name"])
 
     ed_set = pickle.load(open('data/ed.pick', 'r'))
 
@@ -104,15 +103,21 @@ def triangles(dbname, type):
     ed_list = list(ed_set)
     for i in xrange(len(ed_list)):
         ui = ed_list[i]
-        if ui in vnames:
-            nui = set(g.neighbors(ui))
-            for j in xrange(i, len(ed_list)):
-                uj = ed_list[j]
-                if uj in nui:
-                    if uj in vnames:
-                        nuj = set(g.neighbors(uj))
-                        for v in nui.intersection(nuj):
-                            result.add(v)
+        try:
+            g.vs.find(name=str(ui))
+        except ValueError:
+            continue
+        nui = set(g.neighbors(ui))
+        for j in xrange(i, len(ed_list)):
+            uj = ed_list[j]
+            if uj in nui:
+                try:
+                    g.vs.find(name=str(uj))
+                except ValueError:
+                    continue
+                nuj = set(g.neighbors(uj))
+                for v in nui.intersection(nuj):
+                    result.add(v)
 
     ids = [int(g.vs[v]['name']) for v in result]
     pickle.dump(ids, open('data/'+dbname+type+'triangle.pick', 'w'))
@@ -127,7 +132,8 @@ def triangles(dbname, type):
 
 if __name__ == '__main__':
     # linked('fed', 'com', 'net', 1)
-    triangles('fed', 'retweet')
+    triangles('fed', 'follow')
+    # triangles('fed', 'retweet')
     # triangles('fed', 'reply')
     # triangles('fed', 'mention')
 
