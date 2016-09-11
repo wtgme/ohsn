@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 import ohsn.util.network_io as ntt
 
+
 def ed_user(dbname, colname):
     user_list = []
     db = dbt.db_connect_no_auth(dbname)
@@ -95,6 +96,7 @@ def linked(dbname, comname, netname, k):
 def triangles(dbname, type):
     g = ntt.loadnet(dbname, type)
     g = g.as_undirected(mode="collapse")
+    vnames = set(g.vs["name"])
 
     ed_set = pickle.load(open('data/ed.pick', 'r'))
 
@@ -102,13 +104,15 @@ def triangles(dbname, type):
     ed_list = list(ed_set)
     for i in xrange(len(ed_list)):
         ui = ed_list[i]
-        nui = set(g.neighbors(ui))
-        for j in xrange(i, len(ed_list)):
-            uj = ed_list[j]
-            if uj in nui:
-                nuj = set(g.neighbors(uj))
-                for v in nui.intersection(nuj):
-                    result.add(v)
+        if ui in vnames:
+            nui = set(g.neighbors(ui))
+            for j in xrange(i, len(ed_list)):
+                uj = ed_list[j]
+                if uj in nui:
+                    if uj in vnames:
+                        nuj = set(g.neighbors(uj))
+                        for v in nui.intersection(nuj):
+                            result.add(v)
 
     ids = [int(g.vs[v]['name']) for v in result]
     pickle.dump(ids, open('data/'+dbname+type+'triangle.pick', 'w'))
