@@ -93,7 +93,7 @@ def linked(dbname, comname, netname, k):
 
 
 def triangles(dbname, type):
-    g = ntt.load(dbname, type)
+    g = ntt.loadnet(dbname, type)
     g = g.as_undirected(mode="collapse")
 
     ed_set = pickle.load(open('data/ed.pick', 'r'))
@@ -124,7 +124,7 @@ def triangles(dbname, type):
 if __name__ == '__main__':
     # linked('fed', 'com', 'net', 1)
     triangles('fed', 'retweet')
-    triangles('fed', 'reply')
-    triangles('fed', 'mention')
+    # triangles('fed', 'reply')
+    # triangles('fed', 'mention')
 
 
