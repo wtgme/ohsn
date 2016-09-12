@@ -99,7 +99,7 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
             if outids:
                 uids.append(int(x['id']))
             values = io.get_fields_one_doc(x, field_names)
-            outstr = x['id_str'] + ' ' + str(x['text_anal']['gbmi']['value']) + ' '
+            outstr = str(x['text_anal']['gbmi']['value']) + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
