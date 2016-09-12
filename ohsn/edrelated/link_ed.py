@@ -94,27 +94,32 @@ def linked(dbname, comname, netname, k):
 
 
 def triangles(dbname, type):
+    '''Load networks'''
     g = ntt.loadnet(dbname, type)
     g = g.as_undirected(mode="collapse")
+    print g.vcount()
+    print g.ecount()
 
-    ed_set = pickle.load(open('data/ed.pick', 'r'))
+    '''Map User ID to Node ID in Graph'''
+    ed_users = ed_user(dbname, 'com')
+    ed_set = set()
+    for ed in ed_users:
+        try:
+            v = g.vs.find(name=ed)
+            ed_set.add(v.index)
+        except ValueError:
+            pass
+    print len(ed_set)
 
+    '''Find triangles such that two nodes are core ed and the rest is new users '''
     result = set()
     ed_list = list(ed_set)
     for i in xrange(len(ed_list)):
         ui = ed_list[i]
-        try:
-            g.vs.find(name=str(ui))
-        except ValueError:
-            continue
         nui = set(g.neighbors(ui))
         for j in xrange(i, len(ed_list)):
             uj = ed_list[j]
             if uj in nui:
-                try:
-                    g.vs.find(name=str(uj))
-                except ValueError:
-                    continue
                 nuj = set(g.neighbors(uj))
                 for v in nui.intersection(nuj):
                     result.add(v)
@@ -125,16 +130,16 @@ def triangles(dbname, type):
     '''Verify triangle users'''
     db = dbt.db_connect_no_auth('fed')
     com = db['com']
-    for v in result:
-        user = com.find_one({'id':int(g.vs[v]['name'])})
+    for v in ids:
+        user = com.find_one({'id': int(v)})
         print user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
 if __name__ == '__main__':
     # linked('fed', 'com', 'net', 1)
-    triangles('fed', 'follow')
+    # triangles('fed', 'follow')
     # triangles('fed', 'retweet')
     # triangles('fed', 'reply')
-    # triangles('fed', 'mention')
+    triangles('fed', 'mention')
 
 

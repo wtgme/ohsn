@@ -208,6 +208,6 @@ if __name__ == '__main__':
     model = pickle.load(open('data/word2vec.pick', 'r'))
     # for word in model.vocab:
     #     print word
-    print model.most_similar(positive=['food', 'weight'], negative=['ed'])
+    print model.most_similar(positive=['ed', 'anorexic'], negative=['fitness', 'health'])
 
 

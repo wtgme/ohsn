@@ -11,6 +11,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import ohsn.util.db_util as dbt
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
+import ohsn.util.io_util as iot
 from sklearn.svm import SVR, SVC
 import pickle
 import matplotlib.pyplot as plt
@@ -62,6 +63,7 @@ def classification(train, test, outclss):
     # for xi in X_test.T:
     #     print min(xi), max(xi)
     X_test = scaler.transform(X_test)
+
     svc_lin = SVC(kernel='linear', class_weight='balanced')
     y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
     # pickle.dump(y_test, open(outid, 'w'))
@@ -71,8 +73,42 @@ def classification(train, test, outclss):
     # print y_test[y_lin==1].astype('str')
 
 
-def plot_classification(clares):
-    results = pickle.load(open(clares, 'r'))
+def classification_subfeature(train, test, outclss):
+    fields = iot.read_fields()
+    print len(fields)
+    foi = ['liwc_anal.result.i',
+           'liwc_anal.result.we',
+           'liwc_anal.result.affect',
+           'liwc_anal.result.posemo',
+           'liwc_anal.result.negemo',
+           'liwc_anal.result.bio',
+           'liwc_anal.result.body',
+           'liwc_anal.result.health',
+           'liwc_anal.result.ingest']
+    indeces = [np.where(fields==f)[0][0] for f in foi]
+    print fields[indeces]
+
+    '''Load Training data'''
+    X_train, y_train = load_svmlight_file(train)
+    X_train = X_train.toarray()[:, indeces]
+    scaler = preprocessing.StandardScaler().fit(X_train)
+    X_train = scaler.transform(X_train)
+    print X_train.shape
+    '''Load Test data'''
+    X_test, y_test = load_svmlight_file(test)
+    X_test = X_test.toarray()[:, indeces]
+    X_test = scaler.transform(X_test)
+    print X_test.shape
+
+    svc_lin = SVC(kernel='linear', class_weight='balanced')
+    y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
+    # pickle.dump(y_test, open(outid, 'w'))
+    pickle.dump(y_lin, open(outclss, 'w'))
+
+
+
+
+def plot_classification(results):
     print results.shape
     print results
     print max(results), min(results)
@@ -133,8 +169,7 @@ def plot_pclassification(pclares):
 # plot_pclassification('data/test_pclass.pick')
 
 
-def predict_verify(dbname, comname, testname, lables_file):
-    lables = pickle.load(open(lables_file, 'r'))
+def predict_verify(dbname, comname, testname, lables):
     ids = pickle.load(open(testname+'_ids.data', 'r'))
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
@@ -144,7 +179,6 @@ def predict_verify(dbname, comname, testname, lables_file):
             pred_users.append(ids[i])
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
-        print int(uid)
         if user['level'] != 1:
             print user['screen_name'].encode('utf-8')
         # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
@@ -153,9 +187,31 @@ def predict_verify(dbname, comname, testname, lables_file):
 
 
 if __name__ == '__main__':
-
+    '''classification with all features'''
     # classification('data/ed-random.data', 'data/ed-tria.data',
     #                'data/test_id_class.pick')
-    # plot_classification('data/test_id_class.pick')
+    results = pickle.load(open('data/test_id_class.pick', 'r'))
+    # plot_classification(results)
+    #
+    # predict_verify('fed', 'com', 'data/ed-tria', 'data/test_id_class.pick')
 
-    predict_verify('fed', 'com', 'data/ed-tria', 'data/test_id_class.pick')
+
+    """Refine results with subset of features"""
+    # classification_subfeature('data/ed-random.data', 'data/ed-tria.data',
+    #                           'data/subfeature_test_id_class.pick')
+    results2 = pickle.load(open('data/subfeature_test_id_class.pick', 'r'))
+    print results2
+
+    """combine the results that are obtained with All features and subset of features"""
+    common = []
+    for i in xrange(len(results)):
+        if results[i]==1 and results2[i]==1:
+            common.append(+1)
+        else:
+            common.append(-1)
+    common = np.array(common)
+    print common.shape, results.shape, results2.shape
+    # plot_classification(common)
+
+    """verify results"""
+    predict_verify('fed', 'com', 'data/ed-tria', common)
