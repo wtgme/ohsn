@@ -120,7 +120,7 @@ def check_change(time_index):
 
         count = sample_net.count({'scraped_times': time_index})-sample_net.count({'scraped_times': time_index-1})
         changes['net_changes'] = count
-        changes['statis_at'] = datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')
+        changes['statis_at'] = datetime.datetime.now()
         try:
             changedb.insert(changes)
         except pymongo.errors.DuplicateKeyError:

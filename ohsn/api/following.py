@@ -154,7 +154,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                                         pass
                                     try:
                                         net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']), 'type': 0,
-                                                   'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                                   'scraped_at': datetime.datetime.now()})
                                     except pymongo.errors.DuplicateKeyError:
                                         pass
                         # prepare for next iterator
@@ -187,7 +187,7 @@ def monitor_friendships(sample_user, sample_net, time_index):
                 for followee in followee_ids:
                     if followee in user_set:
                         sample_net.insert({'user': followee, 'follower': userid,
-                                           'scraped_times': time_index, 'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                           'scraped_times': time_index, 'scraped_at': datetime.datetime.now()})
                 next_cursor = followees['next_cursor']
             else:
                 break
