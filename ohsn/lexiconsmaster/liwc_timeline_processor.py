@@ -29,21 +29,23 @@ ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 liwc = Liwc()
 
 
-def process(poi, timelines, level):
+def process(poi, timelines, fieldname, level):
+    target = fieldname + '.mined'
+    result = fieldname + '.result'
     # poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
     poi.create_index([('timeline_count', pymongo.DESCENDING),
-                      ('liwc_anal.mined', pymongo.ASCENDING),
+                      (target, pymongo.ASCENDING),
                       ('level', pymongo.ASCENDING)])
 
     while True:
         # How many users whose timelines have not been processed by LIWC
-        count = poi.count({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False}, 'level': {'$lte': level}})
+        count = poi.count({"timeline_count": {'$gt': 0}, target: {'$exists': False}, 'level': {'$lte': level}})
         if count == 0:
             break
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, 'liwc_anal.mined': {'$exists': False},
+        for user in poi.find({"timeline_count": {'$gt': 0}, target: {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
             textmass = ""
 
@@ -66,13 +68,13 @@ def process(poi, timelines, level):
             words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 50:
-                result = liwc.summarize_document(' '.join(words))
-                poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": result}}, upsert=False)
+                liwc_result = liwc.summarize_document(' '.join(words))
+                poi.update({'id': user['id']}, {'$set': {target: True, result: liwc_result}}, upsert=False)
             else:
-                poi.update({'id': user['id']}, {'$set': {"liwc_anal.mined": True, "liwc_anal.result": None}}, upsert=False)
+                poi.update({'id': user['id']}, {'$set': {target: True, result: None}}, upsert=False)
 
 
-def process_db(dbname, colname, timename):
+def process_db(dbname, colname, timename, fieldname):
     '''Connecting db and collections'''
     db = dbutil.db_connect_no_auth(dbname)
     sample_poi = db[colname]
@@ -82,11 +84,11 @@ def process_db(dbname, colname, timename):
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
 
     '''Counting the number of users whose timelines have been processed by LIWC'''
-    print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({'liwc_anal.mined': {'$exists': False}}))
-    process(sample_poi, sample_time, 1000)
+    print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({fieldname+'.mined': {'$exists': False}}))
+    process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('fed', 'com', 'timeline')
+    process_db('fed', 'com', 'timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline')
     # process_db('young', 'com', 'timeline')
     # process_db('sed', 'com', 'timeline')
