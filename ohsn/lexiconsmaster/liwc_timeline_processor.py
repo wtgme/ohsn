@@ -12,6 +12,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import ohsn.util.db_util as dbutil
 import datetime
 import re
+import sys
 from ohsn.lexiconsmaster.lexicons.liwc import Liwc
 import pymongo
 
@@ -88,7 +89,8 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('fed', 'com', 'timeline', 'liwc_anal')
+    # process_db('fed', 'com', 'timeline', 'liwc_anal')
+    print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     # process_db('random', 'com', 'timeline')
     # process_db('young', 'com', 'timeline')
     # process_db('sed', 'com', 'timeline')
