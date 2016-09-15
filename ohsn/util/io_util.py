@@ -62,6 +62,7 @@ def get_values_one_field(dbname, colname, fieldname, filt={}):
             values.append(t)
         else:
             values.append(item.get(fieldname))
+    # print 'The length of values is: ', len(values)
     return values
 
 

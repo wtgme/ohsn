@@ -10,8 +10,12 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 import ohsn.util.db_util as dbt
 import pymongo
+import ohsn.util.io_util as iot
 import sys
+import seaborn as sns
+import matplotlib.pyplot as plt
 from datetime import datetime
+import scipy.stats as stats
 
 
 def split_data(dbname, timename, newtimename):
@@ -28,11 +32,44 @@ def split_data(dbname, timename, newtimename):
         newtime.insert(tweet)
         oldtime.delete_one({'id': tweet['id']})
 
+
+def distribution_change(dbname, colname):
+    features = [
+        'liwc_anal.result.i',
+        'liwc_anal.result.we',
+        'liwc_anal.result.bio',
+        'liwc_anal.result.body',
+        'liwc_anal.result.health',
+        'liwc_anal.result.posemo',
+        'liwc_anal.result.negemo',
+        'liwc_anal.result.ingest',
+        'liwc_anal.result.anx',
+        'liwc_anal.result.anger',
+        'liwc_anal.result.sad'
+                ]
+    filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
+
+    for feature in features:
+        old_values = iot.get_values_one_field(dbname, colname, feature, filter)
+        new_values = iot.get_values_one_field(dbname, colname, 'new_'+feature, filter)
+        sns.distplot(old_values, hist=False, label='Before')
+        sns.distplot(new_values, hist=False, label='After')
+        d, p = stats.ks_2samp(old_values, new_values)
+        print ('statistic = %.3f, p-value = %.3f' %(d, p))
+        plt.xlabel(feature)
+        plt.ylabel('PDF')
+        # plt.show()
+        plt.savefig(dbname+'_'+feature+'_time.pdf')
+        plt.clf()
+
 if __name__ == '__main__':
+    """Split data in two time periods"""
     # split_data('ded', 'timeline', 'newtimeline')
     # split_data('drd', 'timeline', 'newtimeline')
     # split_data('dyg', 'timeline', 'newtimeline')
-    print sys.argv[1], sys.argv[2], sys.argv[3]
-    split_data(sys.argv[1], sys.argv[2], sys.argv[3])
+    # print sys.argv[1], sys.argv[2], sys.argv[3]
+    # split_data(sys.argv[1], sys.argv[2], sys.argv[3])
 
+    """Compare difference of LIWC features with times"""
+    distribution_change('ded', 'com')
 

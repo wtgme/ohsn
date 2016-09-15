@@ -86,14 +86,14 @@ def active_user(dbname, comname, timename):
 def transform_date(dbname, comname):
     db = dbt.db_connect_no_auth(dbname)
     time = db[comname]
-    for tweet in time.find():
+    for tweet in time.find({'created_at':{'$type': 2}}):
         datev = tweet['created_at']
-        if isinstance(datev, basestring):
-            # print '--------------'
-            # print datev
-            datev = datetime.strptime(datev, '%a %b %d %H:%M:%S +0000 %Y')
-            # print datev
-            time.update_one({'id': tweet['id']}, {'$set': {'created_at': datev}}, upsert=False)
+        # if isinstance(datev, basestring):
+        #     # print '--------------'
+        #     # print datev
+        datev = datetime.strptime(datev, '%a %b %d %H:%M:%S +0000 %Y')
+        # print datev
+        time.update_one({'id': tweet['id']}, {'$set': {'created_at': datev}}, upsert=False)
 
 
 
@@ -134,8 +134,8 @@ if __name__ == '__main__':
     # active_user_list('fed', 'com', 'timeline')
 
     """Transform date format"""
-    # transform_date('ded', 'timeline')
+    transform_date('ded', 'timeline')
     # transform_date('drd', 'timeline')
     # transform_date('dyg', 'timeline')
-    print sys.argv[1], sys.argv[2]
-    transform_date(sys.argv[1], sys.argv[2])
+    # print sys.argv[1], sys.argv[2]
+    # transform_date(sys.argv[1], sys.argv[2])
