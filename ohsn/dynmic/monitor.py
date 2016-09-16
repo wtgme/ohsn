@@ -45,7 +45,7 @@ def seed():
 def monitor_network(time_index):
     datasets = ['ded', 'drd', 'dyg']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl networks'
-    for dataset in datasets:
+    for dataset in datasets[:1]:
         db = dbt.db_connect_no_auth(dataset)
         sample_user = db['com']
         sample_net = db['net']
@@ -62,7 +62,7 @@ def monitor_network(time_index):
 def monitor_timeline(time_index):
     datasets = ['ded', 'drd', 'dyg']
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Start to crawl timelines'
-    for dataset in datasets:
+    for dataset in datasets[:1]:
         db = dbt.db_connect_no_auth(dataset)
         sample_user = db['com']
         sample_time = db['timeline']
@@ -85,7 +85,7 @@ def check_change(time_index):
                          ('statis_index', pymongo.DESCENDING)], unique=True)
     datasets = ['ded', 'drd', 'dyg']
     check_keys = ['description', 'friends_count', 'followers_count', 'statuses_count']
-    for dataset in datasets:
+    for dataset in datasets[:1]:
         dbs = dbt.db_connect_no_auth(dataset)
         sample_user = dbs['com']
         sample_time = dbs['timeline']
@@ -165,9 +165,11 @@ def fill_network(time_index):
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Finish networks crawl'
 
-# fill_network(1)
+if __name__ == '__main__':
 
-start_monitor()
+    # fill_network(1)
+
+    start_monitor()
 
 
 

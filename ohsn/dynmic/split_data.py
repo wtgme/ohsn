@@ -11,7 +11,10 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import ohsn.util.db_util as dbt
 import pymongo
 import ohsn.util.io_util as iot
+import ohsn.util.plot_util as pt
+import ohsn.util.graph_util as gt
 import sys
+import pickle
 import numpy as np
 import seaborn as sns
 import pandas as pd
@@ -31,8 +34,84 @@ def split_data(dbname, timename, newtimename):
     datepoint = datetime(2016, 04, 06)
     for tweet in oldtime.find({'created_at': {"$gte": datepoint}}, no_cursor_timeout=True).sort([('id', -1)]):
         # print tweet
-        newtime.insert(tweet)
+        try:
+            newtime.insert(tweet)
+        except pymongo.errors.DuplicateKeyError:
+            print tweet['id']
+            pass
         oldtime.delete_one({'id': tweet['id']})
+
+
+def profile_change(dbname, colname, timename):
+    # db = dbt.db_connect_no_auth(dbname)
+    # com = db[colname]
+    # time = db[timename]
+    #
+    # followee, follower, tweets, users, olddate, newdate, during = [], [], [], [], [], [], []
+    # filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
+    #
+    # for user in com.find(filter):
+    #     newtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
+    #     oldtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)[0]
+    #     print user['id'], oldtweet['created_at'], newtweet['created_at'], \
+    #         (newtweet['created_at'].date() - oldtweet['created_at'].date()).days+1
+    #     users.append(user['id'])
+    #     olddate.append(oldtweet['created_at'])
+    #     newdate.append(newtweet['created_at'])
+    #     during.append((newtweet['created_at'].date() - oldtweet['created_at'].date()).days + 1)
+    #     follower.append(newtweet['user']['followers_count'] - oldtweet['user']['followers_count'])
+    #     followee.append(newtweet['user']['friends_count']- oldtweet['user']['friends_count'])
+    #     tweets.append(newtweet['user']['statuses_count']- oldtweet['user']['statuses_count'])
+    # df =  pd.DataFrame({'User': users,
+    #                     'OldDate': olddate,
+    #                     'NewDate': newdate,
+    #                     'Follower': follower,
+    #                     'Followee': followee,
+    #                     'Tweet': tweets,
+    #                     'ActiveTime': during})
+    # pickle.dump(df, open('data/df.pick', 'w'))
+    df = pickle.load(open('data/df.pick', 'r'))
+    pt.plot_config()
+    df['Followee/Day']=(df.Followee/df.ActiveTime)
+    df['Follower/Day']=(df.Follower/df.ActiveTime)
+    df['Tweet/Day']=(df.Tweet/df.ActiveTime)
+    sns.boxplot(data=df.loc[:, ['Followee', 'Follower', 'Tweet', 'ActiveTime']])
+    # sns.boxplot(data=df.loc[:, ['Followee/Day', 'Follower/Day', 'Tweet/Day']])
+    plt.ylim(-300, 400)
+    plt.show()
+
+
+def network_change(dbname, comname, netname):
+    # filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
+    # users = iot.get_values_one_field(dbname, comname, 'id', filter)
+    # g1 = gt.load_network_subset(users, dbname, netname, {'scraped_times': 2})
+    # g2 = gt.load_network_subset(users, dbname, netname, {'scraped_times': 131})
+    # pickle.dump(g1, open('data/g1.pick', 'w'))
+    # pickle.dump(g2, open('data/g2.pick', 'w'))
+    g1 = pickle.load(open('data/g1.pick', 'r'))
+    g2 = pickle.load(open('data/g2.pick', 'r'))
+    gt.summary(g1)
+    gt.summary(g1)
+    gt.net_stat(g1)
+    gt.net_stat(g2)
+    g1.write_dot('g1.DOT')
+    g2.write_dot('g2.DOT')
+    plot(g1.indegree(), g2.indegree(), 'indegree')
+    plot(g1.outdegree(), g2.outdegree(), 'outdegree')
+
+
+
+def plot(list1, list2, name):
+    sns.distplot(list1, hist=False, label='G1')
+    sns.distplot(list2, hist=False, label='G2')
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel('k')
+    plt.ylabel('PDF')
+
+    plt.savefig(name+'.pdf')
+    plt.clf()
+
 
 
 def distribution_change(dbname, colname):
@@ -68,7 +147,7 @@ def distribution_change(dbname, colname):
         # sns.distplot(old_values, hist=False, label='Before')
         # sns.distplot(new_values, hist=False, label='After')
         d, p = stats.ks_2samp(old_values, new_values)
-        print ('\mu_b=%.3f(%.3f), \mu_a=%.3f(%.3f), ks=%.3f(%.3f)' %((np.mean(old_values)), (np.std(old_values)),
+        print ('%.3f(%.3f), %.3f(%.3f), %.3f(%.3f)' %((np.mean(old_values)), (np.std(old_values)),
                                                  (np.mean(new_values)), (np.std(new_values)), d, p))
         # plt.xlabel(feature)
         # plt.ylabel('PDF')
@@ -92,5 +171,10 @@ if __name__ == '__main__':
     # split_data(sys.argv[1], sys.argv[2], sys.argv[3])
 
     """Compare difference of LIWC features with times"""
-    distribution_change('dyg', 'com')
+    # distribution_change('dyg', 'com')
 
+    '''Statistics of profile changes'''
+    # profile_change('ded', 'com', 'newtimeline')
+
+    '''Statistics of network changes'''
+    network_change('ded', 'com', 'net')

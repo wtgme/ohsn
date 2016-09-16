@@ -14,8 +14,11 @@ from ohsn.util import db_util as dbt
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import ohsn.util.plot_util as pt
 import calendar
 import tweet_types
+import numpy as np
+import matplotlib.pyplot as plt
 import pickle
 
 
@@ -185,6 +188,36 @@ def month_bins(datemin, datemax, length=1):
     return dates
 
 
+def lifetime(dbname, comname, timename):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    time = db[timename]
+    during = []
+    for user in com.find({"timeline_count": {'$gt': 0}}):
+        newtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
+        last = datetime.strptime(newtweet['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
+        account = datetime.strptime(user['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
+        print user['id'], last, account, (last.date() - account.date()).days + 1
+        during.append((last.date() - account.date()).days + 1)
+    pt.plot_config()
+    plt.figure(1)
+    plt.subplot(211)
+    pt.sns.distplot(during)
+    print np.mean(during), np.std(during)
+    plt.axvline(np.mean(during), linestyle='--', color='k',
+                label='Mean')
+    plt.ylabel('PDF')
+    plt.xlim(0, 2700)
+    plt.legend()
+
+    plt.subplot(212)
+    pt.sns.boxplot(x=during)
+    plt.ylabel('Quartile')
+    plt.xlabel('Day')
+    plt.xlim(0,2700)
+    plt.show()
+
+
 def plot_time(data, length=1, title=None):
     '''date(2012, 10, 6).toordinal() - date(2012, 9, 25).toordinal()'''
     mpl_data = mdates.date2num(data)
@@ -259,10 +292,13 @@ if __name__ == '__main__':
     # print yearsplit.keys()
 
 
-    '''Plot post number per day'''
-    ed = posts_per_day('fed', 'scom')
-    rd = posts_per_day('random', 'scom')
-    yg = posts_per_day('young', 'scom')
+    # '''Plot post number per day'''
+    # ed = posts_per_day('fed', 'scom')
+    # rd = posts_per_day('random', 'scom')
+    # yg = posts_per_day('young', 'scom')
+    #
+    # tweet_types.compore_distribution('activity', ed, rd, yg)
 
-    tweet_types.compore_distribution('activity', ed, rd, yg)
 
+    """User life time"""
+    lifetime('fed', 'scom', 'stimeline')
