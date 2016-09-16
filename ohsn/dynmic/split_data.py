@@ -12,6 +12,7 @@ import ohsn.util.db_util as dbt
 import pymongo
 import ohsn.util.io_util as iot
 import sys
+import numpy as np
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -66,8 +67,9 @@ def distribution_change(dbname, colname):
         '''Plot Individual'''
         # sns.distplot(old_values, hist=False, label='Before')
         # sns.distplot(new_values, hist=False, label='After')
-        # d, p = stats.ks_2samp(old_values, new_values)
-        # print ('statistic = %.3f, p-value = %.3f' %(d, p))
+        d, p = stats.ks_2samp(old_values, new_values)
+        print ('\mu_b=%.3f(%.3f), \mu_a=%.3f(%.3f), ks=%.3f(%.3f)' %((np.mean(old_values)), (np.std(old_values)),
+                                                 (np.mean(new_values)), (np.std(new_values)), d, p))
         # plt.xlabel(feature)
         # plt.ylabel('PDF')
         # # plt.show()
