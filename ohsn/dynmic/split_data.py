@@ -13,6 +13,7 @@ import pymongo
 import ohsn.util.io_util as iot
 import sys
 import seaborn as sns
+import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 import scipy.stats as stats
@@ -47,20 +48,38 @@ def distribution_change(dbname, colname):
         'liwc_anal.result.anger',
         'liwc_anal.result.sad'
                 ]
+    names = ['I', 'We', 'Bio', 'Body', 'Health', 'Posemo', 'Negemo', 'Ingest', 'Anx', 'Anger', 'Sad']
+    df = pd.DataFrame()
     filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
 
-    for feature in features:
+    for i in xrange(len(features)):
+        feature = features[i]
         old_values = iot.get_values_one_field(dbname, colname, feature, filter)
+        df1 = pd.DataFrame({'Feature': names[i], 'Time': 'Before', 'Values': old_values})
         new_values = iot.get_values_one_field(dbname, colname, 'new_'+feature, filter)
-        sns.distplot(old_values, hist=False, label='Before')
-        sns.distplot(new_values, hist=False, label='After')
-        d, p = stats.ks_2samp(old_values, new_values)
-        print ('statistic = %.3f, p-value = %.3f' %(d, p))
-        plt.xlabel(feature)
-        plt.ylabel('PDF')
-        # plt.show()
-        plt.savefig(dbname+'_'+feature+'_time.pdf')
-        plt.clf()
+        df2 = pd.DataFrame({'Feature': names[i], 'Time': 'After', 'Values': new_values})
+        df1 = df1.append(df2)
+        if len(df) == 0:
+            df = df1
+        else:
+            df = df.append(df1)
+        '''Plot Individual'''
+        # sns.distplot(old_values, hist=False, label='Before')
+        # sns.distplot(new_values, hist=False, label='After')
+        # d, p = stats.ks_2samp(old_values, new_values)
+        # print ('statistic = %.3f, p-value = %.3f' %(d, p))
+        # plt.xlabel(feature)
+        # plt.ylabel('PDF')
+        # # plt.show()
+        # plt.savefig(dbname+'_'+feature+'_time.pdf')
+        # plt.clf()
+    sns.set(style="whitegrid", palette="pastel", color_codes=True)
+    # sns.violinplot(x="Feature", y="Values", hue="Time", data=df, split=True,
+    #                inner="quart", palette={"Before": "b", "After": "y"})
+    # sns.despine(left=True)
+    sns.boxplot(x="Feature", y="Values", hue="Time", data=df, palette="PRGn")
+    sns.despine(offset=10, trim=True)
+    plt.show()
 
 if __name__ == '__main__':
     """Split data in two time periods"""
@@ -71,5 +90,5 @@ if __name__ == '__main__':
     # split_data(sys.argv[1], sys.argv[2], sys.argv[3])
 
     """Compare difference of LIWC features with times"""
-    distribution_change('ded', 'com')
+    distribution_change('dyg', 'com')
 
