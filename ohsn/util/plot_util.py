@@ -16,6 +16,7 @@ import pylab
 import powerlaw_fit
 import seaborn as sns
 import scipy.stats as stats
+from scipy import optimize
 
 
 def significant(data, observed, name):
@@ -93,19 +94,6 @@ def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
     return (np.array(list_x), np.array(list_y))
 
 
-def lr_ls_short(list_x, list_y):
-    X = np.asarray(list_x, dtype=float)
-    Y = np.asarray(list_y, dtype=float)
-    logX = np.log10(X)
-    logY = np.log10(Y)
-    A = np.vstack([logX, np.ones(len(logX))]).T
-    m, c = np.linalg.lstsq(A, logY)[0]
-    logY_fit = m*logX + c
-    print m, c
-    # print 'Fitting RMSE(log):', rmse(logY, logY_fit)
-    # print 'Fitting RMSE(raw):', rmse(Y, np.power(10, logY_fit))
-    return m, c, list_x, np.power(10, logY_fit)
-
 
 def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
@@ -123,24 +111,6 @@ def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     # print Y
     return (list_x[idx], np.power(10, logY_fit), coefficients[0])
     # return logX, logY_fit
-
-
-def lr_ml(list_x, list_y, fit_start=-1, fit_end=-1):
-    # TODO
-    list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
-    X = np.asarray(list_x, dtype=float)
-    Y = np.asarray(list_y, dtype=float)
-    logX = np.log10(X)
-    logY = np.log10(Y)
-
-
-def lr_ks(list_x, list_y, fit_start=-1, fit_end=-1):
-    # TODO
-    list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
-    X = np.asarray(list_x, dtype=float)
-    Y = np.asarray(list_y, dtype=float)
-    logX = np.log10(X)
-    logY = np.log10(Y)
 
 
 def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000, savefile=None):
@@ -183,6 +153,7 @@ def pdf_ada_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
         xmax = max(data)
     if not xmin:
         xmin = min(data)
+    # print xmax, xmin
     if linear_bins:
         # print xmin, xmax
         if (xmax-xmin) > 5000:
@@ -217,12 +188,7 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     if not xmin:
         xmin = min(data)
     if linear_bins:
-        # bins = range(int(xmin), int(xmax))
         bins = np.linspace(xmin, xmax, num=35)
-        # bins = np.unique(
-        #         np.floor(
-        #             np.linspace(
-        #                 xmin, xmax, num=30)))
     else:
         log_min_size = np.log10(xmin)
         log_max_size = np.log10(xmax)
@@ -237,13 +203,6 @@ def pdf_fix_bin(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
     bin_centers = (edges[1:]+edges[:-1])/2.0
     # hist[hist==0] = np.nan
     return bin_centers[hist!=0], hist[hist!=0]
-    # new_x, new_y = [], []
-    # filter_limit = np.amax(hist) * 0.01
-    # for index in xrange(len(hist)):
-    #     if hist[index] >= filter_limit:
-    #         new_x.append(bin_centers[index])
-    #         new_y.append(hist[index])
-    # return new_x, new_y
 
 
 def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, fit_end=1, savefile=None, **kwargs):
@@ -260,7 +219,7 @@ def pdf_plot_one_data(data, name, linear_bins=True, central=False, fit_start=1, 
         xmax = max(data)
     ax = plt.gca()
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=True)
-    ax.plot(list_x, list_y, 'k+', label='Raw '+name)
+    ax.plot(list_x, list_y, 'k^', label='Raw '+name)
     list_x, list_y = pdf_ada_bin(data, xmin=xmin, xmax=xmax, linear_bins=linear_bins)
     ax.plot(list_x, list_y, 'bo', label='Binned '+name)
     if fit_start != fit_end:
@@ -294,11 +253,12 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     else:
         max_x = np.max([np.max(listx) for listx in lists])
         min_x = np.min([np.min(listx) for listx in lists])
-    plt.rcParams['axes.labelsize'] = 15
-    plt.rcParams['xtick.labelsize'] = 15
-    plt.rcParams['ytick.labelsize'] = 15
-    plt.rcParams['legend.fontsize'] = 20
-    plt.rcParams['lines.markersize'] = 10
+    # plt.rcParams['axes.labelsize'] = 15
+    # plt.rcParams['xtick.labelsize'] = 15
+    # plt.rcParams['ytick.labelsize'] = 15
+    # plt.rcParams['legend.fontsize'] = 20
+    # plt.rcParams['lines.markersize'] = 10
+    plot_config()
     ax = plt.gca()
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
@@ -470,7 +430,7 @@ def plot_config():
     plt.rcParams['xtick.labelsize'] = 15
     plt.rcParams['ytick.labelsize'] = 15
     plt.rcParams['legend.fontsize'] = 20
-    plt.rcParams['lines.markersize'] = 15
+    plt.rcParams['lines.markersize'] = 10
     plt.rcParams['lines.linewidth'] = 2
 
 
@@ -493,6 +453,7 @@ def test():
     # a = [[1,1,1,1,1], [2,2,2], [3,4,2,4,3,12]]
     # g = sns.PairGrid(a)
 
+
 def test2():
     import seaborn as sns
     sns.set(style="whitegrid", palette="pastel", color_codes=True)
@@ -505,6 +466,28 @@ def test2():
     sns.violinplot(x="day", y="total_bill", hue="sex", data=tips, split=True,
                    inner="quart", palette={"Male": "b", "Female": "y"})
     sns.despine(left=True)
+
+
+def power_law_fit(a):
+    hist, bins = np.histogram(a, bins='doane', density=True)
+    bin_centers = (bins[1:]+bins[:-1])/2.0
+
+    list_fit_x, list_fit_y, cof = lr_ls(bin_centers, hist)
+    plt.plot(bin_centers, hist, 'o', markersize=4, label='data')
+
+    plt.plot(list_fit_x, list_fit_y, 'r--', label='Fitted')
+    plt.annotate(r'$p(k) \propto {k}^{'+str(round(cof, 2))+'}$',
+                 xy=(list_fit_x[-9], list_fit_y[-9]),  xycoords='data',
+                 xytext=(-140-1*60, -30-1*35), textcoords='offset points', fontsize=20,
+                 arrowprops=dict(arrowstyle="->"))
+    plt.xlabel("K")
+    plt.ylabel("PDF")
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.legend(loc='lower right')
+    plt.show()
+
+
 
 
 if __name__ == '__main__':

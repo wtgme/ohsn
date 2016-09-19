@@ -94,10 +94,16 @@ def network_change(dbname, comname, netname):
     gt.summary(g1)
     gt.net_stat(g1)
     gt.net_stat(g2)
-    g1.write_dot('g1.DOT')
-    g2.write_dot('g2.DOT')
-    plot(g1.indegree(), g2.indegree(), 'indegree')
-    plot(g1.outdegree(), g2.outdegree(), 'outdegree')
+    # pt.pdf_plot_one_data(g1.indegree(), 'indegree', linear_bins=False, fit_start=1, fit_end=100)
+    pt.plot_pdf_mul_data([np.array(g1.indegree())+1, np.array(g2.indegree())+1],
+                           'indegree', ['b', 'r'], ['o', '^'], ['G1', 'G2'],
+                               linear_bins=False, central=False, fit=True, savefile='indegree.pdf')
+
+    # g1.write_dot('g1.DOT')
+    # g2.write_dot('g2.DOT')
+    # pt.power_law_fit(g1.indegree())
+    # plot(g1.indegree(), g2.indegree(), 'indegree')
+    # plot(g1.outdegree(), g2.outdegree(), 'outdegree')
 
 
 
@@ -108,7 +114,6 @@ def plot(list1, list2, name):
     plt.yscale("log")
     plt.xlabel('k')
     plt.ylabel('PDF')
-
     plt.savefig(name+'.pdf')
     plt.clf()
 
