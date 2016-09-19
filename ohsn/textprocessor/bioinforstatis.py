@@ -15,7 +15,6 @@ from ohsn.util import plot_util as plot
 from ohsn.util import io_util as iot
 
 
-
 def bio_statis(dbname, colname):
     db = dbutil.db_connect_no_auth(dbname)
     bio = db[colname]

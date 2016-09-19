@@ -211,7 +211,7 @@ def get_height(text):
 
 def get_high_weightKG(text):
     pattern = re.compile(
-        "[(\[{]?(hw|high weight| high|sw)(\s?[/|]\s?sw)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        "[(\[{]?(hw|high weight| high|sw)(\s?[/|]\s?sw)?[)\]}]?([\.~×:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
         re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -264,7 +264,7 @@ def get_high_weightKG(text):
 
 def get_low_weight_KG(text):
     pattern = re.compile(
-        "[(\[{]?(lw|low weight| low)[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        "[(\[{]?(lw|low weight| low)[)\]}]?([\.~:×;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
         re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -317,7 +317,7 @@ def get_low_weight_KG(text):
 
 def get_current_weight_KG(text):
     pattern = re.compile(
-        "[(\[{]?(cw|current weight|current(ly)?)\(?\w?\)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
+        "[(\[{]?(cw|current weight|current(ly)?)\(?\w?\)?[)\]}]?([\.~×:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>stone|kg|lb|pounds)*",
         re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
@@ -370,7 +370,7 @@ def get_current_weight_KG(text):
 
 def get_goal_weight(text):
     pattern = re.compile(
-        "[(\[{]?(gw|goal weight|goal)\(?\w?\)?[)\]}]?([\.~:;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*",
+        "[(\[{]?(gw|goal weight|goal)\(?\w?\)?[)\]}]?([\.~:×;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*",
         re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:

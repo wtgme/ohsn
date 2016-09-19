@@ -3,6 +3,9 @@
 Created on 17:32, 25/02/16
 
 @author: wt
+Note that we start to monitor on 2016-09-16.
+The timeline collection will include new data before and after 2016-09-16.}
+
 """
 
 import sys
