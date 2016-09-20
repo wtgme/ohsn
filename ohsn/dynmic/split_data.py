@@ -143,6 +143,8 @@ def variable_change(dbname, comname, oldtimename, newtimename):
         newliwc = user['new_liwc_anal']['result']
         if newliwc is None:
             newliwc = {}
+        if oldliwc == None:
+            oldliwc = {}
         ols = [oldliwc.get(key, 0.0) for key in allcates]
         nls = [newliwc.get(key, 0.0) for key in allcates]
         liwcs.append(ols+nls)
