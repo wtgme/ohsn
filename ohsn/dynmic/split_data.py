@@ -145,8 +145,8 @@ def variable_change(dbname, comname, oldtimename, newtimename):
             newliwc = {}
         if oldliwc == None:
             oldliwc = {}
-        ols = [oldliwc.get(key, 0.0) for key in allcates]
-        nls = [newliwc.get(key, 0.0) for key in allcates]
+        ols = [oldliwc.get(key, None) for key in allcates]
+        nls = [newliwc.get(key, None) for key in allcates]
         liwcs.append(ols+nls)
 
         '''Follower and Followee variables'''
@@ -154,17 +154,22 @@ def variable_change(dbname, comname, oldtimename, newtimename):
         oldtweet = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
         newtweets = newtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
         oldprofile = oldtweet['user']
+
         if newtweets.count() == 0:
             newprofile = oldprofile
+            olddate.append(oldtweet['created_at'])
+            newdate.append(oldtweet['created_at'])
         else:
             newtweet = newtweets[0]
             newprofile = newtweet['user']
+            olddate.append(oldtweet['created_at'])
+            newdate.append(newtweet['created_at'])
+
         oldfollower.append(oldprofile['followers_count'])
         newfollower.append(newprofile['followers_count'])
         oldfollowee.append(oldprofile['friends_count'])
         newfollowee.append(newprofile['friends_count'])
-        olddate.append(oldtweet['created_at'])
-        newdate.append(newtweet['created_at'])
+
 
     """Out put Profile variables"""
     print len(liwcs)
