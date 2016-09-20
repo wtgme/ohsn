@@ -48,6 +48,7 @@ def process(poi, timelines, fieldname, level):
 
         for user in poi.find({"timeline_count": {'$gt': 0}, target: {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
+            print user['id']
             textmass = ""
 
             for tweet in timelines.find({'user.id': user['id']}):

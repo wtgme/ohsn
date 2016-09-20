@@ -100,21 +100,24 @@ def profile_change(dbname, colname, timename):
     df['Followee/Day']=(df.Followee/df.ActiveTime)
     df['Follower/Day']=(df.Follower/df.ActiveTime)
     df['Tweet/Day']=(df.Tweet/df.ActiveTime)
-    df.to_csv('data.csv', sheet_name='Sheet1')
+    print df.describe()
+    df.to_csv('profiles.csv')
     sns.boxplot(data=df.loc[:, ['Followee', 'Follower', 'Tweet', 'ActiveTime']])
     # sns.boxplot(data=df.loc[:, ['Followee/Day', 'Follower/Day', 'Tweet/Day']])
     plt.ylim(-300, 400)
     plt.show()
 
 
-def variable_change(dbname, comname, timename):
+def variable_change(dbname, comname, oldtimename, newtimename):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
-    time = db[timename]
+    oldtime = db[oldtimename]
+    newtime = db[newtimename]
 
     oldfollower, newfollower, oldfollowee, newfollowee, users, liwcs, olddate, newdate = \
         [], [], [], [], [], [], [], []
-    filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
+    # filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
+    filter = {'$and': [{'liwc_anal.result.i':{'$exists':True}}, {'new_liwc_anal.result.i':{'$exists':True}}]}
 
     # full analysis variables:
     meta_keys = ['WC', 'WPS', 'Sixltr', 'Dic']
@@ -134,18 +137,26 @@ def variable_change(dbname, comname, timename):
 
     for user in com.find(filter):
         users.append(user['id'])
+        print user['id']
         """LIWC variables"""
         oldliwc = user['liwc_anal']['result']
         newliwc = user['new_liwc_anal']['result']
-        ols = [oldliwc[key] for key in allcates]
-        nls = [newliwc[key] for key in allcates]
+        if newliwc is None:
+            newliwc = {}
+        ols = [oldliwc.get(key, 0.0) for key in allcates]
+        nls = [newliwc.get(key, 0.0) for key in allcates]
         liwcs.append(ols+nls)
 
         '''Follower and Followee variables'''
-        oldtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)[0]
-        newtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
+        # oldtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)[0]
+        oldtweet = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
+        newtweets = newtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
         oldprofile = oldtweet['user']
-        newprofile = newtweet['user']
+        if newtweets.count() == 0:
+            newprofile = oldprofile
+        else:
+            newtweet = newtweets[0]
+            newprofile = newtweet['user']
         oldfollower.append(oldprofile['followers_count'])
         newfollower.append(newprofile['followers_count'])
         oldfollowee.append(oldprofile['friends_count'])
@@ -153,6 +164,7 @@ def variable_change(dbname, comname, timename):
         olddate.append(oldtweet['created_at'])
         newdate.append(newtweet['created_at'])
 
+    """Out put Profile variables"""
     print len(liwcs)
     newliwccol = ['Old'+key for key in allcates]
     oldliwccol = ['New'+key for key in allcates]
@@ -165,8 +177,10 @@ def variable_change(dbname, comname, timename):
     df['OldDate'] = olddate
     df['NewDate'] = newdate
 
-    g1 = pickle.load(open('data/g1.pick', 'r'))
-    g2 = pickle.load(open('data/g2.pick', 'r'))
+    # g1 = pickle.load(open('data/g1.pick', 'r'))
+    # g2 = pickle.load(open('data/g2.pick', 'r'))
+    g1 = gt.load_network(dbname, 'net', {'scraped_times': 2})
+    g2 = gt.load_network(dbname, 'net', {'scraped_times': 131})
     gt.summary(g1)
     gt.summary(g2)
     oldindegree_map = dict(zip(g1.vs['name'], g1.indegree()))
@@ -187,7 +201,7 @@ def variable_change(dbname, comname, timename):
     df['NewPagerank'] = [newpagerank_map.get(str(uid), 0.0) for uid in users]
     df['OldBetweenness'] = [oldbetweenness_map.get(str(uid), 0.0) for uid in users]
     df['NewBetweenness'] = [newbetweenness_map.get(str(uid), 0.0) for uid in users]
-    df.to_csv('data.csv')
+    df.to_csv(dbname+'.csv')
 
 
 
@@ -294,4 +308,4 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    variable_change('ded', 'com', 'newtimeline')
+    variable_change('ded', 'com', 'timeline', 'newtimeline')
