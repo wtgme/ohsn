@@ -137,7 +137,7 @@ def variable_change(dbname, comname, oldtimename, newtimename):
 
     for user in com.find(filter):
         users.append(user['id'])
-        print user['id']
+        # print user['id']
         """LIWC variables"""
         oldliwc = user['liwc_anal']['result']
         newliwc = user['new_liwc_anal']['result']
@@ -179,8 +179,8 @@ def variable_change(dbname, comname, oldtimename, newtimename):
 
     # g1 = pickle.load(open('data/g1.pick', 'r'))
     # g2 = pickle.load(open('data/g2.pick', 'r'))
-    g1 = gt.load_network(dbname, 'net', {'scraped_times': 2})
-    g2 = gt.load_network(dbname, 'net', {'scraped_times': 131})
+    g1 = gt.load_network_subset(dbname, 'net', {'scraped_times': 2})
+    g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 131})
     gt.summary(g1)
     gt.summary(g2)
     oldindegree_map = dict(zip(g1.vs['name'], g1.indegree()))

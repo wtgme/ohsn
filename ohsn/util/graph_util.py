@@ -38,7 +38,7 @@ def load_network(db_name, collection='None'):
     return g
 
 
-def load_network_subset(uset_list, db_name, collection='None', filter={}):
+def load_network_subset(db_name, collection='None', filter={}):
     '''
     Friendship network: directed network from a user list
     Edge: user---------> follower
@@ -49,8 +49,8 @@ def load_network_subset(uset_list, db_name, collection='None', filter={}):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, set()
-    filter['user'] = {'$in': uset_list}
-    filter['follower'] = {'$in': uset_list}
+    # filter['user'] = {'$in': uset_list}
+    # filter['follower'] = {'$in': uset_list}
     for row in cols.find(filter, no_cursor_timeout=True):
         n1 = str(row['follower'])
         n2 = str(row['user'])
