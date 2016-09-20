@@ -117,7 +117,7 @@ def variable_change(dbname, comname, oldtimename, newtimename):
     oldfollower, newfollower, oldfollowee, newfollowee, users, liwcs, olddate, newdate = \
         [], [], [], [], [], [], [], []
     # filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
-    filter = {'$and': [{'liwc_anal.result.i':{'$exists':True}}, {'new_liwc_anal.result.i':{'$exists':True}}]}
+    filter = {'$or': [{'liwc_anal.result.i':{'$exists':True}}, {'new_liwc_anal.result.i':{'$exists':True}}]}
 
     # full analysis variables:
     meta_keys = ['WC', 'WPS', 'Sixltr', 'Dic']
