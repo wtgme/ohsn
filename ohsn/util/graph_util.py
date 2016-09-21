@@ -190,7 +190,6 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
     name_map, edges, node_weight = {}, {}, {}
     for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
         hashtags = row['entities']['hashtags']
-        print hashtags
         # add self-loop for hashtags occurs alone
         # if len(hashtags) == 1:
         #     hashtags.append(hashtags[0])
@@ -270,7 +269,7 @@ def add_attributes(g, att_names, dbname, colname, db_field_names):
     return g
 
 
-def giant_component(g, mode):
+def giant_component(g, mode=WEAK):
     ###must be either STRONG or WEAK
     com = g.clusters(mode=mode)
     print 'The processed network has components:', len(com)
