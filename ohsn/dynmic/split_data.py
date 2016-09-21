@@ -315,4 +315,4 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    variable_change('ded', 'com', 'timeline', 'newtimeline')
+    variable_change('dyg', 'com', 'timeline', 'newtimeline')
