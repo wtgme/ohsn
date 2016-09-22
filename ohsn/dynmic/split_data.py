@@ -184,8 +184,6 @@ def variable_change(dbname, comname, oldtimename, newtimename):
     df['OldDate'] = olddate
     df['NewDate'] = newdate
 
-    # g1 = pickle.load(open('data/g1.pick', 'r'))
-    # g2 = pickle.load(open('data/g2.pick', 'r'))
     g1 = gt.load_network_subset(dbname, 'net', {'scraped_times': 2})
     g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 131})
     gt.summary(g1)
@@ -202,8 +200,8 @@ def variable_change(dbname, comname, oldtimename, newtimename):
 
     df['OldIndegree'] = [oldindegree_map.get(str(uid), 0) for uid in users]
     df['NewIndegree'] = [newindegree_map.get(str(uid), 0) for uid in users]
-    df['OldOutdegreee'] = [oldoutdegree_map.get(str(uid), 0) for uid in users]
-    df['NewOutdegreee'] = [newoutdegree_map.get(str(uid), 0) for uid in users]
+    df['OldOutdegree'] = [oldoutdegree_map.get(str(uid), 0) for uid in users]
+    df['NewOutdegree'] = [newoutdegree_map.get(str(uid), 0) for uid in users]
     df['OldPagerank'] = [oldpagerank_map.get(str(uid), 0.0) for uid in users]
     df['NewPagerank'] = [newpagerank_map.get(str(uid), 0.0) for uid in users]
     df['OldBetweenness'] = [oldbetweenness_map.get(str(uid), 0.0) for uid in users]
@@ -296,6 +294,14 @@ def distribution_change(dbname, colname):
     sns.despine(offset=10, trim=True)
     plt.show()
 
+
+def correlation():
+    df = pd.read_csv('ded.csv')
+    df = df.dropna(subset=['OldWC', 'NewWC'])
+    Outdegree =  df['NewOutdegree'] - df['OldOutdegree']
+    Ingest = df['Newingest'] - df['Oldingest']
+    pt.correlation(Outdegree, Ingest, 'Out-degree', 'Ingest', 'outd-ingest-95.pdf')
+
 if __name__ == '__main__':
     """Split data in two time periods"""
     # split_data('ded', 'timeline', 'newtimeline')
@@ -315,4 +321,7 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    variable_change('ded', 'com', 'timeline', 'newtimeline')
+    # variable_change('ded', 'com', 'timeline', 'newtimeline')
+
+    """Correlation of Network and LIWC changes"""
+    correlation()

@@ -414,11 +414,17 @@ def hist2d(x, y, nx, ny):
 def correlation(x, y, xlabel, ylabel, savefile):
     x = np.array(x)
     y = np.array(y)
-    # maxx, minx = np.percentile(x, 97.5), np.percentile(x, 2.5)
-    maxx, minx = max(x), min(x)
-    # maxx, minx = np.percentile(y, 97.5), np.percentile(y, 2.5)
-    maxy, miny = max(y), min(y)
-    g = (sns.jointplot(x, y, stat_func=stats.kendalltau, kind="reg", xlim=(minx, maxx), ylim=(miny, maxy)).set_axis_labels(xlabel, ylabel))
+    maxx, minx = np.percentile(x, 97.5), np.percentile(x, 2.5)
+    # print maxx, minx
+    xflags = (x>=minx)&(x<=maxx)
+    # maxx, minx = max(x), min(x)
+    maxy, miny = np.percentile(y, 97.5), np.percentile(y, 2.5)
+    yflags = (y>=miny)&(y<=maxy)
+    # maxy, miny = max(y), min(y)
+    # stat_func = stats.kendalltau
+    stat_func = stats.pearsonr
+    print len(x[xflags&yflags])
+    sns.jointplot(x[xflags&yflags], y[xflags&yflags], stat_func=stat_func, kind="reg", xlim=(minx, maxx), ylim=(miny, maxy)).set_axis_labels(xlabel, ylabel)
     plt.savefig(savefile)
     plt.clf()
     plt.close()
