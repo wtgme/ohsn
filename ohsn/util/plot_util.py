@@ -421,8 +421,8 @@ def correlation(x, y, xlabel, ylabel, savefile):
     maxy, miny = np.percentile(y, 97.5), np.percentile(y, 2.5)
     yflags = (y>=miny)&(y<=maxy)
     # maxy, miny = max(y), min(y)
-    # stat_func = stats.kendalltau
-    stat_func = stats.pearsonr
+    stat_func = stats.kendalltau
+    # stat_func = stats.pearsonr
     print len(x[xflags&yflags])
     sns.jointplot(x[xflags&yflags], y[xflags&yflags], stat_func=stat_func, kind="reg", xlim=(minx, maxx), ylim=(miny, maxy)).set_axis_labels(xlabel, ylabel)
     plt.savefig(savefile)

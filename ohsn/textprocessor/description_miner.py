@@ -504,10 +504,19 @@ def process_text(text):
     h = get_height(text)
     if h is not None:
         results['h'] = {'value': float(h)}
+        h = h/100
+        if 'gw' in results:
+            gw = results['gw']['value']
+            results['gbmi'] = {'value': gw / (h * h)}
+            # print results['gw']['value'], results['h']['value'], results['gbmi']['value']
+        if 'cw' in results:
+            cw = results['cw']['value']
+            results['cbmi'] = {'value': cw / (h * h)}
 
     a = get_age(text)
     if a is not None:
         results['a'] = {'value': float(a)}
+
     return results
 
 

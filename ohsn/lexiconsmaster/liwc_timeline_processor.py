@@ -48,7 +48,7 @@ def process(poi, timelines, fieldname, level):
 
         for user in poi.find({"timeline_count": {'$gt': 0}, target: {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
-            print user['id']
+            # print user['id']
             textmass = ""
 
             for tweet in timelines.find({'user.id': user['id']}):
@@ -90,9 +90,9 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    # process_db('ded', 'com', 'timeline', 'liwc_anal')
-    print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-    process_db(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    process_db('ded', 'com', 'timeline1', 'new_liwc_anal')
+    # print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    # process_db(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     # process_db('random', 'com', 'timeline')
     # process_db('young', 'com', 'timeline')
     # process_db('sed', 'com', 'timeline')

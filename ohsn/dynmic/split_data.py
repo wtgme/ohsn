@@ -32,8 +32,9 @@ def split_data(dbname, timename, newtimename):
                                   ('id', pymongo.DESCENDING)], unique=False)
     newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    datepoint = datetime(2016, 04, 06)
-    for tweet in oldtime.find({'created_at': {"$gte": datepoint}}, no_cursor_timeout=True).sort([('id', -1)]):
+    # datepoint = datetime(2016, 04, 06)
+    datepoint = datetime(2016, 9, 8)
+    for tweet in oldtime.find({'created_at': {"$lt": datepoint}}, no_cursor_timeout=True).sort([('id', -1)]):
         # print tweet
         try:
             newtime.insert(tweet)
@@ -114,26 +115,28 @@ def variable_change(dbname, comname, oldtimename, newtimename):
     oldtime = db[oldtimename]
     newtime = db[newtimename]
 
-    oldfollower, newfollower, oldfollowee, newfollowee, users, liwcs, olddate, newdate = \
-        [], [], [], [], [], [], [], []
+    oldfollower, newfollower, oldfollowee, newfollowee, users, liwcs, olddate, newdate, \
+    oldcw, newcw, oldgw, newgw, oldage, newage, newcbmi, oldcbmi, newgbmi, oldgbmi = \
+        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
     # filter = {'liwc_anal.result.i':{'$exists':True}, 'new_liwc_anal.result.i':{'$exists':True}}
     filter = {'$or': [{'liwc_anal.result.i':{'$exists':True}}, {'new_liwc_anal.result.i':{'$exists':True}}]}
 
     # full analysis variables:
-    meta_keys = ['WC', 'WPS', 'Sixltr', 'Dic']
-    category_keys = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe',
-        'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future',
-        'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social',
-        'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger',
-        'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain',
-        'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body',
-        'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work',
-        'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl',
-        'filler']
-    puncuation_keys = [
-        'Period', 'Comma', 'Colon', 'SemiC', 'QMark', 'Exclam',
-        'Dash', 'Quote', 'Apostro', 'Parenth', 'OtherP', 'AllPct']
-    allcates = meta_keys + category_keys + puncuation_keys
+    # meta_keys = ['WC', 'WPS', 'Sixltr', 'Dic']
+    # category_keys = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe',
+    #     'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future',
+    #     'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social',
+    #     'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger',
+    #     'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain',
+    #     'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body',
+    #     'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work',
+    #     'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl',
+    #     'filler']
+    # puncuation_keys = [
+    #     'Period', 'Comma', 'Colon', 'SemiC', 'QMark', 'Exclam',
+    #     'Dash', 'Quote', 'Apostro', 'Parenth', 'OtherP', 'AllPct']
+    # allcates = meta_keys + category_keys + puncuation_keys
+    allcates = ['posemo', 'negemo', 'anx', 'anger', 'sad']
 
     for user in com.find(filter):
         users.append(user['id'])
@@ -151,19 +154,35 @@ def variable_change(dbname, comname, oldtimename, newtimename):
 
         '''Follower and Followee variables'''
         # oldtweet = time.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)[0]
-        oldtweet = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)[0]
-        newtweets = newtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
+        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
+        if oldtweets.count() == 0:
+            oldtweets = newtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)
+        oldtweet = oldtweets[0]
         oldprofile = oldtweet['user']
 
+        newtweets = newtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
         if newtweets.count() == 0:
+            newtweet = oldtweet
             newprofile = oldprofile
-            olddate.append(oldtweet['created_at'])
-            newdate.append(oldtweet['created_at'])
         else:
             newtweet = newtweets[0]
             newprofile = newtweet['user']
-            olddate.append(oldtweet['created_at'])
-            newdate.append(newtweet['created_at'])
+        olddate.append(oldtweet['created_at'])
+        newdate.append(newtweet['created_at'])
+
+        newbio = des_miner.process_text(newprofile['description'])
+        oldbio = des_miner.process_text(oldprofile['description'])
+
+        oldcw.append(oldbio.get('cw', {}).get('value', None))
+        newcw.append(newbio.get('cw', {}).get('value', None))
+        oldgw.append(oldbio.get('gw', {}).get('value', None))
+        newgw.append(newbio.get('gw', {}).get('value', None))
+        oldage.append(oldbio.get('a', {}).get('value', None))
+        newage.append(newbio.get('a', {}).get('value', None))
+        oldcbmi.append(oldbio.get('cbmi', {}).get('value', None))
+        newcbmi.append(newbio.get('cbmi', {}).get('value', None))
+        oldgbmi.append(oldbio.get('gbmi', {}).get('value', None))
+        newgbmi.append(newbio.get('gbmi', {}).get('value', None))
 
         oldfollower.append(oldprofile['followers_count'])
         newfollower.append(newprofile['followers_count'])
@@ -183,6 +202,16 @@ def variable_change(dbname, comname, oldtimename, newtimename):
     df['NewFollowee'] = newfollowee
     df['OldDate'] = olddate
     df['NewDate'] = newdate
+    df['OldCW'] = oldcw
+    df['NewCW'] = newcw
+    df['OldGW'] = oldgw
+    df['NewGW'] = newgw
+    df['OldAge'] = oldage
+    df['NewAge'] = newage
+    df['OldCBMI'] = oldcbmi
+    df['NewCBMI'] = newcbmi
+    df['OldGBMI'] = oldgbmi
+    df['NewGBMI'] = newgbmi
 
     g1 = gt.load_network_subset(dbname, 'net', {'scraped_times': 2})
     g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 131})
@@ -219,6 +248,9 @@ def network_change(dbname, comname, netname):
     # pickle.dump(g2, open('data/g2.pick', 'w'))
     g1 = pickle.load(open('data/g1.pick', 'r'))
     g2 = pickle.load(open('data/g2.pick', 'r'))
+
+    # g1 = gt.load_network_subset(dbname, 'net', {'scraped_times': 2})
+    # g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 131})
     gt.summary(g1)
     gt.summary(g1)
     gt.net_stat(g1)
@@ -298,13 +330,16 @@ def distribution_change(dbname, colname):
 def correlation():
     df = pd.read_csv('ded.csv')
     df = df.dropna(subset=['OldWC', 'NewWC'])
-    Outdegree =  df['NewOutdegree'] - df['OldOutdegree']
-    Ingest = df['Newingest'] - df['Oldingest']
-    pt.correlation(Outdegree, Ingest, 'Out-degree', 'Ingest', 'outd-ingest-95.pdf')
+    Outdegree =  df['NewFollowee'] - df['OldFollowee']
+    Ingest = df['Newnegemo'] - df['Oldnegemo']
+    # pt.correlation((Outdegree-np.mean(Outdegree))/np.std(Outdegree),
+    #                (Ingest-np.mean(Ingest))/np.std(Ingest), 'Followee', 'Negative Emotion', 'followee-negemo-95.pdf')
+    pt.correlation(Outdegree, Ingest, 'Followee', 'Negative Emotion', 'followee-negemo-95.pdf')
+
 
 if __name__ == '__main__':
     """Split data in two time periods"""
-    # split_data('ded', 'timeline', 'newtimeline')
+    # split_data('ded', 'timeline', 'timeline1')
     # split_data('drd', 'timeline', 'newtimeline')
     # split_data('dyg', 'timeline', 'newtimeline')
     # print sys.argv[1], sys.argv[2], sys.argv[3]
@@ -321,7 +356,7 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    # variable_change('ded', 'com', 'timeline', 'newtimeline')
+    variable_change('ded', 'com', 'timeline0', 'timeline1')
 
     """Correlation of Network and LIWC changes"""
-    correlation()
+    # correlation()
