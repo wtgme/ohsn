@@ -15,6 +15,10 @@ Aditya Grover and Jure Leskovec
 Knowledge Discovery and Data Mining (KDD), 2016
 '''
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 import argparse
 import numpy as np
 import networkx as nx
@@ -108,6 +112,7 @@ def main(args):
 	'''
     # nx_G = read_graph()
     nx_G = nt.load_network('fed', 'net')
+    nx_G = nt.get_gaint_comp(nx_G)
     G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
     G.preprocess_transition_probs()
     walks = G.simulate_walks(args.num_walks, args.walk_length)
