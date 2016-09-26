@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument('--input', nargs='?', default='graph/karate.edgelist',
                         help='Input graph path')
 
-    parser.add_argument('--output', nargs='?', default='emb/karate.emb',
+    parser.add_argument('--output', nargs='?', default='out.emb',
                         help='Embeddings path')
 
     parser.add_argument('--dimensions', type=int, default=128,
