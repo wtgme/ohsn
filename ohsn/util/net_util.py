@@ -18,8 +18,8 @@ def load_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     for row in cols.find({}):
-        n1 = row['user']
-        n2 = row['follower']
+        n1 = row['follower']
+        n2 = row['user']
         DG.add_edge(n1, n2, weight=1)
     return DG
 
