@@ -214,7 +214,7 @@ def variable_change(dbname, comname, oldtimename, newtimename):
     df['NewGBMI'] = newgbmi
 
     g1 = gt.load_network_subset(dbname, 'net', {'scraped_times': 2})
-    g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 131})
+    g2 = gt.load_network_subset(dbname, 'net', {'scraped_times': 130})
     gt.summary(g1)
     gt.summary(g2)
     oldindegree_map = dict(zip(g1.vs['name'], g1.indegree()))
@@ -329,12 +329,12 @@ def distribution_change(dbname, colname):
 
 def correlation():
     df = pd.read_csv('ded.csv')
-    df = df.dropna(subset=['OldWC', 'NewWC'])
-    Outdegree =  df['NewFollowee'] - df['OldFollowee']
+    df = df.dropna(subset=['Oldposemo', 'Newposemo'])
+    Outdegree =  df['NewOutdegree'] - df['OldOutdegree']
     Ingest = df['Newnegemo'] - df['Oldnegemo']
     # pt.correlation((Outdegree-np.mean(Outdegree))/np.std(Outdegree),
     #                (Ingest-np.mean(Ingest))/np.std(Ingest), 'Followee', 'Negative Emotion', 'followee-negemo-95.pdf')
-    pt.correlation(Outdegree, Ingest, 'Followee', 'Negative Emotion', 'followee-negemo-95.pdf')
+    pt.correlation(Outdegree, Ingest, 'Out-degree', 'Negative Emotion', 'outd-negemo-95.pdf')
 
 
 if __name__ == '__main__':
@@ -356,7 +356,7 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    variable_change('ded', 'com', 'timeline0', 'timeline1')
+    variable_change('dyg', 'com', 'timeline0', 'timeline1')
 
     """Correlation of Network and LIWC changes"""
     # correlation()
