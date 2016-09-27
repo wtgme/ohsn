@@ -24,6 +24,27 @@ import scipy.stats as stats
 import ohsn.textprocessor.description_miner as des_miner
 
 
+def combine_data(dbname, comname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    curtime = db['timeline']
+    time0 = db['timeline0']
+    time1 = db['timeline1']
+    for user in com.find():
+        oldtweets = time1.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
+        if oldtweets.count() == 0:
+            oldtweets = time0.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)
+            if oldtweets.count() == 0:
+                print user['id']
+                continue
+        oldtweet = oldtweets[0]
+        try:
+            curtime.insert(oldtweet)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
+
+
 def split_data(dbname, timename, newtimename):
     db = dbt.db_connect_no_auth(dbname)
     oldtime = db[timename]
@@ -356,7 +377,10 @@ if __name__ == '__main__':
     # network_change('ded', 'com', 'net')
 
     """Out put network variables and LIWC features"""
-    variable_change('dyg', 'com', 'timeline0', 'timeline1')
+    # variable_change('dyg', 'com', 'timeline0', 'timeline1')
 
     """Correlation of Network and LIWC changes"""
     # correlation()
+
+    """Put lastest crawled tweet in current timeline collection"""
+    combine_data('ded', 'com')
