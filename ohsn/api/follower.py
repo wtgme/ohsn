@@ -151,7 +151,7 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                                     except pymongo.errors.DuplicateKeyError:
                                         pass
                                     try:
-                                        net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']), 'type': 1,
+                                        net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']),
                                                    'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
                                     except pymongo.errors.DuplicateKeyError:
                                         pass

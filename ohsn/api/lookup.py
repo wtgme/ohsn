@@ -3,6 +3,9 @@
 Created on 10:58, 15/02/16
 
 @author: wt
+Get users' profiles
+Returns fully-hydrated user objects for up to 100 users per request,
+as specified by comma-separated values passed to the user_id and/or screen_name parameters.
 """
 
 import ohsn.util.twitter_util as twutil

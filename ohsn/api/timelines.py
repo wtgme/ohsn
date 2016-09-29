@@ -197,6 +197,7 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
                                              {'level': {'$lt': level}, 'timeline_scraped_times': {'$lt': scrapt_times}}]},
                                      {'id': 1}).limit(200):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
+                old_count = timeline_collection.count({'user.id': user['id']})
                 get_user_timeline(user['id'], user_collection, timeline_collection)
                 # count = user_collection.count({"timeline_count": {'$gt': 3000}})
                 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
@@ -204,7 +205,7 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
                 # update timeline_scrapted_times and timeline_count fields
                 count_scraped = timeline_collection.count({'user.id': user['id']})
                 timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
-                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
+                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": (count_scraped-old_count),
                                                              'timeline_scraped_times': timeline_scraped_times}},
                                    upsert=False)
 

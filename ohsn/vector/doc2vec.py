@@ -64,7 +64,7 @@ def read_document(dbname, colname, timecol, uset=None):
     timelines = db[timecol]
     documents = list()
     ids = list()
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
         uid = user['id']
         textmass = ""
         for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True).sort([('id', 1)]):
