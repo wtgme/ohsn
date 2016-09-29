@@ -140,7 +140,7 @@ def get_timeline(params):
                 continue
 
 
-def get_user_timeline(user_id, user_collection, timeline_collection):
+def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=True):
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     try:
         # crawl the recent timeline to the last stored timeline
@@ -156,17 +156,17 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     #  loop to get the timelines of user, and update the reset and remaining
     while True:
         # newest = None
-        params = {'count': 200, 'contributor_details': False, 'trim_user': True, 'include_rts': True, 'id': user_id, 'since_id': latest}
+        params = {'count': 200, 'trim_user': trim_user, 'include_rts': True, 'id': user_id, 'since_id': latest}
         try:
             timelines = get_timeline(params)
         except TwythonAuthError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users', str(detail)
-            user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return False
         except TwythonError as detail:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'timeline TwythonError', str(detail)
-            user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return False
         if timelines:
@@ -175,12 +175,12 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
                 store_tweets(timelines, timeline_collection)
                 params['max_id'] = timelines[-1]['id']-1
                 timelines = get_timeline(params)
-            user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return True
         else:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + str(user_id)
-            user_collection.update({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
                                    upsert=False)
             return False
 
@@ -205,7 +205,7 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
                 # update timeline_scrapted_times and timeline_count fields
                 count_scraped = timeline_collection.count({'user.id': user['id']})
                 timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
-                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": (count_scraped-old_count),
+                user_collection.update_one({'id': user['id']}, {'$set':{"timeline_count": (count_scraped-old_count),
                                                              'timeline_scraped_times': timeline_scraped_times}},
                                    upsert=False)
 
@@ -222,13 +222,13 @@ def monitor_timeline(user_collection, timeline_collection, scrapt_times):
                                              {'timeline_scraped_times': {'$lt': scrapt_times}}]},
                                      {'id': 1}).limit(200):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
-                get_user_timeline(user['id'], user_collection, timeline_collection)
+                get_user_timeline(user['id'], user_collection, timeline_collection, trim_user=False)
                 # count = user_collection.count({"timeline_count": {'$gt': 3000}})
                 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
 
                 # update timeline_scrapted_times and timeline_count fields
                 count_scraped = timeline_collection.count({'user.id': user['id']})
                 # timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
-                user_collection.update({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
+                user_collection.update_one({'id': user['id']}, {'$set':{"timeline_count": count_scraped,
                                                              'timeline_scraped_times': scrapt_times}},
                                    upsert=False)

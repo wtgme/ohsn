@@ -176,7 +176,7 @@ def profile_pos():
         user = tweet['user']
         if check_en(user):
             seed_user.add(user['screen_name'])
-        stream_db.update({'id': int(tweet['id_str'])},
+        stream_db.update_one({'id': int(tweet['id_str'])},
                          {'$set':{"checked": True}}, upsert=False)
     return [user for user in seed_user]
 
@@ -187,7 +187,7 @@ def seed_all_profile(stream_db, limit=100):
     seed_user = []
     for user in stream_db.find({'seeded':{'$exists': False}}).limit(limit):
         seed_user.append(user['id'])
-        stream_db.update({'id': int(user['id_str'])},
+        stream_db.update_one({'id': int(user['id_str'])},
                          {'$set':{"seeded": True}}, upsert=False)
     return seed_user
 

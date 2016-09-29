@@ -112,6 +112,7 @@ def get_followers(params):
 
 
 def snowball_follower(poi_db, net_db, level, check='N'):
+    #Processing max 200 users each time.
     start_level = level
     while True:
         count = poi_db.count({'level': start_level,
@@ -159,6 +160,6 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                         next_cursor = followers['next_cursor']
                     else:
                         break
-                poi_db.update({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
+                poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
                                                     }}, upsert=False)
             return True

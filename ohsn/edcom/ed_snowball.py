@@ -48,10 +48,16 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     #     lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
 
     level = 1
-    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-    following_flag = following.snowball_following(newcom, newnet, level, 'N')
-    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-    follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
+    while True:
+        # Each call of snowball_following and snowball_follower only process up to 200 users
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+        following_flag = following.snowball_following(newcom, newnet, level, 'N')
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+        follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
+        if following_flag == False and follower_flag == False:
+            break
+        else:
+            continue
     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'START: Snowball friends of seeds for sample db', level
     # t1 = Thread(target=following.snowball_following, args=[newcom, newnet, level, 'N'])
     # t2 = Thread(target=follower.snowball_follower, args=[newcom, newnet, level, 'N'])

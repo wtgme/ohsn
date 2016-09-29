@@ -132,7 +132,7 @@ def trans_seed_to_poi(seed_list, poi_db, check='N'):
                 except pymongo.errors.DuplicateKeyError:
                     print 'Existing user:', profile['id_str']
                     seed_list.remove(profile['id'])
-                    poi_db.update({'id': int(profile['id_str'])}, {'$set':{"level": 1
+                    poi_db.update_one({'id': int(profile['id_str'])}, {'$set':{"level": 1
                                                         }}, upsert=False)
             else:
                 seed_list.remove(profile['id'])

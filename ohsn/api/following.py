@@ -110,6 +110,7 @@ def get_followings(params):
 
 
 def snowball_following(poi_db, net_db, level, check='N'):
+    #Processing max 200 users each time.
     start_level = level
     while True:
         count = poi_db.count({'level': start_level, 
@@ -161,7 +162,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                         next_cursor = followees['next_cursor']
                     else:
                         break
-                poi_db.update({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
+                poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
             return True
 
@@ -191,5 +192,5 @@ def monitor_friendships(sample_user, sample_net, time_index):
                 next_cursor = followees['next_cursor']
             else:
                 break
-        sample_user.update({'id': userid}, {'$set':{'net_scraped_times': time_index}},
+        sample_user.update_one({'id': userid}, {'$set':{'net_scraped_times': time_index}},
                                    upsert=False)
