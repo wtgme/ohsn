@@ -156,7 +156,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection):
     #  loop to get the timelines of user, and update the reset and remaining
     while True:
         # newest = None
-        params = {'count': 200, 'contributor_details': True, 'id': user_id, 'since_id': latest, 'include_rts': 1}
+        params = {'count': 200, 'contributor_details': False, 'trim_user': True, 'include_rts': True, 'id': user_id, 'since_id': latest}
         try:
             timelines = get_timeline(params)
         except TwythonAuthError as detail:
