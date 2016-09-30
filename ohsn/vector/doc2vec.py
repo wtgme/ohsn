@@ -40,9 +40,9 @@ def process(text):
         # text = ugrex.sub('', text)
 
         '''Remove non-English chars'''
-        text = filter(lambda x: x in printable, text)
+        text = filter(lambda x: x in printable, text.lower())
 
-        tokens = tknzr.tokenize(text.lower())
+        tokens = tknzr.tokenize(text)
         words = []
         for token in tokens:
             if token in cachedStopWords:
