@@ -49,7 +49,7 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
 
     '''Copy the lastest tweet in old timeline collectin to new timeline collection'''
     for user in newcom.find(no_cursor_timeout=True):
-        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)
+        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
         if oldtweets.count() > 0:
             oldtweet = oldtweets[0]
             try:
@@ -64,7 +64,7 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
 
     '''Clean the laest tweet of old timeline collection'''
     for user in newcom.find(no_cursor_timeout=True):
-        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', 1)]).limit(1)
+        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
         if oldtweets.count() > 0:
             oldtweet = oldtweets[0]
             newtime.delete_one({'id': oldtweet['id']})
