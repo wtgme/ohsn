@@ -58,17 +58,17 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
             except pymongo.errors.DuplicateKeyError:
                 pass
 
-    # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
-    # # stream_timeline(sample_user, sample_time, 1, 2)
-    # timelines.stream_timeline(newcom, newtime, 1, 3)
-    # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
+    # stream_timeline(sample_user, sample_time, 1, 2)
+    timelines.stream_timeline(newcom, newtime, 1, 3)
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
 
-    # '''Clean the laest tweet of old timeline collection'''
-    # for user in newcom.find(no_cursor_timeout=True):
-    #     oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
-    #     if oldtweets.count() > 0:
-    #         oldtweet = oldtweets[0]
-    #         newtime.delete_one({'id': oldtweet['id']})
+    '''Clean the laest tweet of old timeline collection'''
+    for user in newcom.find(no_cursor_timeout=True):
+        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
+        if oldtweets.count() > 0:
+            oldtweet = oldtweets[0]
+            newtime.delete_one({'id': oldtweet['id']})
 
 
 if __name__ == '__main__':
