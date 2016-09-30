@@ -53,6 +53,7 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
         if oldtweets.count() > 0:
             oldtweet = oldtweets[0]
             try:
+                oldtweet['user'] = {'id': user['id']}
                 newtime.insert(oldtweet)
             except pymongo.errors.DuplicateKeyError:
                 pass
