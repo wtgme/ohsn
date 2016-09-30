@@ -79,8 +79,10 @@ def read_document(dbname, colname, timecol, uset=None):
                     textmass += text + ' '
                 else:
                     continue
-        if len(textmass.split()) > 50:
+        tokens = textmass.split()
+        if len(tokens) > 50:
             ids.append(uid)
+            
             documents.append(textmass)
     pickle.dump(ids, open('data/doc_ids.pick', 'w'))
     return documents
