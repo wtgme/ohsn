@@ -88,7 +88,7 @@ def read_document(dbname, colname, timecol, uset=None):
                     continue
         tokens = textmass.split()
         if len(tokens) > 50:
-            topk = topKFrequent(tokens, 500)
+            topk = topKFrequent(tokens, 300)
             words = [token for token in tokens if token in topk]
             print str(uid) + '\t' + ' '.join(words)
 
