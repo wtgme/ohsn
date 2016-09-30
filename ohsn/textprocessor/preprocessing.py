@@ -53,7 +53,7 @@ def process(text):
 
         '''Remove non-English chars'''
         text = filter(lambda x: x in printable, text.lower())
-
+        text = re.sub(r'\d+', '', text)
         tokens = tknzr.tokenize(text)
         words = []
         for token in tokens:

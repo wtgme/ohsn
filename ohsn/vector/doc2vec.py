@@ -30,7 +30,7 @@ printable = set(string.printable)
 
 
 def process(text):
-    text = text.encode('utf-8')
+    text = text.encode('utf8')
     '''Ignore tweets with URLs'''
     if ugrex.search(text) is None:
         '''replace RT, @, # and Http://'''
@@ -41,7 +41,7 @@ def process(text):
 
         '''Remove non-English chars'''
         text = filter(lambda x: x in printable, text.lower())
-
+        text = re.sub(r'\d+', '', text)
         tokens = tknzr.tokenize(text)
         words = []
         for token in tokens:
