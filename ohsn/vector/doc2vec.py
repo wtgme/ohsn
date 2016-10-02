@@ -77,8 +77,8 @@ def read_document(dbname, colname, timecol, uset=None):
         for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True).sort([('id', 1)]):
             if 'quoted_status' in tweet:
                 continue
-            # elif 'retweeted_status' in tweet:
-            #     continue
+            elif 'retweeted_status' in tweet:
+                continue
             else:
                 text = process(tweet['text'])
                 if text:
