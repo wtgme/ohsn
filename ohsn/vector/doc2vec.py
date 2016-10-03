@@ -67,30 +67,56 @@ def topKFrequent(tokens, k):
     return [x[0] for x in c.most_common(k)]
 
 
+# def read_document(dbname, colname, timecol, uset=None):
+#     db = dbt.db_connect_no_auth(dbname)
+#     col = db[colname]
+#     timelines = db[timecol]
+#     for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+#         uid = user['id']
+#         textmass = ""
+#         for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True).sort([('id', -1)]).limit(5):
+#             if 'quoted_status' in tweet:
+#                 continue
+#             elif 'retweeted_status' in tweet:
+#                 continue
+#             else:
+#                 text = process(tweet['text'])
+#                 if text:
+#                     # print user, time['id'], text, '<-------', time['text']
+#                     textmass += text + ' '
+#                 else:
+#                     continue
+#         tokens = textmass.split()
+#         if len(tokens) > 50:
+#             topk = topKFrequent(tokens, 300)
+#             words = [token for token in tokens if token in topk]
+#             print str(uid) + '\t' + ' '.join(words)
+
+
 def read_document(dbname, colname, timecol, uset=None):
     db = dbt.db_connect_no_auth(dbname)
     col = db[colname]
     timelines = db[timecol]
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id', 'description'], no_cursor_timeout=True):
         uid = user['id']
-        textmass = ""
-        for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True).sort([('id', 1)]):
-            if 'quoted_status' in tweet:
-                continue
-            elif 'retweeted_status' in tweet:
-                continue
-            else:
+        text = process(user['description'])
+        if text:
+            print str(uid) + '\t' + ' '.join(text.split())
+        else:
+            textmass = ""
+            for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True).sort([('id', -1)]).limit(5):
                 text = process(tweet['text'])
                 if text:
-                    # print user, time['id'], text, '<-------', time['text']
                     textmass += text + ' '
                 else:
                     continue
-        tokens = textmass.split()
-        if len(tokens) > 50:
-            topk = topKFrequent(tokens, 300)
-            words = [token for token in tokens if token in topk]
-            print str(uid) + '\t' + ' '.join(words)
+            tokens = textmass.split()
+            if len(tokens) >= 5:
+                # topk = topKFrequent(tokens, 300)
+                # words = [token for token in tokens if token in topk]
+                print str(uid) + '\t' + ' '.join(tokens)
+            else:
+                continue
 
 
 def pre_process(texts):
@@ -133,6 +159,13 @@ def varify():
         print('%s:\n %s' % (model, model.docvecs.most_similar([inferred_docvec], topn=3)))
 
 
+def profile(dbname, colname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    for user in com.find():
+        pro = user['description'].split()
+        print user['id'], ' '.join(pro).encode('utf-8')
+
 if __name__ == '__main__':
     '''Read Files'''
     documents = read_document('fed', 'com', 'timeline')
@@ -145,6 +178,8 @@ if __name__ == '__main__':
     # print model.most_similar(positive=['ed', 'anorexic'], negative=['fitness', 'health'])
     '''Verify model'''
     # varify()
+
+    # profile('fed', 'com')
 
 
 
