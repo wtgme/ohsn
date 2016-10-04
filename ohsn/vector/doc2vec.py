@@ -51,7 +51,7 @@ def process(text):
             else:
                 word = stemmer.stem(token)
                 words.append(word)
-        if len(words) >= 5:
+        if len(words) >= 3:
             text = ' '.join(words)
             text += ' .'
             # print text
@@ -111,7 +111,7 @@ def read_document(dbname, colname, timecol, uset=None):
                 else:
                     continue
             tokens = textmass.split()
-            if len(tokens) >= 5:
+            if len(tokens) >= 3:
                 # topk = topKFrequent(tokens, 300)
                 # words = [token for token in tokens if token in topk]
                 print str(uid) + '\t' + ' '.join(tokens)
@@ -137,7 +137,7 @@ def pre_process(texts):
 def doc_vect(filename):
     documents = []
     from gensim.models.doc2vec import TaggedDocument
-    with open(filename, 'w') as fo:
+    with open(filename, 'r') as fo:
         for line in fo.readlines():
             tokens = line.split('\t')
             sentence = TaggedDocument(tokens[1].split(), [tokens[0]])
@@ -167,10 +167,10 @@ def profile(dbname, colname):
         print user['id'], ' '.join(pro).encode('utf-8')
 
 if __name__ == '__main__':
-    '''Read Files'''
+    # '''Read Files'''
     documents = read_document('fed', 'com', 'timeline')
 
-    # '''Doc2Vec traing'''
+    '''Doc2Vec traing'''
     # doc_vect('data/fed.data')
 
     # for word in model.vocab:
@@ -180,6 +180,9 @@ if __name__ == '__main__':
     # varify()
 
     # profile('fed', 'com')
+
+    # s = '''Female//27yrs//BPD//EDNOS//Self Harm//SW: 145 LBS//CW: 100 LBS//UGW:85 LBS ~~I Will Not Die Fat~~Trigger Warning~~ Avi Is Me~~'''
+    # print process(s)
 
 
 
