@@ -16,7 +16,7 @@ from ohsn.util import db_util as dbt
 def trim_user(dbname, timename):
     db = dbt.db_connect_no_auth(dbname)
     time = db[timename]
-    for tweet in time.find(no_cursor_timeout=True):
+    for tweet in time.find({'user.screen_name': {'$exists': False}}, no_cursor_timeout=True):
         user = tweet['user']
         # tweet['user'] = {'id': user['id']}
         # print tweet
