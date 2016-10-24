@@ -32,6 +32,7 @@ def rec_user(dbname, colname):
 
 
 def ed_user(dbname, colname):
+    '''Get ED users'''
     user_lit = []
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
@@ -48,6 +49,7 @@ def ed_user(dbname, colname):
 
 
 def plot_graph(g):
+    '''Plot graph of network'''
     layout = g.layout("fr")
     color_dict = {0: "blue", 1: "red"}
     visual_style = {}
@@ -62,6 +64,7 @@ def plot_graph(g):
     gt.plot(g, **visual_style)
 
 def network(dbname, colname, netname):
+    '''Get users' friendship network'''
     # # ed_usersd = ed_user(dbname, colname)
     # # pickle.dump(ed_usersd, open('data/ed_users.pick', 'w'))
     # ed_usersd = pickle.load(open('data/ed_users.pick', 'r'))
@@ -99,6 +102,7 @@ def network(dbname, colname, netname):
 
 
 def benetwork(dbname, type, netname):
+    '''Get users' behavior networks'''
     # ed_usersd = pickle.load(open('data/ed_users.pick', 'r'))
     # rec_usersd = pickle.load(open('data/rec_users.pick', 'r'))
     # inlist = list(set(ed_usersd).union(set(rec_usersd)))
