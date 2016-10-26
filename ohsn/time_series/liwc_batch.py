@@ -152,11 +152,10 @@ def bunch_user_tweets_dataframe(dbname, comname, timename, n=100):
 
 
     df = pd.DataFrame(data=liwc_results,
-                      columns= ['user_id', 'time_index', 'user_created_time', 'first_tweet_time', 'last_tweet_time'] + fields,
-                      index=indices)
-    df.to_csv('ed-liwc.csv')
+                      columns= ['user_id', 'time_index', 'user_created_time', 'first_tweet_time', 'last_tweet_time'] + fields)
+    df.to_csv('ed-liwc200.csv')
 
 if __name__ == '__main__':
-    bunch_user_tweets_dataframe('fed', 'scom', 'timeline')
+    bunch_user_tweets_dataframe('fed', 'scom', 'timeline', n=200)
 
 
