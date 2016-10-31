@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import ohsn.util.plot_util as pt
 import calendar
-import tweet_types
+import behavior_tweet_types
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle

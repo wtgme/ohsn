@@ -19,7 +19,7 @@ import scipy.stats as stat
 import matplotlib.pyplot as plt
 import ohsn.util.plot_util as plot
 import ohsn.util.statis_util as stats
-from tweet_types import compore_distribution
+from behavior_tweet_types import compore_distribution
 
 
 def bahavior_net(dbname, comname, bnetname, btype):
@@ -179,12 +179,12 @@ def plot_error_bars(data):
 def diversity_db(dbname, comname, behavior):
     userlist = iot.get_values_one_field(dbname, comname, 'id_str',
                                         {'timeline_count': {'$gt': 0}})
-    # g = bahavior_net(dbname, comname, 'bnet', behavior)
-    # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    g = bahavior_net(dbname, comname, 'bnet', behavior)
+    pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     print dbname, behavior
-    g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
+    # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
     return netstatis(dbname, behavior, g, userlist)
-    return True
+    # return True
 
 
 if __name__ == '__main__':
@@ -198,10 +198,10 @@ if __name__ == '__main__':
 
 
     ###do hashtag network###
-    # hashtag_net('fed', 'com', 'timeline')
-    # tag_entroy('fed', 'com', 'timeline')
+    # hashtag_net('fed2', 'com', 'timeline')
+    tag_entroy('fed2', 'com', 'timeline')
     # '''Compare diversity of behaviors'''
-    dbnames = ['fed', 'random', 'young']
+    dbnames = ['fed2', 'random', 'young']
 
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:

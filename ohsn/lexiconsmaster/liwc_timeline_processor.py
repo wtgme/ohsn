@@ -120,7 +120,7 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('ded', 'com', 'timeline1', 'new_liwc_anal')
+    process_db('fed2', 'com', 'timeline', 'liwc_anal')
     # print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     # process_db(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     # process_db('random', 'com', 'timeline')

@@ -21,10 +21,10 @@ def rec_user(dbname, colname):
     com = db[colname]
     count = 0
     i = 0
-    for user in com.find({}, ['id', 'description']):
+    for user in com.find({}, ['id_str', 'description']):
         if 'recover' in (user['description'].strip().lower().replace("-", "").replace('_', '')):
-            # print user['id'], ' '.join(user['description'].split()).encode('utf-8')
-            user_lit.append(user['id'])
+            print user['id_str'], ' '.join(user['description'].split()).encode('utf-8')
+            user_lit.append(user['id_str'])
             count += 1
         i += 1
     print count
@@ -141,14 +141,19 @@ def communit_topinflu(fclus, weight):
 
 
 if __name__ == '__main__':
-    ed_users = ed_user('fed', 'com')
-    rec_users = rec_user('fed', 'com')
-    print len(set(ed_users).intersection(rec_users))
+    # ed_users = ed_user('fed', 'com')
+    # rec_users = rec_user('fed', 'com')
+    # print len(set(ed_users).intersection(rec_users))
+
+
     # print 'Friendship'
     # network('fed', 'com', 'net')
     # types = ['retweet', 'reply', 'mention', 'communication', 'all']
     # for type in types:
     #     print type
     #     benetwork('fed', type, 'bnet')
+
+    rec_users = rec_user('fed', 'scom')
+    print rec_users
 
 
