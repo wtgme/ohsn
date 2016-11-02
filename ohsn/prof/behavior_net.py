@@ -180,11 +180,18 @@ def diversity_db(dbname, comname, behavior):
     userlist = iot.get_values_one_field(dbname, comname, 'id_str',
                                         {'timeline_count': {'$gt': 0}})
     g = bahavior_net(dbname, comname, 'bnet', behavior)
-    pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
+    # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     print dbname, behavior
     # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
     return netstatis(dbname, behavior, g, userlist)
     # return True
+
+
+def inter_entropy(dbname, comname, timename):
+    tag_entroy(dbname, comname, timename)
+    behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
+    for behavior in behaviors[:4]:
+        ed = diversity_db(dbname, comname, behavior)
 
 
 if __name__ == '__main__':

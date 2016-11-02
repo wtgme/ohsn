@@ -86,7 +86,7 @@ def check_ed_related_profile(profile):
     tokens = tokenizer_stoprm(profile)
     dio_flag = False
     for token in tokens:
-        if token in ed_keywords_list: # for single words
+        if token in ed_keywords_list or token in ed_bio_list: # for single words
             dio_flag = True
     for dio in ed_keywords_list:
         if ' ' in dio and dio in profile: # for phrases

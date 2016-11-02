@@ -63,7 +63,7 @@ def feature_stat(dumped=False):
     #     compore_distribution(keys[-1], eds, randoms, youngs)
 
 
-def beh_stat(dbname, comname, colname, filename):
+def beh_stat(dbname, comname, colname, filename=None):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     timeline = db[colname]
@@ -118,7 +118,9 @@ def beh_stat(dbname, comname, colname, filename):
                                    udmention, reply, hashtag, url, quota, count_sum)
     user_staits[-1] = (tweet_all, retweet_all, dmention_all, udmention_all,
                        reply_all, hashtag_all, url_all, quota_all, count_sum_all)
-    pickle.dump(user_staits, open('data/'+filename+'.pick', 'w'))
+    if filename:
+        pickle.dump(user_staits, open('data/'+filename+'.pick', 'w'))
+    return user_staits
         # print tweet, retweet, dmention, udmention, reply, hashtag, url, quota, count_sum
         # print 'Tweet Ratio, ', tweet, float(tweet)/count_sum
         # print 'Rtweet Ratio, ', retweet, float(retweet)/count_sum
@@ -130,10 +132,10 @@ def beh_stat(dbname, comname, colname, filename):
         # print 'Quota Ratio, ', quota, float(quota)/count_sum
 
 
-def store_ratio_behavoir(dbname, colname, filename):
+def store_ratio_behavoir(dbname, colname, stats):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
-    stats = pickle.load(open('data/'+filename+'.pick', 'r'))
+    # stats = pickle.load(open('data/'+filename+'.pick', 'r'))
     del stats[-1]
     for id in stats.keys():
         values = stats[id]
@@ -284,6 +286,10 @@ def compore_distribution(field, feds, randoms, youngs):
                            ['ED', 'Random', 'Younger'],
                            linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
+
+def beh_pro(dbname, comname, timename):
+    results = beh_stat(dbname, comname, timename)
+    store_ratio_behavoir(dbname, comname, results)
 
 if __name__ == '__main__':
     '''how many tweets with each bahaviour'''

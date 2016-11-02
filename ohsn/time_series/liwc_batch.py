@@ -208,13 +208,14 @@ def compare_periods(filename):
                     active_time.append(period)
         print '----------------------'+name+'---------------'
         print 'All users changes: ', len(changes)
+        print 'Mean of changes: %.3f' %np.mean(changes)
         print 'Recovery users changes: ', len(recovery_changes)
         print 'Non-Recovery users changes: ',len(non_recovery_changes)
 
-        print 'Value-Increased users:'
+        print 'Value-Increased Recovery users:'
         print len(set(positives).intersection(recover))
         # print positives[:10]
-        print 'Value-Decreased users:'
+        print 'Value-Decreased Recovery susers:'
         print len(set(negatives).intersection(recover))
         # print negatives[:10]
 
