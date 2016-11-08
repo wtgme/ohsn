@@ -14,14 +14,14 @@ import ohsn.prof.behavior_tweet_types as bpro
 import ohsn.prof.behavior_net as bent
 
 
-dbname = 'fed'
+dbname = 'fed2'
 comname = 'com'
 timename = 'timeline'
 
-liwcp.process_db(dbname, comname, timename, 'liwc_anal')
-netp.process_db(dbname, comname, timename, 'bnet', 10000)
-textp.process_poi(dbname, comname)
-engagement.gagement(dbname, comname)
-bpro.beh_pro(dbname, comname, timename)
+# liwcp.process_db(dbname, comname, timename, 'liwc_anal')
+# netp.process_db(dbname, comname, timename, 'bnet', 10000)
+# textp.process_poi(dbname, comname)
+# engagement.gagement(dbname, comname)
+# bpro.beh_pro(dbname, comname, timename)
 bent.inter_entropy(dbname, comname, timename)
 

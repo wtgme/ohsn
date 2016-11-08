@@ -96,7 +96,6 @@ def transform_date(dbname, comname):
         time.update_one({'id': tweet['id']}, {'$set': {'created_at': datev}}, upsert=False)
 
 
-
 def active_user_list(dbname, comname, timename):
     db = dbt.db_connect_no_auth(dbname)
     time = db[timename]
