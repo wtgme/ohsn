@@ -69,6 +69,7 @@ def rec_user(dbname, colname):
     print count
     return user_lit
 
+
 def proed_users(dbname, colname):
     '''Get pro-ED users'''
     user_list = []
@@ -87,6 +88,7 @@ def proed_users(dbname, colname):
                     if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence:
                         FLAG = True
             if FLAG:
+                print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
                 user_list.append(user['id'])
                 count += 1
     print count
@@ -203,8 +205,29 @@ def communit_topinflu(fclus, weight):
 
 
 def pro_ed_rec_network(dbname, comname, netname):
-    g = gt.load_network()
-
+    g = gt.load_network(dbname, netname)
+    rec_users = rec_user(dbname, comname)
+    pro_users = proed_users(dbname, comname)
+    print len(rec_users)
+    print len(pro_users)
+    g.vs['set'] = 0
+    for user in rec_users:
+        exist = True
+        try:
+            v = g.vs.find(name=str(user))
+        except ValueError:
+            exist = False
+        if exist:
+            v['set'] = 1
+    for user in pro_users:
+        exist = True
+        try:
+            v = g.vs.find(name=str(user))
+        except ValueError:
+            exist = False
+        if exist:
+            v['set'] = -1
+    g.write_graphml('pro-ed-rec.graphml')
 
 def distribution_change(dbname, colname):
     rec_users1 = pickle.load(open('data/pro-recovery.pick', 'r'))
@@ -303,12 +326,13 @@ if __name__ == '__main__':
     # # plt.ylabel(r'p($\Delta$)')
     # plt.legend()
     # plt.show()
-    distribution_change('fed', 'com')
+    # distribution_change('fed', 'com')
 
 
     '''Print user profiles'''
     # print_user_profile('fed', 'scom')
 
-
+    '''Pro ED and Recovery user network'''
+    pro_ed_rec_network('fed', 'scom', 'snet')
 
 
