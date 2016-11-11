@@ -112,7 +112,7 @@ def bunch_user_tweets_dataframe(dbname, comname, timename, filename, num_batch=2
     if n == -1:
         split_k = True
 
-    for user in com.find({'timeline_count': {'$gt': 100}}, ['id', 'id_str', 'created_at', 'timeline_count']):
+    for user in com.find({'timeline_count': {'$gt': 100}}, ['id', 'id_str', 'created_at', 'timeline_count'], no_cursor_timeout=True):
         uid = user['id']
         tweet_count = user['timeline_count']
         if split_k == True:
@@ -170,7 +170,7 @@ def bunch_user_tweets_dataframe(dbname, comname, timename, filename, num_batch=2
     df.to_pickle(filename+'.pick')
 
 
-def compare_periods(filename):
+def compare_periods(filename, prefix):
     # parser = lambda date: pd.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
     # df = pd.read_csv(filename, parse_dates=['user_created_time', 'first_tweet_time', 'last_tweet_time'], date_parser=parser, index_col=[0])
     df = pd.read_pickle(filename+'.pick')
@@ -204,8 +204,8 @@ def compare_periods(filename):
                 # print period
                 if old != 0:
                     change = (new - old)
-                    period0 = (uvs.iloc[0]['last_tweet_time'] - uvs.iloc[0]['first_tweet_time']).days
-                    period1 = (uvs.iloc[1]['last_tweet_time'] - uvs.iloc[1]['first_tweet_time']).days
+                    period0 = (uvs.iloc[0]['last_tweet_time'] - uvs.iloc[0]['first_tweet_time']).days+1
+                    period1 = (uvs.iloc[1]['last_tweet_time'] - uvs.iloc[1]['first_tweet_time']).days+1
                     activity0 = float(uvs.iloc[0]['count'])/(period0)
                     activity1 = float(uvs.iloc[1]['count'])/(period1)
                     # print change
@@ -241,7 +241,7 @@ def compare_periods(filename):
         # plt.savefig(name+'change-recovery.pdf')
         # plt.clf()
 
-        pltt.correlation(changes, active_time, r'$\Delta$('+name+')', r'$\Delta$(Activity)', name+'activity-change.pdf')
+        pltt.correlation(changes, active_time, r'$\Delta$('+name+')', r'$\Delta$(Activity)', prefix+name+'activity-change.pdf')
 
 
 
@@ -249,7 +249,7 @@ def compare_periods(filename):
 if __name__ == '__main__':
     filename = 'ed-liwc2stage.csv'
     bunch_user_tweets_dataframe('fed', 'scom', 'timeline', filename)
-    compare_periods('ed-liwc2stage.csv')
+    compare_periods('ed-liwc2stage.csv', 'ed')
 
 
 

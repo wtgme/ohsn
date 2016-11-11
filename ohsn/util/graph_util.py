@@ -177,7 +177,7 @@ def load_user_hashtag_network(db_name, collection='None'):
     return g
 
 
-def load_hashtag_coocurrent_network(db_name, collection='None'):
+def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
     '''
     Hashtag Co-occurrence Network: weighted undirected network
     Edge: Hashtag --------- Hashtag
@@ -188,7 +188,11 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges, node_weight = {}, {}, {}
-    for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
+    filter = {}
+    if len(uids) > 0:
+        filter['user.id'] = {'$in': uids}
+    filter['$where'] = 'this.entities.hashtags.length>0'
+    for row in cols.find(filter, no_cursor_timeout=True):
         hashtags = row['entities']['hashtags']
         # add self-loop for hashtags occurs alone
         # if len(hashtags) == 1:
@@ -202,10 +206,11 @@ def load_hashtag_coocurrent_network(db_name, collection='None'):
             node_weight[n1id] = w + 1
             for j in xrange(i+1, len(hashtags)):
                 n2 = hashtags[j]['text'].encode('utf-8').lower()
-                n2id = name_map.get(n2, len(name_map))
-                name_map[n2] = n2id
-                wt = edges.get((n1id, n2id), 0)
-                edges[(n1id, n2id)] = wt + 1
+                if n1 != n2:
+                    n2id = name_map.get(n2, len(name_map))
+                    name_map[n2] = n2id
+                    wt = edges.get((n1id, n2id), 0)
+                    edges[(n1id, n2id)] = wt + 1
     g = Graph(len(name_map), directed=False)
     #get key list of dict according to value ranking
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
@@ -367,6 +372,7 @@ def net_stat(g):
     # cluster_co_avg = g.transitivity_avglocal_undirected()
     recip = g.reciprocity()
     assort = g.assortativity_degree(directed=True)
+    print '#Node, #Edge, #Density, #Path, #Comp, %GCR, Cluster, Recip, Assort'
     print '%d, %d, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
 
 
