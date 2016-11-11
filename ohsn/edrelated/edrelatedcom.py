@@ -51,11 +51,11 @@ def rec_user(dbname, colname):
                 #             and 'food' not in sentence and 'body' not in sentence\
                 #             and 'proed' not in sentence and 'proana' not in sentence and 'promia' not in sentence:
                 #         FLAG = True
-                if 'fight' in sentence:
-                    if 'thin' not in sentence and 'weight' not in sentence \
-                            and 'mirror' not in sentence and 'figure' not in sentence \
-                            and 'food' not in sentence and 'body' not in sentence:
-                        FLAG = True
+                # if 'fight' in sentence:
+                #     if 'thin' not in sentence and 'weight' not in sentence \
+                #             and 'mirror' not in sentence and 'figure' not in sentence \
+                #             and 'food' not in sentence and 'body' not in sentence:
+                #         FLAG = True
             # for sentence in sentences:
             #     if 'proed' in sentence or 'proana' in sentence or 'promia' in sentence:
             #         if 'not' not in sentence and \
@@ -68,6 +68,29 @@ def rec_user(dbname, colname):
                 count += 1
     print count
     return user_lit
+
+def proed_users(dbname, colname):
+    '''Get pro-ED users'''
+    user_list = []
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    count = 0
+    for user in com.find({}, ['id', 'id_str', 'screen_name', 'description']):
+        if profiles_check.check_ed_related_profile(user['description']):
+            text = user['description'].strip().lower().replace("-", "").replace('_', '')
+            sentences = re.split( r"\s*[,;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
+            FLAG = False
+            for sentence in sentences:
+                if 'proed' in sentence or 'proana' in sentence \
+                        or 'prothin' in sentence or 'thinspo' in sentence \
+                        or 'bonespo' in sentence or 'thinspiration' in sentence:
+                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence:
+                        FLAG = True
+            if FLAG:
+                user_list.append(user['id'])
+                count += 1
+    print count
+    return user_list
 
 
 def ed_user(dbname, colname):
@@ -177,6 +200,10 @@ def communit_topinflu(fclus, weight):
         for uid in gt.most_pagerank(g, 15, weight):
             user = com.find_one({'id': int(uid)}, ['id', 'screen_name', 'name', 'description'])
             print str(user['id']) + '\t' + user['screen_name'].encode('utf-8') + '\t' + user['name'].encode('utf-8') +'\t'+ ' '.join(user['description'].split()).encode('utf-8')
+
+
+def pro_ed_rec_network(dbname, comname, netname):
+    g = gt.load_network()
 
 
 def distribution_change(dbname, colname):
