@@ -162,7 +162,7 @@ def load_user_hashtag_network(db_name, collection='None'):
         # if len(hashtags) > 0:
         for hashtag in hashtags:
             # need no .encode('utf-8')
-            n2 = hashtag['text'].lower()
+            n2 = hashtag['text'].lower().replace('_', '').replace('-', '')
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
             n2id = name_map.get(n2, len(name_map))
@@ -189,6 +189,7 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
         cols = db[collection]
     name_map, edges, node_weight = {}, {}, {}
     filter = {}
+    tag_user = {}
     if len(uids) > 0:
         filter['user.id'] = {'$in': uids}
     filter['$where'] = 'this.entities.hashtags.length>0'
@@ -199,22 +200,33 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
         #     hashtags.append(hashtags[0])
         for i in xrange(len(hashtags)):
             # need no .encode('utf-8')
-            n1 = hashtags[i]['text'].encode('utf-8').lower()
+            n1 = hashtags[i]['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
             w = node_weight.get(n1id, 0)
             node_weight[n1id] = w + 1
+
+            user_set = tag_user.get(n1id, set())
+            user_set.add(row['user']['id'])
+            tag_user[n1id] = user_set
+
             for j in xrange(i+1, len(hashtags)):
-                n2 = hashtags[j]['text'].encode('utf-8').lower()
+                n2 = hashtags[j]['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
                 if n1 != n2:
                     n2id = name_map.get(n2, len(name_map))
                     name_map[n2] = n2id
-                    wt = edges.get((n1id, n2id), 0)
-                    edges[(n1id, n2id)] = wt + 1
+                    if n1id < n2id:
+                        wt = edges.get((n1id, n2id), 0)
+                        edges[(n1id, n2id)] = wt + 1
+                    else:
+                        wt = edges.get((n2id, n1id), 0)
+                        edges[(n2id, n1id)] = wt + 1
     g = Graph(len(name_map), directed=False)
     #get key list of dict according to value ranking
-    g.vs["name"] = list(sorted(name_map, key=name_map.get))
-    g.vs["weight"] = node_weight.values()
+    name_list = list(sorted(name_map, key=name_map.get))
+    g.vs["name"] = name_list
+    g.vs["weight"] = [node_weight[name_map[name]] for name in name_list]
+    g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list]
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
     return g
@@ -384,6 +396,10 @@ def most_pagerank(g, n=10, weight=None):
     return g.vs[(-arr).argsort()[:n].tolist()]['name']
 
 
+def graph_plot(g):
+    layout = g.layout("kk")
+    plot(g, layout=layout, bbox=(1200, 900))
+
 if __name__ == '__main__':
     g = load_beh_network('fed', 'sbnet', 'retweet')
     summary(g)
@@ -409,7 +425,7 @@ if __name__ == '__main__':
     print g.clusters()
     print g.components()
     layout = g.layout("kk")
-    plot(g, layout=layout, bbox=(1200, 900))
+    plot(g, layout=layout)
 
 
     # print g.es[g.get_eid('480706562', '386203927')]

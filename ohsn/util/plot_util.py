@@ -96,6 +96,7 @@ def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
 
 
 def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
+    #Least square fit
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
     Y = np.asarray(list_y, dtype=float)

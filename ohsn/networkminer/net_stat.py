@@ -103,7 +103,7 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
             output = ''
             # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
             maxv, minv = max(values), min(values)
-            vs = g.vs(foi_ge=minv, foi_le=maxv)
+            vs = g.vs.select(foi_ge=minv, foi_le=maxv)
             sg = g.subgraph(vs)
             t_node_size, t_edge_size = len(sg.vs), len(sg.es)
             output += db_field_name + ',' + str(t_node_size) + ',' + str(t_edge_size) + ',' \
@@ -115,7 +115,7 @@ def feature_assort_friend(g, dbname, comname, db_field_names, directed=True):
             for i in xrange(3000):
                 np.random.shuffle(raw_values)
                 g.vs["foi"] = raw_values
-                vs = g.vs(foi_ge=minv, foi_le=maxv)
+                vs = g.vs.select(foi_ge=minv, foi_le=maxv)
                 sg = g.subgraph(vs)
                 ass_list.append(sg.assortativity('foi', 'foi', directed=directed))
             ass_list = np.array(ass_list)
