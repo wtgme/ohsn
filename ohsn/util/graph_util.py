@@ -194,13 +194,17 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
         filter['user.id'] = {'$in': uids}
     filter['$where'] = 'this.entities.hashtags.length>0'
     for row in cols.find(filter, no_cursor_timeout=True):
+        # if 'retweeted_status' in row:
+        #     continue
         hashtags = row['entities']['hashtags']
-        # add self-loop for hashtags occurs alone
-        # if len(hashtags) == 1:
-        #     hashtags.append(hashtags[0])
-        for i in xrange(len(hashtags)):
+        hash_set = set()
+        for hash in hashtags:
             # need no .encode('utf-8')
-            n1 = hashtags[i]['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        hash_list = list(hash_set)
+        # print hash_list
+        for i in xrange(len(hash_list)):
+            n1 = hash_list[i]
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
             w = node_weight.get(n1id, 0)
@@ -210,8 +214,8 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
             user_set.add(row['user']['id'])
             tag_user[n1id] = user_set
 
-            for j in xrange(i+1, len(hashtags)):
-                n2 = hashtags[j]['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            for j in xrange(i+1, len(hash_list)):
+                n2 = hash_list[j]
                 if n1 != n2:
                     n2id = name_map.get(n2, len(name_map))
                     name_map[n2] = n2id
@@ -221,14 +225,23 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
                     else:
                         wt = edges.get((n2id, n1id), 0)
                         edges[(n2id, n1id)] = wt + 1
-    g = Graph(len(name_map), directed=False)
+    g = Graph(len(name_map), directed=True)
     #get key list of dict according to value ranking
     name_list = list(sorted(name_map, key=name_map.get))
     g.vs["name"] = name_list
     g.vs["weight"] = [node_weight[name_map[name]] for name in name_list]
     g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list]
-    g.add_edges(edges.keys())
-    g.es["weight"] = edges.values()
+    edges_list, edge_weights = [], []
+    for (n1, n2) in edges.keys():
+        edges_list.append((n1, n2))
+        edges_list.append((n2, n1))
+        # if float(edges[(n1, n2)])/node_weight[n1] > 1 or float(edges[(n1, n2)])/node_weight[n2]>1:
+        #     print edges[(n1, n2)], node_weight[n1], node_weight[n2]
+        edge_weights.append(float(edges[(n1, n2)])/node_weight[n1])
+        edge_weights.append(float(edges[(n1, n2)])/node_weight[n2])
+    # g.add_edges(edges.keys())
+    g.add_edges(edges_list)
+    g.es["weight"] = edge_weights
     return g
 
 
@@ -410,8 +423,8 @@ if __name__ == '__main__':
     #     print v['name'], v['gbmi']
 
     '''to_undirected (mode="collapse")
-    collapse: only keep one edge of multiple edges
-    mutual: ONLY create one edge for nodes if they have multiple edges
+    collapse: only keep one edge of multiple edges One undirected edge will be created for each pair of vertices which are connected with at least one directed edge, no multiple edges will be created.
+    mutual: ONLY create one edge for nodes if they have multiple edges, One undirected edge will be created for each pair of mutual edges. Non-mutual edges are ignored. This mode might create multiple edges if there are more than one mutual edge pairs between the same pair of vertices.
     '''
 
     g = Graph([(0,1), (0,2), (2,0), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)], directed=True)
