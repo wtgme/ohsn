@@ -89,6 +89,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['u_'+field for field in prof_names])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['f_'+field for field in prof_names])
+    attr_names.append('f_num')
     print attr_names
     network1 = gt.load_network(dbname1, 'net')
     data = []
@@ -125,6 +126,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fatts = np.array(fatts)
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
+                    row.append(len(fatts))
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
