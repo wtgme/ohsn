@@ -85,6 +85,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
         row = []
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
+        print u1
         if u2 is None or u2['timeline_count'] == 0:
             row.append(0)
         else:
@@ -99,17 +100,20 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
             exist = False
         if exist:
             friends = network1.neighbors(str(uid))
-            friend_ids = [int(network1.vs[v]['name']) for v in friends]
-            print uid in friend_ids
-            fatts = []
-            for fid in friend_ids:
-                fu = com1.find_one({'id': fid})
-                fatt = iot.get_fields_one_doc(fu, fields)
-                fatt.append(active_days(fu))
-                fatts.append(fatt)
-            fatts = np.array(fatts)
-            fmatts = np.mean(fatts, axis=0)
-            row.append(fmatt for fmatt in fmatts)
+            if len(friends) > 0:
+                friend_ids = [int(network1.vs[v]['name']) for v in friends]
+                print uid in friend_ids
+                fatts = []
+                for fid in friend_ids:
+                    fu = com1.find_one({'id': fid})
+                    if fu != None:
+                        fatt = iot.get_fields_one_doc(fu, fields)
+                        fatt.append(active_days(fu))
+                        fatts.append(fatt)
+                if len*
+                fatts = np.array(fatts)
+                fmatts = np.mean(fatts, axis=0)
+                row.append(fmatt for fmatt in fmatts)
         data.append(row)
     df = pd.DataFrame(data)
     df.to_csv('data.csv')
