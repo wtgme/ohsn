@@ -54,12 +54,14 @@ def friend_user_change(dbname1, dbname2, comname1, comname2):
                 user_changes.append(user_change)
         pltt.correlation(friends_changes, user_changes, r'$\Delta$(F_'+field+')', r'$\Delta$(U_'+field+')', field+'-friend-user.pdf')
 
+
 def active_days(user):
     ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     delta = tts.date() - ts.date()
     days = delta.days+1
     return days
+
 
 def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists':True}}
@@ -89,6 +91,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
             row.append(1)
         uatt = iot.get_fields_one_doc(u1, fields)
         row.append(att for att in uatt)
+        row.append(active_days(u1))
         exist = True
         try:
             v = network1.vs.find(name=str(uid))
@@ -102,6 +105,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
             for fid in friend_ids:
                 fu = com1.find_one({'id': fid})
                 fatt = iot.get_fields_one_doc(fu, fields)
+                fatt.append(active_days(fu))
                 fatts.append(fatt)
             fatts = np.array(fatts)
             fmatts = np.mean(fatts, axis=0)
@@ -139,4 +143,5 @@ if __name__ == '__main__':
 
     # print [network1.vs[v]['name'] for v in friends_old]
     # print friends_old
-    states_change('fed', 'fed2', 'com', 'com')
+    # states_change('fed', 'fed2', 'com', 'com')
+    emotion_dropout_IV('fed', 'fed2', 'com', 'com')
