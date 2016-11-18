@@ -61,11 +61,19 @@ def active_days(user):
     tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     delta = tts.date() - ts.date()
     days = delta.days+1
-    return days
+    status_count = abs(float(user['statuses_count']))
+    friend_count = abs(float(user['friends_count']))
+    follower_count = abs(float(user['followers_count']))
+    friends_day = friend_count/days
+    statuses_day = status_count/days
+    followers_day = follower_count/days
+    return[friend_count, status_count, follower_count,
+           friends_day, statuses_day, followers_day,
+           days]
 
 
 def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
-    filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists':True}}
+    filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
     user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
     com1 = dbt.db_connect_col(dbname1, comname1)
     com2 = dbt.db_connect_col(dbname2, comname2)
@@ -73,18 +81,14 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.negemo',
               'liwc_anal.result.anx',
               'liwc_anal.result.anger',
-              'liwc_anal.result.sad',
-              'engage.friend_count',
-              'engage.status_count',
-              'engage.follower_count',
-              'engage.friends_day',
-              'engage.statuses_day',
-              'engage.followers_day']
+              'liwc_anal.result.sad']
+    prof_names = ['friends_count', 'statuses_count', 'followers_count',
+        'friends_day', 'statuses_day', 'followers_day', 'days']
     attr_names = ['attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
-    attr_names.append('u_life')
+    attr_names.extend(['u_'+field for field in prof_names])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
-    attr_names.append('f_life')
+    attr_names.extend(['f_'+field for field in prof_names])
     print attr_names
     network1 = gt.load_network(dbname1, 'net')
     data = []
@@ -98,7 +102,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
             row.append(1)
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
-        row.append(active_days(u1))
+        row.extend(active_days(u1))
         exist = True
         try:
             v = network1.vs.find(name=str(uid))
@@ -115,7 +119,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
-                        fatt.append(active_days(fu))
+                        fatt.extend(active_days(fu))
                         fatts.append(fatt)
                 if len(fatts) > 0:
                     fatts = np.array(fatts)
