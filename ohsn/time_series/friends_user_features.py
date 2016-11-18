@@ -56,6 +56,7 @@ def friend_user_change(dbname1, dbname2, comname1, comname2):
 
 
 def active_days(user):
+    # print user['id']
     ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
     delta = tts.date() - ts.date()
@@ -79,19 +80,24 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
               'engage.friends_day',
               'engage.statuses_day',
               'engage.followers_day']
+    attr_names = ['attr']
+    attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
+    attr_names.append('u_life')
+    attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
+    attr_names.append('f_life')
+    print attr_names
     network1 = gt.load_network(dbname1, 'net')
     data = []
     for uid in user1:
         row = []
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
-        print u1
         if u2 is None or u2['timeline_count'] == 0:
             row.append(0)
         else:
             row.append(1)
         uatt = iot.get_fields_one_doc(u1, fields)
-        row.append(att for att in uatt)
+        row.extend(uatt)
         row.append(active_days(u1))
         exist = True
         try:
@@ -103,20 +109,22 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
             if len(friends) > 0:
                 friend_ids = [int(network1.vs[v]['name']) for v in friends]
                 print uid in friend_ids
+                print len(friend_ids)
                 fatts = []
                 for fid in friend_ids:
-                    fu = com1.find_one({'id': fid})
+                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.append(active_days(fu))
                         fatts.append(fatt)
-                if len*
-                fatts = np.array(fatts)
-                fmatts = np.mean(fatts, axis=0)
-                row.append(fmatt for fmatt in fmatts)
+                if len(fatts) > 0:
+                    fatts = np.array(fatts)
+                    fmatts = np.mean(fatts, axis=0)
+                    row.extend(fmatts)
+        # print row
         data.append(row)
-    df = pd.DataFrame(data)
-    df.to_csv('data.csv')
+    df = pd.DataFrame(data, columns=attr_names)
+    df.to_csv('data.csv', index = False)
 
 
 def states_change(dbname1, dbname2, comname1, comname2):
