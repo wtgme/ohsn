@@ -72,6 +72,16 @@ def active_days(user):
            days]
 
 
+def before_after(u1, u2):
+    u1tts = datetime.strptime(u1['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    u2tts = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    delta = u1tts.date() - u2tts.date()
+    if delta.days >= 0:
+        return 1
+    else:
+        return 0
+    
+
 def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
     user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
@@ -87,9 +97,12 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
     attr_names = ['attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
-    attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
-    attr_names.extend(['f_'+field for field in prof_names])
-    attr_names.append('f_num')
+    attr_names.extend(['fr_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['fr_'+field for field in prof_names])
+    attr_names.extend(['fr_num', 'fr_palive'])
+    attr_names.extend(['fo_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['fo_'+field for field in prof_names])
+    attr_names.extend(['fo_num', 'fo_palive'])
     print attr_names
     network1 = gt.load_network(dbname1, 'net')
     data = []
@@ -110,23 +123,55 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
         except ValueError:
             exist = False
         if exist:
-            friends = network1.neighbors(str(uid))
+            friends = network1.successors(str(uid)) # split into follower and followees
             if len(friends) > 0:
                 friend_ids = [int(network1.vs[v]['name']) for v in friends]
                 print uid in friend_ids
                 print len(friend_ids)
                 fatts = []
+                alive = 0
                 for fid in friend_ids:
                     fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+                    fu2 = com2.find_one({'id': uid})
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
                         fatts.append(fatt)
+                        if fu2 is None or fu2['timeline_count'] == 0:
+                            alive += 0
+                        else:
+                            alive += 1
                 if len(fatts) > 0:
                     fatts = np.array(fatts)
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
                     row.append(len(fatts))
+                    row.append(float(len(fatts))/alive)
+
+            friends = network1.predecessors(str(uid)) # split into follower and followees
+            if len(friends) > 0:
+                friend_ids = [int(network1.vs[v]['name']) for v in friends]
+                print uid in friend_ids
+                print len(friend_ids)
+                fatts = []
+                alive = 0
+                for fid in friend_ids:
+                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+                    fu2 = com2.find_one({'id': uid})
+                    if fu != None:
+                        fatt = iot.get_fields_one_doc(fu, fields)
+                        fatt.extend(active_days(fu))
+                        fatts.append(fatt)
+                        if fu2 is None or fu2['timeline_count'] == 0:
+                            alive += 0
+                        else:
+                            alive += 1
+                if len(fatts) > 0:
+                    fatts = np.array(fatts)
+                    fmatts = np.mean(fatts, axis=0)
+                    row.extend(fmatts)
+                    row.append(len(fatts))
+                    row.append(float(len(fatts))/alive)
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
