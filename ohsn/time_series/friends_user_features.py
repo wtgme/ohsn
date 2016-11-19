@@ -146,7 +146,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
                     row.append(len(fatts))
-                    row.append(float(len(fatts))/alive)
+                    row.append(float(alive)/len(fatts))
 
             friends = network1.predecessors(str(uid)) # split into follower and followees
             if len(friends) > 0:
@@ -171,7 +171,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
                     row.append(len(fatts))
-                    row.append(float(len(fatts))/alive)
+                    row.append(float(alive)/len(fatts))
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
