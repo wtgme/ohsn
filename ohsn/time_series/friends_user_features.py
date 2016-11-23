@@ -82,7 +82,15 @@ def before_after(u1, u2):
         return 0
     
 
-def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
+def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
+    '''
+    Split followees and followers as different variables
+    :param dbname1:
+    :param dbname2:
+    :param comname1:
+    :param comname2:
+    :return:
+    '''
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
     user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
     com1 = dbt.db_connect_col(dbname1, comname1)
@@ -94,7 +102,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.sad']
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days']
-    attr_names = ['attr']
+    attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
     attr_names.extend(['fr_'+field.split('.')[-1] for field in fields])
@@ -107,7 +115,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
     network1 = gt.load_network(dbname1, 'net')
     data = []
     for uid in user1:
-        row = []
+        row = [uid]
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
         if u2 is None or u2['timeline_count'] == 0:
@@ -123,7 +131,12 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
         except ValueError:
             exist = False
         if exist:
-            friends = network1.successors(str(uid)) # split into follower and followees
+            followees = set([int(network1.vs[v]['name']) for v in network1.successors(str(uid))])
+            followers = set([int(network1.vs[v]['name']) for v in network1.predecessors(str(uid))])
+            common = followees.intersection(followers)
+            followees = followees - common
+            followers = followers - common
+            for friends in [followees, followers, common]:
             if len(friends) > 0:
                 friend_ids = [int(network1.vs[v]['name']) for v in friends]
                 print uid in friend_ids
@@ -132,7 +145,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                 alive = 0
                 for fid in friend_ids:
                     fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
-                    fu2 = com2.find_one({'id': uid})
+                    fu2 = com2.find_one({'id': fid})
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
@@ -146,10 +159,11 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
                     row.append(len(fatts))
-                    print 'Alive %d' % alive
-                    row.append((float(alive)/len(fatts)))
+                    paliv = float(alive)/len(fatts)
+                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                    row.append(paliv)
 
-            friends = network1.predecessors(str(uid)) # split into follower and followees
+            friends = followers # followers
             if len(friends) > 0:
                 friend_ids = [int(network1.vs[v]['name']) for v in friends]
                 print uid in friend_ids
@@ -158,7 +172,7 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                 alive = 0
                 for fid in friend_ids:
                     fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
-                    fu2 = com2.find_one({'id': uid})
+                    fu2 = com2.find_one({'id': fid})
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
@@ -172,12 +186,91 @@ def emotion_dropout_IV(dbname1, dbname2, comname1, comname2):
                     fmatts = np.mean(fatts, axis=0)
                     row.extend(fmatts)
                     row.append(len(fatts))
-                    print 'Alive %d' % alive
-                    row.append((float(alive)/len(fatts)))
+                    paliv = float(alive)/len(fatts)
+                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                    row.append(paliv)
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
-    df.to_csv('data.csv', index = False)
+    df.to_csv('data-attr-split.csv', index = False)
+
+
+def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
+    '''
+    Combine followees and follower together as variables
+    :param dbname1:
+    :param dbname2:
+    :param comname1:
+    :param comname2:
+    :return:
+    '''
+    filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
+    user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
+    com1 = dbt.db_connect_col(dbname1, comname1)
+    com2 = dbt.db_connect_col(dbname2, comname2)
+    fields = ['liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad']
+    prof_names = ['friends_count', 'statuses_count', 'followers_count',
+        'friends_day', 'statuses_day', 'followers_day', 'days']
+    attr_names = ['uid', 'attr']
+    attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['u_'+field for field in prof_names])
+    attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['f_'+field for field in prof_names])
+    attr_names.extend(['f_num', 'f_palive'])
+    print attr_names
+    network1 = gt.load_network(dbname1, 'net')
+    data = []
+    for uid in user1:
+        row = [uid]
+        u1 = com1.find_one({'id': uid})
+        u2 = com2.find_one({'id': uid})
+        if u2 is None or u2['timeline_count'] == 0:
+            row.append(0)
+        else:
+            row.append(1)
+        uatt = iot.get_fields_one_doc(u1, fields)
+        row.extend(uatt)
+        row.extend(active_days(u1))
+        exist = True
+        try:
+            v = network1.vs.find(name=str(uid))
+        except ValueError:
+            exist = False
+        if exist:
+            friends = set(network1.neighbors(str(uid)))
+            if len(friends) > 0:
+                friend_ids = [int(network1.vs[v]['name']) for v in friends]
+                print uid in friend_ids
+                print len(friend_ids)
+                fatts = []
+                alive = 0
+                for fid in friend_ids:
+                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+                    fu2 = com2.find_one({'id': fid})
+                    if fu != None:
+                        fatt = iot.get_fields_one_doc(fu, fields)
+                        fatt.extend(active_days(fu))
+                        fatts.append(fatt)
+                        if fu2 is None or fu2['timeline_count'] == 0:
+                            alive += 0
+                        else:
+                            alive += 1
+                if len(fatts) > 0:
+                    fatts = np.array(fatts)
+                    fmatts = np.mean(fatts, axis=0)
+                    row.extend(fmatts)
+                    row.append(len(fatts))
+                    paliv = float(alive)/len(fatts)
+                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                    row.append(paliv)
+        # print row
+        data.append(row)
+    df = pd.DataFrame(data, columns=attr_names)
+    df.to_csv('data-attr-combine.csv', index = False)
 
 
 def states_change(dbname1, dbname2, comname1, comname2):
@@ -209,4 +302,5 @@ if __name__ == '__main__':
     # print [network1.vs[v]['name'] for v in friends_old]
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
-    emotion_dropout_IV('fed', 'fed2', 'com', 'com')
+    emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
+    emotion_dropout_IV_combine('fed', 'fed2', 'com', 'com')
