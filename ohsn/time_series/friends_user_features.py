@@ -111,7 +111,11 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['fo_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['fo_'+field for field in prof_names])
     attr_names.extend(['fo_num', 'fo_palive'])
+    attr_names.extend(['co_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['co_'+field for field in prof_names])
+    attr_names.extend(['co_num', 'co_palive'])
     print attr_names
+    attr_length = len(fields) + len(prof_names) + 2
     network1 = gt.load_network(dbname1, 'net')
     data = []
     for uid in user1:
@@ -136,59 +140,60 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
             common = followees.intersection(followers)
             followees = followees - common
             followers = followers - common
-            for friends in [followees, followers, common]:
-            if len(friends) > 0:
-                friend_ids = [int(network1.vs[v]['name']) for v in friends]
-                print uid in friend_ids
-                print len(friend_ids)
-                fatts = []
-                alive = 0
-                for fid in friend_ids:
-                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
-                    fu2 = com2.find_one({'id': fid})
-                    if fu != None:
-                        fatt = iot.get_fields_one_doc(fu, fields)
-                        fatt.extend(active_days(fu))
-                        fatts.append(fatt)
-                        if fu2 is None or fu2['timeline_count'] == 0:
-                            alive += 0
-                        else:
-                            alive += 1
-                if len(fatts) > 0:
-                    fatts = np.array(fatts)
-                    fmatts = np.mean(fatts, axis=0)
-                    row.extend(fmatts)
-                    row.append(len(fatts))
-                    paliv = float(alive)/len(fatts)
-                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
-                    row.append(paliv)
-
-            friends = followers # followers
-            if len(friends) > 0:
-                friend_ids = [int(network1.vs[v]['name']) for v in friends]
-                print uid in friend_ids
-                print len(friend_ids)
-                fatts = []
-                alive = 0
-                for fid in friend_ids:
-                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
-                    fu2 = com2.find_one({'id': fid})
-                    if fu != None:
-                        fatt = iot.get_fields_one_doc(fu, fields)
-                        fatt.extend(active_days(fu))
-                        fatts.append(fatt)
-                        if fu2 is None or fu2['timeline_count'] == 0:
-                            alive += 0
-                        else:
-                            alive += 1
-                if len(fatts) > 0:
-                    fatts = np.array(fatts)
-                    fmatts = np.mean(fatts, axis=0)
-                    row.extend(fmatts)
-                    row.append(len(fatts))
-                    paliv = float(alive)/len(fatts)
-                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
-                    row.append(paliv)
+            for friend_ids in [followees, followers, common]:
+                if len(friend_ids) > 0:
+                    # friend_ids = [int(network1.vs[v]['name']) for v in friends]
+                    print uid in friend_ids
+                    print len(friend_ids)
+                    fatts = []
+                    alive = 0
+                    for fid in friend_ids:
+                        fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+                        fu2 = com2.find_one({'id': fid})
+                        if fu != None:
+                            fatt = iot.get_fields_one_doc(fu, fields)
+                            fatt.extend(active_days(fu))
+                            fatts.append(fatt)
+                            if fu2 is None or fu2['timeline_count'] == 0:
+                                alive += 0
+                            else:
+                                alive += 1
+                    if len(fatts) > 0:
+                        fatts = np.array(fatts)
+                        fmatts = np.mean(fatts, axis=0)
+                        row.extend(fmatts)
+                        row.append(len(fatts))
+                        paliv = float(alive)/len(fatts)
+                        print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                        row.append(paliv)
+                else:
+                    row.extend([None] * attr_length)
+            # friends = followers # followers
+            # if len(friends) > 0:
+            #     friend_ids = [int(network1.vs[v]['name']) for v in friends]
+            #     print uid in friend_ids
+            #     print len(friend_ids)
+            #     fatts = []
+            #     alive = 0
+            #     for fid in friend_ids:
+            #         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+            #         fu2 = com2.find_one({'id': fid})
+            #         if fu != None:
+            #             fatt = iot.get_fields_one_doc(fu, fields)
+            #             fatt.extend(active_days(fu))
+            #             fatts.append(fatt)
+            #             if fu2 is None or fu2['timeline_count'] == 0:
+            #                 alive += 0
+            #             else:
+            #                 alive += 1
+            #     if len(fatts) > 0:
+            #         fatts = np.array(fatts)
+            #         fmatts = np.mean(fatts, axis=0)
+            #         row.extend(fmatts)
+            #         row.append(len(fatts))
+            #         paliv = float(alive)/len(fatts)
+            #         print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+            #         row.append(paliv)
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
