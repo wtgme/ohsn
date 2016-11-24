@@ -23,7 +23,7 @@ def load_network(db_name, collection='None'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, set()
-    for row in cols.find():
+    for row in cols.find({},no_cursor_timeout=True):
         n1 = str(row['follower'])
         n2 = str(row['user'])
         n1id = name_map.get(n1, len(name_map))
@@ -159,10 +159,11 @@ def load_user_hashtag_network(db_name, collection='None'):
     for row in cols.find({'$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
         n1 = row['user']['id_str']
         hashtags = row['entities']['hashtags']
-        # if len(hashtags) > 0:
-        for hashtag in hashtags:
+        hash_set = set()
+        for hash in hashtags:
             # need no .encode('utf-8')
-            n2 = hashtag['text'].lower().replace('_', '').replace('-', '')
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        for n2 in hash_set:
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
             n2id = name_map.get(n2, len(name_map))

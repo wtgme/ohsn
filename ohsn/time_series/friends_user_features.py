@@ -123,9 +123,9 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
         if u2 is None or u2['timeline_count'] == 0:
-            row.append(0)
-        else:
             row.append(1)
+        else:
+            row.append(0)
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
@@ -135,6 +135,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
         except ValueError:
             exist = False
         if exist:
+            print '--------------------user %d---------------' %uid
             followees = set([int(network1.vs[v]['name']) for v in network1.successors(str(uid))])
             followers = set([int(network1.vs[v]['name']) for v in network1.predecessors(str(uid))])
             common = followees.intersection(followers)
@@ -234,9 +235,9 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
         if u2 is None or u2['timeline_count'] == 0:
-            row.append(0)
-        else:
             row.append(1)
+        else:
+            row.append(0)
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))

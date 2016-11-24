@@ -1,11 +1,11 @@
 if(FALSE){
-install.packages('igraph')
-install.packages('network')
-install.packages('sna')
-install.packages('ndtv')
-install.packages('visNetwork')
-install.packages('RColorBrewer')
-install.packages("poweRlaw")
+  install.packages('igraph')
+  install.packages('network')
+  install.packages('sna')
+  install.packages('ndtv')
+  install.packages('visNetwork')
+  install.packages('RColorBrewer')
+  install.packages("poweRlaw")
 }
 
 # library("tcltk") 
@@ -23,7 +23,7 @@ links <- E(net)
 
 #-----------------------------------------------------------------------------------------
 # attribute distribution
-d = links$weight
+d = nodes$weight
 
 min(d)
 max(d)
@@ -38,7 +38,7 @@ dmin = min(d)-1
 d = d-dmin
 min(d)
 
-xl = 'Link Weight'
+xl = 'Node Weight'
 m1 = displ$new(d)
 m1$setXmin(estimate_xmin(m1))
 
@@ -66,7 +66,8 @@ plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too s
 
 # Giant component
 net.components <- clusters(net, mode='weak')
-den = density(net.components$csize)
+den = density(net.components$csize[net.components$csize<1000])
+hist(net.components$csize, xlab=expression('|c[i]|'), ylab='PDF', main='')
 plot(den, xlab=expression('|c[i]|'), ylab='PDF', main='')
 
 ix <- which.max(net.components$csize)
@@ -111,7 +112,7 @@ plot(net, vertex.size=kc*6, vertex.label=kc, vertex.color=colrs[kc], layout=layo
 #http://stackoverflow.com/questions/33005510/algorithm-of-community-edge-betweenness-in-python-igraph-implementation for communtiy detection in directed graph 
 net = net.giant
 ceb <- cluster_infomap(net, e.weights=E(net)$weight, v.weights=V(net)$weight) # setting v.weights=NULL has no difference
-# ceb = cluster_louvain(net, weights = E(net)$weight)
+# ceb = cluster_edge_betweenness(net, weights = E(net)$weight)
 # dendPlot(ceb, mode="hclust")
 # plot(ceb, net, mark.groups = NULL)
 
@@ -150,18 +151,20 @@ V(G)$label[V(G)$weight>1000] <- V(G)$name[V(G)$weight>1000]
 V(G)$label.color <- 'black'
 plot(G)
 
-sizes(c)
+length(sizes(c)[sizes(c)>5])
 plot(sizes(c), xlab='c', ylab='size(c)')
-plot(density(sizes(c)))
+plot(density(sizes(c)[sizes(c)>30]))
 hist(sizes(c))
 which.max(sizes(c))
 for(cc in levels(as.factor(c$membership))){
-  F <- delete.vertices(G,c$membership!=4)
+  F <- delete.vertices(G,c$membership!= 113)
+  V(F)$label <- V(F)$name
   V(F)$label[V(F)$weight>100] <- V(F)$name[V(F)$weight>100]
-  V(F)$size <- log(V(F)$weight)*2
+  # V(F)$size <- log(V(F)$weight)*2
   # V(F)$label.color <- 'red'
   plot(F, layout=layout_with_fr)
-``}
+  
+}
 
 
 #-----------------------------------------------------------------------------------------
