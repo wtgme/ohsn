@@ -205,7 +205,8 @@ def communit_topinflu(fclus, weight):
 
 
 def pro_ed_rec_network(dbname, comname, netname):
-    g = gt.load_network(dbname, netname)
+    # g = gt.load_network(dbname, netname)
+    g = gt.load_beh_network(dbname, 'sbnet', 'mention')
     rec_users = rec_user(dbname, comname)
     pro_users = proed_users(dbname, comname)
 
@@ -219,7 +220,7 @@ def pro_ed_rec_network(dbname, comname, netname):
         except ValueError:
             exist = False
         if exist:
-            v['set'] += 1
+            v['set'] += 1 # +1 Pro-rec
     for user in pro_users:
         exist = True
         try:
@@ -227,21 +228,21 @@ def pro_ed_rec_network(dbname, comname, netname):
         except ValueError:
             exist = False
         if exist:
-            v['set'] -= 1
+            v['set'] -= 1 # -1 Pro-ED
     vs = g.vs(set_ne=0)
     sg = g.subgraph(vs)
     gt.net_stat(sg)
-    sgc = gt.giant_component(sg)
-    gt.net_stat(sgc)
+    # sgc = gt.giant_component(sg)
+    # gt.net_stat(sgc)
 
     '''Test signifi'''
-    raw_assort = sgc.assortativity('set', 'set', directed=True)
-    raw_values = np.array(sgc.vs['set'])
+    raw_assort = sg.assortativity('set', 'set', directed=True)
+    raw_values = np.array(sg.vs['set'])
     ass_list = list()
     for i in xrange(3000):
         np.random.shuffle(raw_values)
-        sgc.vs["set"] = raw_values
-        ass_list.append(sgc.assortativity('set', 'set', directed=True))
+        sg.vs["set"] = raw_values
+        ass_list.append(sg.assortativity('set', 'set', directed=True))
     ass_list = np.array(ass_list)
     amean, astd = np.mean(ass_list), np.std(ass_list)
 
@@ -251,7 +252,7 @@ def pro_ed_rec_network(dbname, comname, netname):
     zscore = (raw_assort-amean)/astd
     print '%.3f, %.3f, %.3f, %.3f, %.3f' %(raw_assort, amean, astd, zscore, pval)
     # print str(raw_assort) + ',' + str(amean) + ',' + str(astd) + ',' + str(zscore) + ',' + str(pval)
-    sgc.write_graphml('pro-ed-rec.graphml')
+    sg.write_graphml('pro-ed-rec-mention.graphml')
 
 def distribution_change(dbname, colname):
     rec_users1 = pickle.load(open('data/pro-recovery.pick', 'r'))

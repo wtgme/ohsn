@@ -15,7 +15,9 @@ library("poweRlaw")
 
 #-----------------------------------------------------------------------------------------
 # Load Network
-net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
+# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
+# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_weighted_follow.graphml", format="graphml")
+net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-retweet.graphml", format="graphml")
 net
 nodes <- V(net)
 links <- E(net)
@@ -23,7 +25,7 @@ links <- E(net)
 
 #-----------------------------------------------------------------------------------------
 # attribute distribution
-d = nodes$weight
+d = links$weight
 
 min(d)
 max(d)
@@ -60,6 +62,16 @@ V(net)$label <- ''
 V(net)$label[V(net)$weight>2500] <- V(net)$name[V(net)$weight>2500] 
 V(net)$label.color <- 'black'
 E(net)$width <- log(E(net)$weight)
+E(net)$arrow.mode <- 0
+plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+
+V(net)$size <- 4
+V(net)$frame.color <- "white"
+V(net)$color[V(net)$set>0] <- "lightsteelblue2"
+V(net)$color[V(net)$set<0] <- "tomato"
+V(net)$label <- ''
+V(net)$label.color <- 'black'
+E(net)$width <- E(net)$weight
 E(net)$arrow.mode <- 0
 plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
 
@@ -153,11 +165,11 @@ plot(G)
 
 length(sizes(c)[sizes(c)>5])
 plot(sizes(c), xlab='c', ylab='size(c)')
-plot(density(sizes(c)[sizes(c)>30]))
+plot(density(sizes(c)[sizes(c)<30]))
 hist(sizes(c))
 which.max(sizes(c))
 for(cc in levels(as.factor(c$membership))){
-  F <- delete.vertices(G,c$membership!= 113)
+  F <- delete.vertices(G,c$membership!= 200)
   V(F)$label <- V(F)$name
   V(F)$label[V(F)$weight>100] <- V(F)$name[V(F)$weight>100]
   # V(F)$size <- log(V(F)$weight)*2
