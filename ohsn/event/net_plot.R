@@ -17,8 +17,10 @@ library("poweRlaw")
 # Load Network
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_weighted_follow.graphml", format="graphml")
-net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-retweet.graphml", format="graphml")
+# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-mention.graphml", format="graphml")
+net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_follow_cluster.graphml", format="graphml")
 net
+assortativity(net, V(net)$cluster, V(net)$cluster)
 nodes <- V(net)
 links <- E(net)
 #-----------------------------------------------------------------------------------------
@@ -65,15 +67,18 @@ E(net)$width <- log(E(net)$weight)
 E(net)$arrow.mode <- 0
 plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
 
-V(net)$size <- 4
+
+
+deg <- degree(net, mode="all")
+V(net)$size <- log(1+)
 V(net)$frame.color <- "white"
-V(net)$color[V(net)$set>0] <- "lightsteelblue2"
-V(net)$color[V(net)$set<0] <- "tomato"
+V(net)$color[V(net)$cluster>0] <- "lightsteelblue2"
+V(net)$color[V(net)$cluster<=0] <- "tomato"
 V(net)$label <- ''
 V(net)$label.color <- 'black'
-E(net)$width <- E(net)$weight
+E(net)$width <- E(net)$weight*3
 E(net)$arrow.mode <- 0
-plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+plot(net, layout=layout_with_kk) #layout_with_fr NEVER use layout_with_kk, too slow
 
 
 # Giant component
@@ -169,7 +174,8 @@ plot(density(sizes(c)[sizes(c)<30]))
 hist(sizes(c))
 which.max(sizes(c))
 for(cc in levels(as.factor(c$membership))){
-  F <- delete.vertices(G,c$membership!= 200)
+  # F <- delete.vertices(G,c$membership!= 200)
+  F <- delete.vertices(G,V(G)[ V(G)[cluster != 0] ])
   V(F)$label <- V(F)$name
   V(F)$label[V(F)$weight>100] <- V(F)$name[V(F)$weight>100]
   # V(F)$size <- log(V(F)$weight)*2

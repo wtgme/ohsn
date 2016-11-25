@@ -81,11 +81,18 @@ def community(g=None):
     index = 0
     hash_com = {}
     for comclu in comclus:
-        print '==================================='
         if comclu.vcount() > 10:
+        #     print 'Com', index, '==================================='
+        # else:
+        #     print '==================================='
+            tag_weight = {}
             for v in comclu.vs:
                 hash_com[v['name']] = index
+                tag_weight[v['name']] = v['weight']
             index += 1
+            sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
+            for key in sort_list:
+                print key, tag_weight[key]
     print len(hash_com)
     print len(set(hash_com.values()))
     print set(hash_com.values())
@@ -128,6 +135,7 @@ def user_hashtag_profile(dbname, hash_com):
 
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
 
+
 def remove_nan():
     user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
     for uid in user_hash_profile:
@@ -136,6 +144,46 @@ def remove_nan():
         user_hash_profile[uid] = prof
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
 
+
+def user_cluster_hashtag():
+    '''
+    Cluster users based on the profiles of hashtag preference
+    :return:
+    '''
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+    user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
+    X = np.array(user_hash_profile.values())
+    print X.shape
+
+    '''Select the best K for K-means'''
+    # range_n_clusters = range(2, 21)
+    # values = []
+    # for n_clusters in range_n_clusters:
+    #     clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+    #     cluster_labels = clusterer.fit_predict(X)
+    #     silhouette_avg = silhouette_score(X, cluster_labels)
+    #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+    #     values.append(silhouette_avg)
+    # print values
+    # print range_n_clusters
+
+    clusterer = KMeans(n_clusters=2, random_state=10)
+    cluster_labels = clusterer.fit_predict(X)
+    dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
+    net = gt.load_network('fed', 'snet')
+    for key in dictionary.keys():
+        exist = True
+        try:
+            v = net.vs.find(name=str(key))
+        except ValueError:
+            exist = False
+        if exist:
+            v['cluster'] = dictionary[key]
+
+    net.write_graphml('ed_follow_cluster.graphml')
+    raw_assort = net.assortativity('cluster', 'cluster', directed=True)
+    print raw_assort
 
 def friend_network_hashtag_weight(dbname, netname):
     '''
@@ -224,5 +272,7 @@ if __name__ == '__main__':
     # user_hashtag_profile('fed', hash_com)
     # pmi(g, filename='ed')
     # friend_network_hashtag_weight('fed', 'snet')
-    friend_community()
+    # friend_community()
     # plot_graph('ed_tag.graphml')
+
+    user_cluster_hashtag()
