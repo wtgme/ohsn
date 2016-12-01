@@ -59,7 +59,8 @@ def classification(train, test, outclss):
     X_train = scaler.transform(X_train)
     X_test, y_test = load_svmlight_file(test)
     X_test = X_test.toarray()
-    # print X_test.shape
+    print X_train.shape
+    print X_test.shape
     # for xi in X_test.T:
     #     print min(xi), max(xi)
     X_test = scaler.transform(X_test)
@@ -171,11 +172,12 @@ def plot_pclassification(pclares):
 
 def predict_verify(dbname, comname, testname, lables):
     ids = pickle.load(open(testname+'_ids.data', 'r'))
+    print len(ids), len(lables)
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     pred_users = []
     for i in xrange(len(ids)):
-        if lables[i] == 1:
+        if lables[i] == -1:
             pred_users.append(ids[i])
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
@@ -188,30 +190,30 @@ def predict_verify(dbname, comname, testname, lables):
 
 if __name__ == '__main__':
     '''classification with all features'''
-    # classification('data/ed-random.data', 'data/ed-tria.data',
-    #                'data/test_id_class.pick')
-    results = pickle.load(open('data/test_id_class.pick', 'r'))
+    # classification('data/ed-rd.data', 'data/fed.data',
+    #                'data/fed.pick')
+    results = pickle.load(open('data/fed.pick', 'r'))
     # plot_classification(results)
+
+    predict_verify('fed', 'com', 'data/fed', results)
+
+
+    # """Refine results with subset of features"""
+    # # classification_subfeature('data/ed-random.data', 'data/ed-tria.data',
+    # #                           'data/subfeature_test_id_class.pick')
+    # results2 = pickle.load(open('data/subfeature_test_id_class.pick', 'r'))
+    # print results2
     #
-    # predict_verify('fed', 'com', 'data/ed-tria', 'data/test_id_class.pick')
-
-
-    """Refine results with subset of features"""
-    # classification_subfeature('data/ed-random.data', 'data/ed-tria.data',
-    #                           'data/subfeature_test_id_class.pick')
-    results2 = pickle.load(open('data/subfeature_test_id_class.pick', 'r'))
-    print results2
-
-    """combine the results that are obtained with All features and subset of features"""
-    common = []
-    for i in xrange(len(results)):
-        if results[i]==1 and results2[i]==1:
-            common.append(+1)
-        else:
-            common.append(-1)
-    common = np.array(common)
-    print common.shape, results.shape, results2.shape
-    # plot_classification(common)
-
-    """verify results"""
-    predict_verify('fed', 'com', 'data/ed-tria', common)
+    # """combine the results that are obtained with All features and subset of features"""
+    # common = []
+    # for i in xrange(len(results)):
+    #     if results[i]==1 and results2[i]==1:
+    #         common.append(+1)
+    #     else:
+    #         common.append(-1)
+    # common = np.array(common)
+    # print common.shape, results.shape, results2.shape
+    # # plot_classification(common)
+    #
+    # """verify results"""
+    # predict_verify('fed', 'com', 'data/ed-tria', common)

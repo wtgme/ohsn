@@ -152,7 +152,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
                         if fu != None:
-                            fatt = iot.get_fields_one_doc(fu, fields)
+                            fatt = iot.get_fields_one_doc(fu, fields) # Friends' LIWC
                             fatt.extend(active_days(fu))
                             fatts.append(fatt)
                             if fu2 is None or fu2['timeline_count'] == 0:

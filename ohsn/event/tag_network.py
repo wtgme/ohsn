@@ -28,8 +28,8 @@ def pdf(data):
 def tag_record(dbname, colname, filename):
     # ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
     # print len(ed_users)
-    # g = gt.load_hashtag_coocurrent_network(dbname, colname, ed_users)
-    # pickle.dump(g, open('data/'+filename+'_tag.pick', 'w'))
+    g = gt.load_hashtag_coocurrent_network(dbname, colname)
+    pickle.dump(g, open('data/'+filename+'_tag.pick', 'w'))
     g = pickle.load(open('data/'+filename+'_tag.pick', 'r'))
     gt.net_stat(g)
     nodes = g.vs.select(weight_gt=3)
@@ -171,7 +171,27 @@ def user_cluster_hashtag():
     clusterer = KMeans(n_clusters=2, random_state=10)
     cluster_labels = clusterer.fit_predict(X)
     dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
+
+    print 'Follow network'
     net = gt.load_network('fed', 'snet')
+    gt.net_stat(net)
+    cluster_assort(dictionary, net)
+    # print 'Retweet network'
+    # net = gt.load_beh_network('fed', 'sbnet', 'retweet')
+    # gt.net_stat(net)
+    # cluster_assort(dictionary, net)
+    # print 'Reply network'
+    # net = gt.load_beh_network('fed', 'sbnet', 'reply')
+    # gt.net_stat(net)
+    # cluster_assort(dictionary, net)
+    # print 'Mention network'
+    # net = gt.load_beh_network('fed', 'sbnet', 'mention')
+    # gt.net_stat(net)
+    # cluster_assort(dictionary, net)
+
+
+
+def cluster_assort(dictionary, net):
     for key in dictionary.keys():
         exist = True
         try:
@@ -180,10 +200,10 @@ def user_cluster_hashtag():
             exist = False
         if exist:
             v['cluster'] = dictionary[key]
-
     net.write_graphml('ed_follow_cluster.graphml')
     raw_assort = net.assortativity('cluster', 'cluster', directed=True)
-    print raw_assort
+    print '%.3f' %raw_assort
+
 
 def friend_network_hashtag_weight(dbname, netname):
     '''
@@ -267,7 +287,7 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    # g = tag_record('fed', 'timeline', 'ed')
+    g = tag_record('fed', 'timeline', 'fed')
     # hash_com = community()
     # user_hashtag_profile('fed', hash_com)
     # pmi(g, filename='ed')
@@ -275,4 +295,4 @@ if __name__ == '__main__':
     # friend_community()
     # plot_graph('ed_tag.graphml')
 
-    user_cluster_hashtag()
+    # user_cluster_hashtag()

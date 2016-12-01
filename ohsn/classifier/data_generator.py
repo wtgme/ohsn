@@ -79,9 +79,9 @@ def color_classify(userlabels, field_names, file_name, dbname):
 
 
 def feature_output(field_names, file_name, dbname, label, outids=False, userset=[]):
-    fw = open(file_name+'.data', 'w')
+    fw = open(file_name+'.data', 'a')
     db = dbt.db_connect_no_auth(dbname)
-    poi = db['com']
+    poi = db['scom']
     index = 0
     maxsize = 10000000000000000
     uids = list()
@@ -91,7 +91,7 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
                        # 'text_anal.edword_count.value': {'$gt': 0},
                        # 'id': {'$in': userset},
                        'liwc_anal.result.WC': {'$exists': True},
-                        'text_anal.gbmi': {'$exists': True},
+                        # 'text_anal.gbmi': {'$exists': True},
                        # 'timeline_count': {'$gt': 100},
                        # 'level': {'$gt': 1}
                        }):
@@ -99,7 +99,7 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
             if outids:
                 uids.append(int(x['id']))
             values = io.get_fields_one_doc(x, field_names)
-            outstr = str(x['text_anal']['gbmi']['value']) + ' '
+            outstr = label + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
@@ -116,7 +116,6 @@ def potential_users(dbname, comname):
 
 
 if __name__ == '__main__':
-
     # ygimage = image_main_color('young', 'com')
     # pickle.dump(ygimage, open('data/ygimage.pick', 'w'))
     # ygimage = pickle.load(open('data/ygimage.pick', 'r'))
@@ -135,24 +134,25 @@ if __name__ == '__main__':
     # color_classify(senti, LIWC, 'data/ygcolor', 'young')
 
 
-    # """Generate Data for user classification"""
-    # fields = io.read_fields()
-    # # common = pickle.load(open('data/common.pick', 'r'))
-    # # fields = LIWC[common]
-    # # print len(LIWC[common])
-    # # print fields
-    # #
-    # # # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
-    # # # fed, random, young
-    # # users = potential_users('fed', 'com')
-    #
-    # triangle = pickle.load(open('data/triangle.pick', 'r'))
-    # # print triangle
-    # feature_output(fields, 'data/ed-tria', 'fed', '0', True, triangle)
-
-
-    """Generate Data for GBMI regression"""
+    """Generate Data for user classification"""
     fields = io.read_fields()
-    feature_output(fields, 'data/gbmi', 'fed', '0', True)
+    print len(fields)
+    # common = pickle.load(open('data/common.pick', 'r'))
+    # fields = LIWC[common]
+    # print len(LIWC[common])
+    # print fields
+    #
+    # # common users in random and young = set([4319191638L, 2627223434L, 2976822286L, 4788248335L, 3289264086L, 520847919, 439647015, 947539758, 617442479, 2481703728L, 2913311029L, 3760687289L, 2303011905L, 1712561862, 2882255303L, 261549132, 982895821, 2849269327L, 312684498, 160044558, 774072534, 330611545, 430569947, 1275228253, 3399616094L, 2924322143L, 457692129, 3006221026L, 2837359399L, 18942418, 2848241137L, 273768180, 235857269, 3315086840L])
+    # # fed, random, young
+    # users = potential_users('fed', 'com')
+
+    # triangle = pickle.load(open('data/triangle.pick', 'r'))
+    # print triangle
+    feature_output(fields, 'data/ed-rd', 'fed', '1', False, [])
+
+
+    # """Generate Data for GBMI regression"""
+    # fields = io.read_fields()
+    # feature_output(fields, 'data/gbmi', 'fed', '0', True)
 
 

@@ -70,15 +70,15 @@ plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too s
 
 
 deg <- degree(net, mode="all")
-V(net)$size <- log(1+)
+V(net)$size <- log(1+deg)
 V(net)$frame.color <- "white"
 V(net)$color[V(net)$cluster>0] <- "lightsteelblue2"
 V(net)$color[V(net)$cluster<=0] <- "tomato"
 V(net)$label <- ''
 V(net)$label.color <- 'black'
-E(net)$width <- E(net)$weight*3
+E(net)$width <- E(net)$weight
 E(net)$arrow.mode <- 0
-plot(net, layout=layout_with_kk) #layout_with_fr NEVER use layout_with_kk, too slow
+plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
 
 
 # Giant component
