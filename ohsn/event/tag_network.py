@@ -28,10 +28,11 @@ def pdf(data):
 def tag_record(dbname, colname, filename):
     # ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
     # print len(ed_users)
-    g = gt.load_hashtag_coocurrent_network(dbname, colname)
-    pickle.dump(g, open('data/'+filename+'_tag.pick', 'w'))
+    # g = gt.load_hashtag_coocurrent_network(dbname, colname)
+    # pickle.dump(g, open('data/'+filename+'_tag.pick', 'w'))
     g = pickle.load(open('data/'+filename+'_tag.pick', 'r'))
     gt.net_stat(g)
+    g.write_graphml(filename+'_tag.graphml')
     nodes = g.vs.select(weight_gt=3)
     print 'Filtered nodes: %d' %len(nodes)
     g = g.subgraph(nodes)
@@ -45,7 +46,7 @@ def tag_record(dbname, colname, filename):
     # edges = g.es.select(weight_gt=1)
     # print len(edges)
     gt.net_stat(g)
-    g.write_graphml(filename+'_tag.graphml')
+    # g.write_graphml(filename+'_tag.graphml')
     # plot_graph(g, 'ed-hashtag')
     return g
 
@@ -287,7 +288,7 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    g = tag_record('fed', 'timeline', 'fed')
+    g = tag_record('fed', 'timeline', 'ed')
     # hash_com = community()
     # user_hashtag_profile('fed', hash_com)
     # pmi(g, filename='ed')
@@ -295,4 +296,4 @@ if __name__ == '__main__':
     # friend_community()
     # plot_graph('ed_tag.graphml')
 
-    user_cluster_hashtag()
+    # user_cluster_hashtag()

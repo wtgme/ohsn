@@ -13,83 +13,149 @@ if(FALSE){
 library('igraph')
 library("poweRlaw")
 
+#-----------------------------------------------------------------------
+net_stat <- function(g){
+  summary(g)
+  cat(sprintf('#Nodes: %s\n', length(V(g))))
+  cat(sprintf('#Edges: %s\n', length(E(g))))
+  cat(sprintf('Density: %.3f\n', edge_density(g)))
+  # cat(sprintf('Path: %.3f\n', mean_distance(g)))
+  components <- clusters(g, mode='weak')
+  gc <- induced.subgraph(g, which(components$membership == which.max(components$csize)))
+  cat(sprintf('#Components: %s\n', clusters(g)$no))
+  cat(sprintf('Giant Components Ratio: %.3f\n', length(V(gc))/length(V(g))))
+  cat(sprintf('Global cluster coefficient: %.3f\n', transitivity(g, type="global")))
+  cat(sprintf('Reciprocity: %.3f\n', reciprocity(g)))
+  cat(sprintf('Assortativity: %.3f\n', assortativity_degree(g)))
+}
+
+plot_net <- function(net){
+  V(net)$size <- log(V(net)$weight)
+  V(net)$frame.color <- "white"
+  V(net)$color <- "tomato"
+  V(net)$label <- ''
+  V(net)$label[V(net)$weight>2500] <- V(net)$name[V(net)$weight>2500] 
+  V(net)$label.color <- 'black'
+  E(net)$width <- log(E(net)$weight)
+  E(net)$arrow.mode <- 0
+  plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+  
+  # deg <- degree(net, mode="all")
+  # V(net)$size <- log(1+deg)
+  # V(net)$frame.color <- "white"
+  # V(net)$color[V(net)$cluster>0] <- "lightsteelblue2"
+  # V(net)$color[V(net)$cluster<=0] <- "tomato"
+  # V(net)$label <- ''
+  # V(net)$label.color <- 'black'
+  # E(net)$width <- E(net)$weight
+  # E(net)$arrow.mode <- 0
+  # plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+}
+
+layout.modular <- function(G,c){
+  G$layout <- layout_with_fr(G)
+  nm <- length(levels(as.factor(c$membership)))
+  gr <- 2
+  while(gr^2<nm){
+    gr <- gr+1
+  }
+  i <- j <- 0
+  for(cc in levels(as.factor(c$membership))){
+    F <- delete.vertices(G,c$membership!=cc)
+    F$layout <- layout_with_fr(F)
+    F$layout <- layout.norm(F$layout, i,i+2,j,j+2)
+    G$layout[c$membership==cc,] <- F$layout
+    if(i==gr){
+      i <- 0
+      if(j==gr){
+        j <- 0
+      }else{
+        j <- j+1
+      }
+    }else{
+      i <- i+1
+    }
+  }
+  return(G$layout)
+}
+
+giant_comp <- function(net){
+  components <- clusters(net, mode='weak')
+  den = density(components$csize)
+  # hist(net.components$csize, xlab=expression('|c[i]|'), ylab='PDF', main='')
+  plot(den, xlab=expression('|c[i]|'), ylab='PDF', main='')
+  ix <- which.max(components$csize)
+  giant <- induced.subgraph(net, which(components$membership == ix))
+  return(giant)
+}
+
+pdf <- function(d){
+  min(d)
+  max(d)
+  den = density(d)
+  plot(den, xlab=expression(s[ij]), ylab='PDF', main='')
+}
+
+powerlaw <- function(d, xlab){
+  # min(d)
+  # max(d)
+  # # den <- density(log(d))
+  # # den$x <- exp(den$x)
+  # # plot(den, log="x", col=2)
+  # d = round(d)
+  # dmin = min(d)-1
+  # d = d-dmin
+  # min(d)
+  
+  # xl = 'Node Weight'
+  m1 = displ$new(d)
+  m1$setXmin(estimate_xmin(m1))
+  
+  m2 = dislnorm$new(d)
+  m2$setXmin(m1$getXmin())
+  m2$setPars(estimate_pars(m2))
+  
+  plot(m2, ylab="CDF", xlab=xlab)
+  lines(m1, lty=2)
+  # lines(m2, col=2, lty=2)
+}
+
+#-----------------------------------------------------------------------
+
 #-----------------------------------------------------------------------------------------
 # Load Network
-# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
+net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_weighted_follow.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-mention.graphml", format="graphml")
-net <- read.graph(file="/Users/tw/Dropbox/share/ed_follow_cluster.graphml", format="graphml")
-V# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_follow_cluster.graphml", format="graphml")
+# net <- read.graph(file="/Users/tw/Dropbox/share/ed_follow_cluster.graphml", format="graphml")
+# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_follow_cluster.graphml", format="graphml")
 net
 assortativity(net, V(net)$cluster, V(net)$cluster)
 nodes <- V(net)
 links <- E(net)
-#-----------------------------------------------------------------------------------------
+
 
 #-----------------------------------------------------------------------------------------
 # attribute distribution
-d = links$weight
+pdf(V(net)$weight)
+powerlaw(V(net)$weight, 'Node Weight')
 
-min(d)
-max(d)
-den = density(d)
-plot(den, xlab=expression(s[ij]), ylab='PDF', main='')
 
-# den <- density(log(d))
-# den$x <- exp(den$x)
-# plot(den, log="x", col=2)
-d = round(d)
-dmin = min(d)-1
-d = d-dmin
-min(d)
 
-xl = 'Node Weight'
-m1 = displ$new(d)
-m1$setXmin(estimate_xmin(m1))
-
-m2 = dislnorm$new(d)
-m2$setXmin(m1$getXmin())
-m2$setPars(estimate_pars(m2))
-
-plot(m2, ylab="CDF", xlab=xl)
-lines(m1, lty=2)
-# lines(m2, col=2, lty=2)
 #-----------------------------------------------------------------------------------------
+# Trim network
+snet <- delete.vertices(net, V(net)[V(net)[weight<50]])
+
 
 #-----------------------------------------------------------------------------------------
 #Plot network
-V(net)$size <- log(V(net)$weight)
-V(net)$frame.color <- "white"
-V(net)$color <- "tomato"
-V(net)$label <- ''
-V(net)$label[V(net)$weight>2500] <- V(net)$name[V(net)$weight>2500] 
-V(net)$label.color <- 'black'
-E(net)$width <- log(E(net)$weight)
-E(net)$arrow.mode <- 0
-plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+plot_net(snet)
 
 
 
-deg <- degree(net, mode="all")
-V(net)$size <- log(1+deg)
-V(net)$frame.color <- "white"
-V(net)$color[V(net)$cluster>0] <- "lightsteelblue2"
-V(net)$color[V(net)$cluster<=0] <- "tomato"
-V(net)$label <- ''
-V(net)$label.color <- 'black'
-E(net)$width <- E(net)$weight
-E(net)$arrow.mode <- 0
-plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
-
-
+#-----------------------------------------------------------------------------------------
 # Giant component
-net.components <- clusters(net, mode='weak')
-den = density(net.components$csize[net.components$csize<1000])
-hist(net.components$csize, xlab=expression('|c[i]|'), ylab='PDF', main='')
-plot(den, xlab=expression('|c[i]|'), ylab='PDF', main='')
-
-ix <- which.max(net.components$csize)
-net.giant <- induced.subgraph(net, which(net.components$membership == ix))
+net.giant = giant_comp(snet)
 V(net.giant)$size <- log(V(net.giant)$weight)
 V(net.giant)$frame.color <- "white"
 V(net.giant)$color <- "tomato"
@@ -134,32 +200,6 @@ ceb <- cluster_infomap(net, e.weights=E(net)$weight, v.weights=V(net)$weight) # 
 # dendPlot(ceb, mode="hclust")
 # plot(ceb, net, mark.groups = NULL)
 
-layout.modular <- function(G,c){
-  G$layout <- layout_with_fr(G)
-  nm <- length(levels(as.factor(c$membership)))
-  gr <- 2
-  while(gr^2<nm){
-    gr <- gr+1
-  }
-  i <- j <- 0
-  for(cc in levels(as.factor(c$membership))){
-    F <- delete.vertices(G,c$membership!=cc)
-    F$layout <- layout_with_fr(F)
-    F$layout <- layout.norm(F$layout, i,i+2,j,j+2)
-    G$layout[c$membership==cc,] <- F$layout
-    if(i==gr){
-      i <- 0
-      if(j==gr){
-        j <- 0
-      }else{
-        j <- j+1
-      }
-    }else{
-      i <- i+1
-    }
-  }
-  return(G$layout)
-}
 
 G = net
 c = ceb
