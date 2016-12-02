@@ -205,8 +205,8 @@ def communit_topinflu(fclus, weight):
 
 
 def pro_ed_rec_network(dbname, comname, netname):
-    # g = gt.load_network(dbname, netname)
-    g = gt.load_beh_network(dbname, 'sbnet', 'mention')
+    g = gt.load_network(dbname, netname)
+    # g = gt.load_beh_network(dbname, 'sbnet', 'mention')
     rec_users = rec_user(dbname, comname)
     pro_users = proed_users(dbname, comname)
 
@@ -308,9 +308,9 @@ def distribution_change(dbname, colname):
 
 
 if __name__ == '__main__':
-    # ed_users = ed_user('fed', 'com')
-    # rec_users = rec_user('fed', 'com')
-    # print len(set(ed_users).intersection(rec_users))
+    ed_users = rec_user('fed', 'scom')
+    rec_users = proed_users('fed', 'scom')
+    print len(set(ed_users).intersection(rec_users))
 
 
     # print 'Friendship'
@@ -358,6 +358,6 @@ if __name__ == '__main__':
     # print_user_profile('fed', 'scom')
 
     '''Pro ED and Recovery user network'''
-    pro_ed_rec_network('fed', 'scom', 'snet')
+    # pro_ed_rec_network('fed', 'scom', 'snet')
 
 

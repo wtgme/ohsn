@@ -295,4 +295,4 @@ if __name__ == '__main__':
     # friend_community()
     # plot_graph('ed_tag.graphml')
 
-    # user_cluster_hashtag()
+    user_cluster_hashtag()

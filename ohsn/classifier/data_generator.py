@@ -78,7 +78,7 @@ def color_classify(userlabels, field_names, file_name, dbname):
     fw.close()
 
 
-def feature_output(field_names, file_name, dbname, label, outids=False, userset=[]):
+def feature_output(field_names, file_name, dbname, label, outids=False, userset=[], extend_features={}):
     fw = open(file_name+'.data', 'a')
     db = dbt.db_connect_no_auth(dbname)
     poi = db['scom']
@@ -89,22 +89,25 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
 
     for x in poi.find({
                        # 'text_anal.edword_count.value': {'$gt': 0},
-                       # 'id': {'$in': userset},
+                       'id': {'$in': userset},
                        'liwc_anal.result.WC': {'$exists': True},
                         # 'text_anal.gbmi': {'$exists': True},
                        # 'timeline_count': {'$gt': 100},
                        # 'level': {'$gt': 1}
                        }):
         if index < maxsize:
-            if outids:
-                uids.append(int(x['id']))
+            uid = int(x['id'])
+            uids.append(uid)
             values = io.get_fields_one_doc(x, field_names)
+            if uid in extend_features:
+                values.extend(extend_features[uid])
             outstr = label + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
             fw.write(outstr+'\n')
     fw.close()
+    print len(uids)
     if outids:
         pickle.dump(uids, open(file_name+'_ids.data', 'w'))
 
@@ -148,7 +151,21 @@ if __name__ == '__main__':
 
     # triangle = pickle.load(open('data/triangle.pick', 'r'))
     # print triangle
-    feature_output(fields, 'data/ed-rd', 'fed', '1', False, [])
+
+
+    # feature_output(fields, 'data/ed-rd', 'random', '-1', False, [])
+
+    '''Generate Pro-ed and pro-recovery data'''
+    import ohsn.edrelated.edrelatedcom as er
+    ed_users = er.rec_user('fed', 'scom')
+    rec_users = er.proed_users('fed', 'scom')
+    common = set(ed_users).intersection(rec_users)
+    ed_users = list(set(ed_users) - common)
+    rec_users = list(set(rec_users) - common)
+    print len(ed_users), len(rec_users)
+    user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
+    feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users, user_hash_profile)
+    feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users, user_hash_profile)
 
 
     # """Generate Data for GBMI regression"""
