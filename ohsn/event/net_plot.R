@@ -124,28 +124,28 @@ powerlaw <- function(d, xlab){
 
 #-----------------------------------------------------------------------------------------
 # Load Network
-net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
+# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_weighted_follow.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-mention.graphml", format="graphml")
-# net <- read.graph(file="/Users/tw/Dropbox/share/ed_follow_cluster.graphml", format="graphml")
+g <- read.graph(file="/Users/tw/Dropbox/share/ed_tag.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_follow_cluster.graphml", format="graphml")
-net
-assortativity(net, V(net)$cluster, V(net)$cluster)
-nodes <- V(net)
-links <- E(net)
+g
+
+nodes <- V(g)
+links <- E(g)
 
 
 #-----------------------------------------------------------------------------------------
 # attribute distribution
-pdf(V(net)$weight)
-powerlaw(V(net)$weight, 'Node Weight')
+pdf(V(g)$weight)
+powerlaw(V(g)$weight, 'Node Weight')
 
 
 
 #-----------------------------------------------------------------------------------------
 # Trim network
-snet <- delete.vertices(net, V(net)[V(net)[weight<50]])
-
+snet <- delete.vertices(g, V(g)[V(g)[weight<100]])
+net_stat(snet)
 
 #-----------------------------------------------------------------------------------------
 #Plot network
