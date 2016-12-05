@@ -14,6 +14,7 @@ if(FALSE){
 library('igraph')
 library("poweRlaw")
 library("linkcomm")
+library("visNetwork")
 
 #-----------------------------------------------------------------------
 net_stat <- function(g){
@@ -173,9 +174,14 @@ g <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag_undir.graphml", forma
 # write_graph(g, file="/home/wt/Code/ohsn/ohsn/event/ed_tag.pajek", format = "pajek")
 g
 
-nodes <- V(g)
-links <- E(g)
+snet <- subgraph.edges(g, E(g)[weight>50], delete.vertices = TRUE)
+nodes <- V(snet)
+links <- E(snet)
 
+nodes <- data.frame(id = 1:3)
+edges <- data.frame(from = c(1,2), to = c(1,3))
+
+visNetwork(nodes, edges)
 
 #-----------------------------------------------------------------------------------------
 # attribute distribution

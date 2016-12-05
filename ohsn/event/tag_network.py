@@ -139,6 +139,22 @@ def community_vis(filename, ctype):
         fw.write('];\n')
 
 
+def compare_direct_undir():
+    from sklearn import metrics
+    g = gt.Graph.Read_GraphML('ed_tag.graphml')
+    gt.net_stat(g)
+    gu = gt.Graph.Read_GraphML('ed_tag_undir.graphml')
+    gt.net_stat(gu)
+    com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    comu1 = gu.community_infomap(edge_weights='weight', vertex_weights='weight')
+    comu2 = gu.community_infomap(edge_weights='weight', vertex_weights='weight')
+    mem = com.membership
+    memu1 = comu1.membership
+    memu2 = comu2.membership
+    print metrics.adjusted_rand_score(mem, memu1)
+    print metrics.normalized_mutual_info_score(mem, memu1)
+    print metrics.adjusted_rand_score(memu2, memu1)
+    print metrics.normalized_mutual_info_score(memu2, memu1)
 
 
 
@@ -395,5 +411,6 @@ if __name__ == '__main__':
 
     # user_cluster_hashtag()
 
-    community_vis('ed', 'info')
-    community_vis('ed', 'ml')
+    # community_vis('ed', 'info')
+    # community_vis('ed', 'ml')
+    compare_direct_undir()
