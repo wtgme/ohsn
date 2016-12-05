@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 import ohsn.util.plot_util as pll
 import igraph as ig
 from scipy import spatial
+import networkx as nx
+import random as rand
 
 def pdf(data):
     pll.plot_pdf_mul_data([data], ['Edge Weight'], ['r'], ['o'], labels=['Edge Weight'],
@@ -28,9 +30,9 @@ def pdf(data):
 def tag_record(dbname, colname, filename):
     # ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
     # print len(ed_users)
-    # g = gt.load_hashtag_coocurrent_network(dbname, colname)
-    # pickle.dump(g, open('data/'+filename+'_tag.pick', 'w'))
-    g = pickle.load(open('data/'+filename+'_tag.pick', 'r'))
+    # g = gt.load_hashtag_coocurrent_network_undir(dbname, colname, uids=ed_users)
+    # pickle.dump(g, open('data/'+filename+'_tag_undir.pick', 'w'))
+    g = pickle.load(open('data/'+filename+'_tag_undir.pick', 'r'))
     gt.net_stat(g)
     # g.write_graphml(filename+'_tag.graphml')
     nodes = g.vs.select(weight_gt=3)
@@ -46,9 +48,103 @@ def tag_record(dbname, colname, filename):
     # edges = g.es.select(weight_gt=1)
     # print len(edges)
     gt.net_stat(g)
-    g.write_graphml(filename+'_tag.graphml')
+    g.write_graphml(filename+'_tag_undir.graphml')
     # plot_graph(g, 'ed-hashtag')
     return g
+
+
+def mixing_para(g):
+    '''
+    calculate mixing parameter: http://www.nature.com/articles/srep30750
+    :param g:
+    :return:
+    '''
+    ext = 0.0
+    all = 0.0
+    for idv, v in enumerate(g.vs):
+        neighs = g.neighbors(idv) # input id or name return ids
+        # print idv in neighs
+        for n in neighs:
+            # print '------------------'
+            # print idv, n
+            if g.vs[idv]['group'] != g.vs[n]['group']:
+                eid = g.get_eid(idv, n)
+                ext += g.es[eid]['weight']
+                # ext += 1
+            eid = g.get_eid(idv, n)
+            # print g.es[eid].source, g.es[eid].target
+            all += g.es[eid]['weight']
+            # all += 1
+    print ext/all
+
+
+
+def community_vis(filename, ctype):
+    '''
+    Load Network and output js to vis.js
+    :param filename:
+    :return:
+    '''
+    # load network
+    # g = pickle.load(open('data/'+filename+'_tag_undir.pick', 'r'))
+    # gt.net_stat(g)
+    # # Filter network
+    # nodes = g.vs.select(weight_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # nodes = g.vs.select(user_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    g = gt.Graph.Read_GraphML(filename+'_tag_undir.graphml')
+
+    gt.net_stat(g)
+    # g = gt.giant_component(g)
+    # Community detection
+    if ctype == 'ml':
+        com = g.community_multilevel(weights='weight', return_levels=False)
+    else:
+        com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    g.vs['group'] = com.membership
+    # print g.vs['group']
+    # gt.summary(g)
+    mixing_para(g)
+
+    edges = g.es.select(weight_gt=50)
+    print 'Filtered edges: %d' %len(edges)
+    g = g.subgraph_edges(edges)
+    gt.net_stat(g)
+
+    Coo={}
+    for x in g.vs['group']:
+        Coo[x]=(rand.randint(-600, 600), rand.randint(-600, 600))
+
+    with open('data/' + ctype + '_' +filename+'_tag_undir.js', 'w') as fw:
+        fw.write('var nodes = [\n')
+        for idv, v in enumerate(g.vs):
+            fw.write('{id: ' + str(idv+1) + ', '+
+                     'label: \'' + g.vs[idv]['name'] +'\', ' +
+                     'value: ' + str(g.vs[idv]['weight']) + ', ' +
+                     'title: \' Tags: ' + g.vs[idv]['name'] + '<br> Occurrence: ' + str(g.vs[idv]['weight']) +
+                     '<br> Group: ' + str(g.vs[idv]['group']) + '\', ' +
+                     'x: ' + str(Coo[g.vs[idv]['group']][0]+rand.randint(0, 300)) + ', ' +
+                     'y: ' + str(Coo[g.vs[idv]['group']][1]+rand.randint(0, 300)) + ', ' +
+                     'group: ' + str(g.vs[idv]['group']) + '}, \n')
+        fw.write('];\n var edges = [\n')
+        for ide, e in enumerate(g.es):
+            fw.write('{from: ' + str(e.source+1) + ', ' +
+                     'to: ' + str(e.target+1) + ', ' +
+                     'title: \' Tags: ' + g.vs[e.source]['name'] + ' ' + g.vs[e.target]['name'] + '<br> Co-occurrence: ' + str(g.es[ide]['weight']) + '\', ' +
+                     'value: ' + str(g.es[ide]['weight']) +
+                     '},\n')
+        fw.write('];\n')
+
+
+
+
+
+def transform(filename):
+    g = nx.read_graphml(filename+'.graphml')
+    nx.write_pajek(g, filename+".net")
 
 
 def plot_graph(g, filename):
@@ -288,7 +384,8 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    g = tag_record('fed', 'timeline', 'ed')
+    # g = tag_record('fed', 'timeline', 'ed')
+    # transform('ed_tag')
     # hash_com = community()
     # user_hashtag_profile('fed', hash_com)
     # pmi(g, filename='ed')
@@ -297,3 +394,6 @@ if __name__ == '__main__':
     # plot_graph('ed_tag.graphml')
 
     # user_cluster_hashtag()
+
+    community_vis('ed', 'info')
+    community_vis('ed', 'ml')

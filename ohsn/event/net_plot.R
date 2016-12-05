@@ -6,12 +6,14 @@ if(FALSE){
   install.packages('visNetwork')
   install.packages('RColorBrewer')
   install.packages("poweRlaw")
+  install.packages("linkcomm")
 }
 
 # library("tcltk") 
 # library('RColorBrewer')
 library('igraph')
 library("poweRlaw")
+library("linkcomm")
 
 #-----------------------------------------------------------------------
 net_stat <- function(g){
@@ -38,7 +40,7 @@ plot_net <- function(net){
   V(net)$label.color <- 'black'
   E(net)$width <- log(E(net)$weight)
   E(net)$arrow.mode <- 0
-  plot(net, layout=layout_with_fr) #layout_with_fr NEVER use layout_with_kk, too slow
+  plot(net, layout=layout_with_kk) #layout_with_fr NEVER use layout_with_kk, too slow
   
   # deg <- degree(net, mode="all")
   # V(net)$size <- log(1+deg)
@@ -64,7 +66,7 @@ layout.modular <- function(G,c){
     F <- delete.vertices(G,c$membership!=cc)
     F$layout <- layout_with_fr(F)
     F$layout <- layout.norm(F$layout, i,i+2,j,j+2)
-    G$layout[c$membership==cc,] <- F$layout
+    G$layout[c$membership==cc] <- F$layout
     if(i==gr){
       i <- 0
       if(j==gr){
@@ -77,6 +79,45 @@ layout.modular <- function(G,c){
     }
   }
   return(G$layout)
+}
+
+plot.community <- function(net, c){
+  V(net)$c <- c$membership
+  net <- subgraph.edges(net, E(net)[weight>0.3], delete.vertices = TRUE)
+  net_stat(net)
+  V(net)$size <- log(V(net)$weight)
+  V(net)$frame.color <- "white"
+  V(net)$label.color <- 'black'
+  E(net)$width <- log(E(net)$weight)
+  E(net)$arrow.mode <- 0
+  
+  net$layout <- layout_with_kk(net)
+  # nm <- length(levels(as.factor(V(net)$c)))
+  # nm
+  # gr <- 2
+  # while(gr^2<nm){
+  #   gr <- gr+1
+  # }
+  # i <- j <- 0
+  # for(cc in unique(V(net)$c)){
+  #   F <- delete.vertices(net, V(net)[c=cc])
+  #   F$layout <- layout_with_fr(F)
+  #   F$layout <- layout.norm(F$layout, i,i+2,j,j+2)
+  #   net$layout[V(net)[c=cc]] <- F$layout
+  #   if(i==gr){
+  #     i <- 0
+  #     if(j==gr){
+  #       j <- 0
+  #     }else{
+  #       j <- j+1
+  #     }
+  #   }else{
+  #     i <- i+1
+  #   }
+  # }
+  V(net)$label <- ''
+  V(net)$color <- rainbow(length(levels(as.factor(V(net)$c))))[V(net)$c]
+  plot(net)
 }
 
 giant_comp <- function(net){
@@ -124,11 +165,12 @@ powerlaw <- function(d, xlab){
 
 #-----------------------------------------------------------------------------------------
 # Load Network
-# net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag.graphml", format="graphml")
+g <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_tag_undir.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_weighted_follow.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/edrelated/pro-ed-rec-mention.graphml", format="graphml")
-g <- read.graph(file="/Users/tw/Dropbox/share/ed_tag.graphml", format="graphml")
+# g <- read.graph(file="/Users/tw/Dropbox/share/ed_tag.graphml", format="graphml")
 # net <- read.graph(file="/home/wt/Code/ohsn/ohsn/event/ed_follow_cluster.graphml", format="graphml")
+# write_graph(g, file="/home/wt/Code/ohsn/ohsn/event/ed_tag.pajek", format = "pajek")
 g
 
 nodes <- V(g)
@@ -144,7 +186,8 @@ powerlaw(V(g)$weight, 'Node Weight')
 
 #-----------------------------------------------------------------------------------------
 # Trim network
-snet <- delete.vertices(g, V(g)[V(g)[weight<100]])
+snet <- delete.vertices(g, V(g)[V(g)[weight<0]])
+snet <- subgraph.edges(g, E(g)[weight>0.3], delete.vertices = TRUE)
 net_stat(snet)
 
 #-----------------------------------------------------------------------------------------
@@ -195,11 +238,15 @@ plot(net, vertex.size=kc*6, vertex.label=kc, vertex.color=colrs[kc], layout=layo
 #Community detection
 #http://stackoverflow.com/questions/33005510/algorithm-of-community-edge-betweenness-in-python-igraph-implementation for communtiy detection in directed graph 
 net = net.giant
+net = g
 ceb <- cluster_infomap(net, e.weights=E(net)$weight, v.weights=V(net)$weight) # setting v.weights=NULL has no difference
-# ceb = cluster_edge_betweenness(net, weights = E(net)$weight)
+ceb = cluster_louvain(net, weights = E(net)$weight)
 # dendPlot(ceb, mode="hclust")
 # plot(ceb, net, mark.groups = NULL)
 
+edges <- cbind( get.edgelist(g) , round( E(g)$weight, 3 ))
+lc <- getLinkCommunities(edges, hcmethod = "single")
+print(lc)
 
 G = net
 c = ceb
@@ -230,18 +277,22 @@ for(cc in levels(as.factor(c$membership))){
 
 #-----------------------------------------------------------------------------------------
 #Test Community detection methods
-wc = cluster_edge_betweenness(net)
+net = g
+wc = cluster_edge_betweenness(net, weights=E(net)$weight)
 modularity(wc)
 # wc = cluster_fast_greedy(net)
 # modularity(wc)
-wc = cluster_label_prop(net)
+wc = cluster_label_prop(net, weights=E(net)$weight)
 modularity(wc)
-wc = cluster_leading_eigen(net)
+wc = cluster_leading_eigen(net, weights=E(net)$weight)
 modularity(wc)
-wc = cluster_louvain(net)
+wc = cluster_louvain(net, weights=E(net)$weight)
 modularity(wc)
 # wc = cluster_spinglass(net)
 # modularity(wc)
-wc = cluster_walktrap(net)
+wc = cluster_walktrap(net, weights=E(net)$weight)
+modularity(wc)
+
+wc <- cluster_infomap(net, e.weights=E(net)$weight, v.weights=V(net)$weight) # setting v.weights=NULL has no difference
 modularity(wc)
 #-----------------------------------------------------------------------------------------

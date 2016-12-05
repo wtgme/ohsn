@@ -247,9 +247,9 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         except ValueError:
             exist = False
         if exist:
-            friends = set(network1.neighbors(str(uid)))
+            friends = set(network1.neighbors(str(uid))) # id or name
             if len(friends) > 0:
-                friend_ids = [int(network1.vs[v]['name']) for v in friends]
+                friend_ids = [int(network1.vs[v]['name']) for v in friends] # return id
                 print uid in friend_ids
                 print len(friend_ids)
                 fatts = []

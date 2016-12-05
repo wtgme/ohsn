@@ -246,6 +246,64 @@ def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
     return g
 
 
+def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
+    '''
+    Hashtag Co-occurrence Network: weighted undirected network
+    Edge: Hashtag --------- Hashtag
+    '''
+    if collection is 'None':
+        cols = db_name
+    else:
+        db = dbt.db_connect_no_auth(db_name)
+        cols = db[collection]
+    name_map, edges, node_weight = {}, {}, {}
+    filter = {}
+    tag_user = {}
+    if len(uids) > 0:
+        filter['user.id'] = {'$in': uids}
+    filter['$where'] = 'this.entities.hashtags.length>0'
+    for row in cols.find(filter, no_cursor_timeout=True):
+        # if 'retweeted_status' in row:
+        #     continue
+        hashtags = row['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            # need no .encode('utf-8')
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        hash_list = list(hash_set)
+        # print hash_list
+        for i in xrange(len(hash_list)):
+            n1 = hash_list[i]
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            w = node_weight.get(n1id, 0)
+            node_weight[n1id] = w + 1
+
+            user_set = tag_user.get(n1id, set())
+            user_set.add(row['user']['id'])
+            tag_user[n1id] = user_set
+
+            for j in xrange(i+1, len(hash_list)):
+                n2 = hash_list[j]
+                if n1 != n2:
+                    n2id = name_map.get(n2, len(name_map))
+                    name_map[n2] = n2id
+                    if n1id < n2id:
+                        wt = edges.get((n1id, n2id), 0)
+                        edges[(n1id, n2id)] = wt + 1
+                    else:
+                        wt = edges.get((n2id, n1id), 0)
+                        edges[(n2id, n1id)] = wt + 1
+    g = Graph(len(name_map), directed=False)
+    #get key list of dict according to value ranking
+    name_list = list(sorted(name_map, key=name_map.get))
+    g.vs["name"] = name_list
+    g.vs["weight"] = [node_weight[name_map[name]] for name in name_list]
+    g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list]
+    g.add_edges(edges.keys())
+    g.es["weight"] = edges.values()
+    return g
+
 def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)
     com = db[colname]
