@@ -211,7 +211,7 @@ def hashtag_related_networks(dbname, timename, netname):
                 hash_tag_flag = True
                 break
         if hash_tag_flag:
-            print tweet['text']
+            # print tweet['text']
             udmention_list = []
             if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
                 for udmention in tweet['retweeted_status']['entities']['user_mentions']:
