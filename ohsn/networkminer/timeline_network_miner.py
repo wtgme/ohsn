@@ -217,9 +217,9 @@ def hashtag_related_networks(dbname, timename, netname):
         part = set([])
         for tag in tags:
             tagv = tag['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            part.add(tagv)
             if tagv in hashtags:
                 hash_tag_flag = True
-                part.add(tagv)
         if hash_tag_flag:
             # print tweet['text']
             udmention_list = []
