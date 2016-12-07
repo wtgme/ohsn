@@ -1,24 +1,24 @@
-recovery
-edrecovery
-prorecovery
-roadtorecovery
-recoverysucks
-anorexiarecovery
-teamrecovery
-recoveryfridays
-recoverywarriors
-recoveryproblems
-recoveryprobs
-recoveryispossible
-recoveryfridays
-reversethinspo
-recovering
-recover
-proed
-proana
-promia
-proanorexia
-nonrecovery
-proanamia
-proanatips
-proanatip
+recovery 1
+edrecovery 1
+prorecovery 1
+roadtorecovery 1
+recoverysucks 1
+anorexiarecovery 1
+teamrecovery 1
+recoveryfridays 1
+recoverywarriors 1
+recoveryproblems 1
+recoveryprobs 1
+recoveryispossible 1
+recoveryfridays 1
+reversethinspo 1
+recovering 1
+recover 1
+proed 0
+proana 0
+promia 0
+proanorexia 0
+nonrecovery 0
+proanamia 0
+proanatips 0
+proanatip 0

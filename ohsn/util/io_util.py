@@ -29,10 +29,11 @@ def read_fields(split=False):
 
 def read_recovery_ed_keywords():
     MYDIR = os.path.dirname(__file__)
-    fileds = []
+    fileds = {}
     with open(os.path.join(MYDIR, 'reced.txt'), 'r') as fo:
         for line in fo.readlines():
-            fileds.append(line.strip())
+            tokens = line.strip().split(' ')
+            fileds[tokens[0]] = int(tokens[1])
     return fileds
 
 

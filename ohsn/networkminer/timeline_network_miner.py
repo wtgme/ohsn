@@ -45,7 +45,7 @@ def add_tweet_edge(netdb, userid, createdat, statusid):
         #print 'tweet\t' + str(userid) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
 
-def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
+def add_retweet_edge(netdb, userid, retweeted, createdat, statusid, part=None):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
@@ -58,6 +58,8 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
     # edge['first-date'] = createdat
     edge['statusid'] = statusid
     #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
+    if part:
+        edge['part'] = part
 
     try:
         netdb.insert(edge)
@@ -68,7 +70,7 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid):
         #exit()
 
 
-def add_reply_edge(netdb, userid, replied_to, createdat, statusid):
+def add_reply_edge(netdb, userid, replied_to, createdat, statusid, part=None):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
@@ -80,6 +82,8 @@ def add_reply_edge(netdb, userid, replied_to, createdat, statusid):
     edge['created_at'] = createdat
     # edge['first-date'] = createdat
     edge['statusid'] = statusid
+    if part:
+        edge['part'] = part
 
     #print 'reply-to\t' + str(userid) +"\t"+ str(replied_to) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
@@ -90,7 +94,8 @@ def add_reply_edge(netdb, userid, replied_to, createdat, statusid):
         #print "forming reply edge Duplicate Key ERROR! this shouldn't happen..."
         #print 'reply-to\t' + str(userid) +"\t"+ str(replied_to) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
-def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid):
+
+def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid, part=None):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
@@ -104,6 +109,8 @@ def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid):
     edge['statusid'] = statusid
 
     #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
+    if part:
+        edge['part'] = part
 
     try:
         netdb.insert(edge)
@@ -113,7 +120,7 @@ def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid):
         #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
 
-def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
+def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid, part=None):
     edge = {}
     edge['id0'] = userid
     # edge['screen_name_0'] =
@@ -127,6 +134,8 @@ def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid):
     edge['statusid'] = statusid
 
     #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
+    if part:
+        edge['part'] = part
 
     try:
         netdb.insert(edge)
@@ -205,11 +214,12 @@ def hashtag_related_networks(dbname, timename, netname):
     for tweet in timeline.find(filter, no_cursor_timeout=True):
         tags = tweet['entities']['hashtags']
         hash_tag_flag = False
+        part = set([])
         for tag in tags:
             tagv = tag['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
             if tagv in hashtags:
                 hash_tag_flag = True
-                break
+                part.add(hashtags[tagv])
         if hash_tag_flag:
             # print tweet['text']
             udmention_list = []
@@ -218,16 +228,16 @@ def hashtag_related_networks(dbname, timename, netname):
                     udmention_list.append(udmention['id'])
             for mention in tweet['entities']['user_mentions']:
                 if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
-                    add_reply_edge(network, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+                    add_reply_edge(network, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'], list(part))
 
                 elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
-                    add_retweet_edge(network, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+                    add_retweet_edge(network, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'], list(part))
 
                 elif mention['id'] in udmention_list:  # mentions in Retweet content
-                    add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                    add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], list(part))
 
                 else:  # original mentions
-                    add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                    add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], list(part))
 
 
 
