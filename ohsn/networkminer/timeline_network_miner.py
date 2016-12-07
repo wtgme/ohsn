@@ -59,7 +59,7 @@ def add_retweet_edge(netdb, userid, retweeted, createdat, statusid, part=None):
     edge['statusid'] = statusid
     #print 'retweet\t' + str(userid) +"\t"+ str(retweeted) +"\t"+ str(createdat) +"\t"+ str(statusid)
     if part:
-        edge['part'] = part
+        edge['tags'] = part
 
     try:
         netdb.insert(edge)
@@ -83,7 +83,7 @@ def add_reply_edge(netdb, userid, replied_to, createdat, statusid, part=None):
     # edge['first-date'] = createdat
     edge['statusid'] = statusid
     if part:
-        edge['part'] = part
+        edge['tags'] = part
 
     #print 'reply-to\t' + str(userid) +"\t"+ str(replied_to) +"\t"+ str(createdat) +"\t"+ str(statusid)
 
@@ -110,7 +110,7 @@ def add_direct_mentions_edge(netdb, userid, mentioned, createdat, statusid, part
 
     #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
     if part:
-        edge['part'] = part
+        edge['tags'] = part
 
     try:
         netdb.insert(edge)
@@ -135,7 +135,7 @@ def add_undirect_mentions_edge(netdb, userid, mentioned, createdat, statusid, pa
 
     #print 'mentions\t' + str(userid) +"\t"+ str(mentioned) +"\t"+ str(createdat) +"\t"+ str(statusid)
     if part:
-        edge['part'] = part
+        edge['tags'] = part
 
     try:
         netdb.insert(edge)
@@ -219,7 +219,7 @@ def hashtag_related_networks(dbname, timename, netname):
             tagv = tag['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
             if tagv in hashtags:
                 hash_tag_flag = True
-                part.add(hashtags[tagv])
+                part.add(tagv)
         if hash_tag_flag:
             # print tweet['text']
             udmention_list = []
