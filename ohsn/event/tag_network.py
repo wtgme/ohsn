@@ -78,6 +78,36 @@ def mixing_para(g):
     print ext/all
 
 
+def hashtag_filter(filename):
+    '''
+    Get most related hashtag to recovery and proed
+    :param filename:
+    :return:
+    '''
+    g = gt.Graph.Read_GraphML(filename+'_tag_undir.graphml')
+    rec_hash, ed_hash = {}, {}
+    vw_sum = sum(g.vs["weight"])
+    for edge in g.es:
+        source_vertex_id = edge.source
+        target_vertex_id = edge.target
+        source_vertex = g.vs[source_vertex_id]
+        target_vertex = g.vs[target_vertex_id]
+        ew = edge['weight']
+        # edge['pmi'] = np.log(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight']))
+        edge['pmi'] = float(ew/(source_vertex['weight']+target_vertex['weight']))
+    tv = g.vs.find(name="proanamia")
+    print tv
+    for n in g.neighbors(tv):
+        rec_hash[g.vs[n]['name']] = g.es[g.get_eid(tv, n)]['pmi']
+    name_list = list(sorted(rec_hash, key=rec_hash.get, reverse=True))
+    for n in name_list:
+        print n, rec_hash[n]
+
+
+
+
+
+
 
 def community_vis(filename, ctype):
     '''
@@ -104,15 +134,16 @@ def community_vis(filename, ctype):
         com = g.community_multilevel(weights='weight', return_levels=False)
     else:
         com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    print com
     g.vs['group'] = com.membership
     # print g.vs['group']
     # gt.summary(g)
     mixing_para(g)
 
-    edges = g.es.select(weight_gt=50)
-    print 'Filtered edges: %d' %len(edges)
-    g = g.subgraph_edges(edges)
-    gt.net_stat(g)
+    # edges = g.es.select(weight_gt=50)
+    # print 'Filtered edges: %d' %len(edges)
+    # g = g.subgraph_edges(edges)
+    # gt.net_stat(g)
 
     Coo={}
     for x in g.vs['group']:
@@ -210,6 +241,7 @@ def community(g=None):
     print len(set(hash_com.values()))
     print set(hash_com.values())
     return hash_com
+
 
 
 def user_hashtag_profile(dbname, hash_com):
@@ -413,4 +445,6 @@ if __name__ == '__main__':
 
     # community_vis('ed', 'info')
     # community_vis('ed', 'ml')
-    compare_direct_undir()
+    # compare_direct_undir()
+
+    hashtag_filter('ed')

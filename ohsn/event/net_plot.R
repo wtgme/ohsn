@@ -250,7 +250,9 @@ ceb = cluster_louvain(net, weights = E(net)$weight)
 # dendPlot(ceb, mode="hclust")
 # plot(ceb, net, mark.groups = NULL)
 
+nodes <-  cbind(V(g)$name, as.numeric(V(g)$weight))
 edges <- cbind( get.edgelist(g) , round( E(g)$weight, 3 ))
+
 lc <- getLinkCommunities(edges, hcmethod = "single")
 print(lc)
 

@@ -7,7 +7,8 @@ Created on 14:58, 08/04/16
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
-
+reload(sys)
+sys.setdefaultencoding('utf8')
 from ohsn.util import graph_util as gt
 from ohsn.util import db_util as dbt
 import ohsn.util.io_util as iot
@@ -17,6 +18,7 @@ import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
 import ohsn.util.network_io as ntt
+import random as rand
 
 
 def core_ed():
@@ -53,7 +55,7 @@ def community_topic(g, clus, dbname, colname, timename):
         for v in clu:
             # print int(g.vs[v]['name'])
             uset.add(int(g.vs[v]['name']))
-        topic_model.topic_model(dbname, colname, timename, uset)
+        # topic_model.topic_model(dbname, colname, timename, uset)
 
 
 def communtiy_feature(dbname, typename):
@@ -126,6 +128,79 @@ def friendship_community(dbname, colname, label):
     # gt.plot(fclus, 'friend_comms_fr.pdf', layout=layout, mark_groups=True, bbox=(1200, 900))
     # gt.comm_plot(fg, fclus, 'friend_comms_fr.pdf', fclus.membership)
 
+
+def friendship_community_vis(dbname, colname, filename, ctype):
+    '''Out graph for vis.js visualization'''
+    ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
+    dbcom = dbt.db_connect_col(dbname, 'com')
+    fg = gt.load_network(dbname, colname)
+    # fg = gt.load_beh_network(dbname, colname, 'retweet')
+    # gt.net_stat(fg)
+    # fg = fg.as_undirected(mode="mutual")
+    # gt.net_stat(fg)
+
+    fg = gt.giant_component(fg, 'WEAK')
+    gt.net_stat(fg)
+
+    if ctype == 'ml':
+        com = fg.community_multilevel(weights='weight', return_levels=False)
+    elif ctype == 'lp':
+        fgu = fg.as_undirected(combine_edges=sum)
+        com = fgu.community_leading_eigenvector(clusters=2, weights='weight')
+        # print init.membership
+        # com = fg.community_label_propagation(weights='weight', initial=init.membership)
+        print com.membership
+    else:
+        com = fg.community_infomap(edge_weights='weight')
+    fg.vs['group'] = com.membership
+
+    # edges = fg.es.select(weight_gt=3)
+    # print 'Filtered edges: %d' %len(edges)
+    # fg = fg.subgraph_edges(edges)
+    # gt.net_stat(fg)
+
+    # fg.vs['degree'] = fg.degree(mode="all")
+    # nodes = fg.vs.select(degree_gt=10)
+    # fg = fg.subgraph(nodes)
+    # gt.net_stat(fg)
+
+    Coo={}
+    for x in fg.vs['group']:
+        Coo[x]=(rand.randint(-1000, 1000), rand.randint(-1000, 1000))
+
+    with open('data/' + ctype + '_' +filename+'_fnet.js', 'w') as fw:
+        fw.write('var nodes = [\n')
+        for idv, v in enumerate(fg.vs):
+            user = dbcom.find_one({'id': int(fg.vs[idv]['name'])})
+            desc = ' '.join(user['description'].replace('\'', '').replace('\"', '').split())
+            fw.write('{id: ' + str(idv+1) + ', '+
+                     'label: \'' + user['screen_name'] +'\', ' +
+                     'value: ' + str(fg.degree(idv, mode="all")) + ', ' +
+                     'title: \'UID: ' + str(fg.vs[idv]['name']) +
+                     '<br> Screen Name: ' + user['screen_name'] +
+                     '<br> Followers: ' + str(user['followers_count']) +
+                     '<br> Followees: ' + str(user['friends_count']) +
+                     '<br> Tweets: ' + str(user['statuses_count']) +
+                     '<br> Description: ' + str(desc.encode('utf-8')) +
+                     '<br> Group: ' + str(fg.vs[idv]['group']) + '\', ' +
+                     'x: ' + str(Coo[fg.vs[idv]['group']][0]+rand.randint(0, 300)) + ', ' +
+                     'y: ' + str(Coo[fg.vs[idv]['group']][1]+rand.randint(0, 300)) + ', ' +
+                     'group: ' + str(fg.vs[idv]['group']))
+            if int(fg.vs[idv]['name']) in ed_users:
+                fw.write('shape: ' + '\'triangle\'')
+            else:
+                fw.write('shape: ' + '\'circle\'')
+            fw.write('}, \n')
+        fw.write('];\n var edges = [\n')
+        for ide, e in enumerate(fg.es):
+            fw.write('{from: ' + str(e.source+1) + ', ' +
+                     'to: ' + str(e.target+1) + ', ' +
+                     'arrows: ' + '\'to\'' + ', ' +
+                     'title: \' Tags: ' + fg.vs[e.source]['name'] + ' ' + fg.vs[e.target]['name'] +
+                     '<br> Co-occurrence: ' + str(fg.es[ide]['weight']) + '\', ' +
+                     'value: ' + str(fg.es[ide]['weight']) +
+                     '},\n') #str(fg.es[ide]['weight'])
+        fw.write('];\n')
 
 def behavior_community(dbname, colname, label):
     # targed_list = set()
@@ -224,10 +299,15 @@ if __name__ == '__main__':
 
 
     """Plot distributions of communities in terms of LIWC features"""
-    communtiy_feature('fed', 'follow')
-    communtiy_feature('fed', 'retweet')
-    communtiy_feature('fed', 'reply')
-    communtiy_feature('fed', 'mention')
+    # communtiy_feature('fed', 'follow')
+    # communtiy_feature('fed', 'retweet')
+    # communtiy_feature('fed', 'reply')
+    # communtiy_feature('fed', 'mention')
 
+
+    '''Out graph for vis.js visualization'''
+
+    # friendship_community_vis('fed', 'snet', 'ed', 'ml')
+    friendship_community_vis('fed', 'net', 'fed', 'lp')
 
 

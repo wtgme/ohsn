@@ -27,6 +27,14 @@ def read_fields(split=False):
                 fileds.append(line)
     return np.array(fileds)
 
+def read_recovery_ed_keywords():
+    MYDIR = os.path.dirname(__file__)
+    fileds = []
+    with open(os.path.join(MYDIR, 'reced.txt'), 'r') as fo:
+        for line in fo.readlines():
+            fileds.append(line.strip())
+    return fileds
+
 
 def get_fields_one_doc(x, fields):
     values = []

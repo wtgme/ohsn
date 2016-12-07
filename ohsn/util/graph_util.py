@@ -473,8 +473,8 @@ def graph_plot(g):
     plot(g, layout=layout, bbox=(1200, 900))
 
 if __name__ == '__main__':
-    g = load_beh_network('fed', 'sbnet', 'retweet')
-    summary(g)
+    # g = load_beh_network('fed', 'sbnet', 'retweet')
+    # summary(g)
     # pickle.dump(g, open('data/fg.pick', 'w'))
     # g = pickle.load(open('data/bg.pick', 'r'))
     # g = add_attribute(g, 'gbmi', 'fed', 'scom', 'text_anal.gbmi.value')
@@ -482,8 +482,13 @@ if __name__ == '__main__':
     #     print v['name'], v['gbmi']
 
     '''to_undirected (mode="collapse")
-    collapse: only keep one edge of multiple edges One undirected edge will be created for each pair of vertices which are connected with at least one directed edge, no multiple edges will be created.
-    mutual: ONLY create one edge for nodes if they have multiple edges, One undirected edge will be created for each pair of mutual edges. Non-mutual edges are ignored. This mode might create multiple edges if there are more than one mutual edge pairs between the same pair of vertices.
+    collapse: only keep one edge of multiple edges One undirected edge
+    will be created for each pair of vertices which are connected with at
+    least one directed edge, no multiple edges will be created.
+    mutual: ONLY create one edge for nodes if they have multiple edges,
+    One undirected edge will be created for each pair of mutual edges.
+    Non-mutual edges are ignored. This mode might create multiple edges
+    if there are more than one mutual edge pairs between the same pair of vertices.
     '''
 
     g = Graph([(0,1), (0,2), (2,0), (2,3), (3,4), (4,2), (2,5), (5,0), (6,3), (5,6)], directed=True)

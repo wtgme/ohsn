@@ -19,6 +19,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 from ohsn.util import db_util as dbutil
 import datetime
 import pymongo
+import ohsn.util.io_util as iot
 
 
 def add_tweet_edge(netdb, userid, createdat, statusid):
@@ -182,6 +183,54 @@ def network_mining(poi, timelines, network, level):
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}}, upsert=False)
 
 
+def hashtag_related_networks(dbname, timename, netname):
+    '''
+    Extract users' behavior network for tweets that are related to hashtags of interests
+    :param dbname:
+    :param timename:
+    :param netname:
+    :return:
+    '''
+    hashtags = iot.read_recovery_ed_keywords()
+    timeline = dbutil.db_connect_col(dbname, timename)
+    network = dbutil.db_connect_col(dbname, netname)
+    network.create_index([("id0", pymongo.ASCENDING),
+                         ("id1", pymongo.ASCENDING),
+                         ("type", pymongo.ASCENDING),
+                         ("statusid", pymongo.ASCENDING)],
+                        unique=True)
+    filter = {}
+    filter['$and'] = [{'$where': 'this.entities.hashtags.length>0'}, {'$where': 'this.entities.user_mentions.length>0'}]
+
+    for tweet in timeline.find(filter, no_cursor_timeout=True):
+        tags = tweet['entities']['hashtags']
+        hash_tag_flag = False
+        for tag in tags:
+            tagv = tag['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            if tagv in hashtags:
+                hash_tag_flag = True
+                break
+        if hash_tag_flag:
+            print tweet['text']
+            udmention_list = []
+            if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                for udmention in tweet['retweeted_status']['entities']['user_mentions']:
+                    udmention_list.append(udmention['id'])
+            for mention in tweet['entities']['user_mentions']:
+                if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
+                    add_reply_edge(network, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+
+                elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
+                    add_retweet_edge(network, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+
+                elif mention['id'] in udmention_list:  # mentions in Retweet content
+                    add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
+                else:  # original mentions
+                    add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
+
+
 
 def process_db(dbname, poicol, timecol, bnetcol, level):
     #### Connecting db and collections
@@ -209,9 +258,11 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     network_mining(sample_poi, sample_time, sample_network, level)
 
 if __name__ == '__main__':
-    process_db('fed2', 'com', 'timeline', 'bnet', 10000)
+    # process_db('fed2', 'com', 'timeline', 'bnet', 10000)
     # process_db('random', 'scom', 'timeline', 'bnet', 10000)
     # process_db('young', 'scom', 'timeline', 'bnet', 10000)
     # process_db('sed', 'com', 'timeline', 'bnet', 10)
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
+
+    hashtag_related_networks('fed', 'timeline', 'hbnet')
