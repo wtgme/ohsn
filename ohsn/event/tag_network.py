@@ -444,7 +444,7 @@ if __name__ == '__main__':
     # user_cluster_hashtag()
 
     # community_vis('ed', 'info')
-    # community_vis('ed', 'ml')
+    community_vis('ed', 'ml')
     # compare_direct_undir()
 
     hashtag_filter('ed')

@@ -254,12 +254,16 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     else:
         max_x = np.max([np.max(listx) for listx in lists])
         min_x = np.min([np.min(listx) for listx in lists])
-    # plt.rcParams['axes.labelsize'] = 15
-    # plt.rcParams['xtick.labelsize'] = 15
-    # plt.rcParams['ytick.labelsize'] = 15
-    # plt.rcParams['legend.fontsize'] = 20
-    # plt.rcParams['lines.markersize'] = 10
-    plot_config()
+    plt.rcParams['axes.labelsize'] = 15
+    plt.rcParams['xtick.labelsize'] = 15
+    plt.rcParams['ytick.labelsize'] = 15
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['lines.markersize'] = 10
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
+    # plt.rcParams['text.usetex'] = True
+
+    # plot_config()
     ax = plt.gca()
     # print 'Max values in Lists', max_x, min_x
     list_x, list_y = pdf_fix_bin(lists[0], xmin=min_x, xmax=max_x, linear_bins=linear_bins)
@@ -271,15 +275,15 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
     #                  xytext=(-60, -50), textcoords='offset points', fontsize=30,
     #                  arrowprops=dict(arrowstyle="->"))
 
-    # '''add cut-offs for bmi'''
-    # bmilist = [(16.5, 'T'), (18.7, 'U'), (21.4, 'M'), (25.0, 'O')]
-    # for i in xrange(len(bmilist)):
-    #     n, t = bmilist[i]
-    #     c = np.random.rand(3)
-    #     ax.axvline(n, linestyle='dashdot', c=c, lw=6)
-    #     ax.annotate(t, xy=(n, 0.155),  xycoords='data',
-    #                  xytext=(40*((4-i)+1), -30*((4-i)+1)), textcoords='offset points', fontsize=30,
-    #                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.2"))
+    '''add cut-offs for bmi'''
+    bmilist = [(16.5, 'T'), (18.7, 'U'), (21.4, 'M'), (25.0, 'O')]
+    for i in xrange(len(bmilist)):
+        n, t = bmilist[i]
+        c = np.random.rand(3)
+        ax.axvline(n, linestyle='dashdot', c=c, lw=6)
+        ax.annotate(t, xy=(n, 0.155),  xycoords='data',
+                     xytext=(40*((4-i)+1), -30*((4-i)+1)), textcoords='offset points', fontsize=30,
+                     arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-.2"))
 
     if fit:
         if fitranges:
@@ -312,8 +316,8 @@ def plot_pdf_mul_data(lists, field, colors, marks, labels=None, linear_bins=True
         ax.set_yscale("log")
         ax.set_xlim(xmin=1)
         ax.set_ylim(ymax=1)
-    ax.set_xlabel('k')
-    ax.set_ylabel('p(k)')
+    # ax.set_xlabel('k')
+    # ax.set_ylabel('p(k)')
     handles, labels = ax.get_legend_handles_labels()
     leg = ax.legend(handles, labels, loc=0)
     leg.draw_frame(True)

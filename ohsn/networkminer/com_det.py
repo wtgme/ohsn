@@ -132,10 +132,11 @@ def friendship_community(dbname, colname, label):
 def friendship_community_vis(dbname, colname, filename, ctype):
     '''Out graph for vis.js visualization'''
     ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
+    # fed_users = iot.get_values_one_field(dbname, 'com', 'id')
     dbcom = dbt.db_connect_col(dbname, 'com')
     fg = gt.load_network(dbname, colname)
-    # fg = gt.load_beh_network(dbname, colname, 'retweet')
-    # gt.net_stat(fg)
+    # fg = gt.load_beh_network_subset(ed_users, dbname, colname, 'retweet')
+    gt.net_stat(fg)
     # fg = fg.as_undirected(mode="mutual")
     # gt.net_stat(fg)
 
@@ -146,12 +147,12 @@ def friendship_community_vis(dbname, colname, filename, ctype):
         com = fg.community_multilevel(weights='weight', return_levels=False)
     elif ctype == 'lp':
         fgu = fg.as_undirected(combine_edges=sum)
-        com = fgu.community_leading_eigenvector(clusters=2, weights='weight')
-        # print init.membership
-        # com = fg.community_label_propagation(weights='weight', initial=init.membership)
+        init = fgu.community_leading_eigenvector(clusters=2, weights='weight')
+        print init.membership
+        com = fg.community_label_propagation(weights='weight', initial=init.membership)
         print com.membership
     else:
-        com = fg.community_infomap(edge_weights='weight')
+        com = fg.community_infomap(edge_weights='weight', trials=2)
     fg.vs['group'] = com.membership
 
     # edges = fg.es.select(weight_gt=3)
@@ -168,14 +169,14 @@ def friendship_community_vis(dbname, colname, filename, ctype):
     for x in fg.vs['group']:
         Coo[x]=(rand.randint(-1000, 1000), rand.randint(-1000, 1000))
 
-    with open('data/' + ctype + '_' +filename+'_fnet.js', 'w') as fw:
+    with open('data/' + ctype + '_' +filename+'_net_follow.js', 'w') as fw:
         fw.write('var nodes = [\n')
         for idv, v in enumerate(fg.vs):
             user = dbcom.find_one({'id': int(fg.vs[idv]['name'])})
             desc = ' '.join(user['description'].replace('\'', '').replace('\"', '').split())
             fw.write('{id: ' + str(idv+1) + ', '+
                      'label: \'' + user['screen_name'] +'\', ' +
-                     'value: ' + str(fg.degree(idv, mode="all")) + ', ' +
+                     'value: ' + str(fg.degree(idv, mode="in")) + ', ' +
                      'title: \'UID: ' + str(fg.vs[idv]['name']) +
                      '<br> Screen Name: ' + user['screen_name'] +
                      '<br> Followers: ' + str(user['followers_count']) +
@@ -185,11 +186,11 @@ def friendship_community_vis(dbname, colname, filename, ctype):
                      '<br> Group: ' + str(fg.vs[idv]['group']) + '\', ' +
                      'x: ' + str(Coo[fg.vs[idv]['group']][0]+rand.randint(0, 300)) + ', ' +
                      'y: ' + str(Coo[fg.vs[idv]['group']][1]+rand.randint(0, 300)) + ', ' +
-                     'group: ' + str(fg.vs[idv]['group']))
-            if int(fg.vs[idv]['name']) in ed_users:
-                fw.write('shape: ' + '\'triangle\'')
-            else:
-                fw.write('shape: ' + '\'circle\'')
+                     'group: ' + str(fg.vs[idv]['group']) + ', ')
+            # if int(fg.vs[idv]['name']) in ed_users:
+            #     fw.write('shape: ' + '\'triangle\'')
+            # else:
+            #     fw.write('shape: ' + '\'circle\'')
             fw.write('}, \n')
         fw.write('];\n var edges = [\n')
         for ide, e in enumerate(fg.es):
@@ -308,6 +309,6 @@ if __name__ == '__main__':
     '''Out graph for vis.js visualization'''
 
     # friendship_community_vis('fed', 'snet', 'ed', 'ml')
-    friendship_community_vis('fed', 'net', 'fed', 'lp')
+    friendship_community_vis('fed', 'snet', 'ed', 'info')
 
 

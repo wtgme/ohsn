@@ -17,7 +17,6 @@ proed 0
 proana 0
 promia 0
 proanorexia 0
-nonrecovery 0
 proanamia 0
 proanatips 0
 proanatip 0

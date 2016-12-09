@@ -14,6 +14,7 @@ from sklearn.cross_validation import StratifiedKFold
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
 import pickle
+import seaborn as sns
 
 
 def load_scale_data(file_path, multilabeltf=False):
@@ -82,44 +83,51 @@ def cross_val_roc_plot(X, y):
 
 def roc_plot(datafile, savename, pca_num=10):
     X, y = load_scale_data(datafile)
+    print X.shape
 
     plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['xtick.labelsize'] = 20
-    plt.rcParams['ytick.labelsize'] = 20
+    plt.rcParams['xtick.labelsize'] = 15
+    plt.rcParams['ytick.labelsize'] = 15
     plt.rcParams['legend.fontsize'] = 20
     plt.rcParams['lines.markersize'] = 50
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
     '''social status features'''
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:10], y)
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:6], y)
+    print X[:, 0:6].shape
     pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''Behavioral pattern features'''
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 10:21], y)
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 6:17], y)
+    print X[:, 6:17].shape
     pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'beh.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'beh.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Beh. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''LIWC features'''
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:101], y)
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 17:], y)
+    print X[:, 17:].shape
     pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='Psy. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
-    '''Plus Hashtag features'''
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc-hash.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc-hash.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'c--o', label='L+H. (area = %0.2f)' % mean_auc, lw=3, ms=10)
+    # '''Plus Hashtag features'''
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc-hash.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc-hash.pick', 'r'))
+    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'c--o', label='L+H. (area = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''All features'''
     '''Remove social impact features'''
     # X_short = np.delete(X, [6,7,8,9], 1)
 
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
+    print X.shape
     pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
     mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
     ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--*', label='All. (area = %0.2f)' % mean_auc, lw=3, ms=10)
@@ -145,9 +153,9 @@ def roc_plot(datafile, savename, pca_num=10):
 
 if __name__ == '__main__':
 
-    roc_plot('data/pro-ed-rec.data', 'pro-ed-rec.pdf', 90)
+    # roc_plot('data/pro-ed-rec.data', 'pro-ed-rec.pdf', 90)
 
-    # roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
-    # roc_plot('data/ed-young.data', 'ed-young-roc.pdf', 70)
-    # roc_plot('data/random-young.data', 'random-young-roc.pdf', 100)
+    roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
+    roc_plot('data/ed-younger.data', 'ed-young-roc.pdf', 70)
+    roc_plot('data/random-younger.data', 'random-young-roc.pdf', 100)
 

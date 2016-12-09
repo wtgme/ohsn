@@ -240,6 +240,34 @@ def hashtag_related_networks(dbname, timename, netname):
                     add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], list(part))
 
 
+def refine_recovery(dbname, netname):
+    '''
+    refine the users who have use hashtag #recovery
+    :param dbname:
+    :param netname:
+    :return:
+    '''
+    network = dbutil.db_connect_col(dbname, netname)
+    proed = set(['proed', 'proana', 'promia', 'proanorexia', 'proanamia', 'proanatips', 'proanatip'])
+    proedrel = proed
+    for link in network.find(no_cursor_timeout=True):
+        tags = set(link['tags'])
+        if len(proed.intersection(tags)) > 0:
+            proedrel = proedrel.union(tags)
+    print len(proedrel)
+    users = iot.get_values_one_field(dbname, netname, 'id0')
+    print len(users)
+    for user in users:
+        # print user
+        utags = set()
+        for link in network.find({'id0': user}):
+            utags.add(tag for tag in link['tags'])
+        if len(utags.intersection(proedrel)) == 0:
+            network.delete_many({'id0': user})
+
+
+
+
 
 
 def process_db(dbname, poicol, timecol, bnetcol, level):
@@ -276,3 +304,4 @@ if __name__ == '__main__':
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
     hashtag_related_networks('fed', 'timeline', 'hbnet')
+    # refine_recovery('fed', 'hbnet')
