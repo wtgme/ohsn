@@ -444,7 +444,12 @@ if __name__ == '__main__':
     # user_cluster_hashtag()
 
     # community_vis('ed', 'info')
-    community_vis('ed', 'ml')
+    # community_vis('ed', 'ml')
     # compare_direct_undir()
 
-    hashtag_filter('ed')
+    # hashtag_filter('ed')
+    # g = gt.Graph.Read_GraphML('ed'+'_tag_undir.graphml')
+    # com = g.community_multilevel(weights='weight', return_levels=False)
+    # print com.modularity
+    # com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # print com.modularity
