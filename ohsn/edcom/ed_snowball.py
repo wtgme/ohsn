@@ -38,14 +38,14 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
                          ("follower", pymongo.ASCENDING)],
                         unique=True)
 
-    # '''Reteive ED core users'''
-    # ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id', {'level': 1})
-    # list_size = len(ed_users)
-    # length = int(math.ceil(list_size/100.0))
-    # for index in xrange(length):
-    #     index_begin = index*100
-    #     index_end = min(list_size, index_begin+100)
-    #     lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
+    '''Reteive ED core users'''
+    ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id', {'level': 1})
+    list_size = len(ed_users)
+    length = int(math.ceil(list_size/100.0))
+    for index in xrange(length):
+        index_begin = index*100
+        index_end = min(list_size, index_begin+100)
+        lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
 
     level = 1
     while True:
@@ -107,4 +107,4 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('fed', 'com', 'fed2', 'com')
+    re_snowball_friends('random', 'com', 'random2', 'com')
