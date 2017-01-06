@@ -3,6 +3,8 @@
 Created on 10:09, 08/11/16
 
 @author: wt
+
+This script is to explore that users' emotions would lead to their dropouts in Twitter
 """
 
 import sys
