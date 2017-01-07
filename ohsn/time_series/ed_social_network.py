@@ -57,14 +57,14 @@ def ed_friend_num(dbname, comname, netname, flag):
     return data
 
 def out_ed_friend_num():
-    data = ed_friend_num('fed', 'com', 'net', '1')
-    rd_data = ed_friend_num('random2', 'com', 'net', '0')
-    data.extend(rd_data)
     attr_names = ['uid', 'ed',
                   'ed_fr', 'non_ed_fr',
                   'ed_fo', 'non_ed_fo',
                   'ed_co', 'non_ed_co']
     print attr_names
+    data = ed_friend_num('fed', 'com', 'net', '1')
+    rd_data = ed_friend_num('random2', 'com', 'net', '0')
+    data.extend(rd_data)
     df = pd.DataFrame(data, columns=attr_names)
     df.to_csv('data-ed-social.csv', index = False)
 
