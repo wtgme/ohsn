@@ -15,7 +15,7 @@ import powerlaw_fit
 def load_network(db_name, collection='None'):
     '''
     Friendship network: directed network
-    Edge: user---------> follower
+    Edge: Follower ---------> Followee
     '''
     if collection is 'None':
         cols = db_name

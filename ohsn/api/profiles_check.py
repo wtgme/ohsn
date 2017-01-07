@@ -63,6 +63,7 @@ def tokenizer_stoprm(dscp):
 
 
 def check_ed_profile(profile):
+    # check users' profiles: contain bio-information and ed-diagonose
     profile = profile.strip().lower().replace("-", "").replace('_', '')
     tokens = tokenizer_stoprm(profile)
     bio_flag, dio_flag = False, False
@@ -82,6 +83,7 @@ def check_ed_profile(profile):
 
 
 def check_ed_related_profile(profile):
+    # check ed-related users: contain bio-information or ed-related keywords
     profile = profile.strip().lower().replace("-", "").replace('_', '')
     tokens = tokenizer_stoprm(profile)
     dio_flag = False
@@ -95,8 +97,8 @@ def check_ed_related_profile(profile):
     return dio_flag
 
 
-
 def check_depression_profile(profile):
+    # check depression users: contain depression related keywords
     profile = profile.strip().lower().replace("-", "").replace('_', '')
     tokens = tokenizer_stoprm(profile)
     dio_flag = False
@@ -110,6 +112,7 @@ def check_depression_profile(profile):
 
 
 def check_en(user):
+    # check English speaking users
     if user['lang'] == 'en' and user['protected']==False:
         return True
     else:
@@ -117,6 +120,7 @@ def check_en(user):
 
 
 def check_ed(user):
+    # check ED users: input USER object
     profile = user['description']
     if user['lang'] == 'en' and user['protected']==False and profile != None:
         # print check_ed_profile(prof)
@@ -126,6 +130,7 @@ def check_ed(user):
 
 
 def check_yg(user):
+    # check young females
     # prof = user['description']
     if user['lang'] == 'en' and user['protected'] == False and user['verified'] == False:
         name_match = name_pat.search(user['name'].strip())
@@ -137,6 +142,7 @@ def check_yg(user):
 
 
 def check_rd(user):
+    # check Random users: English speaking and non-protected users
     if user['lang'] == 'en' and user['protected']==False:
     # probability of level 1 to level 2 is 0.0162914951388, see data_refine.py in ed
         if random.random() <= 0.0163:
@@ -146,6 +152,7 @@ def check_rd(user):
 
 
 def check_depression(user):
+    # check depression users: input USER object
     profile = user['description']
     if user['lang'] == 'en' and user['protected']==False and profile != None:
         # print check_ed_profile(prof)
