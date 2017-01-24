@@ -27,27 +27,29 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newdb = dbt.db_connect_no_auth(newdbname)
     newcom = newdb[newcomname]
     newnet = newdb['net']
-    newcom.create_index("id", unique=True)
-    newcom.create_index([('level', pymongo.ASCENDING),
-                         ('following_prelevel_node', pymongo.ASCENDING)],
-                        unique=False)
-    newcom.create_index([('level', pymongo.ASCENDING),
-                         ('follower_prelevel_node', pymongo.ASCENDING)],
-                        unique=False)
-    newnet.create_index([("user", pymongo.ASCENDING),
-                         ("follower", pymongo.ASCENDING)],
-                        unique=True)
+    # newcom.create_index("id", unique=True)
+    # newcom.create_index([('level', pymongo.ASCENDING),
+    #                      ('following_prelevel_node', pymongo.ASCENDING)],
+    #                     unique=False)
+    # newcom.create_index([('level', pymongo.ASCENDING),
+    #                      ('follower_prelevel_node', pymongo.ASCENDING)],
+    #                     unique=False)
+    # newnet.create_index([("user", pymongo.ASCENDING),
+    #                      ("follower", pymongo.ASCENDING)],
+    #                     unique=True)
 
     '''Reteive ED core users'''
-    ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id', {'level': 1})
-    list_size = len(ed_users)
-    length = int(math.ceil(list_size/100.0))
-    for index in xrange(length):
-        index_begin = index*100
-        index_end = min(list_size, index_begin+100)
-        lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
+    # ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id', {'level': 1})
+    # list_size = len(ed_users)
+    # length = int(math.ceil(list_size/100.0))
+    # for index in xrange(length):
+    #     index_begin = index*100
+    #     index_end = min(list_size, index_begin+100)
+    #     lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
 
-    level = 1
+
+    '''Snowball sampling round'''
+    level = 2
     while True:
         # Each call of snowball_following and snowball_follower only process up to 200 users
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
@@ -107,4 +109,4 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('random', 'com', 'random2', 'com')
+    re_snowball_friends('random', 'com', 'fed', 'com')

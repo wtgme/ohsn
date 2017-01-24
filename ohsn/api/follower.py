@@ -115,15 +115,15 @@ def snowball_follower(poi_db, net_db, level, check='N'):
     #Processing max 200 users each time.
     start_level = level
     while True:
-        count = poi_db.count({'level': start_level,
+        count = poi_db.find_one({'level': start_level,
                               'protected': False,
                               'follower_scrape_flag': {'$exists': False}})
-        if count == 0:
+        if count is None:
             return False
         else:
             for user in poi_db.find({'level': start_level, 'protected': False,
                                      'follower_scrape_flag': {'$exists': False}},
-                                    ['id_str']).limit(min(200, count)):
+                                    ['id_str']).limit(200):
                 next_cursor = -1
                 params = {'user_id': user['id_str'], 'count': 5000, 'stringify_ids':True}
                 # follower getting
