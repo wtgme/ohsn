@@ -103,7 +103,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.anger',
               'liwc_anal.result.sad']
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'closeness', 'betweenness']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
@@ -119,6 +119,16 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     print attr_names
     attr_length = len(fields) + len(prof_names) + 2
     network1 = gt.load_network(dbname1, 'net')
+
+    '''Centralities Calculation'''
+    eigen = network1.eigenvector_centrality()
+    closeness = network1.closeness()
+    betweenness = network1.betweenness()
+    nodes = [int(v['name']) for v in network1.vs]
+    eigen_map = dict(zip(nodes, eigen))
+    closeness_map = dict(zip(nodes, closeness))
+    betweenness_map = dict(zip(nodes, betweenness))
+
     data = []
     for uid in user1:
         row = [uid]
@@ -131,6 +141,8 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
+        row.extend([eigen_map.get(u1), closeness_map.get(u1), betweenness_map.get(u1)])
+
         exist = True
         try:
             v = network1.vs.find(name=str(uid))
@@ -156,6 +168,8 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
                         if fu != None:
                             fatt = iot.get_fields_one_doc(fu, fields) # Friends' LIWC
                             fatt.extend(active_days(fu))
+                            fatt.extend([eigen_map.get(fu), closeness_map.get(fu), betweenness_map.get(fu)])
+
                             fatts.append(fatt)
                             if fu2 is None or fu2['timeline_count'] == 0:
                                 alive += 0
@@ -222,7 +236,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.anger',
               'liwc_anal.result.sad']
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'closeness', 'betweenness']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
@@ -231,6 +245,17 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['f_num', 'f_palive'])
     print attr_names
     network1 = gt.load_network(dbname1, 'net')
+
+    '''Centralities Calculation'''
+    eigen = network1.eigenvector_centrality()
+    closeness = network1.closeness()
+    betweenness = network1.betweenness()
+    nodes = [int(v['name']) for v in network1.vs]
+    eigen_map = dict(zip(nodes, eigen))
+    closeness_map = dict(zip(nodes, closeness))
+    betweenness_map = dict(zip(nodes, betweenness))
+
+
     data = []
     for uid in user1:
         row = [uid]
@@ -243,6 +268,8 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
+        row.extend([eigen_map.get(u1), closeness_map.get(u1), betweenness_map.get(u1)])
+
         exist = True
         try:
             v = network1.vs.find(name=str(uid))
@@ -262,6 +289,8 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
+                        fatt.extend([eigen_map.get(fu), closeness_map.get(fu), betweenness_map.get(fu)])
+
                         fatts.append(fatt)
                         if fu2 is None or fu2['timeline_count'] == 0:
                             alive += 0
