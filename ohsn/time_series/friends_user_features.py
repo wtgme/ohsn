@@ -10,6 +10,9 @@ This script is to explore that users' emotions would lead to their dropouts in T
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+print path.abspath(__file__)
+
+import ohsn.util.db_util as dbt
 
 from ohsn.util import db_util as dbt
 from ohsn.util import io_util as iot
