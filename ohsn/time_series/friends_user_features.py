@@ -25,15 +25,15 @@ print 'Centrality Calculate .........'
 network = gt.load_network('fed', 'net')
 '''Centralities Calculation'''
 eigen = network.eigenvector_centrality()
-closeness = network.closeness()
-betweenness = network.betweenness()
-print len(eigen), len(closeness), len(betweenness)
+# closeness = network.closeness()
+# betweenness = network.betweenness()
+# print len(eigen), len(closeness), len(betweenness)
 
 nodes = [int(v['name']) for v in network.vs]
-print len(nodes)
+print len(nodes), len(eigen)
 eigen_map = dict(zip(nodes, eigen))
-closeness_map = dict(zip(nodes, closeness))
-betweenness_map = dict(zip(nodes, betweenness))
+# closeness_map = dict(zip(nodes, closeness))
+# betweenness_map = dict(zip(nodes, betweenness))
 print 'Centrality Calculate .........'
 
 
@@ -157,7 +157,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
-        row.extend([eigen_map.get(u1), closeness_map.get(u1), betweenness_map.get(u1)])
+        row.extend([eigen_map.get(u1)])
 
         exist = True
         try:
@@ -184,7 +184,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
                         if fu != None:
                             fatt = iot.get_fields_one_doc(fu, fields) # Friends' LIWC
                             fatt.extend(active_days(fu))
-                            fatt.extend([eigen_map.get(fu), closeness_map.get(fu), betweenness_map.get(fu)])
+                            fatt.extend([eigen_map.get(fu)])
 
                             fatts.append(fatt)
                             if fu2 is None or fu2['timeline_count'] == 0:
@@ -284,7 +284,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
-        row.extend([eigen_map.get(u1), closeness_map.get(u1), betweenness_map.get(u1)])
+        row.extend([eigen_map.get(u1)])
 
         exist = True
         try:
@@ -305,7 +305,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
-                        fatt.extend([eigen_map.get(fu), closeness_map.get(fu), betweenness_map.get(fu)])
+                        fatt.extend([eigen_map.get(fu)])
 
                         fatts.append(fatt)
                         if fu2 is None or fu2['timeline_count'] == 0:
