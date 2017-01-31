@@ -19,10 +19,14 @@ import numpy as np
 from ohsn.util import plot_util as pltt
 from datetime import datetime
 import pandas as pd
+import pickle
 
 
 print 'Centrality Calculate .........'
 network = gt.load_network('fed', 'net')
+pickle.dump(network, open('net.pick', 'w'))
+network = pickle.load(open('net.pick','r'))
+
 '''Centralities Calculation'''
 eigen = network.eigenvector_centrality()
 # closeness = network.closeness()
