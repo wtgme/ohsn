@@ -21,6 +21,22 @@ from datetime import datetime
 import pandas as pd
 
 
+print 'Centrality Calculate .........'
+network = gt.load_network('fed', 'net')
+'''Centralities Calculation'''
+eigen = network.eigenvector_centrality()
+closeness = network.closeness()
+betweenness = network.betweenness()
+print len(eigen), len(closeness), len(betweenness)
+
+nodes = [int(v['name']) for v in network.vs]
+print len(nodes)
+eigen_map = dict(zip(nodes, eigen))
+closeness_map = dict(zip(nodes, closeness))
+betweenness_map = dict(zip(nodes, betweenness))
+print 'Centrality Calculate .........'
+
+
 def friend_user_change(dbname1, dbname2, comname1, comname2):
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists':True}}
     user2 = iot.get_values_one_field(dbname2, comname2, 'id', filter_que)
@@ -121,13 +137,13 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     network1 = gt.load_network(dbname1, 'net')
 
     '''Centralities Calculation'''
-    eigen = network1.eigenvector_centrality()
-    closeness = network1.closeness()
-    betweenness = network1.betweenness()
-    nodes = [int(v['name']) for v in network1.vs]
-    eigen_map = dict(zip(nodes, eigen))
-    closeness_map = dict(zip(nodes, closeness))
-    betweenness_map = dict(zip(nodes, betweenness))
+    # eigen = network1.eigenvector_centrality()
+    # closeness = network1.closeness()
+    # betweenness = network1.betweenness()
+    # nodes = [int(v['name']) for v in network1.vs]
+    # eigen_map = dict(zip(nodes, eigen))
+    # closeness_map = dict(zip(nodes, closeness))
+    # betweenness_map = dict(zip(nodes, betweenness))
 
     data = []
     for uid in user1:
@@ -247,13 +263,13 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
     network1 = gt.load_network(dbname1, 'net')
 
     '''Centralities Calculation'''
-    eigen = network1.eigenvector_centrality()
-    closeness = network1.closeness()
-    betweenness = network1.betweenness()
-    nodes = [int(v['name']) for v in network1.vs]
-    eigen_map = dict(zip(nodes, eigen))
-    closeness_map = dict(zip(nodes, closeness))
-    betweenness_map = dict(zip(nodes, betweenness))
+    # eigen = network1.eigenvector_centrality()
+    # closeness = network1.closeness()
+    # betweenness = network1.betweenness()
+    # nodes = [int(v['name']) for v in network1.vs]
+    # eigen_map = dict(zip(nodes, eigen))
+    # closeness_map = dict(zip(nodes, closeness))
+    # betweenness_map = dict(zip(nodes, betweenness))
 
 
     data = []
