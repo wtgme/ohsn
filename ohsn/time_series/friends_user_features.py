@@ -7,17 +7,9 @@ Created on 10:09, 08/11/16
 This script is to explore that users' emotions would lead to their dropouts in Twitter
 """
 
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(os.path.dirname(currentdir))
-sys.path.insert(0, parentdir)
-print parentdir
-
-
-
-# import sys
-# from os import path
-# sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbt
 from ohsn.util import io_util as iot
