@@ -23,19 +23,24 @@ import pickle
 
 
 print 'Centrality Calculate .........'
-network = gt.load_network('fed', 'net')
-pickle.dump(network, open('net.pick', 'w'))
-network = pickle.load(open('net.pick','r'))
+users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
+print 'Number of users', len(users)
+# network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
+# network1 = gt.load_network('fed2', 'net')
+# pickle.dump(network1, open('net.pick', 'w'))
+network1 = pickle.load(open('net.pick','r'))
 
 '''Centralities Calculation'''
-eigen = network.eigenvector_centrality()
+eigen = network1.eigenvector_centrality()
 # closeness = network.closeness()
 # betweenness = network.betweenness()
 # print len(eigen), len(closeness), len(betweenness)
 
-nodes = [int(v['name']) for v in network.vs]
+nodes = [int(v['name']) for v in network1.vs]
 print len(nodes), len(eigen)
+print type(nodes), type(eigen)
 eigen_map = dict(zip(nodes, eigen))
+print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
 # closeness_map = dict(zip(nodes, closeness))
 # betweenness_map = dict(zip(nodes, betweenness))
 print 'Centrality Calculate .........'
@@ -123,7 +128,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.anger',
               'liwc_anal.result.sad']
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'closeness', 'betweenness']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
@@ -138,7 +143,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['co_num', 'co_palive'])
     print attr_names
     attr_length = len(fields) + len(prof_names) + 2
-    network1 = gt.load_network(dbname1, 'net')
+    # network1 = gt.load_network(dbname1, 'net')
 
     '''Centralities Calculation'''
     # eigen = network1.eigenvector_centrality()
@@ -161,7 +166,8 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
-        row.extend([eigen_map.get(u1)])
+        row.extend([eigen_map.get(u1['id'])])
+
 
         exist = True
         try:
@@ -188,7 +194,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
                         if fu != None:
                             fatt = iot.get_fields_one_doc(fu, fields) # Friends' LIWC
                             fatt.extend(active_days(fu))
-                            fatt.extend([eigen_map.get(fu)])
+                            fatt.extend([eigen_map.get(fu['id'])])
 
                             fatts.append(fatt)
                             if fu2 is None or fu2['timeline_count'] == 0:
@@ -256,7 +262,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.anger',
               'liwc_anal.result.sad']
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'closeness', 'betweenness']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in prof_names])
@@ -264,7 +270,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['f_'+field for field in prof_names])
     attr_names.extend(['f_num', 'f_palive'])
     print attr_names
-    network1 = gt.load_network(dbname1, 'net')
+    # network1 = gt.load_network(dbname1, 'net')
 
     '''Centralities Calculation'''
     # eigen = network1.eigenvector_centrality()
@@ -288,7 +294,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         row.extend(active_days(u1))
-        row.extend([eigen_map.get(u1)])
+        row.extend([eigen_map.get(u1['id'])])
 
         exist = True
         try:
@@ -309,7 +315,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
                     if fu != None:
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
-                        fatt.extend([eigen_map.get(fu)])
+                        fatt.extend([eigen_map.get(fu['id'])])
 
                         fatts.append(fatt)
                         if fu2 is None or fu2['timeline_count'] == 0:
