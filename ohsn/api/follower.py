@@ -113,6 +113,7 @@ def get_followers(params):
 
 def snowball_follower(poi_db, net_db, level, check='N'):
     #Processing max 200 users each time.
+    # Max 10000 followers are retrieve
     start_level = level
     while True:
         count = poi_db.find_one({'level': start_level,
@@ -126,8 +127,9 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                                     ['id_str']).limit(200):
                 next_cursor = -1
                 params = {'user_id': user['id_str'], 'count': 5000, 'stringify_ids':True}
+                fcount = 0
                 # follower getting
-                while next_cursor != 0:
+                while next_cursor != 0 or fcount > 10000:
                     params['cursor'] = next_cursor
                     followers = get_followers(params)
                     if followers:
@@ -145,6 +147,7 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                             for profile in profiles:
                                 check_flag = profiles_check.check_user(profile, check)
                                 if check_flag:
+                                    fcount += 1
                                     profile['follower_prelevel_node'] = user['id_str']
                                     profile['level'] = start_level+1
                                     try:

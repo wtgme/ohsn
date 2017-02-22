@@ -109,4 +109,4 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('random', 'com', 'fed', 'com') # random2 fed
+    re_snowball_friends('', '', 'random2', 'com') # random2 fed
