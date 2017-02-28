@@ -72,6 +72,7 @@ def classification(train, test, outclss):
     '''Int to numpy.int will lost precision'''
     # pickle.dump(y_test[y_lin==1], open('result.pick', 'w'))
     # print y_test[y_lin==1].astype('str')
+    return y_lin
 
 
 def classification_subfeature(train, test, outclss):
@@ -110,6 +111,7 @@ def classification_subfeature(train, test, outclss):
 
 
 def plot_classification(results):
+    # Plot classification results
     print results.shape
     print results
     print max(results), min(results)
@@ -130,6 +132,7 @@ def plot_classification(results):
 
 
 def pclassification(train, test, outpclas):
+    # Probability classification, return probability
     X_train, y_train = load_svmlight_file(train)
     X_train = X_train.toarray()
     # y_train[y_train < 0] = 0
@@ -176,9 +179,11 @@ def predict_verify(dbname, comname, testname, lables):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     pred_users = []
+    # +1 for ED and -1 for non-ED
     for i in xrange(len(ids)):
-        if lables[i] == -1:
+        if lables[i] == 1:
             pred_users.append(ids[i])
+
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
         if user['level'] != 1:
@@ -186,16 +191,74 @@ def predict_verify(dbname, comname, testname, lables):
         # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
+def compare_round(dbname, comname, testname, lables1, labels2):
+    ids = pickle.load(open(testname+'_ids.data', 'r'))
+    print len(ids), len(lables1), len(labels2)
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[comname]
+    pred_users = []
+    # +1 for ED and -1 for non-ED
+    for i in xrange(len(ids)):
+        if lables1[i] == 1 and labels2[i] == -1:
+            pred_users.append(ids[i])
+    for uid in pred_users:
+        user = com.find_one({'id': int(uid)})
+        if user['level'] != 1:
+            # print user['screen_name'].encode('utf-8')
+            print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
+
+def classification_round(X_train, X_test, y_train):
+    scaler = preprocessing.StandardScaler().fit(X_train)
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+    print 'X_traing size:', X_train.shape
+    print 'X_test size:', X_test.shape
+    svc_lin = SVC(kernel='linear', class_weight='balanced')
+    y_lin = svc_lin.fit(X_train, y_train).predict(X_test)
+    return y_lin
+
+
+def ite_classification(train, test):
+    # First use random and ED users to predict ED and non-ED users
+    # Then, use ED and predicted non-ED users to predict ED and non-ED users
+    # X_train, y_train = load_svmlight_file(train)
+    # X_train = X_train.toarray()
+    # X_test, y_test = load_svmlight_file(test)
+    # X_test = X_test.toarray()
+    # First round classification
+    # y_pre_1 = classification_round(X_train, X_test, y_train)
+    # pickle.dump(y_pre_1, open('data/one-prediction', 'w'))
+    y_pre = pickle.load(open('data/prediction-'+str(1), 'r'))
+    # predict_verify('fed', 'com', 'data/fed', y_pre_1)
+    print 'Negative samples:', len(y_pre[y_pre == -1])
+    print 'Positive samples:', len(y_pre[y_pre == 1])
+
+    # Second round classification
+    for i in xrange(2, 10):
+        print 'Classification-round', i
+        # X_train = X_train[y_train==1]
+        # y_train = np.ones(len(X_train))
+        # neg_predict = X_test[y_pre == -1]
+        # X_train = np.vstack((X_train, neg_predict))
+        # neg_y = np.negative(np.ones(len(neg_predict)))
+        # y_train = np.append(y_train, neg_y)
+        # y_pre = classification_round(X_train, X_test, y_train)
+        # pickle.dump(y_pre, open('data/prediction-'+str(i), 'w'))
+        y_pre = pickle.load(open('data/prediction-'+str(i), 'r'))
+        print 'Negative samples:', len(y_pre[y_pre == -1])
+        print 'Positive samples:', len(y_pre[y_pre == 1])
+    # y_pre_2 = pickle.load(open('data/prediction-'+str(2), 'r'))
+    # predict_verify('fed', 'com', 'data/fed', y_pre_2)
 
 
 if __name__ == '__main__':
     '''classification with all features'''
-    # classification('data/ed-rd.data', 'data/fed.data',
-    #                'data/fed.pick')
-    results = pickle.load(open('data/fed.pick', 'r'))
-    # plot_classification(results)
-
-    predict_verify('fed', 'com', 'data/fed', results)
+    # # classification('data/ed-rd.data', 'data/fed.data',
+    # #                'data/fed.pick')
+    # results = pickle.load(open('data/fed.pick', 'r'))
+    # # plot_classification(results)
+    #
+    # predict_verify('fed', 'com', 'data/fed', results)
 
 
     # """Refine results with subset of features"""
@@ -217,3 +280,10 @@ if __name__ == '__main__':
     #
     # """verify results"""
     # predict_verify('fed', 'com', 'data/ed-tria', common)
+
+
+
+    # ite_classification('data/ed-rd.data', 'data/fed.data')
+    y_pre1 = pickle.load(open('data/prediction-'+str(2), 'r'))
+    y_pre2 = pickle.load(open('data/prediction-'+str(3), 'r'))
+    compare_round('fed', 'com', 'data/fed', y_pre1, y_pre2)

@@ -1,4 +1,8 @@
 if(FALSE){
+  install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'))
+  devtools::install_github('IRkernel/IRkernel')
+  IRkernel::installspec()
+  
   install.packages('igraph')
   install.packages('network')
   install.packages('sna')

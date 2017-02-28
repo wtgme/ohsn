@@ -26,7 +26,7 @@ from threading import Thread
 def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newdb = dbt.db_connect_no_auth(newdbname)
     newcom = newdb[newcomname]
-    newnet = newdb['net']
+    newnet = newdb['net2']
     # newcom.create_index("id", unique=True)
     # newcom.create_index([('level', pymongo.ASCENDING),
     #                      ('following_prelevel_node', pymongo.ASCENDING)],
