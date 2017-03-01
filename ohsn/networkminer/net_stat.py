@@ -174,4 +174,8 @@ def network_stats(dbname, com, fnet, bnet):
 
 
 if __name__ == '__main__':
-    network_stats('fed', 'scom', 'snet', 'sbnet')
+    # network_stats('fed', 'scom', 'snet', 'sbnet')
+
+    for btype in ['retweet', 'reply', 'mention', 'communication']:
+        g = gt.load_beh_network('fed', 'sbnet', btype)
+        g.write_graphml('ed-'+btype+'.graphml')

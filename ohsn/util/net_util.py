@@ -38,12 +38,12 @@ def load_behavior_network(db_name, collection='None', btype='communication'):
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     for row in cols.find({"type": {'$in': btype_dic[btype]}}):
-        if btype is 'retweet':
-            n2 = row['id0']
-            n1 = row['id1']
-        else:
-            n1 = row['id0']
-            n2 = row['id1']
+        # if btype is 'retweet':
+        #     n2 = row['id0']
+        #     n1 = row['id1']
+        # else:
+        n1 = row['id0']
+        n2 = row['id1']
         if n1 != n2:
             weightv = 1
             if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
