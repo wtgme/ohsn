@@ -188,41 +188,10 @@ def calculate_extenal_user():
     print i, count, float(i)/count
 
 
-def ED_followee():
-    net = dbt.db_connect_col('fed', 'net')
-    users = set(iot.get_values_one_field('fed', 'scom', 'id'))
-    print len(users)
-    tem = dbt.db_connect_col('fed', 'follownet')
-    for re in net.find():
-        if re['follower'] in users:
-            try:
-                tem.insert(re)
-            except pymongo.errors.DuplicateKeyError:
-                pass
-
 
 
 if __name__ == '__main__':
     # network_stats('fed', 'scom', 'snet', 'sbnet')
-
-    # for btype in ['retweet', 'reply', 'mention']:
-    #     g = gt.load_beh_network('fed', 'sbnet', btype)
-    #     g.write_graphml('ed-'+btype+'-follow.graphml')
-    g = gt.load_network('fed', 'follownet')
-    g.vs['deg'] = g.indegree()
-    users = set(iot.get_values_one_field('fed', 'scom', 'id'))
-    nodes = []
-    for v in g.vs:
-        if (int(v['name']) in users):
-            nodes.append(v)
-        elif v['deg'] > 5:
-            nodes.append(v)
-        else:
-            pass
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    gt.net_stat(g)
-    g.write_graphml('ed-friend-follow'+'.graphml')
 
     # calculate_extenal_user()
 
