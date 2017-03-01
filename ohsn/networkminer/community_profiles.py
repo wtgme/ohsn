@@ -8,6 +8,10 @@ This is explore the community of ED and their common followees
 who are they?
 What are they talk about?
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 
 import ohsn.util.graph_util as gt
 import ohsn.util.db_util as dbt
