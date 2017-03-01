@@ -12,10 +12,12 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import ohsn.util.graph_util as gt
 import ohsn.util.io_util as iot
 import numpy as np
+import ohsn.util.db_util as dbt
 import pickle
 import operator
 import ohsn.util.statis_util as st
 import ohsn.util.plot_util as pt
+import pymongo
 
 
 def drop_initials(list_a):
@@ -173,9 +175,55 @@ def network_stats(dbname, com, fnet, bnet):
     #     # display(outputs, 101)
 
 
+def calculate_extenal_user():
+    # Calculate how many users have been retweeted by ED but do not exist in ED users
+    users = set(iot.get_values_one_field('fed', 'com', 'id'))
+    print len(users)
+    net = dbt.db_connect_col('fed', 'sbnet')
+    i, count = 0, 0
+    for record in net.find():
+        if (record['id0'] not in users) or (record['id1'] not in users):
+            i = + 1
+        count += 1
+    print i, count, float(i)/count
+
+
+def ED_followee():
+    net = dbt.db_connect_col('fed', 'net')
+    users = set(iot.get_values_one_field('fed', 'scom', 'id'))
+    print len(users)
+    tem = dbt.db_connect_col('fed', 'follownet')
+    for re in net.find():
+        if re['follower'] in users:
+            try:
+                tem.insert(re)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+
+
+
 if __name__ == '__main__':
     # network_stats('fed', 'scom', 'snet', 'sbnet')
 
-    for btype in ['retweet', 'reply', 'mention', 'communication']:
-        g = gt.load_beh_network('fed', 'sbnet', btype)
-        g.write_graphml('ed-'+btype+'.graphml')
+    # for btype in ['retweet', 'reply', 'mention']:
+    #     g = gt.load_beh_network('fed', 'sbnet', btype)
+    #     g.write_graphml('ed-'+btype+'-follow.graphml')
+    g = gt.load_network('fed', 'follownet')
+    g.vs['deg'] = g.indegree()
+    users = set(iot.get_values_one_field('fed', 'scom', 'id'))
+    nodes = []
+    for v in g.vs:
+        if (int(v['name']) in users):
+            nodes.append(v)
+        elif v['deg'] > 5:
+            nodes.append(v)
+        else:
+            pass
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    gt.net_stat(g)
+    g.write_graphml('ed-friend-follow'+'.graphml')
+
+    # calculate_extenal_user()
+
+    # ED_followee()

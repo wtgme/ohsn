@@ -58,12 +58,12 @@ def extract_behavior_subnetwork(db_name, comname, bnetname, sbnetname, index=0):
 
     for user in userl1:
         for rel in net.find({'id0': user}):
-            follower = rel['id1']
-            if follower in userl1:
-                try:
-                    tem.insert(rel)
-                except pymongo.errors.DuplicateKeyError:
-                    pass
+            # follower = rel['id1']
+            # if follower in userl1:
+            try:
+                tem.insert(rel)
+            except pymongo.errors.DuplicateKeyError:
+                pass
 
 
 def get_retweeted_tweet(db_name):
@@ -127,10 +127,10 @@ def subnetworks(dbname, com, fnet, bnet, sfnet, sbnet):
 
 if __name__ == '__main__':
 
-    db_name = 'echelon'
+    db_name = 'fed'
     # tweet_ret_times('fed')
     # extract_friend_subnetwork(db_name, 'com', 'net', 'snet')
-    extract_behavior_subnetwork(db_name, 'poi', 'bnet', 'sbnet')
+    extract_behavior_subnetwork(db_name, 'scom', 'bnet', 'sbnet')
     # extract_friend_subnetwork(db_name, 'com_t1', 'net', 'snet_t1')
     # extract_friend_subnetwork(db_name, 'com_t2', 'net', 'snet_t2')
     # extract_friend_subnetwork(db_name, 'com_t3', 'net', 'snet_t3')

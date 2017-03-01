@@ -2,6 +2,7 @@ if(FALSE){
   install.packages(c('repr', 'IRdisplay', 'crayon', 'pbdZMQ', 'devtools'))
   devtools::install_github('IRkernel/IRkernel')
   IRkernel::installspec()
+  devtools::install_github("analyxcompany/ForceAtlas2")
   
   install.packages('igraph')
   install.packages('network')
