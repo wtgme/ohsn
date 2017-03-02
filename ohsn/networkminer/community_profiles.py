@@ -137,9 +137,24 @@ def recover_proed_community():
     print 'Filtered nodes: %d' %len(nodes)
     g = g.subgraph(nodes)
     gt.summary(g)
-
-
     g.write_graphml('rec-proed-follow.graphml')
+
+
+    # sbnet have extended all interactions posted by ED users
+    edusers = set(g.vs['name'])
+    for btype in ['retweet', 'reply', 'mention']:
+        gb = gt.load_beh_network('fed', 'sbnet', btype)
+        gt.summary(gb)
+        nodes = []
+        for v in gb.vs:
+            if v['name'] in edusers:
+                nodes.append(v)
+        gb = gb.subgraph(nodes)
+        for v in gb.vs:
+            v['set'] = g.vs[v['name']]['set']
+        gt.summary(gb)
+        gb.write_graphml('rec-proed-'+btype+'-follow.graphml')
+
 
 def ed_follow_community(file_path):
     # inspect keywords of user profiles in different communities
