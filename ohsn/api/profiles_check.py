@@ -57,8 +57,8 @@ def tokenizer_stoprm(dscp):
     new_tokens = []
     for token in tokens:
         token = re.sub(r'[\.0-9]', '', token) #remove all numbers
-        if token not in stop and token!='':
-            new_tokens.append(token)
+        # if token not in stop and token!='':
+        new_tokens.append(token)
     return new_tokens
 
 
@@ -240,6 +240,8 @@ def common_word(dbname, colname):
     p_list = sorted(pp_list, key=pp_list.get)
     for i in p_list[-100:]:
         print i, pp_list[i], t_dic[i[0]], t_dic[i[1]]
+
+
 
 
 if __name__ == '__main__':

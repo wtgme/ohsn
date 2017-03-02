@@ -432,7 +432,7 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    # g = tag_record('fed', 'timeline', 'ed')
+    g = tag_record('fed', 'timeline', 'ed')
     # transform('ed_tag')
     # hash_com = community()
     # user_hashtag_profile('fed', hash_com)

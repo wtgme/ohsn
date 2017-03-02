@@ -63,8 +63,8 @@ def rec_user(dbname, colname):
             #                         'anti' not in sentence:
             #             FLAG = False
             if FLAG:
-                print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
-                user_lit.append(user['id'])
+                # print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+                user_lit.append(str(user['id']))
                 count += 1
     print count
     return user_lit
@@ -88,8 +88,8 @@ def proed_users(dbname, colname):
                     if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence:
                         FLAG = True
             if FLAG:
-                print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
-                user_list.append(user['id'])
+                # print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+                user_list.append(str(user['id']))
                 count += 1
     print count
     return user_list
@@ -308,9 +308,10 @@ def distribution_change(dbname, colname):
 
 
 if __name__ == '__main__':
-    ed_users = rec_user('fed', 'scom')
-    rec_users = proed_users('fed', 'scom')
-    print len(set(ed_users).intersection(rec_users))
+    # ed_users = rec_user('fed', 'scom')
+    # rec_users = proed_users('fed', 'scom')
+    # print len(ed_users), len(rec_users)
+    # print len(set(ed_users).intersection(rec_users))
 
 
     # print 'Friendship'
@@ -351,7 +352,7 @@ if __name__ == '__main__':
     # # plt.ylabel(r'p($\Delta$)')
     # plt.legend()
     # plt.show()
-    # distribution_change('fed', 'com')
+    distribution_change('fed', 'com')
 
 
     '''Print user profiles'''

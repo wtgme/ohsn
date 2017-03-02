@@ -103,6 +103,8 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
             edges[(n1id, n2id)] = wt + 1
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    # If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with no intervening modifications to the dictionary, the lists will directly correspond.
+    # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
     return g
