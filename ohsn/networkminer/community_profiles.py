@@ -150,8 +150,8 @@ def recover_proed_community():
             if v['name'] in edusers:
                 nodes.append(v)
         gb = gb.subgraph(nodes)
-        for v in gb.vs:
-            v['set'] = g.vs[v['name']]['set']
+	for v in gb.vs:
+            v['set'] = g.vs.find(name=v['name'])['set']
         gt.summary(gb)
         gb.write_graphml('rec-proed-'+btype+'-follow.graphml')
 
