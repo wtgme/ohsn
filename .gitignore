@@ -78,3 +78,5 @@ ohsn/.DS_Store
 *.DOT
 
 ohsn/.Rhistory
+
+*.graphml

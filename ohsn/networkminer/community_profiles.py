@@ -17,6 +17,8 @@ import ohsn.util.graph_util as gt
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import pymongo
+import ohsn.api.profiles_check as pc
+from nltk import FreqDist
 
 def ed_follow_net():
     # construct ED and their followee network
@@ -33,7 +35,7 @@ def ed_follow_net():
             pass
     print 'Filtered nodes: %d' %len(nodes)
     g = g.subgraph(nodes)
-    gt.net_stat(g)
+    gt.summary(g)
     g.write_graphml('ed-friend-follow'+'.graphml')
 
 
@@ -44,6 +46,21 @@ def ed_follow_community():
     components = g.clusters()
     g = components.giant()
     gt.summary(g)
+
+    com = dbt.db_connect_col('fed', 'com')
+    ml = g.community_multilevel(weights='weight')
+    for cluster in ml:
+        fdist = FreqDist()
+        for uid in cluster:
+            user = com.find_one({'id': int(g.vs[uid]['name'])}, ['description'])
+            profile = user['description']
+            if profile:
+                tokens = pc.tokenizer_stoprm(profile)
+                for word in tokens:
+                    fdist[word] += 1
+        print fdist.most_common(20)
+
+
 
 def ED_followee():
     # put all ED's followees in follownet
@@ -66,6 +83,6 @@ def out_ed_follow_nets():
 
 
 if __name__ == '__main__':
-    ED_followee()
+    # ED_followee()
     # ed_follow_net()
-    # ed_follow_community()
+    ed_follow_community()

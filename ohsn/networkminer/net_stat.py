@@ -193,6 +193,6 @@ def calculate_extenal_user():
 if __name__ == '__main__':
     # network_stats('fed', 'scom', 'snet', 'sbnet')
 
-    # calculate_extenal_user()
+    calculate_extenal_user()
 
     # ED_followee()
