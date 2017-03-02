@@ -130,7 +130,7 @@ def recover_proed_community():
     for v in g.vs:
         if v['set']==1 or v['set']==-1:
             nodes.append(v)
-        elif v['deg'] > 5:
+        elif v['deg'] > 3:
             nodes.append(v)
         else:
             pass
