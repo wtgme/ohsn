@@ -22,6 +22,7 @@ from nltk import FreqDist
 from nltk.tree import Tree
 from nltk import ne_chunk, pos_tag, word_tokenize
 import RAKE
+from nltk.tokenize import RegexpTokenizer
 import operator
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
@@ -33,13 +34,16 @@ from sklearn import linear_model, metrics
 from ohsn.edrelated import edrelatedcom
 from igraph import *
 import collections
+import re
 
 Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
+tokenizer = RegexpTokenizer(r'\w+')
 
 def keywords(text):
     # Extract keywords from user profile
     keywords = []
     keywordcandidates = Rake.run(text)
+    print keywordcandidates
     for keyword in keywordcandidates[0:3]:
         keywords.append(keyword[0])
     return keywords
@@ -267,6 +271,34 @@ def get_scores( true_classes, pred_classes, average):
     return precision, recall, f1, accuracy
 
 
+def keywords_recovery_preed():
+    prorec = edrelatedcom.rec_user('fed', 'scom')
+    proed = edrelatedcom.proed_users('fed', 'scom')
+    times = dbt.db_connect_col('fed', 'timeline')
+    fdist_rec = FreqDist()
+    fdist_ped = FreqDist()
+    for user in prorec:
+        for tweet in times.find({'user.id':int(user)}):
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = text.strip().lower()
+            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            words = keywords(text)
+            for word in words:
+                fdist_rec[word] += 1
+    for user in proed:
+        for tweet in times.find({'user.id':int(user)}):
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = text.strip().lower()
+            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            words = keywords(text)
+            for word in words:
+                fdist_ped[word] += 1
+    print fdist_rec.most_common(50)
+    print fdist_ped.most_common(50)
+
+
 def classify_recovery_proed():
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
@@ -323,4 +355,10 @@ if __name__ == '__main__':
     # profile_cluster('ed-retweet'+'.graphml')
 
     # classify_recovery_proed()
-    recover_proed_community()
+    # recover_proed_community()
+    text = """
+ The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
+
+               """
+    print keywords(text)
+    # keywords_recovery_preed()

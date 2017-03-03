@@ -43,7 +43,7 @@ def rec_user(dbname, colname):
             FLAG = False
             for sentence in sentences:
                 if 'recover' in sentence:
-                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence:
+                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence and 'non' not in sentence:
                         FLAG = True
                 # if 'struggl' in sentence:
                 #     if 'thin' not in sentence and 'weight' not in sentence \
@@ -63,7 +63,7 @@ def rec_user(dbname, colname):
             #                         'anti' not in sentence:
             #             FLAG = False
             if FLAG:
-                # print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+                print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
                 user_lit.append(str(user['id']))
                 count += 1
     print count
@@ -84,8 +84,9 @@ def proed_users(dbname, colname):
             for sentence in sentences:
                 if 'proed' in sentence or 'proana' in sentence \
                         or 'prothin' in sentence or 'thinspo' in sentence \
-                        or 'bonespo' in sentence or 'thinspiration' in sentence:
-                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence:
+                        or 'bonespo' in sentence or 'thinspiration' in sentence\
+                        or 'proanamia' in sentence or 'promia' in sentence:
+                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence and 'non' not in sentence:
                         FLAG = True
             if FLAG:
                 # print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
@@ -104,7 +105,7 @@ def ed_user(dbname, colname):
     i = 0
     for user in com.find({}, ['id', 'description']):
         if profiles_check.check_ed_related_profile(user['description']):
-            # print user['id'], ' '.join(user['description'].split()).encode('utf-8')
+            print user['id'], ' '.join(user['description'].split()).encode('utf-8')
             user_lit.append(user['id'])
             count += 1
         i += 1
@@ -308,8 +309,8 @@ def distribution_change(dbname, colname):
 
 
 if __name__ == '__main__':
-    # ed_users = rec_user('fed', 'scom')
-    # rec_users = proed_users('fed', 'scom')
+    ed_users = rec_user('fed', 'scom')
+    rec_users = proed_users('fed', 'scom')
     # print len(ed_users), len(rec_users)
     # print len(set(ed_users).intersection(rec_users))
 
@@ -352,7 +353,7 @@ if __name__ == '__main__':
     # # plt.ylabel(r'p($\Delta$)')
     # plt.legend()
     # plt.show()
-    distribution_change('fed', 'com')
+    # distribution_change('fed', 'com')
 
 
     '''Print user profiles'''
