@@ -195,7 +195,7 @@ def filter_ed_tweets():
 
     # com = dbt.db_connect_col('fed', 'scom')
     times = dbt.db_connect_col('fed', 'timeline')
-    ed_times = dbt.db_connect_col('fed', 'edtimeline')
+    ed_times = dbt.db_connect_col('fed', 'edtimeline2')
     ed_times.create_index([('user.id', pymongo.ASCENDING),
                               ('id', pymongo.DESCENDING)])
     ed_times.create_index([('id', pymongo.ASCENDING)], unique=True)
@@ -206,30 +206,38 @@ def filter_ed_tweets():
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
     model = models.word2vec.Word2Vec.load('data/word2vec')
-    Rake = RAKE.Rake('/home/wt/Code/ohsn/ohsn/networkminer/stoplist/SmartStoplist.txt')
+    # Rake = RAKE.Rake('/home/wt/Code/ohsn/ohsn/networkminer/stoplist/SmartStoplist.txt')
+    import ohsn.api.profiles_check as pc
     print len(prorec+proed)
     for user in prorec+proed:
         for tweet in times.find({'user.id': int(user)}):
             text = tweet['text'].encode('utf8')
             # replace RT, @, # and Http://
-            text = text.strip().lower()
-            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-            keywords = Rake.run(text)
+            # text = text.strip().lower()
+            # text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            # keywords = Rake.run(text)
+            keywords = pc.tokenizer_stoprm(text)
             sumsim = 0.0
             count = 0
+            # for word in keywords:
+            #     tokens = word[0].split()
+            #     sima, ca = 0.0, 0.0
+            #     for token in tokens:
+            #         if token in model:
+            #             for ed in ed_list:
+            #                 sim = model.similarity(token, ed)
+            #                 # if sim > maxsim:
+            #                 sima += sim
+            #                 ca += 1
+            #     if ca != 0:
+            #         sumsim += sima/ca
+            #         count += 1
             for word in keywords:
-                tokens = word[0].split()
-                sima, ca = 0.0, 0.0
-                for token in tokens:
-                    if token in model:
-                        for ed in ed_list:
-                            sim = model.similarity(token, ed)
-                            # if sim > maxsim:
-                            sima += sim
-                            ca += 1
-                if ca != 0:
-                    sumsim += sima/ca
-                    count += 1
+                if word in model:
+                    for ed in ed_list:
+                        sim = model.similarity(word, ed)
+                        sumsim += sim
+                        count += 1
             if count != 0 and (sumsim/count) > 0.26: # the average similarity of ed words
                 try:
                     ed_times.insert(tweet)
@@ -248,12 +256,12 @@ if __name__ == '__main__':
 
     '''Word2Vec testing'''
     # word_vect('fed', 'scom', 'timeline')
-    model = models.word2vec.Word2Vec.load('data/word2vec')
+    # model = models.word2vec.Word2Vec.load('data/word2vec')
     # for word in model.vocab:
     #     print word
-    print model.most_similar(positive=['recover'], negative=[], topn=20)
-    print model.most_similar(positive=['ed'], negative=[], topn=20)
-    print model.most_similar(positive=['fat'], negative=[], topn=20)
+    # print model.most_similar(positive=['recover'], negative=[], topn=20)
+    # print model.most_similar(positive=['ed'], negative=[], topn=20)
+    # print model.most_similar(positive=['fat'], negative=[], topn=20)
     # print model.similarity('ana', 'depressed')
     # ed_bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
     # ed_keywords_list = set(['ed', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
@@ -281,16 +289,17 @@ if __name__ == '__main__':
     # sns.distplot(simis, hist=False)
     # plt.show()
 
-    # filter_ed_tweets()
+    filter_ed_tweets()
 
-    print len(model.wv.vocab)
-    X = [model[model.wv.index2word[i]] for i in xrange(len(model.wv.vocab))]
-    X = np.asarray(X)
-    from sklearn.cluster import AgglomerativeClustering, KMeans
-    from sklearn.metrics import silhouette_score
-    clustering = AgglomerativeClustering(affinity='cosine', linkage='complete')
-    clustering.fit(X)
-    pickle.dump(clustering, open('data/clustering.pick', 'w'))
+'''Cluster Word based word2vec'''
+    # print len(model.wv.vocab)
+    # X = [model[model.wv.index2word[i]] for i in xrange(len(model.wv.vocab))]
+    # X = np.asarray(X)
+    # from sklearn.cluster import AgglomerativeClustering, KMeans
+    # from sklearn.metrics import silhouette_score
+    # clustering = AgglomerativeClustering(affinity='cosine', linkage='complete')
+    # clustering.fit(X)
+    # pickle.dump(clustering, open('data/clustering.pick', 'w'))
     # range_n_clusters = range(2, 21)
     # values = []
     # for n_clusters in range_n_clusters:

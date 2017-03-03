@@ -57,8 +57,8 @@ def tokenizer_stoprm(dscp):
     new_tokens = []
     for token in tokens:
         token = re.sub(r'[\.0-9]', '', token) #remove all numbers
-        # if token not in stop and token!='':
-        new_tokens.append(token)
+        if token not in stop and token!='':
+            new_tokens.append(token)
     return new_tokens
 
 
