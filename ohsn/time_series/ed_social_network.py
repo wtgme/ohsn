@@ -25,6 +25,8 @@ def output_net_user_data(dbname, comname, netname):
     Output the social network (two-ground) and user's ED states into local files
     '''
     g = gt.load_network(dbname, netname)
+    gt.summary(g)
+    
     com = dbt.db_connect_col(dbname, comname)
     for v in g.vs:
         user = com.find_one({'id': int(v['name'])})
