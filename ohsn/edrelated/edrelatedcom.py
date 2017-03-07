@@ -89,7 +89,7 @@ def proed_users(dbname, colname):
                     if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence and 'non' not in sentence:
                         FLAG = True
             if FLAG:
-                # print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+                print user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
                 user_list.append(str(user['id']))
                 count += 1
     print count

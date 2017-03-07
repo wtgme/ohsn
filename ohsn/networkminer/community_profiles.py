@@ -113,26 +113,80 @@ def recover_proed_community():
             n2id = name_map.get(n2, len(name_map))
             name_map[n2] = n2id
             edges.add((n1id, n2id))
-            if n1 in prorec:
-                set_map[n1id] = 1
-                set_map[n2id] = 2
-            else:
-                set_map[n1id] = -1
-                set_map[n2id] = -2
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get)) # return keys ordered by values
     g.add_edges(list(edges))
     g.es["weight"] = 1
-    od = collections.OrderedDict(sorted(set_map.items()))
-    # print od
-    # print od.values()
-    g.vs["set"] = od.values()
+    g.vs["set"] = 0
+    for v in g.vs:
+        if v['name'] in prorec:
+            v['set'] = 1
+        elif v['name'] in proed:
+            v['set'] = -1
     gt.summary(g)
 
     g.vs['deg'] = g.indegree()
     nodes = []
     for v in g.vs:
-        if v['set']==1 or v['set']==-1:
+        if v['set'] == 1 or v['set'] == -1:
+            nodes.append(v)
+        elif v['deg'] > 3:
+            nodes.append(v)
+        else:
+            pass
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    gt.summary(g)
+    g.write_graphml('rec-proed-follow.graphml')
+
+    # sbnet have extended all interactions posted by ED users
+    edusers = set(g.vs['name'])
+    for btype in ['retweet', 'reply', 'mention']:
+        gb = gt.load_beh_network('fed', 'sbnet', btype)
+        gt.summary(gb)
+        nodes = []
+        for v in gb.vs:
+            if v['name'] in edusers:
+                nodes.append(v)
+        gb = gb.subgraph(nodes)
+        for v in gb.vs:
+            v['set'] = g.vs.find(name=v['name'])['set']
+        gt.summary(gb)
+        gb.write_graphml('rec-proed-'+btype+'.graphml')
+
+
+
+def recover_proed_community_all_connection():
+    # Filtering users
+    prorec = edrelatedcom.rec_user('fed', 'scom')
+    proed = edrelatedcom.proed_users('fed', 'scom')
+    cols = dbt.db_connect_col('fed', 'follownet')
+    name_map, edges, set_map = {}, set(), {}
+    for row in cols.find({},no_cursor_timeout=True):
+        n1 = str(row['follower'])
+        if n1 in prorec or n1 in proed:
+            n2 = str(row['user'])
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            edges.add((n1id, n2id))
+    g = Graph(len(name_map), directed=True)
+    g.vs["name"] = list(sorted(name_map, key=name_map.get)) # return keys ordered by values
+    g.add_edges(list(edges))
+    g.es["weight"] = 1
+    g.vs["set"] = 0
+    for v in g.vs:
+        if v['name'] in prorec:
+            v['set'] = 1
+        elif v['name'] in proed:
+            v['set'] = -1
+    gt.summary(g)
+
+    g.vs['deg'] = g.indegree()
+    nodes = []
+    for v in g.vs:
+        if v['set'] == 1 or v['set'] == -1:
             nodes.append(v)
         elif v['deg'] > 3:
             nodes.append(v)
@@ -145,19 +199,74 @@ def recover_proed_community():
 
 
     # sbnet have extended all interactions posted by ED users
-    edusers = set(g.vs['name'])
+    edusers = [int(v['name']) for v in g.vs]
+    # gf = gt.load_network_subset('fed', 'net')
     for btype in ['retweet', 'reply', 'mention']:
-        gb = gt.load_beh_network('fed', 'sbnet', btype)
-        gt.summary(gb)
-        nodes = []
+        gb = gt.load_beh_network_subset(edusers, 'fed', 'bnet', btype)
+        # gt.summary(gb)
+        # nodes = []
+        # for v in gb.vs:
+        #     if v['name'] in edusers:
+        #         nodes.append(v)
+        # gb = gb.subgraph(nodes)
         for v in gb.vs:
-            if v['name'] in edusers:
-                nodes.append(v)
-        gb = gb.subgraph(nodes)
-	for v in gb.vs:
             v['set'] = g.vs.find(name=v['name'])['set']
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-follow.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-all.graphml')
+
+def recover_proed_interaction():
+    prorec = edrelatedcom.rec_user('fed', 'scom')
+    proed = edrelatedcom.proed_users('fed', 'scom')
+    btype_dic = {'retweet': [1], 'reply': [2], 'mention': [3], 'communication': [2, 3]}
+    for btype in ['retweet', 'reply', 'mention']:
+        cols = dbt.db_connect_col('fed', 'sbnet')
+        name_map, edges, set_map = {}, {}, {}
+        for row in cols.find({'type': {'$in': btype_dic[btype]}}, no_cursor_timeout=True):
+            n1 = str(row['id0'])
+            n2 = str(row['id1'])
+            if n1 in prorec or n1 in proed:
+                if n1 != n2:
+                    n1id = name_map.get(n1, len(name_map))
+                    name_map[n1] = n1id
+                    n2id = name_map.get(n2, len(name_map))
+                    name_map[n2] = n2id
+                    wt = edges.get((n1id, n2id), 0)
+                    edges[(n1id, n2id)] = wt + 1
+        g = Graph(len(name_map), directed=True)
+        g.vs["name"] = list(sorted(name_map, key=name_map.get))
+        g.add_edges(edges.keys())
+        g.es["weight"] = edges.values()
+        g.vs["set"] = 0
+        for v in g.vs:
+            if v['name'] in prorec:
+                v['set'] = 1
+            elif v['name'] in proed:
+                v['set'] = -1
+        gt.summary(g)
+
+
+        edges = g.es.select(weight_gt=3)
+        edge_nodes = []
+        for edge in edges:
+            source_vertex_id = edge.source
+            target_vertex_id = edge.target
+            source_vertex = g.vs[source_vertex_id]
+            target_vertex = g.vs[target_vertex_id]
+            edge_nodes.append(source_vertex['name'])
+            edge_nodes.append(target_vertex['name'])
+
+        nodes = []
+        for v in g.vs:
+            if v['set'] == 1 or v['set'] == -1:
+                nodes.append(v)
+            elif v['name'] in edge_nodes:
+                nodes.append(v)
+            else:
+                pass
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        gt.summary(g)
+        g.write_graphml('rec-proed-'+btype+'.graphml')
 
 
 def ed_follow_community(file_path):
@@ -356,9 +465,11 @@ if __name__ == '__main__':
 
     # classify_recovery_proed()
     # recover_proed_community()
-    text = """
- The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
-
-               """
-    print keywords(text)
+    recover_proed_community_all_connection()
+ #    text = """
+ # The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
+ #
+ #               """
+ #    print keywords(text)
     # keywords_recovery_preed()
+    # recover_proed_interaction()
