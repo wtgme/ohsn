@@ -24,24 +24,14 @@ def output_net_user_data(dbname, comname, netname):
     '''
     Output the social network (two-ground) and user's ED states into local files
     '''
-    net = dbt.db_connect_col(dbname, netname)
-    fw = open(dbname+'-two-net.data', 'w')
-    for record in net.find():
-        # Edge is from FOLLOWER ----->>> USER
-        fw.write(str(record['follower']) + '\t' + str(record['user']) + '\n')
-    fw.flush()
-    fw.close()
-
+    g = gt.load_network(dbname, netname)
     com = dbt.db_connect_col(dbname, comname)
-    fw = open(dbname+'-two-net-user.data', 'w')
-    for record in com.find():
-        ed_flag = profiles_check.check_ed(record)
-        out = 0
-        if ed_flag:
-            out = 1
-        fw.write(str(record['id']) + '\t' + str(out) + '\n')
-    fw.flush()
-    fw.close()
+    for v in g.vs:
+        user = com.find_one({'id': int(v['name'])})
+        v['l'] = user['level']
+        v['ed'] = profiles_check.check_ed(user)
+    g.write_graphml(dbname+'-'+netname+'.graphml')
+
 
 
 def user_tag(filename):
@@ -155,6 +145,7 @@ def out_ed_social():
     df = pd.DataFrame(data, columns=attr_names)
     df.to_csv('data-ed-social.csv', index = False)
 
+
 def out_ed_friend_num():
     '''
     out csv file for only one-round social network
@@ -175,8 +166,12 @@ if __name__ == '__main__':
     # out_ed_friend_num()
     # net = gt.load_network('fed', 'net')
     # net.write_graphml('ed-two-net.graphml')
+    output_net_user_data('fed', 'com', 'net')
+    output_net_user_data('fed', 'com', 'net2')
+    output_net_user_data('random2', 'com', 'net')
+    output_net_user_data('random2', 'com', 'net2')
 
-    output_net_user_data(dbname='random2', comname='com', netname='net')
+
 
 
 

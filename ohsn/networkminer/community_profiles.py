@@ -157,6 +157,11 @@ def recover_proed_community():
 
 
 def recover_proed_community_all_connection():
+    '''
+    First filter users: pro-recovery and pro-ed, as well as their followings.
+    Construct interaction networks among these users, including the outlinks from followings to pro-* users
+    :return:
+    '''
     # Filtering users
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
