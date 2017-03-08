@@ -352,11 +352,11 @@ def recovery_tweet():
 
 
 if __name__ == '__main__':
-    recovery_tweet()
-    # ed_users = rec_user('fed', 'scom')
-    # rec_users = proed_users('fed', 'scom')
-    # print len(ed_users), len(rec_users)
-    # print (set(ed_users).intersection(rec_users))
+    # recovery_tweet()
+    ed_users = rec_user('fed', 'scom')
+    rec_users = proed_users('fed', 'scom')
+    print len(ed_users), len(rec_users)
+    print (set(ed_users).intersection(rec_users))
 
 
 

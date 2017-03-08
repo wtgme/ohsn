@@ -262,6 +262,16 @@ def load_scale_data(file_path, multilabeltf=False):
     return (X, y)
 
 
+def feature_rank(file_path):
+    # Ranking feature usefulness
+    LIWC = iot.read_fields()
+    LIWC = [line.strip().split('.')[-1] for line in LIWC]
+    X1, y1 = load_scale_data(file_path)
+    ref1 = ref(X1, y1)
+    support1, ranking1 = ref1.support_, ref1.ranking_
+    convert_fields(LIWC, ranking1)
+
+
 def common_features():
     '''Need no scoring metrics'''
     LIWC = iot.read_fields()
@@ -475,7 +485,7 @@ if __name__ == '__main__':
     #              pickle.load(open('data/ed-young-refcv.pick', 'r'))],
     #             ['ED-Random', 'ED-Younger'])
     # common_features()
-    cvevluate()
+    # cvevluate()
 
 
     '''Common used features'''
@@ -486,3 +496,12 @@ if __name__ == '__main__':
     # print feature1[:20]
     # print feature2[:20]
     # print list(set(feature1[:20]).intersection(set(feature2[:20])))
+
+    # feature_rank('data/pro-ed-rec.data')
+
+    ''' evaluate performance with reducing features
+    Need a scoring metric'''
+    '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
+    X1, y1 = load_scale_data('data/pro-ed-rec.data')
+    refcv = rfecv(X1, y1)
+    plot_rfecvs([refcv], ['Pro-rec VS Pro-ED'])

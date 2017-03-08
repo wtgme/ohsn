@@ -89,13 +89,14 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
 
     for x in poi.find({
                        # 'text_anal.edword_count.value': {'$gt': 0},
-                       # 'id': {'$in': userset},
+                       'id_str': {'$in': userset},
                        'liwc_anal.result.WC': {'$exists': True},
                         # 'text_anal.gbmi': {'$exists': True},
                        # 'timeline_count': {'$gt': 100},
                        # 'level': {'$gt': 1}
                        }):
-        if index < maxsize and int(x['id']) not in exclude_set:
+        # if index < maxsize and int(x['id']) not in exclude_set:
+        if index < maxsize:
             uid = int(x['id'])
             uids.append(uid)
             values = io.get_fields_one_doc(x, field_names)
@@ -153,19 +154,16 @@ if __name__ == '__main__':
     # print triangle
 
 
-    feature_output(fields, 'data/random-younger', 'younger', '-1', False, [])
+    # feature_output(fields, 'data/random-younger', 'younger', '-1', False, [])
 
     '''Generate Pro-ed and pro-recovery data'''
-    # import ohsn.edrelated.edrelatedcom as er
-    # ed_users = er.rec_user('fed', 'scom')
-    # rec_users = er.proed_users('fed', 'scom')
-    # common = set(ed_users).intersection(rec_users)
-    # ed_users = list(set(ed_users) - common)
-    # rec_users = list(set(rec_users) - common)
-    # print len(ed_users), len(rec_users)
+    import ohsn.edrelated.edrelatedcom as er
+    rec_users, ed_users = er.rec_proed()
+    common = set(ed_users).intersection(rec_users)
+    print len(ed_users), len(rec_users), len(common)
     # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
-    # feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users, user_hash_profile)
-    # feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users, user_hash_profile)
+    feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users)
+    feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users)
 
 
     # """Generate Data for GBMI regression"""

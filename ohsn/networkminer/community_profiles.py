@@ -7,6 +7,8 @@ Created on 10:33 PM, 3/1/17
 This is explore the community of ED and their common followees
 who are they?
 What are they talk about?
+
+Tried: using sentiment on recovery to select pro-ed and pro-recoery users, NOT working.
 """
 import sys
 from os import path
@@ -23,7 +25,6 @@ from nltk.tree import Tree
 from nltk import ne_chunk, pos_tag, word_tokenize
 import RAKE
 from nltk.tokenize import RegexpTokenizer
-import operator
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from gensim.models.doc2vec import Doc2Vec
@@ -35,8 +36,12 @@ from ohsn.edrelated import edrelatedcom
 from igraph import *
 import collections
 import re
+from pattern.en import sentiment
+import seaborn as sns
+import matplotlib.pyplot as plt
+from afinn import Afinn
 
-# Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
+Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
 tokenizer = RegexpTokenizer(r'\w+')
 
 def keywords(text):
@@ -100,6 +105,7 @@ def ed_follow_net():
 
 
 def recover_proed_community():
+    # pro-recovery and pro-ed users, and their outlinked communities
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
     cols = dbt.db_connect_col('fed', 'follownet')
@@ -162,7 +168,8 @@ def recover_proed_community_all_connection():
     :return:
     '''
     # Filtering users
-    prorec, proed = edrelatedcom.rec_proed()
+    prorec, proed = edrelatedcom.rec_proed() ## based on profiles
+    # prorec, proed = filter_recovery_sentiment() # based on tweets
     cols = dbt.db_connect_col('fed', 'follownet')
     name_map, edges, set_map = {}, set(), {}
     for row in cols.find({},no_cursor_timeout=True):
@@ -217,7 +224,10 @@ def recover_proed_community_all_connection():
         gt.summary(gb)
         gb.write_graphml('rec-proed-'+btype+'-all.graphml')
 
+
+
 def recover_proed_interaction():
+    # interaction network of pro-recovery and pro-ed users
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
     btype_dic = {'retweet': [1], 'reply': [2], 'mention': [3], 'communication': [2, 3]}
@@ -376,6 +386,7 @@ def profile_cluster(filepath):
 
 
 def get_scores( true_classes, pred_classes, average):
+    # classification evaluation
     precision = metrics.precision_score( true_classes, pred_classes, average=average )
     recall = metrics.recall_score( true_classes, pred_classes, average=average )
     f1 = metrics.f1_score( true_classes, pred_classes, average=average )
@@ -384,21 +395,87 @@ def get_scores( true_classes, pred_classes, average):
 
 
 def recovery_users_tweet():
+    # gather recovery/treat related tweets
     com = dbt.db_connect_col('fed', 'scom')
     times = dbt.db_connect_col('fed', 'timeline')
-    
+    newtime = dbt.db_connect_col('fed', 'treat')
+    newtime.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
+
     for user in com.find(no_cursor_timeout=True):
         uid = user['id']
-        count = 0
         for tweet in times.find({'user.id':uid}):
             text = tweet['text'].encode('utf8')
-            # replace RT, @, # and Http://
-            text = text.strip().lower()
-            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-            if t
+            text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            if ('I' in text or ' me ' in text):
+                text = text.strip().lower()
+                if 'in treatment' in text or 'in therap' in text:
+                        # or 'healing' in text or 'therapy' in text or 'doctor' in text or 'hospital' in text:
+                    # print ' '.join(tweet['text'].split())
+                    try:
+                        newtime.insert(tweet)
+                    except pymongo.errors.DuplicateKeyError:
+                        pass
+
+
+def recovery_sentiment():
+    afinn = Afinn(emoticons=True)
+    # analysis sentiments about recovery
+    times = dbt.db_connect_col('fed', 'recovery')
+    for tweet in times.find():
+        text = tweet['text'].encode('utf8')
+        text = text.strip().lower()
+        text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+        # sent = afinn.score(text)
+        sent = sentiment(text)
+        times.update_one({'id': tweet['id']}, {'$set':{"polarity": sent[0]
+            # , "subjectivity": sent[1]
+                                                    }}, upsert=False)
+    pol = iot.get_values_one_field('fed', 'recovery', "polarity")
+    sns.distplot(pol)
+    plt.show()
+    # pol2 = iot.get_values_one_field('fed', 'recovery', "subjectivity")
+    # sns.distplot(pol2)
+    # plt.show()
+
+
+def filter_recovery_sentiment():
+    user_count, user_pol = {}, {}
+    times = dbt.db_connect_col('fed', 'recovery')
+    for tweet in times.find():
+        uid = tweet['user']['id']
+        pol = tweet['polarity']
+        count = user_count.get(uid, 0.0)
+        polv = user_pol.get(uid, 0.0)
+        user_count[uid] = count + 1
+        if pol > 0:
+            print ' '.join(tweet['text'].split())
+            user_pol[uid] = polv + 1
+        elif pol < 0:
+            user_pol[uid] = polv - 1
+        else:
+            user_pol[uid] = polv + 0
+    user_list = [k for k, v in user_count.items() if v >= 3]
+    print sum(user_pol[uid] > 0 for uid in user_list)
+    print sum(user_pol[uid] < 0 for uid in user_list)
+    rec, nonrec = [], []
+    com = dbt.db_connect_col('fed', 'scom')
+    for uid in user_list:
+        if user_pol[uid] > 0:
+            rec.append(str(uid))
+            user = com.find_one({'id':uid})
+            print 'Positive', user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+        elif user_pol[uid] < 0:
+            nonrec.append(str(uid))
+            user = com.find_one({'id':uid})
+            print 'Negative', user['id_str'], user['screen_name'], ' '.join(user['description'].split()).encode('utf-8')
+
+    return rec, nonrec
 
 
 def recovery_text(text):
+    # identify recovery text
     sentences = re.split(r"\s*[;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text)
     FLAG = False
     for sentence in sentences:
@@ -411,6 +488,7 @@ def recovery_text(text):
 
 
 def keywords_recovery_preed():
+    # compare keywords in pro-recovery and pro-ed users' tweets
     prorec, proed = edrelatedcom.rec_proed()
     times = dbt.db_connect_col('fed', 'timeline')
     fdist_rec = FreqDist()
@@ -438,6 +516,7 @@ def keywords_recovery_preed():
 
 
 def classify_recovery_proed():
+    # classification pro-recovery and pro-ed users
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
     com = dbt.db_connect_col('fed', 'scom')
@@ -503,3 +582,9 @@ if __name__ == '__main__':
     # recover_proed_interaction()
 
     recovery_users_tweet()
+    # recovery_sentiment()
+    # filter_recovery_sentiment()
+
+    # times = dbt.db_connect_col('fed', 'treat')
+    # for tweet in times.find():
+    #     print ' '.join(tweet['text'].split())
