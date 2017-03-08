@@ -256,11 +256,17 @@ if __name__ == '__main__':
 
     '''Word2Vec testing'''
     # word_vect('fed', 'scom', 'timeline')
-    # model = models.word2vec.Word2Vec.load('data/word2vec')
+    model = models.word2vec.Word2Vec.load('data/word2vec')
     # for word in model.vocab:
     #     print word
-    # print model.most_similar(positive=['recover'], negative=[], topn=20)
-    # print model.most_similar(positive=['ed'], negative=[], topn=20)
+    print model.most_similar(positive=['recover'], negative=[], topn=20)
+    print model.most_similar(positive=['ed'], negative=[], topn=20)
+
+    print model.similarity('health', 'recovery')
+    print model.similarity('health', 'proana')
+
+
+
     # print model.most_similar(positive=['fat'], negative=[], topn=20)
     # print model.similarity('ana', 'depressed')
     # ed_bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
@@ -289,7 +295,7 @@ if __name__ == '__main__':
     # sns.distplot(simis, hist=False)
     # plt.show()
 
-    filter_ed_tweets()
+    # filter_ed_tweets()
 
 '''Cluster Word based word2vec'''
     # print len(model.wv.vocab)

@@ -43,7 +43,7 @@ def keywords(text):
     # Extract keywords from user profile
     keywords = []
     keywordcandidates = Rake.run(text)
-    print keywordcandidates
+    # print keywordcandidates
     for keyword in keywordcandidates[0:3]:
         keywords.append(keyword[0])
     return keywords
@@ -155,7 +155,6 @@ def recover_proed_community():
         gb.write_graphml('rec-proed-'+btype+'.graphml')
 
 
-
 def recover_proed_community_all_connection():
     '''
     First filter users: pro-recovery and pro-ed, as well as their followings.
@@ -163,8 +162,7 @@ def recover_proed_community_all_connection():
     :return:
     '''
     # Filtering users
-    prorec = edrelatedcom.rec_user('fed', 'scom')
-    proed = edrelatedcom.proed_users('fed', 'scom')
+    prorec, proed = edrelatedcom.rec_proed()
     cols = dbt.db_connect_col('fed', 'follownet')
     name_map, edges, set_map = {}, set(), {}
     for row in cols.find({},no_cursor_timeout=True):
@@ -386,8 +384,7 @@ def get_scores( true_classes, pred_classes, average):
 
 
 def keywords_recovery_preed():
-    prorec = edrelatedcom.rec_user('fed', 'scom')
-    proed = edrelatedcom.proed_users('fed', 'scom')
+    prorec, proed = edrelatedcom.rec_proed()
     times = dbt.db_connect_col('fed', 'timeline')
     fdist_rec = FreqDist()
     fdist_ped = FreqDist()
@@ -476,5 +473,5 @@ if __name__ == '__main__':
  #
  #               """
  #    print keywords(text)
-    # keywords_recovery_preed()
+ #    keywords_recovery_preed()
     # recover_proed_interaction()

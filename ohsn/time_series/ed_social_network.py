@@ -5,6 +5,9 @@ Created on 15:26, 06/01/17
 @author: wt
 
 This script is to explore that ED friends would lead to users having ED.
+The network is too large to load
+
+So we change it to study whether pro-ed and pro-recovery friends would lead to ED users tend to pro-ed and pro-recovery
 
 """
 

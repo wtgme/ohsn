@@ -39,11 +39,13 @@ def rec_user(dbname, colname):
     for user in com.find({}, ['id', 'id_str', 'screen_name', 'description']):
         if profiles_check.check_ed_related_profile(user['description']):
             text = user['description'].strip().lower().replace("-", "").replace('_', '')
-            sentences = re.split( r"\s*[,;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
+            sentences = re.split( r"\s*[;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
             FLAG = False
             for sentence in sentences:
                 if 'recover' in sentence:
-                    if 'not' not in sentence and 'don\'t' not in sentence and 'anti' not in sentence and 'non' not in sentence:
+                    if 'not' not in sentence and 'don\'t' not in sentence \
+                            and 'anti' not in sentence and 'non' not in sentence\
+                            and 'relapse' not in sentence:
                         FLAG = True
                 # if 'struggl' in sentence:
                 #     if 'thin' not in sentence and 'weight' not in sentence \
@@ -79,7 +81,7 @@ def proed_users(dbname, colname):
     for user in com.find({}, ['id', 'id_str', 'screen_name', 'description']):
         if profiles_check.check_ed_related_profile(user['description']):
             text = user['description'].strip().lower().replace("-", "").replace('_', '')
-            sentences = re.split( r"\s*[,;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
+            sentences = re.split( r"\s*[;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
             FLAG = False
             for sentence in sentences:
                 if 'proed' in sentence or 'proana' in sentence \
@@ -306,13 +308,20 @@ def distribution_change(dbname, colname):
     sns.despine(offset=10, trim=True)
     plt.show()
 
-
+def rec_proed():
+    # return pro-recovery and pro-ed users
+    rec_users = rec_user('fed', 'scom')
+    ed_users = proed_users('fed', 'scom')
+    print len(rec_users), len(ed_users)
+    print (set(ed_users).intersection(rec_users))
+    return list(set(rec_users) - set(ed_users)), ed_users
 
 if __name__ == '__main__':
     ed_users = rec_user('fed', 'scom')
     rec_users = proed_users('fed', 'scom')
-    # print len(ed_users), len(rec_users)
-    # print len(set(ed_users).intersection(rec_users))
+    print len(ed_users), len(rec_users)
+    print (set(ed_users).intersection(rec_users))
+
 
 
     # print 'Friendship'
