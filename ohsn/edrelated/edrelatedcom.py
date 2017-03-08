@@ -316,11 +316,47 @@ def rec_proed():
     print (set(ed_users).intersection(rec_users))
     return list(set(rec_users) - set(ed_users)), ed_users
 
+
+def recovery_tweet():
+    times = dbt.db_connect_col('fed', 'timeline')
+    for tweet in times.find():
+        text = tweet['text'].encode('utf8')
+        text = text.strip().lower().replace("-", "").replace('_', '')
+        sentences = re.split( r"\s*[;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text )
+        FLAG = False
+        for sentence in sentences:
+            if 'recover' in sentence:
+                if 'not' not in sentence and 'don\'t' not in sentence and 'never' not in sentence \
+                        and 'anti' not in sentence and 'non' not in sentence\
+                        and 'relapse' not in sentence:
+                    FLAG = True
+            # if 'struggl' in sentence:
+            #     if 'thin' not in sentence and 'weight' not in sentence \
+            #             and 'mirror' not in sentence and 'figure' not in sentence \
+            #             and 'food' not in sentence and 'body' not in sentence\
+            #             and 'proed' not in sentence and 'proana' not in sentence and 'promia' not in sentence:
+            #         FLAG = True
+            # if 'fight' in sentence:
+            #     if 'thin' not in sentence and 'weight' not in sentence \
+            #             and 'mirror' not in sentence and 'figure' not in sentence \
+            #             and 'food' not in sentence and 'body' not in sentence:
+            #         FLAG = True
+        # for sentence in sentences:
+        #     if 'proed' in sentence or 'proana' in sentence or 'promia' in sentence:
+        #         if 'not' not in sentence and \
+        #                         'don\'t' not in sentence and \
+        #                         'anti' not in sentence:
+        #             FLAG = False
+        if FLAG:
+            print tweet['id'], ' '.join(tweet['text'].split()).encode('utf-8')
+
+
 if __name__ == '__main__':
-    ed_users = rec_user('fed', 'scom')
-    rec_users = proed_users('fed', 'scom')
-    print len(ed_users), len(rec_users)
-    print (set(ed_users).intersection(rec_users))
+    recovery_tweet()
+    # ed_users = rec_user('fed', 'scom')
+    # rec_users = proed_users('fed', 'scom')
+    # print len(ed_users), len(rec_users)
+    # print (set(ed_users).intersection(rec_users))
 
 
 

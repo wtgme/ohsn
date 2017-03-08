@@ -36,7 +36,7 @@ from igraph import *
 import collections
 import re
 
-Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
+# Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
 tokenizer = RegexpTokenizer(r'\w+')
 
 def keywords(text):
@@ -383,6 +383,33 @@ def get_scores( true_classes, pred_classes, average):
     return precision, recall, f1, accuracy
 
 
+def recovery_users_tweet():
+    com = dbt.db_connect_col('fed', 'scom')
+    times = dbt.db_connect_col('fed', 'timeline')
+    
+    for user in com.find(no_cursor_timeout=True):
+        uid = user['id']
+        count = 0
+        for tweet in times.find({'user.id':uid}):
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = text.strip().lower()
+            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            if t
+
+
+def recovery_text(text):
+    sentences = re.split(r"\s*[;:`\"()?!{}]\s*|--+|\s*-\s+|''|\.\s|\.$|\.\.+|¡°|¡±", text)
+    FLAG = False
+    for sentence in sentences:
+        if 'recover' in sentence:
+            if 'not' not in sentence and 'don\'t' not in sentence and 'never' not in sentence \
+                    and 'anti' not in sentence and 'non' not in sentence \
+                    and 'relapse' not in sentence:
+                FLAG = True
+    return FLAG
+
+
 def keywords_recovery_preed():
     prorec, proed = edrelatedcom.rec_proed()
     times = dbt.db_connect_col('fed', 'timeline')
@@ -458,7 +485,6 @@ def classify_recovery_proed():
 
 
 
-
 if __name__ == '__main__':
     # ED_followee()
     # ed_follow_net()
@@ -467,7 +493,7 @@ if __name__ == '__main__':
 
     # classify_recovery_proed()
     # recover_proed_community()
-    recover_proed_community_all_connection()
+    # recover_proed_community_all_connection()
  #    text = """
  # The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
  #
@@ -475,3 +501,5 @@ if __name__ == '__main__':
  #    print keywords(text)
  #    keywords_recovery_preed()
     # recover_proed_interaction()
+
+    recovery_users_tweet()
