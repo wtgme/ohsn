@@ -168,19 +168,22 @@ def recover_proed_community_all_connection():
     :return:
     '''
     # Filtering users
-    prorec, proed = edrelatedcom.rec_proed() ## based on profiles
+    # prorec, proed = edrelatedcom.rec_proed() ## based on profiles
     # prorec, proed = filter_recovery_sentiment() # based on tweets
-    cols = dbt.db_connect_col('fed', 'follownet')
+    users = iot.get_values_one_field('fed', 'recover', 'user.id')
+    prorec = [str(i) for i in users]
+    # cols = dbt.db_connect_col('fed', 'follownet')
+    cols = dbt.db_connect_col('fed', 'snet')
     name_map, edges, set_map = {}, set(), {}
     for row in cols.find({},no_cursor_timeout=True):
         n1 = str(row['follower'])
-        if n1 in prorec or n1 in proed:
-            n2 = str(row['user'])
-            n1id = name_map.get(n1, len(name_map))
-            name_map[n1] = n1id
-            n2id = name_map.get(n2, len(name_map))
-            name_map[n2] = n2id
-            edges.add((n1id, n2id))
+        # if n1 in prorec or n1 in proed:
+        n2 = str(row['user'])
+        n1id = name_map.get(n1, len(name_map))
+        name_map[n1] = n1id
+        n2id = name_map.get(n2, len(name_map))
+        name_map[n2] = n2id
+        edges.add((n1id, n2id))
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get)) # return keys ordered by values
     g.add_edges(list(edges))
@@ -189,40 +192,35 @@ def recover_proed_community_all_connection():
     for v in g.vs:
         if v['name'] in prorec:
             v['set'] = 1
-        elif v['name'] in proed:
-            v['set'] = -1
+        # elif v['name'] in proed:
+        #     v['set'] = -1
     gt.summary(g)
 
-    g.vs['deg'] = g.indegree()
-    nodes = []
-    for v in g.vs:
-        if v['set'] == 1 or v['set'] == -1:
-            nodes.append(v)
-        elif v['deg'] > 3:
-            nodes.append(v)
-        else:
-            pass
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    gt.summary(g)
-    g.write_graphml('rec-proed-follow.graphml')
+    # g.vs['deg'] = g.indegree()
+    # nodes = []
+    # for v in g.vs:
+    #     if v['set'] == 1 or v['set'] == -1:
+    #         nodes.append(v)
+    #     elif v['deg'] > 3:
+    #         nodes.append(v)
+    #     else:
+    #         pass
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # gt.summary(g)
+
+    g.write_graphml('rec-proed-follow-core-tweet.graphml')
 
 
     # sbnet have extended all interactions posted by ED users
     edusers = [int(v['name']) for v in g.vs]
     # gf = gt.load_network_subset('fed', 'net')
     for btype in ['retweet', 'reply', 'mention']:
-        gb = gt.load_beh_network_subset(edusers, 'fed', 'bnet', btype)
-        # gt.summary(gb)
-        # nodes = []
-        # for v in gb.vs:
-        #     if v['name'] in edusers:
-        #         nodes.append(v)
-        # gb = gb.subgraph(nodes)
+        gb = gt.load_beh_network_subset(edusers, 'fed', 'sbnet', btype)
         for v in gb.vs:
             v['set'] = g.vs.find(name=v['name'])['set']
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-all.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-core-tweet.graphml')
 
 
 
@@ -398,19 +396,24 @@ def recovery_users_tweet():
     # gather recovery/treat related tweets
     com = dbt.db_connect_col('fed', 'scom')
     times = dbt.db_connect_col('fed', 'timeline')
-    newtime = dbt.db_connect_col('fed', 'treat')
+    newtime = dbt.db_connect_col('fed', 'recover')
     newtime.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
 
     for user in com.find(no_cursor_timeout=True):
         uid = user['id']
-        for tweet in times.find({'user.id':uid}):
-            text = tweet['text'].encode('utf8')
-            text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-            if ('I' in text or ' me ' in text):
+        for tweet in times.find({'user.id': uid}):
+            if 'retweeted_status' in tweet:
+                continue
+            elif 'quoted_status' in tweet:
+                continue
+            else:
+                text = tweet['text'].encode('utf8')
+                text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+                # if ('I' in text or ' me ' in text):
                 text = text.strip().lower()
-                if 'in treatment' in text or 'in therap' in text:
+                if 'recover' in text:
                         # or 'healing' in text or 'therapy' in text or 'doctor' in text or 'hospital' in text:
                     # print ' '.join(tweet['text'].split())
                     try:
@@ -419,11 +422,38 @@ def recovery_users_tweet():
                         pass
 
 
+def recovery_user_treatment_tweet():
+    # verify when 'treatment' in pro-recovery users timeline
+    rec, proed = edrelatedcom.rec_proed() ## based on profiles
+    times = dbt.db_connect_col('fed', 'timeline')
+    count = 0
+    for user in rec:
+        flag = False
+        for tweet in times.find({'user.id': int(user)}):
+            if 'retweeted_status' in tweet:
+                continue
+            elif 'quoted_status' in tweet:
+                continue
+            else:
+                text = tweet['text'].encode('utf8')
+                text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+                text = text.strip().lower()
+                if 'treatment' in text or 'therap' in text \
+                       or 'doctor' in text:
+                    print ' '.join(tweet['text'].split())
+                    flag = True
+        if flag:
+            count += 1
+            print user
+    print len(rec), count
+
+
 def recovery_sentiment():
     afinn = Afinn(emoticons=True)
     # analysis sentiments about recovery
     times = dbt.db_connect_col('fed', 'recovery')
     for tweet in times.find():
+
         text = tweet['text'].encode('utf8')
         text = text.strip().lower()
         text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
@@ -562,6 +592,27 @@ def classify_recovery_proed():
         print "Train Prec (%s average): %.3f, recall: %.3f, F1: %.3f, Acc: %.3f" %( average,
                             train_precision, train_recall, train_f1, train_acc )
 
+def test():
+    # times = dbt.db_connect_col('fed', 'treat')
+    # for tweet in times.find():
+    #     print ' '.join(tweet['text'].split())
+
+    #    text = """
+ # The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
+ #
+ #               """
+ #    print keywords(text)
+
+    users = iot.get_values_one_field('fed', 'recover', 'user.id')
+    prerec , proed = edrelatedcom.rec_proed()
+    pusers = [str(i) for i in users]
+    print len(pusers)
+    print len(prerec)
+    uoi = (set(pusers).intersection(set(prerec)))
+    com = dbt.db_connect_col('fed', 'scom')
+    for u in uoi:
+        user = com.find_one({'id': int(u)})
+        print user['screen_name']
 
 
 if __name__ == '__main__':
@@ -573,18 +624,17 @@ if __name__ == '__main__':
     # classify_recovery_proed()
     # recover_proed_community()
     # recover_proed_community_all_connection()
- #    text = """
- # The cause of eating disorders is not clear.[3] Both biological and environmental factors appear to play a role.[1][3] Cultural idealization of thinness is believed to contribute.[3] Eating disorders affect about 12 percent of dancers.[4] Those who have experienced sexual abuse are also more likely to develop eating disorders.[5] Some disorders such as pica and rumination disorder occur more often in people with intellectual disabilities. Only one eating disorder can be diagnosed at a given time.[2]
- #
- #               """
- #    print keywords(text)
+
  #    keywords_recovery_preed()
     # recover_proed_interaction()
 
-    recovery_users_tweet()
+    # recovery_users_tweet()
     # recovery_sentiment()
     # filter_recovery_sentiment()
 
-    # times = dbt.db_connect_col('fed', 'treat')
-    # for tweet in times.find():
-    #     print ' '.join(tweet['text'].split())
+
+
+    # recovery_user_treatment_tweet()
+
+
+    test()

@@ -257,6 +257,7 @@ def pro_ed_rec_network(dbname, comname, netname):
     # print str(raw_assort) + ',' + str(amean) + ',' + str(astd) + ',' + str(zscore) + ',' + str(pval)
     sg.write_graphml('pro-ed-rec-mention.graphml')
 
+
 def distribution_change(dbname, colname):
     rec_users1 = pickle.load(open('data/pro-recovery.pick', 'r'))
     pro_ed = pickle.load(open('data/pro_ed.pick', 'r'))

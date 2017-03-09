@@ -189,13 +189,14 @@ def topic_model(dbname, colname, timecol, uset=None, dtype='document'):
 
 
 def filter_ed_tweets():
+    # Filter ed-related tweets, based on word2vec
     from ohsn.edrelated import edrelatedcom
     prorec = edrelatedcom.rec_user('fed', 'scom')
     proed = edrelatedcom.proed_users('fed', 'scom')
 
     # com = dbt.db_connect_col('fed', 'scom')
     times = dbt.db_connect_col('fed', 'timeline')
-    ed_times = dbt.db_connect_col('fed', 'edtimeline2')
+    ed_times = dbt.db_connect_col('fed', 'edtimeline')
     ed_times.create_index([('user.id', pymongo.ASCENDING),
                               ('id', pymongo.DESCENDING)])
     ed_times.create_index([('id', pymongo.ASCENDING)], unique=True)
