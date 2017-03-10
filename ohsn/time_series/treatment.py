@@ -197,5 +197,5 @@ if __name__ == '__main__':
     # compare_distribute()
 
     # -------------control group-----------------------
-    # control_users()
+    control_users()
     split_control()
