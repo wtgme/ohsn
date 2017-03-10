@@ -134,10 +134,10 @@ def filter_user():
 
 
 def liwc_process():
-    # liwcp.process_db('fed', 'treat-com', 'prior-treat', 'prior-liwc')
-    # liwcp.process_db('fed', 'treat-com', 'post-treat', 'post-liwc')
-    liwcp.process_db('fed', 'control-com', 'prior-control', 'prior-liwc')
-    liwcp.process_db('fed', 'control-com', 'post-control', 'post-liwc')
+    # liwcp.process_db('fed', 'treat_com', 'prior_treat', 'prior-liwc')
+    # liwcp.process_db('fed', 'treat_com', 'post_treat', 'post-liwc')
+    liwcp.process_db('fed', 'control_com', 'prior_control', 'prior-liwc')
+    liwcp.process_db('fed', 'control_com', 'post_control', 'post-liwc')
 
 
 def compare_distribute():
