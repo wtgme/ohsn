@@ -38,6 +38,7 @@ def read_recovery_ed_keywords():
 
 
 def get_fields_one_doc(x, fields):
+    # x is a document, fields
     values = []
     for field in fields:
         if '.' in field:

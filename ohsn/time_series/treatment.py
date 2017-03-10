@@ -134,14 +134,14 @@ def filter_user():
 
 
 def liwc_process():
-    # liwcp.process_db('fed', 'treat_com', 'prior_treat', 'prior-liwc')
-    # liwcp.process_db('fed', 'treat_com', 'post_treat', 'post-liwc')
-    liwcp.process_db('fed', 'control_com', 'prior_control', 'prior-liwc')
-    liwcp.process_db('fed', 'control_com', 'post_control', 'post-liwc')
+    liwcp.process_db('fed', 'treat_com', 'prior_treat', 'prior_liwc')
+    liwcp.process_db('fed', 'treat_com', 'post_treat', 'post_liwc')
+    liwcp.process_db('fed', 'control_com', 'prior_control', 'prior_liwc')
+    liwcp.process_db('fed', 'control_com', 'post_control', 'post_liwc')
 
 
-def compare_distribute():
-    user = iot.get_values_one_field('fed', 'treat-com', 'id', {'prior-liwc.result.WC':{'$exists': True},
+def compare_distribute(dbname, comname):
+    user = iot.get_values_one_field(dbname, comname, 'id', {'prior-liwc.result.WC':{'$exists': True},
                                                                 'post-liwc.result.WC':{'$exists': True}})
     print len(user)
     print user
@@ -159,7 +159,6 @@ def compare_distribute():
         '.result.sad'
         # '.result.work'
         # '.result.future'
-
                 ]
     names = [
         'I', 'We',
@@ -170,8 +169,8 @@ def compare_distribute():
     df = []
     for i in xrange(len(features)):
         feature = features[i]
-        prior_values = iot.get_values_one_field('fed', 'treat-com', 'prior-liwc'+feature, {'id':{'$in': user}})
-        post_values = iot.get_values_one_field('fed', 'treat-com', 'post-liwc'+feature, {'id':{'$in': user}})
+        prior_values = iot.get_values_one_field(dbname, comname, 'prior-liwc'+feature, {'id':{'$in': user}})
+        post_values = iot.get_values_one_field(dbname, comname, 'post-liwc'+feature, {'id':{'$in': user}})
         # sns.kdeplot(np.array(prior_values), label="Prior")
         # sns.kdeplot(np.array(post_values), label="Post")
         # plt.legend()
@@ -190,14 +189,43 @@ def compare_distribute():
     plt.show()
 
 
+def out_data():
+    control = dbt.db_connect_col('fed', 'control_com')
+    treat = dbt.db_connect_col('fed', 'treat_com')
+    control_user = iot.get_values_one_field('fed', 'control_com', 'id', {'prior_liwc.result.WC':{'$exists': True},
+                                                                'post_liwc.result.WC':{'$exists': True}})
+    treat_user = iot.get_values_one_field('fed', 'treat_com', 'id', {'prior_liwc.result.WC':{'$exists': True},
+                                                                'post_liwc.result.WC':{'$exists': True}})
+    data = []
+    fields = iot.read_fields()
+    prefix = ['prior_liwc', 'post_liwc']
+    for i in xrange(2):
+        uids = [control_user, treat_user][i]
+        for uid in uids:
+            user = [control, treat][i].find_one({'id': uid})
+            for j in xrange(2):
+                fields_new = ['id_str']+[field.replace('liwc_anal', prefix[j]) for field in fields]
+                values = iot.get_fields_one_doc(user, fields_new)
+                data.append(values+[i, j])
+
+    df = pd.DataFrame(data, columns=['id']+[field.split('.')[-1] for field in fields]+['treated', 'time'])
+
+    df.to_csv('treatment.csv')
+
+
+
+
+
+
 if __name__ == '__main__':
     # split_treatment()
     # filter_user()
 
     liwc_process()
 
-    # compare_distribute()
+    # compare_distribute('fed', 'control_com')
 
     # -------------control group-----------------------
     # control_users()
     # split_control()
+    out_data()
