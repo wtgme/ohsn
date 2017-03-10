@@ -497,11 +497,11 @@ if __name__ == '__main__':
     # print feature2[:20]
     # print list(set(feature1[:20]).intersection(set(feature2[:20])))
 
-    # feature_rank('data/pro-ed-rec.data')
+    feature_rank('data/pro-ed-rec.data')
 
-    ''' evaluate performance with reducing features
-    Need a scoring metric'''
-    '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
-    X1, y1 = load_scale_data('data/pro-ed-rec.data')
-    refcv = rfecv(X1, y1)
-    plot_rfecvs([refcv], ['Pro-rec VS Pro-ED'])
+    # ''' evaluate performance with reducing features
+    # Need a scoring metric'''
+    # '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
+    # X1, y1 = load_scale_data('data/pro-ed-rec.data')
+    # refcv = rfecv(X1, y1)
+    # plot_rfecvs([refcv], ['Pro-rec VS Pro-ED'])

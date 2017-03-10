@@ -167,14 +167,33 @@ def out_ed_friend_num():
     df.to_csv('data-ed-social.csv', index = False)
 
 
+def random_network():
+    com = dbt.db_connect_col('random2', 'com')
+    com1 = dbt.db_connect_col('random2', 'com2')
+    # com2 = dbt.db_connect_col('random2', 'com2')
+    # com3 = dbt.db_connect_col('random2', 'com3')
+    com1.create_index("id", unique=True)
+    # com2.create_index("id", unique=True)
+    # com3.create_index("id", unique=True)
+    for user in com.find({'level': 2}):
+        # if user['level'] == 2:
+        com1.insert(user)
+    com.delete_many({'level': 2})
+        # elif user['level'] == 3:
+        #     com3.insert(user)
+        #     com.delete_one({'id': user['id']})
+
+
 if __name__ == '__main__':
     # out_ed_friend_num()
     # net = gt.load_network('fed', 'net')
     # net.write_graphml('ed-two-net.graphml')
-    output_net_user_data('fed', 'com', 'net')
-    output_net_user_data('fed', 'com', 'net2')
-    output_net_user_data('random2', 'com', 'net')
-    output_net_user_data('random2', 'com', 'net2')
+    # output_net_user_data('fed', 'com', 'net')
+    # output_net_user_data('fed', 'com', 'net2')
+    # output_net_user_data('random2', 'com', 'net')
+    # output_net_user_data('random2', 'com', 'net2')
+
+    random_network()
 
 
 

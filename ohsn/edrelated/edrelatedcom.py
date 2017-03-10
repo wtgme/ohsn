@@ -179,7 +179,7 @@ def benetwork(dbname, type, netname):
     #     exist = True
     #     try:
     #         v = g.vs.find(name=str(uid))
-    #     except ValueError:
+    #     except ValueError
     #         exist = False
     #     if exist:
     #         v['rec'] = 1

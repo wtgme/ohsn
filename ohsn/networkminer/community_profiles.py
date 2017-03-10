@@ -40,6 +40,7 @@ from pattern.en import sentiment
 import seaborn as sns
 import matplotlib.pyplot as plt
 from afinn import Afinn
+import pandas as pd
 
 Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
 tokenizer = RegexpTokenizer(r'\w+')
@@ -159,6 +160,91 @@ def recover_proed_community():
             v['set'] = g.vs.find(name=v['name'])['set']
         gt.summary(gb)
         gb.write_graphml('rec-proed-'+btype+'.graphml')
+
+
+def recover_proed_inter():
+    prorec, proed = edrelatedcom.rec_proed() ## based on profiles
+    com = dbt.db_connect_col('fed', 'scom')
+    g = gt.load_network('fed', 'snet')
+    data = []
+
+    for node in g.vs:
+        uid = node['name']
+        user = com.find_one({'id': int(uid)})
+        followeecount = user['friends_count']
+        followercount = user['followers_count']
+        followees = set([g.vs[v]['name'] for v in g.successors(uid)])
+        followers = set([g.vs[v]['name'] for v in g.predecessors(uid)])
+        recc_followee, proc_followee, edc_followee = 0.0, 0.0, 0.0
+        for u in followees:
+            if u in prorec:
+                recc_followee += 1
+            elif u in proed:
+                proc_followee += 1
+            else:
+                edc_followee += 1
+        if followeecount != 0:
+            recc_followee /= followeecount
+            proc_followee /= followeecount
+            edc_followee /= followeecount
+        else:
+            print 'Followee number is zero', uid
+        otherc_followee = 1 - recc_followee - proc_followee - edc_followee
+
+        recc_follower, proc_follower, edc_follower = 0.0, 0.0, 0.0
+        for u in followers:
+            if u in prorec:
+                recc_follower += 1
+            elif u in proed:
+                proc_follower += 1
+            else:
+                edc_follower += 1
+        if followercount != 0:
+            recc_follower /= followercount
+            proc_follower /= followercount
+            edc_follower /= followercount
+        else:
+            print 'Follower number is zero', uid
+        otherc_follower = 1 - recc_follower - proc_follower - edc_follower
+
+        if uid in prorec:
+            data.append(['Rec', recc_followee, 'Rec-Followees'])
+            data.append(['Rec', proc_followee, 'Ped-Followees'])
+            data.append(['Rec', edc_followee, 'ED-Followees'])
+            data.append(['Rec', otherc_followee, 'Oth-Followees'])
+
+            data.append(['Rec', recc_follower, 'Rec-Followers'])
+            data.append(['Rec', proc_follower, 'Ped-Followers'])
+            data.append(['Rec', edc_follower, 'ED-Followers'])
+            data.append(['Rec', otherc_follower, 'Oth-Followers'])
+
+        elif uid in proed:
+            data.append(['Ped', proc_followee, 'Ped-Followees'])
+            data.append(['Ped', recc_followee, 'Rec-Followees'])
+            data.append(['Ped', edc_followee, 'ED-Followees'])
+            data.append(['Ped', otherc_followee, 'Oth-Followees'])
+
+            data.append(['Ped', proc_follower, 'Ped-Followers'])
+            data.append(['Ped', recc_follower, 'Rec-Followers'])
+            data.append(['Ped', edc_follower, 'ED-Followers'])
+            data.append(['Ped', otherc_follower, 'Oth-Followers'])
+        else:
+            pass
+    df = pd.DataFrame(data, columns=['Group', 'Proportion', 'Feature'])
+    df.to_csv('inter.csv')
+    sns.set(style="whitegrid", palette="pastel", color_codes=True)
+    sns.boxplot(x="Feature", y="Proportion", hue="Group", data=df, palette="PRGn")
+    sns.despine(offset=10, trim=True)
+    # plt.ylim(0, 0.8)
+    # sns.violinplot(x="Feature", y="Values", hue="Group", data=df, split=True,
+    #            inner="quart", palette="PRGn")
+    # sns.despine(left=True)
+    plt.show()
+
+
+
+
+
 
 
 def recover_proed_community_all_connection():
@@ -394,6 +480,7 @@ def get_scores( true_classes, pred_classes, average):
 
 def recovery_users_tweet():
     # gather recovery/treat related tweets
+    # When construct control group, if they have retweet treatment, delete them
     com = dbt.db_connect_col('fed', 'scom')
     times = dbt.db_connect_col('fed', 'timeline')
     newtime = dbt.db_connect_col('fed', 'recover')
@@ -404,22 +491,23 @@ def recovery_users_tweet():
     for user in com.find(no_cursor_timeout=True):
         uid = user['id']
         for tweet in times.find({'user.id': uid}):
-            if 'retweeted_status' in tweet:
-                continue
-            elif 'quoted_status' in tweet:
-                continue
-            else:
-                text = tweet['text'].encode('utf8')
-                text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-                # if ('I' in text or ' me ' in text):
-                text = text.strip().lower()
-                if 'recover' in text:
-                        # or 'healing' in text or 'therapy' in text or 'doctor' in text or 'hospital' in text:
-                    # print ' '.join(tweet['text'].split())
-                    try:
-                        newtime.insert(tweet)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
+            # if 'retweeted_status' in tweet:
+            #     continue
+            # elif 'quoted_status' in tweet:
+            #     continue
+            # else:
+            text = tweet['text'].encode('utf8')
+            text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            # if ('I' in text or ' me ' in text):
+            text = text.strip().lower()
+            if 'recover' in text or 'treatment' in text or 'therap' in text \
+                   or 'doctor' in text:
+                    # or 'healing' in text or 'therapy' in text or 'doctor' in text or 'hospital' in text:
+                # print ' '.join(tweet['text'].split())
+                try:
+                    newtime.insert(tweet)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
 
 
 def recovery_user_treatment_tweet():
@@ -635,6 +723,7 @@ if __name__ == '__main__':
 
 
     # recovery_user_treatment_tweet()
+    recovery_users_tweet()
 
 
-    test()
+    # recover_proed_inter()
