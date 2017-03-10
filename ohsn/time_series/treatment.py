@@ -37,7 +37,7 @@ def count_recovered_user():
 def control_users():
     com = dbt.db_connect_col('fed', 'scom')
     recovery_user = set(iot.get_values_one_field('fed', 'recover', 'user.id'))
-    control_com = dbt.db_connect_col('fed', 'control')
+    control_com = dbt.db_connect_col('fed', 'control_com')
     control_com.create_index("id", unique=True)
     for user in com.find():
         if user['id'] not in recovery_user:
@@ -46,13 +46,13 @@ def control_users():
 def split_control():
     ## the mean split point of treatment are 0.330912888352
     times = dbt.db_connect_col('fed', 'timeline')
-    control = dbt.db_connect_col('fed', 'control')
-    prior = dbt.db_connect_col('fed', 'prior-control')
+    control = dbt.db_connect_col('fed', 'control_com')
+    prior = dbt.db_connect_col('fed', 'prior_control')
     prior.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     prior.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    post = dbt.db_connect_col('fed', 'post-control')
+    post = dbt.db_connect_col('fed', 'post_control')
     post.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     post.create_index([('id', pymongo.ASCENDING)], unique=True)
@@ -77,12 +77,12 @@ def split_control():
 def split_treatment():
     rec, proed = edrelatedcom.rec_proed() ## based on profiles
     times = dbt.db_connect_col('fed', 'timeline')
-    prior = dbt.db_connect_col('fed', 'prior-treat')
+    prior = dbt.db_connect_col('fed', 'prior_treat')
     prior.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     prior.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    post = dbt.db_connect_col('fed', 'post-treat')
+    post = dbt.db_connect_col('fed', 'post_treat')
     post.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     post.create_index([('id', pymongo.ASCENDING)], unique=True)
@@ -104,15 +104,15 @@ def split_treatment():
 
 
 def filter_user():
-    prior = dbt.db_connect_col('fed', 'prior-treat')
-    post = dbt.db_connect_col('fed', 'post-treat')
+    prior = dbt.db_connect_col('fed', 'prior_treat')
+    post = dbt.db_connect_col('fed', 'post_treat')
     com = dbt.db_connect_col('fed', 'scom')
 
-    treat_com = dbt.db_connect_col('fed', 'treat-com')
+    treat_com = dbt.db_connect_col('fed', 'treat_com')
     treat_com.create_index("id", unique=True)
 
-    prior_user = iot.get_values_one_field('fed', 'prior-treat', 'user.id')
-    post_user = iot.get_values_one_field('fed', 'post-treat', 'user.id')
+    prior_user = iot.get_values_one_field('fed', 'prior_treat', 'user.id')
+    post_user = iot.get_values_one_field('fed', 'post_treat', 'user.id')
     print len(set(prior_user)), len(set(post_user)), len(set(prior_user).intersection(set(post_user)))
     users = list()
     propotions = list()
@@ -134,8 +134,10 @@ def filter_user():
 
 
 def liwc_process():
-    liwcp.process_db('fed', 'treat-com', 'prior-treat', 'prior-liwc')
-    liwcp.process_db('fed', 'treat-com', 'post-treat', 'post-liwc')
+    # liwcp.process_db('fed', 'treat-com', 'prior-treat', 'prior-liwc')
+    # liwcp.process_db('fed', 'treat-com', 'post-treat', 'post-liwc')
+    liwcp.process_db('fed', 'control-com', 'prior-control', 'prior-liwc')
+    liwcp.process_db('fed', 'control-com', 'post-control', 'post-liwc')
 
 
 def compare_distribute():
@@ -192,10 +194,10 @@ if __name__ == '__main__':
     # split_treatment()
     # filter_user()
 
-    # liwc_process()
+    liwc_process()
 
     # compare_distribute()
 
     # -------------control group-----------------------
-    control_users()
-    split_control()
+    # control_users()
+    # split_control()
