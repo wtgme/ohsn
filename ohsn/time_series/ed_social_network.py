@@ -21,6 +21,7 @@ from ohsn.util import io_util as iot
 from ohsn.api import profiles_check
 from ohsn.util import graph_util as gt
 import pandas as pd
+import pymongo
 
 
 def output_net_user_data(dbname, comname, netname):
@@ -177,7 +178,10 @@ def random_network():
     # com3.create_index("id", unique=True)
     for user in com.find({'level': 2}):
         # if user['level'] == 2:
-        com1.insert(user)
+        try:
+            com1.insert(user)
+        except pymongo.errors.DuplicateKeyError:
+            pass
     com.delete_many({'level': 2})
         # elif user['level'] == 3:
         #     com3.insert(user)
