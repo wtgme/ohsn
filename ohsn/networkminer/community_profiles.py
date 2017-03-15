@@ -295,7 +295,7 @@ def compare_opinion():
 
 def recovery_hashtag():
     # select recovery users based on hashtags
-    com = dbt.db_connect_col('fed', 'com')
+    # com = dbt.db_connect_col('fed', 'com')
     times = dbt.db_connect_col('fed', 'timeline')
     tagproed = dbt.db_connect_col('fed', 'proed_tag')
     tagproed.create_index([('user.id', pymongo.ASCENDING),
@@ -307,22 +307,23 @@ def recovery_hashtag():
                           ('id', pymongo.DESCENDING)])
     tagprorec.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    for user in com.find():
-        for tweet in times.find({'user.id': user['id'], '$where': 'this.entities.hashtags.length>0'}):
-            hashtags = tweet['entities']['hashtags']
-            for hash in hashtags:
-                value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
-                if 'recover' in value and 'nonrecover' not in value:
-                    try:
-                        tagprorec.insert(tweet)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
-                if 'proed' in value or 'proana' in value \
-                        or 'proanamia' in value or 'promia' in value:
-                    try:
-                        tagproed.insert(tweet)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
+    # for user in com.find():
+    # for tweet in times.find({'user.id': user['id'], '$where': 'this.entities.hashtags.length>0'}):
+    for tweet in times.find({'$where': 'this.entities.hashtags.length>0'}, no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        for hash in hashtags:
+            value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            if 'recover' in value and 'nonrecover' not in value:
+                try:
+                    tagprorec.insert(tweet)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
+            if 'proed' in value or 'proana' in value \
+                    or 'proanamia' in value or 'promia' in value:
+                try:
+                    tagproed.insert(tweet)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
 
 def pro_tag_user():
     # get users with pro-ed and pro-recovery hashtags
@@ -354,7 +355,7 @@ def recover_proed_community_all_connection():
 
     cols = dbt.db_connect_col('fed', 'snet')
     name_map, edges, set_map = {}, set(), {}
-    for row in cols.find({},no_cursor_timeout=True):
+    for row in cols.find({}, no_cursor_timeout=True):
         n1 = str(row['follower'])
         # if n1 in prorec or n1 in proed:
         n2 = str(row['user'])
