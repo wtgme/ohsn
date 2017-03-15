@@ -163,6 +163,7 @@ def recover_proed_community():
 
 
 def recover_proed_inter():
+    # Compare difference between pro-ed and pro-recovery uses in social networking
     prorec, proed = edrelatedcom.rec_proed() ## based on profiles
     com = dbt.db_connect_col('fed', 'scom')
     g = gt.load_network('fed', 'snet')
@@ -242,8 +243,96 @@ def recover_proed_inter():
     plt.show()
 
 
+def compare_weights():
+    #Compare distributions of CW and GW between pro-ed and pro-recovery users
+    prorec, proed = edrelatedcom.rec_proed() ## based on profiles
+    for users in [prorec, proed]:
+        field = 'text_anal.cw.value'
+        cw = iot.get_values_one_field('fed', 'scom', field, {'id_str': {'$in': users},
+                                    field: {'$exists': True}})
+        field = 'text_anal.gw.value'
+        gw = iot.get_values_one_field('fed', 'scom', field, {'id_str': {'$in': users},
+                                    field: {'$exists': True}})
+        sns.distplot(cw, hist=False, label='CW')
+        sns.distplot(gw, hist=False, label='GW')
+        plt.show()
+        # pol2 = iot.get_values_one_field('fed', 'recovery', "subjectivity")
+        # sns.distplot(pol2)
 
 
+
+
+def compare_opinion():
+    # Compre pro-recovery and pro-ed users in terms of interventions
+    prorec, proed = edrelatedcom.rec_proed() ## based on profiles
+    rec_times = dbt.db_connect_col('fed', 'recover')
+    # afinn = Afinn(emoticons=True)
+    rec_sen, ed_sen = [], []
+    for i in xrange(2):
+        users = [prorec, proed][i]
+        for uid in users:
+            textmass = ''
+            for tweet in rec_times.find({'user.id': int(uid)}):
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    text = tweet['text'].encode('utf8')
+                    text = text.strip().lower()
+                    text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+                    textmass += " " + text
+            # sent = afinn.score(textmass)
+            sent = sentiment(textmass)[0]
+            if sent>50:
+                print uid
+            [rec_sen, ed_sen][i].append(sent)
+    sns.distplot(rec_sen, hist=False, label='Pro-recovery')
+    sns.distplot(ed_sen, hist=False, label='Pro-ED')
+    plt.show()
+
+
+
+def recovery_hashtag():
+    # select recovery users based on hashtags
+    com = dbt.db_connect_col('fed', 'scom')
+    times = dbt.db_connect_col('fed', 'timeline')
+    tagproed = dbt.db_connect_col('fed', 'proed_tag')
+    tagproed.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    tagproed.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    tagprorec = dbt.db_connect_col('fed', 'prorec_tag')
+    tagprorec.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    tagprorec.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    for user in com.find():
+        for tweet in times.find({'user.id': user['id'], '$where': 'this.entities.hashtags.length>0'}):
+            hashtags = tweet['entities']['hashtags']
+            for hash in hashtags:
+                value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+                if 'recover' in value and 'nonrecover' not in value:
+                    try:
+                        tagprorec.insert(tweet)
+                    except pymongo.errors.DuplicateKeyError:
+                        pass
+                if 'proed' in value or 'proana' in value \
+                        or 'proanamia' in value or 'promia' in value:
+                    try:
+                        tagproed.insert(tweet)
+                    except pymongo.errors.DuplicateKeyError:
+                        pass
+
+def pro_tag_user():
+    # get users with pro-ed and pro-recovery hashtags
+    proed = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+    prorec = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
+    print len(proed), len(prorec), len(proed.intersection(prorec))
+    print len(proed-prorec), len(prorec-proed)
+    return ([str(i) for i in proed-prorec],
+            [str(i) for i in prorec-proed],
+            [str(i) for i in proed.intersection(prorec)])
 
 
 
@@ -255,10 +344,13 @@ def recover_proed_community_all_connection():
     '''
     # Filtering users
     # prorec, proed = edrelatedcom.rec_proed() ## based on profiles
-    # prorec, proed = filter_recovery_sentiment() # based on tweets
-    users = iot.get_values_one_field('fed', 'recover', 'user.id')
-    prorec = [str(i) for i in users]
+    # prorec, proed = filter_recovery_sentiment() # based on tweets' sentiment
+    # users = iot.get_values_one_field('fed', 'recover', 'user.id') # based on tweet content
+    # prorec = [str(i) for i in users]
     # cols = dbt.db_connect_col('fed', 'follownet')
+
+    proed, prorec, proboth = pro_tag_user() # based on hashtags
+
     cols = dbt.db_connect_col('fed', 'snet')
     name_map, edges, set_map = {}, set(), {}
     for row in cols.find({},no_cursor_timeout=True):
@@ -278,8 +370,10 @@ def recover_proed_community_all_connection():
     for v in g.vs:
         if v['name'] in prorec:
             v['set'] = 1
-        # elif v['name'] in proed:
-        #     v['set'] = -1
+        elif v['name'] in proed:
+            v['set'] = 2
+        elif v['name'] in proboth:
+            v['set'] = 3
     gt.summary(g)
 
     # g.vs['deg'] = g.indegree()
@@ -295,7 +389,7 @@ def recover_proed_community_all_connection():
     # g = g.subgraph(nodes)
     # gt.summary(g)
 
-    g.write_graphml('rec-proed-follow-core-tweet.graphml')
+    g.write_graphml('rec-proed-follow-core-hashtag.graphml')
 
 
     # sbnet have extended all interactions posted by ED users
@@ -306,7 +400,7 @@ def recover_proed_community_all_connection():
         for v in gb.vs:
             v['set'] = g.vs.find(name=v['name'])['set']
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-core-tweet.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-core-hashtag.graphml')
 
 
 
@@ -545,8 +639,8 @@ def recovery_sentiment():
         text = tweet['text'].encode('utf8')
         text = text.strip().lower()
         text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-        # sent = afinn.score(text)
-        sent = sentiment(text)
+        sent = afinn.score(text)
+        # sent = sentiment(text)
         times.update_one({'id': tweet['id']}, {'$set':{"polarity": sent[0]
             # , "subjectivity": sent[1]
                                                     }}, upsert=False)
@@ -711,7 +805,7 @@ if __name__ == '__main__':
 
     # classify_recovery_proed()
     # recover_proed_community()
-    # recover_proed_community_all_connection()
+    recover_proed_community_all_connection()
 
  #    keywords_recovery_preed()
     # recover_proed_interaction()
@@ -723,7 +817,14 @@ if __name__ == '__main__':
 
 
     # recovery_user_treatment_tweet()
-    recovery_users_tweet()
+    # recovery_users_tweet()
 
 
     # recover_proed_inter()
+
+    # compare_weights()
+
+    # compare_opinion()
+    # recovery_hashtag()
+
+    # pro_tag_user()
