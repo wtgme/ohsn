@@ -42,7 +42,7 @@ import matplotlib.pyplot as plt
 from afinn import Afinn
 import pandas as pd
 
-Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
+# Rake = RAKE.Rake('stoplist/SmartStoplist.txt')
 tokenizer = RegexpTokenizer(r'\w+')
 
 def keywords(text):
@@ -295,7 +295,7 @@ def compare_opinion():
 
 def recovery_hashtag():
     # select recovery users based on hashtags
-    com = dbt.db_connect_col('fed', 'scom')
+    com = dbt.db_connect_col('fed', 'com')
     times = dbt.db_connect_col('fed', 'timeline')
     tagproed = dbt.db_connect_col('fed', 'proed_tag')
     tagproed.create_index([('user.id', pymongo.ASCENDING),
@@ -330,6 +330,7 @@ def pro_tag_user():
     prorec = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
     print len(proed), len(prorec), len(proed.intersection(prorec))
     print len(proed-prorec), len(prorec-proed)
+    print prorec-proed
     return ([str(i) for i in proed-prorec],
             [str(i) for i in prorec-proed],
             [str(i) for i in proed.intersection(prorec)])
@@ -805,7 +806,7 @@ if __name__ == '__main__':
 
     # classify_recovery_proed()
     # recover_proed_community()
-    recover_proed_community_all_connection()
+    # recover_proed_community_all_connection()
 
  #    keywords_recovery_preed()
     # recover_proed_interaction()
@@ -825,6 +826,6 @@ if __name__ == '__main__':
     # compare_weights()
 
     # compare_opinion()
-    # recovery_hashtag()
+    recovery_hashtag()
 
     # pro_tag_user()
