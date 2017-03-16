@@ -295,6 +295,7 @@ def compare_opinion():
 
 def recovery_hashtag():
     # select recovery users based on hashtags
+    # Store in the databases
     # com = dbt.db_connect_col('fed', 'com')
     times = dbt.db_connect_col('fed', 'timeline')
     tagproed = dbt.db_connect_col('fed', 'proed_tag')
@@ -324,6 +325,46 @@ def recovery_hashtag():
                     tagproed.insert(tweet)
                 except pymongo.errors.DuplicateKeyError:
                     pass
+
+def hashtag_users():
+    com = dbt.db_connect_col('fed', 'com')
+    times_ped = iot.get_values_one_field('fed', 'proed_tag', 'user.id')
+    times_rec = iot.get_values_one_field('fed', 'prorec_tag', 'user.id')
+    newtime = dbt.db_connect_col('fed', 'tag_com')
+    newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    for users in [times_ped, times_rec]:
+        for uid in users:
+            user = com.find_one({'id': uid})
+            try:
+                newtime.insert(user)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+
+
+
+def network_pro_hashtags():
+    # Extract interaction networks from proed and pro-recoveryed hashtaged tweeets
+    rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
+    ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+    only_ped = ped_tag_users - rec_tag_users
+    only_rec = rec_tag_users - ped_tag_users
+    for btype in ['retweet', 'communication']:
+        gb = gt.load_beh_network('fed', 'bnet_tag', btype)
+        for v in gb.vs:
+            if int(v['name']) in only_ped:
+                v['set'] = -1
+            elif int(v['name']) in only_rec:
+                v['set'] = 1
+            else:
+                v['set'] = 0
+        gt.summary(gb)
+        gb.write_graphml('rec-proed-'+btype+'-hashtag.graphml')
+
+
+
+
+
 
 def pro_tag_user():
     # get users with pro-ed and pro-recovery hashtags
@@ -827,6 +868,9 @@ if __name__ == '__main__':
     # compare_weights()
 
     # compare_opinion()
-    recovery_hashtag()
-
+    # recovery_hashtag()
+    # network_pro_hashtags()
     # pro_tag_user()
+
+    # network_pro_hashtags()
+    hashtag_users()

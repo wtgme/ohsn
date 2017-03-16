@@ -27,29 +27,11 @@ def pdf(data):
     pll.plot_pdf_mul_data([data], ['Edge Weight'], ['r'], ['o'], labels=['Edge Weight'],
                           linear_bins=False, central=False, fit=True, fitranges=[(1, 10000)])
 
+
 def tag_record(dbname, colname, filename):
-    # ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
-    # print len(ed_users)
-    # g = gt.load_hashtag_coocurrent_network_undir(dbname, colname, uids=ed_users)
-    # pickle.dump(g, open('data/'+filename+'_tag_undir.pick', 'w'))
-    g = pickle.load(open('data/'+filename+'_tag_undir.pick', 'r'))
-    gt.net_stat(g)
-    # g.write_graphml(filename+'_tag.graphml')
-    nodes = g.vs.select(weight_gt=3)
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    nodes = g.vs.select(user_gt=3)
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    # gt.net_stat(g)
-    # edges = g.es.select(weight_gt=3)
-    # print 'Filtered edges: %d' %len(edges)
-    # g = g.subgraph_edges(edges)
-    # edges = g.es.select(weight_gt=1)
-    # print len(edges)
-    gt.net_stat(g)
+    g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    gt.summary(g)
     g.write_graphml(filename+'_tag_undir.graphml')
-    # plot_graph(g, 'ed-hashtag')
     return g
 
 
@@ -102,10 +84,6 @@ def hashtag_filter(filename):
     name_list = list(sorted(rec_hash, key=rec_hash.get, reverse=True))
     for n in name_list:
         print n, rec_hash[n]
-
-
-
-
 
 
 
@@ -171,6 +149,7 @@ def community_vis(filename, ctype):
 
 
 def compare_direct_undir():
+    # Compare difference between directed and undirected networks
     from sklearn import metrics
     g = gt.Graph.Read_GraphML('ed_tag.graphml')
     gt.net_stat(g)
@@ -190,11 +169,13 @@ def compare_direct_undir():
 
 
 def transform(filename):
+    # transform networt types
     g = nx.read_graphml(filename+'.graphml')
     nx.write_pajek(g, filename+".net")
 
 
 def plot_graph(g, filename):
+    # Plot graph
     visual_style = {}
     layout = g.layout("fr")
     visual_style["vertex_size"] = np.log2(g.vs['weight'])*2
@@ -212,35 +193,35 @@ def plot_graph(g, filename):
 def community(g=None):
     '''
     Detect communities in the co-occurrence network of hashtag
-    Use InfoMap to detect communities
+    Use multilevel to detect communities
     Only select communities whose sizes are larger than a threshold
     :param g:
     :return:
     '''
-    g = gt.Graph.Read_GraphML('ed_tag.graphml')
     gc = gt.giant_component(g)
-    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
+    com = gc.community_multilevel(weights='weight', return_levels=False)
     comclus = com.subgraphs()
-    print len(comclus), com.modularity
+    print 'Community stats: #communities, modularity', len(comclus), com.modularity
     index = 0
     hash_com = {}
     for comclu in comclus:
-        if comclu.vcount() > 10:
-        #     print 'Com', index, '==================================='
-        # else:
-        #     print '==================================='
-            tag_weight = {}
-            for v in comclu.vs:
-                hash_com[v['name']] = index
-                tag_weight[v['name']] = v['weight']
-            index += 1
-            sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
-            for key in sort_list:
-                print key, tag_weight[key]
-    print len(hash_com)
-    print len(set(hash_com.values()))
-    print set(hash_com.values())
+        print '---------- Community ', index, '-----------------'
+        # if comclu.vcount() > 10:
+        tag_weight = {}
+        for v in comclu.vs:
+            hash_com[v['name']] = index
+            tag_weight[v['name']] = v['weight']
+        index += 1
+        sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
+        for key in sort_list[:min(10, len(sort_list))]:
+            print key, tag_weight[key]
+    # print len(hash_com)
+    # print len(set(hash_com.values()))
+    # print set(hash_com.values())
     return hash_com
+
+
+
 
 
 
@@ -432,10 +413,16 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    g = tag_record('fed', 'timeline', 'ed')
+    rec = tag_record('fed', 'prorec_tag', 'rec')
+    ped = tag_record('fed', 'proed_tag', 'ped')
     # transform('ed_tag')
-    # hash_com = community()
-    # user_hashtag_profile('fed', hash_com)
+    hash_com_rec = community(rec)
+    hash_com_ped = community(ped)
+    user_hashtag_profile('fed', hash_com)
+
+
+
+
     # pmi(g, filename='ed')
     # friend_network_hashtag_weight('fed', 'snet')
     # friend_community()
@@ -453,3 +440,5 @@ if __name__ == '__main__':
     # print com.modularity
     # com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     # print com.modularity
+
+

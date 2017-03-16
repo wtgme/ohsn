@@ -182,7 +182,7 @@ def load_user_hashtag_network(db_name, collection='None'):
 
 def load_hashtag_coocurrent_network(db_name, collection='None', uids=[]):
     '''
-    Hashtag Co-occurrence Network: weighted undirected network
+    Hashtag Co-occurrence Network: weighted directed network
     Edge: Hashtag --------- Hashtag
     '''
     if collection is 'None':
@@ -300,11 +300,12 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
     #get key list of dict according to value ranking
     name_list = list(sorted(name_map, key=name_map.get))
     g.vs["name"] = name_list
-    g.vs["weight"] = [node_weight[name_map[name]] for name in name_list]
+    g.vs["weight"] = [node_weight[name_map[name]] for name in name_list] ## numbers of occurrences
     g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list]
     g.add_edges(edges.keys())
-    g.es["weight"] = edges.values()
+    g.es["weight"] = edges.values() ## numbers of co-occurrence
     return g
+
 
 def add_attribute(g, att_name, dbname, colname, db_field_name):
     db = dbt.db_connect_no_auth(dbname)

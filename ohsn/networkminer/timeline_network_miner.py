@@ -192,6 +192,35 @@ def network_mining(poi, timelines, network, level):
             poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}}, upsert=False)
 
 
+def process_tweets(timelines, network):
+    for tweet in timelines.find(no_cursor_timeout=True):
+        # parse the tweet for mrr edges:
+
+        #tweet['text']= tweet['text'].encode('utf-8','ignore')
+        #tweet['text'] = tweet['text'].replace('\n', ' ')
+        #print tweet['text']
+        # if it doesn't mention or retweet or reply...
+        if len(tweet['entities']['user_mentions']) < 1:
+            # add_tweet_edge(network, tweet['user']['id'], tweet['created_at'], tweet['id'])
+            continue
+        else:
+            udmention_list = []
+            if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                for udmention in tweet['retweeted_status']['entities']['user_mentions']:
+                    udmention_list.append(udmention['id'])
+            for mention in tweet['entities']['user_mentions']:
+                if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
+                    add_reply_edge(network, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+
+                elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
+                    add_retweet_edge(network, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+
+                elif mention['id'] in udmention_list:  # mentions in Retweet content
+                    add_undirect_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
+                else:  # original mentions
+                    add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+
 def hashtag_related_networks(dbname, timename, netname):
     '''
     Extract users' behavior network for tweets that are related to hashtags of interests
@@ -303,5 +332,9 @@ if __name__ == '__main__':
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
-    hashtag_related_networks('fed', 'timeline', 'hbnet')
+    times = dbutil.db_connect_col('fed', 'proed_tag')
+    nets = dbutil.db_connect_col('fed', 'bnet_tag')
+    process_tweets(times, nets)
+
+    # hashtag_related_networks('fed', 'timeline', 'hbnet')
     # refine_recovery('fed', 'hbnet')
