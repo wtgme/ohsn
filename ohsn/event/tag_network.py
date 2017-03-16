@@ -284,7 +284,7 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
                     if com_id in idx:
                         taget_count += 1
 
-        if taget_count/all_count > threshold:
+        if all_count and taget_count/all_count > threshold:
             com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
 
 
