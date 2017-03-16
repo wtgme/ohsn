@@ -213,7 +213,8 @@ def community(g=None):
         for v in comclu.vs:
             hash_com[v['name']] = index
             tag_weight[v['name']] = v['weight']
-            com_size[index] += v['weight']
+            count = com_size.get(index, 0)
+            com_size[index] = v['weight'] + count
         index += 1
         sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
         for key in sort_list[:min(10, len(sort_list))]:
