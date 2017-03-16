@@ -328,8 +328,8 @@ def recovery_hashtag():
 
 def hashtag_users():
     com = dbt.db_connect_col('fed', 'com')
-    times_ped = iot.get_values_one_field('fed', 'proed_tag', 'user.id')
-    times_rec = iot.get_values_one_field('fed', 'prorec_tag', 'user.id')
+    times_ped = list(set(iot.get_values_one_field('fed', 'proed_tag', 'user.id')))
+    times_rec = list(set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id')))
     newtime = dbt.db_connect_col('fed', 'tag_com')
     newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
 

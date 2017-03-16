@@ -198,12 +198,14 @@ def community(g=None):
     :param g:
     :return:
     '''
+
     gc = gt.giant_component(g)
     com = gc.community_multilevel(weights='weight', return_levels=False)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
     index = 0
     hash_com = {}
+    com_size = {}
     for comclu in comclus:
         print '---------- Community ', index, '-----------------'
         # if comclu.vcount() > 10:
@@ -211,6 +213,7 @@ def community(g=None):
         for v in comclu.vs:
             hash_com[v['name']] = index
             tag_weight[v['name']] = v['weight']
+            com_size[index] += v['weight']
         index += 1
         sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
         for key in sort_list[:min(10, len(sort_list))]:
@@ -218,10 +221,7 @@ def community(g=None):
     # print len(hash_com)
     # print len(set(hash_com.values()))
     # print set(hash_com.values())
-    return hash_com
-
-
-
+    return hash_com, com_size
 
 
 
@@ -260,6 +260,30 @@ def user_hashtag_profile(dbname, hash_com):
             user_hash_profile[uid] = np.array(vector)/sum(vector)
 
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
+
+
+def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
+    times = dbt.db_connect_col('fed', 'prorec_tag')
+    com = dbt.db_connect_col('fed', 'tag_com')
+    threshold = float(sum([com_size[i] for i in idx]))/sum(com_size.values())
+    print threshold
+    users = list(set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id')))
+    for uid in users:
+        taget_count, all_count = 0.0, 0.0
+        for tweet in times.find({'user.id': uid}):
+            hashtags = tweet['entities']['hashtags']
+            hash_set = set()
+            for hash in hashtags:
+                # need no .encode('utf-8')
+                hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            for tag in hash_set:
+                if hash_com[tag] in idx or hash_com[tag] in idx:
+                    taget_count += 1
+                all_count += 1
+        if taget_count/all_count > threshold:
+            com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
+
+
 
 
 def remove_nan():
@@ -414,12 +438,12 @@ def pmi(g, filename):
 
 if __name__ == '__main__':
     rec = tag_record('fed', 'prorec_tag', 'rec')
-    ped = tag_record('fed', 'proed_tag', 'ped')
+    # ped = tag_record('fed', 'proed_tag', 'ped')
     # transform('ed_tag')
-    hash_com_rec = community(rec)
-    hash_com_ped = community(ped)
-    user_hashtag_profile('fed', hash_com)
-
+    hash_com_rec, com_size_rec = community(rec)
+    # hash_com_ped, com_size_ped = community(ped)
+    # user_hashtag_profile('fed', hash_com)
+    label_ed_recovery(hash_com_rec, com_size_rec)
 
 
 
