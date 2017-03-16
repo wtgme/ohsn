@@ -267,7 +267,7 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
     times = dbt.db_connect_col('fed', 'prorec_tag')
     com = dbt.db_connect_col('fed', 'tag_com')
     threshold = float(sum([com_size[i] for i in idx]))/sum(com_size.values())
-    print threshold
+    print 'threshold: ', threshold
     users = list(set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id')))
     for uid in users:
         taget_count, all_count = 0.0, 0.0
