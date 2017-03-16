@@ -278,9 +278,12 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
                 # need no .encode('utf-8')
                 hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
             for tag in hash_set:
-                if hash_com[tag] in idx or hash_com[tag] in idx:
-                    taget_count += 1
-                all_count += 1
+                com_id = hash_com.get(tag, -1)
+                if com_id > -1:
+                    all_count += 1
+                    if com_id in idx:
+                        taget_count += 1
+
         if taget_count/all_count > threshold:
             com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
 
