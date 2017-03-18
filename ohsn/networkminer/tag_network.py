@@ -22,6 +22,7 @@ import igraph as ig
 from scipy import spatial
 import networkx as nx
 import random as rand
+import pymongo
 
 def pdf(data):
     pll.plot_pdf_mul_data([data], ['Edge Weight'], ['r'], ['o'], labels=['Edge Weight'],
@@ -215,13 +216,16 @@ def community(g=None):
             tag_weight[v['name']] = v['weight']
             count = com_size.get(index, 0)
             com_size[index] = v['weight'] + count
-        index += 1
         sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
         for key in sort_list[:min(10, len(sort_list))]:
             print key, tag_weight[key]
+        print '-------------Community size: ', com_size[index], '---------------------'
+        print
+        index += 1
     # print len(hash_com)
     # print len(set(hash_com.values()))
     # print set(hash_com.values())
+    print '------------------all size:', sum(com_size.values()), '---------------------'
     return hash_com, com_size
 
 
@@ -264,6 +268,7 @@ def user_hashtag_profile(dbname, hash_com):
 
 
 def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
+    # select users in prorec that have more ed-related hashtags
     times = dbt.db_connect_col('fed', 'prorec_tag')
     com = dbt.db_connect_col('fed', 'tag_com')
     threshold = float(sum([com_size[i] for i in idx]))/sum(com_size.values())
@@ -287,6 +292,26 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
         if all_count and taget_count/all_count > threshold:
             com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
 
+
+def refine_recovery_tweets(hash_com, idx=[18, 102]):
+    # select tweets have ed-related hashtags
+    times = dbt.db_connect_col('fed', 'prorec_tag')
+    rec_refine = dbt.db_connect_col('fed', 'prorec_tag_refine')
+    rec_refine.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    rec_refine.create_index([('id', pymongo.ASCENDING)], unique=True)
+    for tweet in times.find():
+        hashtags = tweet['entities']['hashtags']
+        for hash in hashtags:
+            # need no .encode('utf-8')
+            tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            com_id = hash_com.get(tag, -1)
+            if com_id > -1:
+                if com_id in idx:
+                    try:
+                        rec_refine.insert(tweet)
+                    except pymongo.errors.DuplicateKeyError:
+                        pass
 
 
 
@@ -441,13 +466,14 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    rec = tag_record('fed', 'prorec_tag', 'rec')
+    rec = tag_record('fed', 'prorec_tag', 'pall')
     # ped = tag_record('fed', 'proed_tag', 'ped')
     # transform('ed_tag')
     hash_com_rec, com_size_rec = community(rec)
     # hash_com_ped, com_size_ped = community(ped)
     # user_hashtag_profile('fed', hash_com)
-    label_ed_recovery(hash_com_rec, com_size_rec)
+    # label_ed_recovery(hash_com_rec, com_size_rec)
+    refine_recovery_tweets(hash_com_rec)
 
 
 

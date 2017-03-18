@@ -326,6 +326,23 @@ def recovery_hashtag():
                 except pymongo.errors.DuplicateKeyError:
                     pass
 
+def combine_rec_ped_hashtags():
+    # Move pro-recovery and proed tweets together
+    pall_tag = dbt.db_connect_col('fed', 'pall_tag')
+    pall_tag.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    pall_tag.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    ped = dbt.db_connect_col('fed', 'proed_tag')
+    rec = dbt.db_connect_col('fed', 'prorec_tag')
+
+    for col in [ped, rec]:
+        for tweet in col.find():
+            try:
+                pall_tag.insert(tweet)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+
 def hashtag_users():
     com = dbt.db_connect_col('fed', 'com')
     times_ped = list(set(iot.get_values_one_field('fed', 'proed_tag', 'user.id')))
@@ -342,15 +359,29 @@ def hashtag_users():
                 pass
 
 
+def hashtag_users_label_proed():
+    # label all of users who have proed hashtags as selected
+    com = dbt.db_connect_col('fed', 'tag_com')
+    times_ped = list(set(iot.get_values_one_field('fed', 'proed_tag', 'user.id')))
+
+    for uid in times_ped:
+        com.update({'id': uid}, {'$set': {'ped_tageted': True}}, upsert=False)
+
+
 
 def network_pro_hashtags():
     # Extract interaction networks from proed and pro-recoveryed hashtaged tweeets
-    rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
+    # Select only recovery users who have hashtags from ED hashtag topics
+    # rec_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'rec_tageted': True}))
+    # ped_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'ped_tageted': True}))
+    rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id'))
     ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+
     only_ped = ped_tag_users - rec_tag_users
     only_rec = rec_tag_users - ped_tag_users
+    # all_users = list(rec_tag_users.union(ped_tag_users))
     for btype in ['retweet', 'communication']:
-        gb = gt.load_beh_network('fed', 'bnet_tag', btype)
+        gb = gt.load_beh_network('fed', 'bnet_tag_refine', btype)
         for v in gb.vs:
             if int(v['name']) in only_ped:
                 v['set'] = -1
@@ -359,7 +390,7 @@ def network_pro_hashtags():
             else:
                 v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-hashtag.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-hashtag-refine.graphml')
 
 
 
@@ -869,8 +900,9 @@ if __name__ == '__main__':
 
     # compare_opinion()
     # recovery_hashtag()
-    # network_pro_hashtags()
     # pro_tag_user()
 
-    # network_pro_hashtags()
-    hashtag_users()
+    network_pro_hashtags()
+    # combine_rec_ped_hashtags()
+    # hashtag_users()
+    # hashtag_users_label_proed()

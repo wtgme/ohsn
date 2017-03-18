@@ -333,7 +333,12 @@ if __name__ == '__main__':
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
     times = dbutil.db_connect_col('fed', 'proed_tag')
-    nets = dbutil.db_connect_col('fed', 'bnet_tag')
+    nets = dbutil.db_connect_col('fed', 'bnet_tag_refine')
+    nets.create_index([("id0", pymongo.ASCENDING),
+                                 ("id1", pymongo.ASCENDING),
+                                 ("type", pymongo.ASCENDING),
+                                 ("statusid", pymongo.ASCENDING)],
+                                unique=True)
     process_tweets(times, nets)
 
     # hashtag_related_networks('fed', 'timeline', 'hbnet')
