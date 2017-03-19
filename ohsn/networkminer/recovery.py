@@ -91,8 +91,29 @@ def cluster(file_path):
     print '%.3f, %.3f, %.3f' %(min(modularity), max(modularity), np.mean(modularity))
     print '%.3f, %.3f, %.3f' %(min(aRI), max(aRI), np.mean(aRI))
 
-def
+
+def two_community(file_path):
+    g = gt.Graph.Read_GraphML(file_path)
+    gt.summary(g)
+    g = g.as_undirected(combine_edges=dict(weight="sum"))
+    g = gt.giant_component(g)
+    gt.summary(g)
+    fast = g.community_fastgreedy(weights='weight')
+    fast_com = fast.as_clustering(n=2)
+    # walk = g.community_walktrap(weights='weight')
+    # walk_com = walk.as_clustering(n=2)
+    # infor = g.community_infomap(edge_weights='weight', vertex_weights=None, trials=2)
+    # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
+    # label_pro = g.community_label_propagation(weights='weight', initial=eigen.membership)
+    # betweet = g.community_edge_betweenness(weights='weight')
+    # bet_com = betweet.as_clustering(n=2)
+    g.vs['community'] = fast_com.membership
+    g.write_graphml('com-'+file_path)
 
 if __name__ == '__main__':
-    cluster('rec-proed-communication-hashtag-refine.graphml')
-    cluster('rec-proed-retweet-hashtag-refine.graphml')
+    # cluster('rec-proed-communication-hashtag-refine.graphml')
+    # cluster('rec-proed-retweet-hashtag-refine.graphml')
+
+
+    two_community('rec-proed-communication-hashtag-refine.graphml')
+    two_community('rec-proed-retweet-hashtag-refine.graphml')
