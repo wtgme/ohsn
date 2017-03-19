@@ -128,40 +128,40 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                 next_cursor = -1
                 params = {'user_id': user['id_str'], 'count': 5000, 'stringify_ids':True}
                 # follower getting
-                # while (next_cursor != 0):
-                params['cursor'] = next_cursor
-                followers = get_followers(params)
-                if followers:
-                    follower_ids = followers['ids']
-                    list_size = len(follower_ids)
-                    length = int(math.ceil(list_size/100.0))
-                    # print length
-                    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followers', list_size, 'for user', user['id_str']
-                    for index in xrange(length):
-                        index_begin = index*100
-                        index_end = min(list_size, index_begin+100)
-                        profiles = lookup.get_users_info(follower_ids[index_begin:index_end])
+                while next_cursor != 0:
+                    params['cursor'] = next_cursor
+                    followers = get_followers(params)
+                    if followers:
+                        follower_ids = followers['ids']
+                        list_size = len(follower_ids)
+                        length = int(math.ceil(list_size/100.0))
+                        # print length
+                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followers', list_size, 'for user', user['id_str']
+                        for index in xrange(length):
+                            index_begin = index*100
+                            index_end = min(list_size, index_begin+100)
+                            profiles = lookup.get_users_info(follower_ids[index_begin:index_end])
 
-                        if profiles:
-                            print 'user prof:', index_begin, index_end, len(profiles)
-                            for profile in profiles:
-                                check_flag = profiles_check.check_user(profile, check)
-                                if check_flag:
-                                    profile['follower_prelevel_node'] = user['id_str']
-                                    profile['level'] = start_level+1
-                                    try:
-                                        poi_db.insert(profile)
-                                    except pymongo.errors.DuplicateKeyError:
-                                        pass
-                                    try:
-                                        net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']),
-                                                   'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
-                                    except pymongo.errors.DuplicateKeyError:
-                                        pass
-                    # # prepare for next iterator
-                    #     next_cursor = followers['next_cursor']
-                    # else:
-                    #     break
+                            if profiles:
+                                print 'user prof:', index_begin, index_end, len(profiles)
+                                for profile in profiles:
+                                    check_flag = profiles_check.check_user(profile, check)
+                                    if check_flag:
+                                        profile['follower_prelevel_node'] = user['id_str']
+                                        profile['level'] = start_level+1
+                                        try:
+                                            poi_db.insert(profile)
+                                        except pymongo.errors.DuplicateKeyError:
+                                            pass
+                                        try:
+                                            net_db.insert({'user': int(user['id_str']), 'follower': int(profile['id_str']),
+                                                       'scraped_at': datetime.datetime.now().strftime('%a %b %d %H:%M:%S +0000 %Y')})
+                                        except pymongo.errors.DuplicateKeyError:
+                                            pass
+                    # prepare for next iterator
+                        next_cursor = followers['next_cursor']
+                    else:
+                        break
                 poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
                                                     }}, upsert=False)
             return True

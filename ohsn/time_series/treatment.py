@@ -218,14 +218,14 @@ def out_data():
 
 
 if __name__ == '__main__':
-    # split_treatment()
-    # filter_user()
+    split_treatment()
+    filter_user()
 
     liwc_process()
 
     # compare_distribute('fed', 'control_com')
 
     # -------------control group-----------------------
-    # control_users()
-    # split_control()
+    control_users()
+    split_control()
     out_data()

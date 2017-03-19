@@ -294,16 +294,17 @@ def compare_opinion():
 
 
 def recovery_hashtag():
+    dbname = 'fed2'
     # select recovery users based on hashtags
     # Store in the databases
     # com = dbt.db_connect_col('fed', 'com')
-    times = dbt.db_connect_col('fed', 'timeline')
-    tagproed = dbt.db_connect_col('fed', 'proed_tag')
+    times = dbt.db_connect_col(dbname, 'timeline')
+    tagproed = dbt.db_connect_col(dbname, 'proed_tag')
     tagproed.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     tagproed.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    tagprorec = dbt.db_connect_col('fed', 'prorec_tag')
+    tagprorec = dbt.db_connect_col(dbname, 'prorec_tag')
     tagprorec.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     tagprorec.create_index([('id', pymongo.ASCENDING)], unique=True)
@@ -899,10 +900,10 @@ if __name__ == '__main__':
     # compare_weights()
 
     # compare_opinion()
-    # recovery_hashtag()
+    recovery_hashtag()
     # pro_tag_user()
 
-    network_pro_hashtags()
+    # network_pro_hashtags()
     # combine_rec_ped_hashtags()
     # hashtag_users()
     # hashtag_users_label_proed()

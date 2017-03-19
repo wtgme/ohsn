@@ -112,7 +112,7 @@ def bunch_user_tweets_dataframe(dbname, comname, timename, filename, num_batch=2
     if n == -1:
         split_k = True
 
-    for user in com.find({'timeline_count': {'$gt': 100}}, ['id', 'id_str', 'created_at', 'timeline_count'], no_cursor_timeout=True):
+    for user in com.find({'timeline_count': {'$gt': 0}}, ['id', 'id_str', 'created_at', 'timeline_count'], no_cursor_timeout=True):
         uid = user['id']
         tweet_count = user['timeline_count']
         if split_k == True:
