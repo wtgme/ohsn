@@ -45,7 +45,7 @@ def ed_users_hashtags():
         edge['pmi'] = np.log(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight']))
     print len(g.es.select(_source=recovery_index))
     for edge in g.es.select(_source=recovery_index):
-        print g.vs[edge.target]['name'], edge['pmi']
+        print '%s \t %.3f' %(g.vs[edge.target]['name'], edge['pmi'])
 
 if __name__ == '__main__':
     ed_users_hashtags()
