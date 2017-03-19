@@ -176,7 +176,7 @@ def random_network():
     com1.create_index("id", unique=True)
     # com2.create_index("id", unique=True)
     # com3.create_index("id", unique=True)
-    for user in com.find({'level': 2}):
+    for user in com.find({'level': 2}, no_cursor_timeout=True):
         # if user['level'] == 2:
         try:
             com1.insert(user)
