@@ -120,7 +120,8 @@ def two_community(file_path):
 def compare_communities(file_path):
     # compare the stats of communities of a network
     communities = two_community(file_path)
-    
+    for com in communities:
+        gt.net_stat(com)
 
 
 def test_significant(file_path):
@@ -167,5 +168,6 @@ if __name__ == '__main__':
 
     # two_community('rec-proed-communication-hashtag-refine.graphml')
     # two_community('rec-proed-retweet-hashtag-refine.graphml')
-    test_significant('rec-proed-communication-hashtag-refine.graphml')
-    test_significant('rec-proed-retweet-hashtag-refine.graphml')
+    # test_significant('rec-proed-communication-hashtag-refine.graphml')
+    # test_significant('rec-proed-retweet-hashtag-refine.graphml')
+    compare_communities('rec-proed-communication-hashtag-refine.graphml')
