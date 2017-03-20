@@ -17,6 +17,7 @@ import ohsn.util.io_util as iot
 import pymongo
 from sklearn import metrics
 import numpy as np
+from random import shuffle
 
 def cluster(file_path):
     '''
@@ -25,6 +26,8 @@ def cluster(file_path):
     label propagation with eigenvector has higher modularity than community_fastgreedy and community_leading_eigenvector alone
     Rand Index: 0.884, 0.974, 0.929 for communication network
                 0.807, 0.915, 0.864 for retweet network
+    This methods is discarded
+
     '''
     g = gt.Graph.Read_GraphML(file_path)
     gt.summary(g)
@@ -110,10 +113,55 @@ def two_community(file_path):
     g.vs['community'] = fast_com.membership
     g.write_graphml('com-'+file_path)
 
+    for sg in fast_com.subgraphs():
+        gt.net_stat(sg)
+
+
+def
+
+
+def test_significant(file_path):
+    g = gt.Graph.Read_GraphML(file_path)
+    gt.summary(g)
+    g = g.as_undirected(combine_edges=dict(weight="sum"))
+    g = gt.giant_component(g)
+    gt.summary(g)
+    # print g.es['weight']
+    fast = g.community_fastgreedy(weights='weight')
+    fast_com = fast.as_clustering(n=2)
+    orig_mod = fast_com.modularity
+    mod_list = []
+
+    for i in xrange(1000):
+        weights = g.es["weight"]
+        g.rewire()
+        g.es["weight"] = weights
+        # gt.net_stat(g)
+        # print g.es['weight']
+        fast = g.community_fastgreedy(weights='weight')
+        fast_com = fast.as_clustering()
+        mod_list.append(fast_com.modularity)
+
+
+    amean, astd = np.mean(mod_list), np.std(mod_list)
+    print 'simulated values: %.3f +- (%.3f)' %(amean, astd)
+    # absobserved = abs(raw_assort)
+    # pval = (np.sum(ass_list >= absobserved) +
+    #         np.sum(ass_list <= -absobserved))/float(len(ass_list))
+    zscore = (orig_mod-amean)/astd
+    print 'z-score: %.3f' %zscore
+
+
+
+
+
+
 if __name__ == '__main__':
     # cluster('rec-proed-communication-hashtag-refine.graphml')
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
 
 
-    two_community('rec-proed-communication-hashtag-refine.graphml')
-    two_community('rec-proed-retweet-hashtag-refine.graphml')
+    # two_community('rec-proed-communication-hashtag-refine.graphml')
+    # two_community('rec-proed-retweet-hashtag-refine.graphml')
+    test_significant('rec-proed-communication-hashtag-refine.graphml')
+    test_significant('rec-proed-retweet-hashtag-refine.graphml')
