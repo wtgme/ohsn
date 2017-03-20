@@ -129,7 +129,7 @@ def bunch_user_tweets_dataframe(dbname, comname, timename, filename, num_batch=2
                 tweets.append(tweet)
                 count += 1
             else:
-                result = liwcp.process_tweet(tweets, Trim_rt=False)
+                result = liwcp.process_tweet(tweets, Trim_rt=True)
                 if result:
                     liwc_results.append([result[k] for k in result.keys()])
                     if len(fields) == 0:

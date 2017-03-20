@@ -294,7 +294,7 @@ def compare_opinion():
 
 
 def recovery_hashtag():
-    dbname = 'fed2'
+    dbname = 'fed'
     # select recovery users based on hashtags
     # Store in the databases
     # com = dbt.db_connect_col('fed', 'com')
@@ -315,7 +315,7 @@ def recovery_hashtag():
         hashtags = tweet['entities']['hashtags']
         for hash in hashtags:
             value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
-            if 'recover' in value and 'nonrecover' not in value:
+            if 'recover' in value:
                 try:
                     tagprorec.insert(tweet)
                 except pymongo.errors.DuplicateKeyError:

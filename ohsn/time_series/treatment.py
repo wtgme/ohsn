@@ -103,6 +103,25 @@ def split_treatment():
                 prior.insert(tweet)
 
 
+def count_recovery_tweets(dbname):
+    times = dbt.db_connect_col(dbname, 'timeline')
+    com = dbt.db_connect_col(dbname, 'scom')
+    for user in com.find({'level': 1}, no_cursor_timeout=True):
+        uid = user['id']
+        count = 0
+        for tweet in times.find({'user.id': uid}):  # sort: 1 = ascending, -1 = descending
+            if ('retweeted_status' not in tweet) and ('quoted_status' not in tweet):
+                text = tweet['text'].encode('utf8')
+                text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+                text = text.strip().lower()
+                if 'treatment' in text or 'therap' in text \
+                       or 'doctor' in text or 'recover' in text:
+                    count += 1
+        com.update({'id': uid}, {'$set': {'recovery_tweets': count}}, upsert=False)
+
+
+
+
 def filter_user():
     prior = dbt.db_connect_col('fed', 'prior_treat')
     post = dbt.db_connect_col('fed', 'post_treat')
@@ -218,14 +237,16 @@ def out_data():
 
 
 if __name__ == '__main__':
-    split_treatment()
-    filter_user()
+    # split_treatment()
+    # filter_user()
+    #
+    # liwc_process()
+    #
+    # # compare_distribute('fed', 'control_com')
+    #
+    # # -------------control group-----------------------
+    # control_users()
+    # split_control()
+    # out_data()
 
-    liwc_process()
-
-    # compare_distribute('fed', 'control_com')
-
-    # -------------control group-----------------------
-    control_users()
-    split_control()
-    out_data()
+    count_recovery_tweets('fed')
