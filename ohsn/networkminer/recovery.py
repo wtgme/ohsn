@@ -96,6 +96,7 @@ def cluster(file_path):
 
 
 def two_community(file_path):
+    # get two community from networks
     g = gt.Graph.Read_GraphML(file_path)
     gt.summary(g)
     g = g.as_undirected(combine_edges=dict(weight="sum"))
@@ -113,14 +114,17 @@ def two_community(file_path):
     g.vs['community'] = fast_com.membership
     g.write_graphml('com-'+file_path)
 
-    for sg in fast_com.subgraphs():
-        gt.net_stat(sg)
+    return fast_com.subgraphs()
 
 
-def
+def compare_communities(file_path):
+    # compare the stats of communities of a network
+    communities = two_community(file_path)
+    
 
 
 def test_significant(file_path):
+    # random shuffle the weights of edges and test the segregate of networks
     g = gt.Graph.Read_GraphML(file_path)
     gt.summary(g)
     g = g.as_undirected(combine_edges=dict(weight="sum"))
