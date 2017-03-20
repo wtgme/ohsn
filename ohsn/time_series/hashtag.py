@@ -30,9 +30,9 @@ def ed_users_hashtags():
     recovery = g.vs.find(name="recovery")
     recovery_index = recovery.index
 
-    # sims = g.similarity_inverse_log_weighted()
+    # sims = g.similarity_dice()
     # for v in g.vs:
-    #     print v['name'], sims[recovery_index][v.index]
+    #     print '%s \t %.3f' %(v['name'], sims[recovery_index][v.index])
 
 
     vw_sum = sum(g.vs["weight"])
