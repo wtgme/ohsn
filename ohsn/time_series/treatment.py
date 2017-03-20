@@ -103,9 +103,9 @@ def split_treatment():
                 prior.insert(tweet)
 
 
-def count_recovery_tweets(dbname):
+def count_recovery_tweets(dbname, comname):
     times = dbt.db_connect_col(dbname, 'timeline')
-    com = dbt.db_connect_col(dbname, 'scom')
+    com = dbt.db_connect_col(dbname, comname)
     for user in com.find({'level': 1}, no_cursor_timeout=True):
         uid = user['id']
         count = 0
@@ -249,4 +249,4 @@ if __name__ == '__main__':
     # split_control()
     # out_data()
 
-    count_recovery_tweets('fed')
+    count_recovery_tweets('fed2', 'com')
