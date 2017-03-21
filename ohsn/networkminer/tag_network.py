@@ -293,7 +293,7 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
             com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
 
 
-def refine_recovery_tweets(hash_com, idx=[97, 102]): # without non-recovery: 18, 102
+def refine_recovery_tweets(hash_com, idx=[4, 58]): # without non-recovery: 18, 102, 4, 58, 88
     # select tweets have ed-related hashtags
     times = dbt.db_connect_col('fed', 'prorec_tag')
     rec_refine = dbt.db_connect_col('fed', 'prorec_tag_refine')
@@ -467,13 +467,14 @@ def pmi(g, filename):
 
 if __name__ == '__main__':
     rec = tag_record('fed', 'prorec_tag', 'prorec')
-    # # ped = tag_record('fed', 'proed_tag', 'ped')
-    # # transform('ed_tag')
-    # hash_com_rec, com_size_rec = community(rec)
-    # # hash_com_ped, com_size_ped = community(ped)
-    # # user_hashtag_profile('fed', hash_com)
-    # # label_ed_recovery(hash_com_rec, com_size_rec)
-    # refine_recovery_tweets(hash_com_rec)
+    # ped = tag_record('fed', 'proed_tag', 'ped')
+    # transform('ed_tag')
+    # rec = gt.Graph.Read_GraphML('prorec_tag_undir.graphml')
+    hash_com_rec, com_size_rec = community(rec)
+    # hash_com_ped, com_size_ped = community(ped)
+    # user_hashtag_profile('fed', hash_com)
+    # label_ed_recovery(hash_com_rec, com_size_rec)
+    refine_recovery_tweets(hash_com_rec)
 
     # users = iot.get_values_one_field('fed', 'scom', 'id')
     # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
