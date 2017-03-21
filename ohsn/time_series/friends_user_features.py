@@ -272,12 +272,13 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
               # 'liwc_anal.result.sad'
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
-    changes = ['change_'+field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
-    attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
-    attr_names.extend(['u_'+field for field in changes])
+    attr_names.extend(['u_'+field for field in trimed_fields])
+    attr_names.extend(['u_prior_'+field for field in trimed_fields])
+    attr_names.extend(['u_post_'+field for field in trimed_fields])
+    attr_names.extend(['u_change_'+field for field in trimed_fields])
     attr_names.extend(['u_'+field for field in prof_names])
     attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
@@ -304,16 +305,18 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
         uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
         # print uvs
         if len(uvs) == 2:
-            changes = []
+            changes, priors, posts = [], [], []
             for name in trimed_fields:
                 old = uvs.iloc[0][name]
                 new = uvs.iloc[1][name]
-                change = (new - old)
-                changes.append(change)
-            print changes
+                priors.append(old)
+                posts.append(new)
+                changes.append(new - old)
+            row.extend(priors)
+            row.extend(posts)
             row.extend(changes)
         else:
-            row.extend([None]*len(trimed_fields))
+            row.extend([None]*(len(trimed_fields)*3))
 
         # set profile, active days and eigenvector centrality
         row.extend(active_days(u1))
@@ -389,12 +392,13 @@ def emotion_recovery_IV_following(dbname1, dbname2, comname1, comname2):
               # 'liwc_anal.result.sad'
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
-    changes = ['change_'+field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
-    attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
-    attr_names.extend(['u_'+field for field in changes])
+    attr_names.extend(['u_'+field for field in trimed_fields])
+    attr_names.extend(['u_prior_'+field for field in trimed_fields])
+    attr_names.extend(['u_post_'+field for field in trimed_fields])
+    attr_names.extend(['u_change_'+field for field in trimed_fields])
     attr_names.extend(['u_'+field for field in prof_names])
     attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
@@ -421,16 +425,18 @@ def emotion_recovery_IV_following(dbname1, dbname2, comname1, comname2):
         uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
         # print uvs
         if len(uvs) == 2:
-            changes = []
+            changes, priors, posts = [], [], []
             for name in trimed_fields:
                 old = uvs.iloc[0][name]
                 new = uvs.iloc[1][name]
-                change = (new - old)
-                changes.append(change)
-            print changes
+                priors.append(old)
+                posts.append(new)
+                changes.append(new - old)
+            row.extend(priors)
+            row.extend(posts)
             row.extend(changes)
         else:
-            row.extend([None]*len(trimed_fields))
+            row.extend([None]*(len(trimed_fields)*3))
 
         # set profile, active days and eigenvector centrality
         row.extend(active_days(u1))
