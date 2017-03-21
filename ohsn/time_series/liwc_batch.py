@@ -247,8 +247,8 @@ def compare_periods(filename, prefix):
 
 
 if __name__ == '__main__':
-    filename = 'ed-liwc2stage.csv'
-    bunch_user_tweets_dataframe('fed', 'scom', 'timeline', filename)
+    # filename = 'ed-liwc2stage.csv'
+    # bunch_user_tweets_dataframe('fed', 'scom', 'timeline', filename)
     compare_periods('ed-liwc2stage.csv', 'ed')
 
 

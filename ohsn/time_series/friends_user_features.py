@@ -24,10 +24,11 @@ import pickle
 
 print 'Centrality Calculate .........'
 # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
+
 # print 'Number of users', len(users)
 # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
-network1 = gt.load_network('fed', 'net')
-pickle.dump(network1, open('net.pick', 'w'))
+# network1 = gt.load_network('fed', 'net')
+# pickle.dump(network1, open('net.pick', 'w'))
 network1 = pickle.load(open('net.pick','r'))
 
 '''Centralities Calculation'''
@@ -300,7 +301,8 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
         # set users liwc changes
-        uvs = df[(df.user_id == uid)].loc[:, trimed_fields]
+        uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
+        # print uvs
         if len(uvs) == 2:
             changes = []
             for name in trimed_fields:
@@ -308,6 +310,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
                 new = uvs.iloc[1][name]
                 change = (new - old)
                 changes.append(change)
+            print changes
             row.extend(changes)
         else:
             row.extend([None]*len(trimed_fields))

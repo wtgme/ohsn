@@ -38,6 +38,23 @@ def remove_random_users(dbname, comname, netname):
     # copy_net(dbname, comname, netname)
 
 
+def copy_com(dbname, com_ori_name, com_des_name):
+    com_ori = dbt.db_connect_col(dbname, com_ori_name)
+    com_des = dbt.db_connect_col(dbname, com_des_name)
+    com_des.create_index("id", unique=True)
+    com_des.create_index([('level', pymongo.ASCENDING),
+                         ('following_prelevel_node', pymongo.ASCENDING)],
+                        unique=False)
+    com_des.create_index([('level', pymongo.ASCENDING),
+                         ('follower_prelevel_node', pymongo.ASCENDING)],
+                        unique=False)
+    for user in com_ori.find({'level': {'$lt': 3}},no_cursor_timeout=True):
+        try:
+            com_des.insert(user)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
+
 def copy_net(dbname, comname, netname):
     # Move networks among two-level users in net2
     net = dbt.db_connect_col(dbname, netname)
@@ -68,3 +85,4 @@ def copy_net(dbname, comname, netname):
 if __name__ == '__main__':
     remove_random_users('random3', 'com', 'net')
     # copy_net('fed', 'com', 'net2')
+    # copy_com('fed', 'com', 'com2')

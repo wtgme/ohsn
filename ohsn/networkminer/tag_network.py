@@ -466,15 +466,18 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    rec = tag_record('fed', 'prorec_tag', 'prorec')
-    # ped = tag_record('fed', 'proed_tag', 'ped')
-    # transform('ed_tag')
-    hash_com_rec, com_size_rec = community(rec)
-    # hash_com_ped, com_size_ped = community(ped)
-    # user_hashtag_profile('fed', hash_com)
-    # label_ed_recovery(hash_com_rec, com_size_rec)
-    refine_recovery_tweets(hash_com_rec)
+    # rec = tag_record('fed', 'prorec_tag', 'prorec')
+    # # ped = tag_record('fed', 'proed_tag', 'ped')
+    # # transform('ed_tag')
+    # hash_com_rec, com_size_rec = community(rec)
+    # # hash_com_ped, com_size_ped = community(ped)
+    # # user_hashtag_profile('fed', hash_com)
+    # # label_ed_recovery(hash_com_rec, com_size_rec)
+    # refine_recovery_tweets(hash_com_rec)
 
+    users = iot.get_values_one_field('fed', 'scom', 'id')
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
+    g.write_graphml('core_ed_hashtag.graphml')
 
 
     # pmi(g, filename='ed')
