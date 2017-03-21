@@ -333,6 +333,7 @@ if __name__ == '__main__':
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
     times = dbutil.db_connect_col('fed', 'proed_tag')
+    times = dbutil.db_connect_col('fed', 'prorec_tag_refine')
     nets = dbutil.db_connect_col('fed', 'bnet_tag_refine')
     nets.create_index([("id0", pymongo.ASCENDING),
                                  ("id1", pymongo.ASCENDING),

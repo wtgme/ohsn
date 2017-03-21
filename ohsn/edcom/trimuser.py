@@ -27,8 +27,15 @@ def trim_user(dbname, timename):
 
 def remove_random_users(dbname, comname, netname):
     com = dbt.db_connect_col(dbname, comname)
+    users = iot.get_values_one_field(dbname, comname, 'id', {'level': 3})
+    net = dbt.db_connect_col(dbname, netname)
+    for row in net.find(no_cursor_timeout=True):
+        uid = row['user']
+        fid = row['follower']
+        if uid in users or fid in users:
+            net.delete_one({'_id': row['_id']})
     com.delete_many({'level': 3})
-    copy_net(dbname, comname, netname)
+    # copy_net(dbname, comname, netname)
 
 
 def copy_net(dbname, comname, netname):
@@ -55,6 +62,9 @@ def copy_net(dbname, comname, netname):
                 pass
 
 
+
+
+
 if __name__ == '__main__':
-    # remove_random_users('random2', 'com', 'net')
-    copy_net('fed', 'com', 'net2')
+    remove_random_users('random3', 'com', 'net')
+    # copy_net('fed', 'com', 'net2')

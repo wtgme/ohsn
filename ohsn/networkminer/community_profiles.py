@@ -391,7 +391,7 @@ def network_pro_hashtags():
             else:
                 v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-hashtag-refine.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-hashtag-non-refine.graphml')
 
 
 

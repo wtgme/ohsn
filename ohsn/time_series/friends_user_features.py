@@ -23,11 +23,11 @@ import pickle
 
 
 print 'Centrality Calculate .........'
-users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
-print 'Number of users', len(users)
+# users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
+# print 'Number of users', len(users)
 # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
-# network1 = gt.load_network('fed2', 'net')
-# pickle.dump(network1, open('net.pick', 'w'))
+network1 = gt.load_network('fed', 'net')
+pickle.dump(network1, open('net.pick', 'w'))
 network1 = pickle.load(open('net.pick','r'))
 
 '''Centralities Calculation'''
@@ -126,7 +126,8 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
               'liwc_anal.result.negemo',
               'liwc_anal.result.anx',
               'liwc_anal.result.anger',
-              'liwc_anal.result.sad']
+              'liwc_anal.result.sad'
+              ]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
@@ -252,49 +253,69 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
     :param comname2:
     :return:
     '''
+    print 'load liwc 2 batches'
+    df = pd.read_pickle('ed-liwc2stage.csv'+'.pick')
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
     user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
     com1 = dbt.db_connect_col(dbname1, comname1)
     com2 = dbt.db_connect_col(dbname2, comname2)
     fields = ['liwc_anal.result.posemo',
               'liwc_anal.result.negemo',
-              'liwc_anal.result.anx',
-              'liwc_anal.result.anger',
-              'liwc_anal.result.sad']
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.death'
+              # 'liwc_anal.result.anx',
+              # 'liwc_anal.result.anger',
+              # 'liwc_anal.result.sad'
+              ]
+    trimed_fields = [field.split('.')[-1] for field in fields]
+    changes = ['change_'+field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['u_'+field for field in changes])
     attr_names.extend(['u_'+field for field in prof_names])
+    attr_names.extend(['u_recovery_tweets'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['f_'+field for field in prof_names])
     attr_names.extend(['f_num', 'f_palive'])
     print attr_names
-    # network1 = gt.load_network(dbname1, 'net')
-
-    '''Centralities Calculation'''
-    # eigen = network1.eigenvector_centrality()
-    # closeness = network1.closeness()
-    # betweenness = network1.betweenness()
-    # nodes = [int(v['name']) for v in network1.vs]
-    # eigen_map = dict(zip(nodes, eigen))
-    # closeness_map = dict(zip(nodes, closeness))
-    # betweenness_map = dict(zip(nodes, betweenness))
 
 
     data = []
     for uid in user1:
+        # set uid
         row = [uid]
+        # set attrition states
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
         if u2 is None or u2['timeline_count'] == 0:
             row.append(1)
         else:
             row.append(0)
+        # set users liwc feature
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
+        # set users liwc changes
+        uvs = df[(df.user_id == uid)].loc[:, trimed_fields]
+        if len(uvs) == 2:
+            changes = []
+            for name in trimed_fields:
+                old = uvs.iloc[0][name]
+                new = uvs.iloc[1][name]
+                change = (new - old)
+                changes.append(change)
+            row.extend(changes)
+        else:
+            row.extend([None]*len(trimed_fields))
+
+        # set profile, active days and eigenvector centrality
         row.extend(active_days(u1))
         row.extend([eigen_map.get(u1['id'])])
+        row.extend([u1['recovery_tweets']])
 
         exist = True
         try:
@@ -302,9 +323,10 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         except ValueError:
             exist = False
         if exist:
-            friends = set(network1.neighbors(str(uid))) # id or name
+            # friends = set(network1.neighbors(str(uid))) # id or name
+            friends = set(network1.successors(str(uid)))
             if len(friends) > 0:
-                friend_ids = [int(network1.vs[v]['name']) for v in friends] # return id
+                friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                 print uid in friend_ids
                 print len(friend_ids)
                 fatts = []
@@ -365,5 +387,5 @@ if __name__ == '__main__':
     # print [network1.vs[v]['name'] for v in friends_old]
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
-    emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
+    # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     emotion_dropout_IV_combine('fed', 'fed2', 'com', 'com')

@@ -217,7 +217,7 @@ def community(g=None):
             count = com_size.get(index, 0)
             com_size[index] = v['weight'] + count
         sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
-        for key in sort_list[:min(10, len(sort_list))]:
+        for key in sort_list[:min(15, len(sort_list))]:
             print key, tag_weight[key]
         print '-------------Community size: ', com_size[index], '---------------------'
         print
@@ -293,7 +293,7 @@ def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
             com.update({'id': uid}, {'$set': {'rec_tageted': True}}, upsert=False)
 
 
-def refine_recovery_tweets(hash_com, idx=[18, 102]):
+def refine_recovery_tweets(hash_com, idx=[97, 102]): # without non-recovery: 18, 102
     # select tweets have ed-related hashtags
     times = dbt.db_connect_col('fed', 'prorec_tag')
     rec_refine = dbt.db_connect_col('fed', 'prorec_tag_refine')
@@ -466,14 +466,14 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    rec = tag_record('fed', 'prorec_tag', 'prec_non')
+    rec = tag_record('fed', 'prorec_tag', 'prorec')
     # ped = tag_record('fed', 'proed_tag', 'ped')
     # transform('ed_tag')
-    # hash_com_rec, com_size_rec = community(rec)
-    # # hash_com_ped, com_size_ped = community(ped)
-    # # user_hashtag_profile('fed', hash_com)
-    # # label_ed_recovery(hash_com_rec, com_size_rec)
-    # refine_recovery_tweets(hash_com_rec)
+    hash_com_rec, com_size_rec = community(rec)
+    # hash_com_ped, com_size_ped = community(ped)
+    # user_hashtag_profile('fed', hash_com)
+    # label_ed_recovery(hash_com_rec, com_size_rec)
+    refine_recovery_tweets(hash_com_rec)
 
 
 
