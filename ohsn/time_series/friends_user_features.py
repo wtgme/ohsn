@@ -245,9 +245,9 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     df.to_csv('data-attr-split.csv', index = False)
 
 
-def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
+def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
     '''
-    Combine followees and follower together as variables
+    Only use following stats
     :param dbname1:
     :param dbname2:
     :param comname1:
@@ -279,7 +279,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['u_'+field for field in changes])
     attr_names.extend(['u_'+field for field in prof_names])
-    attr_names.extend(['u_recovery_tweets'])
+    attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['f_'+field for field in prof_names])
     attr_names.extend(['f_num', 'f_palive'])
@@ -318,7 +318,7 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         # set profile, active days and eigenvector centrality
         row.extend(active_days(u1))
         row.extend([eigen_map.get(u1['id'])])
-        row.extend([u1['recovery_tweets']])
+        row.extend([u1['recovery_tweets'], u1['timeline_count']])
 
         exist = True
         try:
@@ -358,7 +358,125 @@ def emotion_dropout_IV_combine(dbname1, dbname2, comname1, comname2):
         # print row
         data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
-    df.to_csv('data-attr-combine.csv', index = False)
+    df.to_csv('data-attr-following.csv', index = False)
+
+
+
+def emotion_recovery_IV_following(dbname1, dbname2, comname1, comname2):
+    '''
+    Only use following stats
+    :param dbname1:
+    :param dbname2:
+    :param comname1:
+    :param comname2:
+    :return:
+    '''
+    print 'load liwc 2 batches'
+    df = pd.read_pickle('ed-liwc2stage.csv'+'.pick')
+    filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
+    user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
+    com1 = dbt.db_connect_col(dbname1, comname1)
+    com2 = dbt.db_connect_col(dbname2, comname2)
+    fields = ['liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.death'
+              # 'liwc_anal.result.anx',
+              # 'liwc_anal.result.anger',
+              # 'liwc_anal.result.sad'
+              ]
+    trimed_fields = [field.split('.')[-1] for field in fields]
+    changes = ['change_'+field.split('.')[-1] for field in fields]
+    prof_names = ['friends_count', 'statuses_count', 'followers_count',
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
+    attr_names = ['uid', 'attr']
+    attr_names.extend(['u_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['u_'+field for field in changes])
+    attr_names.extend(['u_'+field for field in prof_names])
+    attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
+    attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
+    attr_names.extend(['f_'+field for field in prof_names])
+    attr_names.extend(['f_num', 'f_palive'])
+    print attr_names
+
+
+    data = []
+    for uid in user1:
+        # set uid
+        row = [uid]
+        # set attrition states
+        u1 = com1.find_one({'id': uid})
+        u2 = com2.find_one({'id': uid})
+        if u2 is None or u2['timeline_count'] == 0:
+            row.append(None)
+        else:
+            row.append(u2['recovery_tweets'])
+        # set users liwc feature
+        uatt = iot.get_fields_one_doc(u1, fields)
+        row.extend(uatt)
+        # set users liwc changes
+        uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
+        # print uvs
+        if len(uvs) == 2:
+            changes = []
+            for name in trimed_fields:
+                old = uvs.iloc[0][name]
+                new = uvs.iloc[1][name]
+                change = (new - old)
+                changes.append(change)
+            print changes
+            row.extend(changes)
+        else:
+            row.extend([None]*len(trimed_fields))
+
+        # set profile, active days and eigenvector centrality
+        row.extend(active_days(u1))
+        row.extend([eigen_map.get(u1['id'])])
+        row.extend([u1['recovery_tweets'], u1['timeline_count']])
+
+        exist = True
+        try:
+            v = network1.vs.find(name=str(uid))
+        except ValueError:
+            exist = False
+        if exist:
+            # friends = set(network1.neighbors(str(uid))) # id or name
+            friends = set(network1.successors(str(uid)))
+            if len(friends) > 0:
+                friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
+                print uid in friend_ids
+                print len(friend_ids)
+                fatts = []
+                alive = 0
+                for fid in friend_ids:
+                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
+                    fu2 = com2.find_one({'id': fid})
+                    if fu != None:
+                        fatt = iot.get_fields_one_doc(fu, fields)
+                        fatt.extend(active_days(fu))
+                        fatt.extend([eigen_map.get(fu['id'])])
+
+                        fatts.append(fatt)
+                        if fu2 is None or fu2['timeline_count'] == 0:
+                            alive += 0
+                        else:
+                            alive += 1
+                if len(fatts) > 0:
+                    fatts = np.array(fatts)
+                    fmatts = np.mean(fatts, axis=0)
+                    row.extend(fmatts)
+                    row.append(len(fatts))
+                    paliv = float(alive)/len(fatts)
+                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                    row.append(paliv)
+        # print row
+        data.append(row)
+    df = pd.DataFrame(data, columns=attr_names)
+    df.to_csv('data-recover-following.csv', index = False)
+
 
 
 def states_change(dbname1, dbname2, comname1, comname2):
@@ -391,4 +509,5 @@ if __name__ == '__main__':
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
-    emotion_dropout_IV_combine('fed', 'fed2', 'com', 'com')
+    emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
+    emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
