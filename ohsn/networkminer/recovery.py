@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
     prec = tsplit.timeline('fed', 'prorec_tag_refine')
     ped = tsplit.timeline('fed', 'proed_tag_refine')
-    pickle.dump((prec, ped), 'tweets_dates.pick')
+    pickle.dump((prec, ped), open('tweets_dates.pick', 'w'))
 
     # print len(prec), len(ped)
     #
