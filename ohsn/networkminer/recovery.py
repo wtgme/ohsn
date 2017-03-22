@@ -17,7 +17,13 @@ import ohsn.util.io_util as iot
 import pymongo
 from sklearn import metrics
 import numpy as np
+import pandas as pd
 from random import shuffle
+import ohsn.time_series.time_series_split as tsplit
+import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.style.use('ggplot')
+import ohsn.util.plot_util as plu
 
 def cluster(file_path):
     '''
@@ -157,8 +163,17 @@ def test_significant(file_path):
     print 'z-score: %.3f' %zscore
 
 
+def compare_post_time():
+    prec = tsplit.timeline('fed', 'prorec_tag_refine')
+    ped = tsplit.timeline('fed', 'proed_tag_refine')
+    print len(prec), len(ped)
+    fig, ax = plt.subplots()
 
-
+    df = pd.DataFrame(prec, columns=['Recovery'])
+    df.groupby([df["Recovery"].dt.year, df["Recovery"].dt.month]).count().plot(kind="line", ax=ax)
+    df = pd.DataFrame(ped, columns=['Pro-ED'])
+    df.groupby([df["Pro-ED"].dt.year, df["Pro-ED"].dt.month]).count().plot(kind="line", ax=ax)
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -170,4 +185,27 @@ if __name__ == '__main__':
     # two_community('rec-proed-retweet-hashtag-refine.graphml')
     # test_significant('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
-    compare_communities('rec-proed-communication-hashtag-refine.graphml')
+    # compare_communities('rec-proed-communication-hashtag-refine.graphml')
+
+    # compare_post_time()
+
+    prec = tsplit.timeline('fed', 'prorec_tag_refine')
+    ped = tsplit.timeline('fed', 'proed_tag_refine')
+    print len(prec), len(ped)
+
+    fig, ax = plt.subplots()
+    plu.plot_config()
+
+    df_rec = pd.DataFrame(prec, columns=['Recovery'])
+    rec_counts = df_rec.groupby([df_rec["Recovery"].dt.year, df_rec["Recovery"].dt.month]).count()
+    rec_counts.plot(kind="line", marker='s', ax=ax)
+    ax.legend(loc='best')
+
+    df_ped = pd.DataFrame(ped, columns=['Pro-ED'])
+    ped_counts = df_ped.groupby([df_ped["Pro-ED"].dt.year, df_ped["Pro-ED"].dt.month]).count()
+    ped_counts.plot(kind="line", marker='o', ax=ax)
+    ax.legend(loc='best')
+    ax.set_ylabel('Number of tweets')
+    ax.set_xlabel('Year, Month')
+
+    plt.show()

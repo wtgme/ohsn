@@ -376,7 +376,7 @@ def network_pro_hashtags():
     # rec_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'rec_tageted': True}))
     # ped_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'ped_tageted': True}))
     rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id'))
-    ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+    ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag_refine', 'user.id'))
 
     only_ped = ped_tag_users - rec_tag_users
     only_rec = rec_tag_users - ped_tag_users

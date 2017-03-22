@@ -28,6 +28,7 @@ from datetime import datetime
 
 
 def timeline_date(dbname, timename):
+    # transform date formate
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[timename]
     for tweet in timeline.find({'created_at_date': {'$exists': False}}, no_cursor_timeout=True):
@@ -36,6 +37,7 @@ def timeline_date(dbname, timename):
 
 
 def timeline(dbname, colname):
+    # get date of each tweet created. return list
     db = dbt.db_connect_no_auth(dbname)
     timeline = db[colname]
     tlist = []
@@ -46,6 +48,7 @@ def timeline(dbname, colname):
 
 
 def transform_data(dbname, colname, newdbname, newcolname, timeend):
+    # transform tweet after some date point
     dbo = dbt.db_connect_no_auth(dbname)
     timeo = dbo[colname]
     dbn = dbt.db_connect_no_auth(newdbname)
@@ -60,6 +63,7 @@ def transform_data(dbname, colname, newdbname, newcolname, timeend):
 
 
 def transform_net_data(dbname, colname, newdbname, newcolname):
+    # transform network data
     dbo = dbt.db_connect_no_auth(dbname)
     neto = dbo[colname]
     dbn = dbt.db_connect_no_auth(newdbname)
@@ -73,6 +77,8 @@ def transform_net_data(dbname, colname, newdbname, newcolname):
 
 
 def process(dbname, colname, index, start=None, end=None, f=''):
+    # process data at some stages
+
     # yearsplit = pickle.load(open('data/fedtyear.pick', 'r'))
     # processlist = []
     # for key in yearsplit:

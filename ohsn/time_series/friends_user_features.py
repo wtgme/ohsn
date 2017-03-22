@@ -283,7 +283,7 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['f_'+field for field in prof_names])
-    attr_names.extend(['f_num', 'f_palive'])
+    attr_names.extend(['f_timeline_count', 'f_num', 'f_palive'])
     print attr_names
 
 
@@ -344,8 +344,9 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
                         fatt.extend([eigen_map.get(fu['id'])])
-
+                        fatt.extend([fu['timeline_count']])
                         fatts.append(fatt)
+
                         if fu2 is None or fu2['timeline_count'] == 0:
                             alive += 0
                         else:
@@ -394,7 +395,7 @@ def emotion_recovery_IV_following(dbname1, dbname2, comname1, comname2):
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
-    attr_names = ['uid', 'attr']
+    attr_names = ['uid', 'attr', 'u_timeline_count_2p']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
     attr_names.extend(['u_post_'+field for field in trimed_fields])
@@ -415,9 +416,9 @@ def emotion_recovery_IV_following(dbname1, dbname2, comname1, comname2):
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
         if u2 is None or u2['timeline_count'] == 0:
-            row.append(None)
+            row.extend([None]*2)
         else:
-            row.append(u2['recovery_tweets'])
+            row.extend([u2['recovery_tweets'], u2['timeline_count']])
         # set users liwc feature
         uatt = iot.get_fields_one_doc(u1, fields)
         row.extend(uatt)
