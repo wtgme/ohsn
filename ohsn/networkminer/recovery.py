@@ -23,6 +23,7 @@ import ohsn.time_series.time_series_split as tsplit
 import matplotlib.pyplot as plt
 # import matplotlib
 # matplotlib.style.use('ggplot')
+import pickle
 import ohsn.util.plot_util as plu
 
 def cluster(file_path):
@@ -191,21 +192,23 @@ if __name__ == '__main__':
 
     prec = tsplit.timeline('fed', 'prorec_tag_refine')
     ped = tsplit.timeline('fed', 'proed_tag_refine')
-    print len(prec), len(ped)
+    pickle.dump((prec, ped), 'tweets_dates.pick')
 
-    fig, ax = plt.subplots()
-    plu.plot_config()
-
-    df_rec = pd.DataFrame(prec, columns=['Recovery'])
-    rec_counts = df_rec.groupby([df_rec["Recovery"].dt.year, df_rec["Recovery"].dt.month]).count()
-    rec_counts.plot(kind="line", marker='s', ax=ax)
-    ax.legend(loc='best')
-
-    df_ped = pd.DataFrame(ped, columns=['Pro-ED'])
-    ped_counts = df_ped.groupby([df_ped["Pro-ED"].dt.year, df_ped["Pro-ED"].dt.month]).count()
-    ped_counts.plot(kind="line", marker='o', ax=ax)
-    ax.legend(loc='best')
-    ax.set_ylabel('Number of tweets')
-    ax.set_xlabel('Year, Month')
-
-    plt.show()
+    # print len(prec), len(ped)
+    #
+    # fig, ax = plt.subplots()
+    # plu.plot_config()
+    #
+    # df_rec = pd.DataFrame(prec, columns=['Recovery'])
+    # rec_counts = df_rec.groupby([df_rec["Recovery"].dt.year, df_rec["Recovery"].dt.month]).count()
+    # rec_counts.plot(kind="line", marker='s', ax=ax)
+    # ax.legend(loc='best')
+    #
+    # df_ped = pd.DataFrame(ped, columns=['Pro-ED'])
+    # ped_counts = df_ped.groupby([df_ped["Pro-ED"].dt.year, df_ped["Pro-ED"].dt.month]).count()
+    # ped_counts.plot(kind="line", marker='o', ax=ax)
+    # ax.legend(loc='best')
+    # ax.set_ylabel('Number of tweets')
+    # ax.set_xlabel('Year, Month')
+    #
+    # plt.show()
