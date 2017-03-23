@@ -186,6 +186,7 @@ def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=T
 
 
 def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
+    # level: the end level
     while True:
         count = user_collection.count({'$or':[{'level': {'$lt': level}, 'timeline_scraped_times': {'$exists': False}},
                                              {'level': {'$lt': level}, 'timeline_scraped_times': {'$lt': scrapt_times}}]})

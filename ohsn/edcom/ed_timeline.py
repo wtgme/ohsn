@@ -47,16 +47,16 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
                           ('id', pymongo.DESCENDING)])
     newtime.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    # '''Copy the lastest tweet in old timeline collectin to new timeline collection'''
-    # for user in newcom.find(no_cursor_timeout=True):
-    #     oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
-    #     if oldtweets.count() > 0:
-    #         oldtweet = oldtweets[0]
-    #         try:
-    #             oldtweet['user'] = {'id': user['id']}
-    #             newtime.insert(oldtweet)
-    #         except pymongo.errors.DuplicateKeyError:
-    #             pass
+    '''Copy the lastest tweet in old timeline collectin to new timeline collection'''
+    for user in newcom.find(no_cursor_timeout=True):
+        oldtweets = oldtime.find({'user.id': user['id']}, no_cursor_timeout=True).sort([('id', -1)]).limit(1)
+        if oldtweets.count() > 0:
+            oldtweet = oldtweets[0]
+            try:
+                oldtweet['user'] = {'id': user['id']}
+                newtime.insert(oldtweet)
+            except pymongo.errors.DuplicateKeyError:
+                pass
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
     # stream_timeline(sample_user, sample_time, 1, 2)
@@ -74,4 +74,4 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
 if __name__ == '__main__':
     # retrieve_timeline()
 
-    update_timeline('fed', 'timeline', 'fed2', 'com', 'timeline')
+    update_timeline('fed2', 'timeline', 'fed3', 'com', 'timeline')
