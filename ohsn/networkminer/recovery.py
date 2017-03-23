@@ -25,6 +25,8 @@ import matplotlib.pyplot as plt
 # matplotlib.style.use('ggplot')
 import pickle
 import ohsn.util.plot_util as plu
+from scipy import stats
+from datetime import datetime
 
 def cluster(file_path):
     '''
@@ -165,16 +167,92 @@ def test_significant(file_path):
 
 
 def compare_post_time():
-    prec = tsplit.timeline('fed', 'prorec_tag_refine')
-    ped = tsplit.timeline('fed', 'proed_tag_refine')
+    # prec = tsplit.timeline('fed', 'prorec_tag_refine')
+    # ped = tsplit.timeline('fed', 'proed_tag_refine')
+    # pickle.dump((prec, ped), open('tweets_dates.pick', 'w'))
+    prec, ped = pickle.load(open('tweets_dates.pick', 'r'))
     print len(prec), len(ped)
+
+    '''Get index '''
+    mind = min(min(prec), min(ped))
+    maxd = max(max(prec), max(ped))
+    print mind, maxd
+    indeces = pd.date_range(mind, maxd, freq='M')
+
+    plu.plot_config()
     fig, ax = plt.subplots()
 
-    df = pd.DataFrame(prec, columns=['Recovery'])
-    df.groupby([df["Recovery"].dt.year, df["Recovery"].dt.month]).count().plot(kind="line", ax=ax)
-    df = pd.DataFrame(ped, columns=['Pro-ED'])
-    df.groupby([df["Pro-ED"].dt.year, df["Pro-ED"].dt.month]).count().plot(kind="line", ax=ax)
+    '''counting'''
+    df_rec = pd.DataFrame(prec, columns=['Recovery'])
+    df_rec['year'] = df_rec["Recovery"].dt.year
+    df_rec['month'] = df_rec["Recovery"].dt.month
+    rec_counts = df_rec.groupby([df_rec["year"], df_rec["month"]]).count()
+
+    '''Get count per month'''
+    rec_cs = [0.0]*len(indeces)
+    for i in xrange(len(indeces)):
+        year = indeces[i].year
+        month = indeces[i].month
+        count = rec_counts.loc[(rec_counts.index.get_level_values('year') == year) & (rec_counts.index.get_level_values('month') == month)]
+        if not count.empty:
+            rec_cs[i] = count.iloc[0, 1]
+    '''Plot series'''
+    rec_s = pd.Series(rec_cs, index=indeces, name='Pro-recovery')
+    rec_s.plot(kind="line", marker='s', ax=ax)
+    ax.legend(loc='best')
+
+    df_ped = pd.DataFrame(ped, columns=['Pro-ED'])
+    df_ped['year'] = df_ped['Pro-ED'].dt.year
+    df_ped['month'] = df_ped['Pro-ED'].dt.month
+    ped_counts = df_ped.groupby([df_ped["year"], df_ped["month"]]).count()
+
+    ped_cs = [0.0]*len(indeces)
+    for i in xrange(len(indeces)):
+        year = indeces[i].year
+        month = indeces[i].month
+        count = ped_counts.loc[(ped_counts.index.get_level_values('year') == year) & (ped_counts.index.get_level_values('month') == month)]
+        if not count.empty:
+            ped_cs[i] = count.iloc[0, 1]
+
+    ped_s = pd.Series(ped_cs, index=indeces, name='Pro-ED')
+    ped_s.plot(kind="line", marker='o', ax=ax)
+    ax.legend(loc='best')
+
+    ax.set_ylabel('Number of tweets')
+    ax.set_xlabel('Date')
+    print len(rec_cs), len(ped_cs), len(indeces)
+    s, p = stats.kendalltau(rec_cs, ped_cs)
+    print s, p
+    print ('kendalltau test: %.2f, p-value: %.5f' %(s, p))
+    s, p = stats.spearmanr(rec_cs, ped_cs)
+    print s, p
+    print ('spearmanr test: %.2f, p-value: %.5f' %(s, p))
     plt.show()
+
+    return rec_cs, ped_cs
+
+
+def statis_dbs():
+    '''Stats of proed and prorec tweets'''
+    rec_time = dbt.db_connect_col('fed', 'prorec_tag_refine')
+    ped_time = dbt.db_connect_col('fed', 'proed_tag_refine')
+    data = []
+
+    for i in xrange(2):
+        time = [rec_time, ped_time][i]
+        name = ['Rec', 'Ped'][i]
+        for tweet in time.find(no_cursor_timeout=True):
+            ts = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            data.append([name, tweet['id'], tweet['user']['id'],
+                        tweet['retweet_count'], tweet['retweet_count'],
+                        ts])
+    df = pd.DataFrame(data, columns=['set', 'id', 'user_id', 'retweet_count',
+                                     'retweet_count', 'created_at'])
+    df.to_csv('pro-tweet-stats.csv')
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -188,27 +266,14 @@ if __name__ == '__main__':
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
     # compare_communities('rec-proed-communication-hashtag-refine.graphml')
 
-    # compare_post_time()
+    # rec_cs, ped_cs = compare_post_time()
 
-    prec = tsplit.timeline('fed', 'prorec_tag_refine')
-    ped = tsplit.timeline('fed', 'proed_tag_refine')
-    pickle.dump((prec, ped), open('tweets_dates.pick', 'w'))
 
-    # print len(prec), len(ped)
-    #
-    # fig, ax = plt.subplots()
-    # plu.plot_config()
-    #
-    # df_rec = pd.DataFrame(prec, columns=['Recovery'])
-    # rec_counts = df_rec.groupby([df_rec["Recovery"].dt.year, df_rec["Recovery"].dt.month]).count()
-    # rec_counts.plot(kind="line", marker='s', ax=ax)
-    # ax.legend(loc='best')
-    #
-    # df_ped = pd.DataFrame(ped, columns=['Pro-ED'])
-    # ped_counts = df_ped.groupby([df_ped["Pro-ED"].dt.year, df_ped["Pro-ED"].dt.month]).count()
-    # ped_counts.plot(kind="line", marker='o', ax=ax)
-    # ax.legend(loc='best')
-    # ax.set_ylabel('Number of tweets')
-    # ax.set_xlabel('Year, Month')
-    #
-    # plt.show()
+    # ped_users = iot.get_values_one_field('fed', 'proed_tag_refine', 'user.id')
+    # print len(set(ped_users))
+    # rec_user = iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id')
+    # print len(set(rec_user))
+
+    statis_dbs()
+
+
