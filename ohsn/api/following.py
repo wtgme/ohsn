@@ -167,6 +167,67 @@ def snowball_following(poi_db, net_db, level, check='N'):
             return True
 
 
+def snowball_following_proportion(poi_db, net_db, level, check='N', proportation=0.1):
+    #Processing max 200 users each time., only retrieve 10% followings
+    start_level = level
+    while True:
+        count = poi_db.find_one({'level': start_level,
+                              'protected': False,
+                              'following_scrape_flag': {'$exists': False}})
+        if count is None:
+            return False
+        else:
+            # print 'have user', count
+            for user in poi_db.find({'level': start_level,
+                                     'protected': False,
+                                     'following_scrape_flag':
+                                         {'$exists': False}},
+                                    ['id_str']).limit(200):
+                # print 'a new user'
+                following_limit = user['friends_count'] * proportation
+                next_cursor = -1
+                params = {'user_id': user['id_str'], 'stringify_ids':True}
+                # followee getting
+                while next_cursor != 0:
+                    params['cursor'] = next_cursor
+                    params['count'] = min(following_limit, 5000)
+                    followees = get_followings(params)
+                    if followees:
+                        followee_ids = followees['ids']
+                        list_size = len(followee_ids)
+                        following_limit -= list_size
+                        length = int(math.ceil(list_size/100.0))
+                        # print length
+                        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Process followings', list_size, 'for user', user['id_str']
+                        for index in xrange(length):
+                            index_begin = index*100
+                            index_end = min(list_size, index_begin+100)
+                            profiles = lookup.get_users_info(followee_ids[index_begin:index_end])
+                            if profiles:
+                                print 'user prof:', index_begin, index_end, len(profiles)
+                                for profile in profiles:
+                                    check_flag = profiles_check.check_user(profile, check)
+                                    if check_flag:
+                                        profile['following_prelevel_node'] = user['id_str']
+                                        profile['level'] = start_level+1
+                                        try:
+                                            poi_db.insert(profile)
+                                        except pymongo.errors.DuplicateKeyError:
+                                            pass
+                                        try:
+                                            net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']),
+                                                       'scraped_at': datetime.datetime.now()})
+                                        except pymongo.errors.DuplicateKeyError:
+                                            pass
+                        # prepare for next iterator
+                        next_cursor = followees['next_cursor']
+                    else:
+                        break
+                poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
+                                                    }}, upsert=False)
+            return True
+
+
 # ed_seed = ['tryingyetdying', 'StonedVibes420', 'thinspo_tinspo']
 
 def monitor_friendships(sample_user, sample_net, time_index):
