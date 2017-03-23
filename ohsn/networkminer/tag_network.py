@@ -202,21 +202,29 @@ def community_net(rec_g, ped_g):
     com_ped_g = gc_ped_g.community_multilevel(weights='weight', return_levels=False)
     comclus_ped_g = com_ped_g.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus_ped_g), com_ped_g.modularity
-    name_map, edges = {}, {}
+    name_map, edges, node_weight = {}, {}, {}
 
     for i in xrange(len(comclus_rec_g)):
         comclu_rec_g = comclus_rec_g[i]
         rec_nodes = set([v['name'] for v in comclu_rec_g.vs])
-        n1 = 'rec_'+str(i)
+        max_fre_rec = max(comclu_rec_g.vs['weight'])
+        max_fre_rec_tag = comclu_rec_g.vs.find(weight_eq=max_fre_rec)['name']
+        n1 = 'rec_'+str(i)+'_'+max_fre_rec_tag
         for j in xrange(len(comclus_ped_g)):
             comclu_ped_g = comclus_ped_g[j]
+            max_fre = max(comclu_ped_g.vs['weight'])
             ed_nodes = set([v['name'] for v in comclu_ped_g.vs])
-            n2 = 'ped_'+str(j)
+            max_fre_tag = comclu_ped_g.vs.find(weight_eq=max_fre)['name']
+            n2 = 'ped_'+str(j)+'_'+max_fre_tag
 
             n1id = name_map.get(n1, len(name_map))
             name_map[n1] = n1id
+            node_weight[n1id] = sum(comclu_rec_g.vs['weight'])
+
             n2id = name_map.get(n2, len(name_map))
             name_map[n2] = n2id
+            node_weight[n2id] = sum(comclu_ped_g.vs['weight'])
+
 
             similarity = float(len(rec_nodes.intersection(ed_nodes)))
                          # /len(rec_nodes.union(ed_nodes))
@@ -224,9 +232,14 @@ def community_net(rec_g, ped_g):
                 edges[(n1id, n2id)] = similarity
     g = gt.Graph(len(name_map), directed=False)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    g.vs['weight'] = [node_weight[i] for i in xrange(len(node_weight))]
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
-    g.write_graphml('community_net.graphml')
+    for v in g.vs:
+        tokens = v['name'].split('_')
+        v['set'] = tokens[0]
+        v['tag'] = tokens[2]
+    g.write_graphml('hashtag_inter_net.graphml')
 
     gc = gt.giant_component(g)
     tagets_communities = {}
@@ -516,14 +529,16 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
+    # pall = tag_record('fed', 'pall_tag', 'pall')
     rec = tag_record('fed', 'prorec_tag', 'prorec')
     ped = tag_record('fed', 'proed_tag', 'proed')
     target_comms = community_net(rec, ped)
     print target_comms
     # transform('ed_tag')
     # rec = gt.Graph.Read_GraphML('prorec_tag_undir.graphml')
-    hash_com_rec, com_size_rec = community(rec)
-    hash_com_ped, com_size_ped = community(ped)
+    # hash_com_all, com_size_all = community(pall)
+    # hash_com_rec, com_size_rec = community(rec)
+    # hash_com_ped, com_size_ped = community(ped)
     # user_hashtag_profile('fed', hash_com)
     # label_ed_recovery(hash_com_rec, com_size_rec)
     # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])

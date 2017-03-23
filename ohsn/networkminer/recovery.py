@@ -240,7 +240,7 @@ def statis_dbs():
 
     for i in xrange(2):
         time = [rec_time, ped_time][i]
-        name = ['Rec', 'Ped'][i]
+        name = ['Pro-recovery', 'Pro-ED'][i]
         for tweet in time.find(no_cursor_timeout=True):
             ts = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             data.append([name, tweet['id'], tweet['user']['id'],
@@ -260,8 +260,8 @@ if __name__ == '__main__':
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
 
 
-    # two_community('rec-proed-communication-hashtag-refine.graphml')
-    # two_community('rec-proed-retweet-hashtag-refine.graphml')
+    two_community('rec-proed-retweet-hashtag-non-refine.graphml')
+    two_community('rec-proed-communication-hashtag-non-refine.graphml')
     # test_significant('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
     # compare_communities('rec-proed-communication-hashtag-refine.graphml')
@@ -274,6 +274,6 @@ if __name__ == '__main__':
     # rec_user = iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id')
     # print len(set(rec_user))
 
-    statis_dbs()
+    # statis_dbs()
 
 
