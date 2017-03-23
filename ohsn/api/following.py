@@ -182,7 +182,7 @@ def snowball_following_proportion(poi_db, net_db, level, check='N', proportation
                                      'protected': False,
                                      'following_scrape_flag':
                                          {'$exists': False}},
-                                    ['id_str']).limit(200):
+                                    ['id_str', 'friends_count']).limit(200):
                 # print 'a new user'
                 following_limit = user['friends_count'] * proportation
                 next_cursor = -1
