@@ -244,10 +244,10 @@ def statis_dbs():
         for tweet in time.find(no_cursor_timeout=True):
             ts = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             data.append([name, tweet['id'], tweet['user']['id'],
-                        tweet['retweet_count'], tweet['retweet_count'],
+                        tweet['retweet_count'], tweet['favorite_count'],
                         ts])
     df = pd.DataFrame(data, columns=['set', 'id', 'user_id', 'retweet_count',
-                                     'retweet_count', 'created_at'])
+                                     'favorite_count', 'created_at'])
     df.to_csv('pro-tweet-stats.csv')
 
 
