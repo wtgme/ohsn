@@ -904,6 +904,11 @@ if __name__ == '__main__':
     # pro_tag_user()
 
     # network_pro_hashtags()
-    combine_rec_ped_hashtags()
+    # combine_rec_ped_hashtags()
     # hashtag_users()
     # hashtag_users_label_proed()
+
+
+    # g = gt.load_network('fed', 'snet')
+    # gt.summary(g)
+    # g.write_graphml('core-ed-follow'+'.graphml')
