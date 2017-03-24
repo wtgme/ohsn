@@ -184,12 +184,13 @@ def snowball_following_proportion(poi_db, net_db, level, check='N', proportation
                                          {'$exists': False}},
                                     ['id_str', 'friends_count']).limit(200):
                 # print 'a new user'
-                following_limit = user['friends_count'] * proportation
+                following_limit = int(user['friends_count'] * proportation)
                 next_cursor = -1
                 params = {'user_id': user['id_str'], 'stringify_ids':True}
                 # followee getting
-                while next_cursor != 0:
+                while next_cursor != 0 and following_limit > 0:
                     params['cursor'] = next_cursor
+                    print user['id_str'], ' following limit ', following_limit
                     params['count'] = min(following_limit, 5000)
                     followees = get_followings(params)
                     if followees:

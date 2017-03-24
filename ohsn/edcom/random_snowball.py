@@ -50,7 +50,7 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
 
     '''Snowball sampling round'''
     level = 1
-    while level < 3:
+    while level < 2:
         # Each call of snowball_following and snowball_follower only process up to 200 users
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
         following_flag = following.snowball_following_proportion(newcom, newnet, level, 'N')
