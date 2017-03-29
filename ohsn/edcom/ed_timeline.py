@@ -15,12 +15,12 @@ from ohsn.api import timelines
 from ohsn.util import db_util as dbt
 
 
-def retrieve_timeline():
+def retrieve_timeline(dbname, comname, timename):
     print 'Job starts.......'
     '''Connecting db and user collection'''
-    db = dbt.db_connect_no_auth('fed')
-    sample_user = db['com']
-    sample_time = db['timeline']
+    db = dbt.db_connect_no_auth(dbname)
+    sample_user = db[comname]
+    sample_time = db[timename]
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting db well'
     sample_user.create_index([('timeline_scraped_times', pymongo.ASCENDING),
                               ('level', pymongo.ASCENDING)])
@@ -29,7 +29,7 @@ def retrieve_timeline():
     sample_time.create_index([('id', pymongo.ASCENDING)], unique=True)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
     # stream_timeline(sample_user, sample_time, 1, 2)
-    timelines.stream_timeline(sample_user, sample_time, 1, 3)
+    timelines.stream_timeline(sample_user, sample_time, 1, 100)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
 
 
@@ -72,6 +72,6 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
 
 
 if __name__ == '__main__':
-    # retrieve_timeline()
+    retrieve_timeline('depression', 'com', 'timeline')
 
-    update_timeline('fed2', 'timeline', 'fed3', 'com', 'timeline')
+    # update_timeline('fed2', 'timeline', 'fed3', 'com', 'timeline')

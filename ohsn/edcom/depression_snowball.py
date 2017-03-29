@@ -70,11 +70,10 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'FINISH: Snowball friends of seeds for sample db', level
 
 
-def snowball_friends():
-    db = dbt.db_connect_no_auth('ed')
-    ed_poi = db['com']
-    ed_net = db['net']
-    # stream_users = db['poi']
+def snowball_friends(dbname, com_name, net_name):
+    db = dbt.db_connect_no_auth(dbname)
+    ed_poi = db[com_name]
+    ed_net = db[net_name]
     # echelon = dbt.db_connect_no_auth('echelon')
     # echelon_poi = echelon['poi']
     ed_poi.create_index("id", unique=True)
@@ -90,18 +89,26 @@ def snowball_friends():
                         unique=True)
     # while True:
     #     ed_seed = profiles_check.seed_all_profile(stream_users)
-    #     if len(ed_seed)==0:
+    #     if len(ed_seed) == 0:
     #         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'no seed users, finished!'
     #         break
     #     else:
     #         lookup.trans_seed_to_poi(ed_seed, ed_poi)
     #         continue
+    ed_users = iot.get_values_one_field(dbname, 'stream_user', 'id')
+    list_size = len(ed_users)
+    length = int(math.ceil(list_size/100.0))
+    for index in xrange(length):
+        index_begin = index*100
+        index_end = min(list_size, index_begin+100)
+        lookup.lookup_user_list(ed_users[index_begin:index_end], ed_poi, 1, 'DP')
+
     level = 1
     while True:
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-        following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
+        following_flag = following.snowball_following(ed_poi, ed_net, level, 'DP')
         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
+        follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'DP')
         if following_flag == False and follower_flag == False:
             break
         else:
@@ -109,5 +116,5 @@ def snowball_friends():
             continue
 
 if __name__ == '__main__':
-    # snowball_friends()
-    re_snowball_friends('random', 'com', 'random2', 'com') # random2 fed
+    snowball_friends('depression', 'com', 'net')
+    # re_snowball_friends('depression', 'stream_user', 'depression', 'com') # random2 fed

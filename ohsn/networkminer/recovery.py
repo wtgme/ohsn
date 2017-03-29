@@ -248,11 +248,7 @@ def statis_dbs():
                         ts])
     df = pd.DataFrame(data, columns=['set', 'id', 'user_id', 'retweet_count',
                                      'favorite_count', 'created_at'])
-    df.to_csv('pro-tweet-stats.csv')
-
-
-
-
+    df.to_csv('pro-tweet-stats-refine.csv')
 
 
 if __name__ == '__main__':
@@ -260,8 +256,8 @@ if __name__ == '__main__':
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
 
 
-    two_community('rec-proed-retweet-hashtag-non-refine.graphml')
-    two_community('rec-proed-communication-hashtag-non-refine.graphml')
+    two_community('rec-proed-retweet-hashtag-refine.graphml')
+    two_community('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
     # compare_communities('rec-proed-communication-hashtag-refine.graphml')
@@ -274,6 +270,6 @@ if __name__ == '__main__':
     # rec_user = iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id')
     # print len(set(rec_user))
 
-    # statis_dbs()
+    statis_dbs()
 
 

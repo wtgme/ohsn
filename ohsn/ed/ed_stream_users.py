@@ -7,6 +7,10 @@ Created on 15:04, 29/10/15
 1. Extracting unique twitter users from twitter streaming data
 
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 
 from ohsn.util import db_util as dbt
 import pymongo
@@ -141,7 +145,7 @@ def check_users(stream, user_info):
             for tweet in stream.find({'user_extracted':{'$exists': False}},
                                     ['id_str', 'user']).limit(min(100, count)):
                 user = tweet['user']
-                if profiles_check.check_ed(user) == True:
+                if profiles_check.check_depression(user) == True:
                     try:
                         user_info.insert(user)
                     except pymongo.errors.DuplicateKeyError:
@@ -153,10 +157,10 @@ def check_users(stream, user_info):
 if __name__ == '__main__':
 
     # '''Connect db and stream collections'''
-    db = dbt.db_connect_no_auth('ed')
-    sample = db['stream']
+    db = dbt.db_connect_no_auth('depression')
+    sample = db['search']
     # Extracting users from stream files, add index for id to avoid duplicated users
-    sample_poi = db['stream_users']
+    sample_poi = db['com']
     sample_poi.create_index("id", unique=True)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'extract users from sample streams'
     check_users(sample, sample_poi)

@@ -34,9 +34,10 @@ ed_keywords_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimi
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
 
-depression_list = set(['depression', 'depressed', 'depressing', 'suicide',
-                       'sadness', 'suicidal', 'anxiety', 'death', 'angry',
-                       'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'])
+depression_list = set(['depression', 'depressed', 'depressing',
+                       'suicide', 'sadness', 'suicidal', 'anxiety', 'death', 'angry',
+                       'anxious', 'paranoia', 'nervousness', 'ocd', 'nervous'
+                       ])
 
 name_pat = re.compile('^(?P<first>[A-Z][a-z]+) (?P<second>[A-Z][a-z]+)$')
 age_pat = re.compile('(([1-2][0-9]\s*(year|y/o|yrs|yo))|(^[1-2][0-9]\D)|([;|,•=-]+\s*[1-2][0-9]\s*[;|,•=-]+))', re.IGNORECASE)
@@ -103,11 +104,12 @@ def check_depression_profile(profile):
     tokens = tokenizer_stoprm(profile)
     dio_flag = False
     for token in tokens:
-        if token in depression_list: # for single words
+        # if token in depression_list: # for single words
+        if 'depress' in token:
             dio_flag = True
-    for dio in depression_list:
-        if ' ' in dio and dio in profile: # for phrases
-            dio_flag = True
+    # for dio in depression_list:
+    #     if ' ' in dio and dio in profile: # for phrases
+    #         dio_flag = True
     return dio_flag
 
 

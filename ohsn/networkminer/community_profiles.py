@@ -292,13 +292,46 @@ def compare_opinion():
     plt.show()
 
 
+def ed_hashtag():
+    # Filter ED related tweets
+    dbname = 'fed'
+    # select recovery users based on hashtags
+    # Store in the databases
+    # com = dbt.db_connect_col('fed', 'com')
+    ed_tags = set(iot.read_ed_hashtags())
+    print ed_tags
+
+    times = dbt.db_connect_col(dbname, 'timeline')
+    taged = dbt.db_connect_col(dbname, 'ed_tag')
+    taged.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    taged.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+
+    # for user in com.find():
+    # for tweet in times.find({'user.id': user['id'], '$where': 'this.entities.hashtags.length>0'}):
+    for tweet in times.find({'$where': 'this.entities.hashtags.length>0'}, no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        for hash in hashtags:
+            value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            if value in ed_tags:
+                try:
+                    taged.insert(tweet)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
+
 
 def recovery_hashtag():
     dbname = 'fed'
     # select recovery users based on hashtags
     # Store in the databases
     # com = dbt.db_connect_col('fed', 'com')
-    times = dbt.db_connect_col(dbname, 'timeline')
+    proedtags = set(iot.read_ed_pro_hashtags())
+    print proedtags
+    prorectags = set(iot.read_ed_recovery_hashtags())
+    print prorectags
+
+    times = dbt.db_connect_col(dbname, 'ed_tag')
     tagproed = dbt.db_connect_col(dbname, 'proed_tag')
     tagproed.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
@@ -315,13 +348,15 @@ def recovery_hashtag():
         hashtags = tweet['entities']['hashtags']
         for hash in hashtags:
             value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
-            if 'recover' in value:
+            # if 'recover' in value:
+            if value in prorectags:
                 try:
                     tagprorec.insert(tweet)
                 except pymongo.errors.DuplicateKeyError:
                     pass
-            if 'proed' in value or 'proana' in value \
-                    or 'proanamia' in value or 'promia' in value:
+            # if 'proed' in value or 'proana' in value \
+            #         or 'proanamia' in value or 'promia' in value:
+            if value in proedtags:
                 try:
                     tagproed.insert(tweet)
                 except pymongo.errors.DuplicateKeyError:
@@ -391,7 +426,7 @@ def network_pro_hashtags():
             else:
                 v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('rec-proed-'+btype+'-hashtag-non-refine.graphml')
+        gb.write_graphml('rec-proed-'+btype+'-hashtag-refine.graphml')
 
 
 
@@ -900,7 +935,9 @@ if __name__ == '__main__':
     # compare_weights()
 
     # compare_opinion()
-    # recovery_hashtag()
+    recovery_hashtag()
+
+    # ed_hashtag()
     # pro_tag_user()
 
     # network_pro_hashtags()

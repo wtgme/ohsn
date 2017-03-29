@@ -292,14 +292,17 @@ def beh_pro(dbname, comname, timename):
     store_ratio_behavoir(dbname, comname, results)
 
 if __name__ == '__main__':
-    '''how many tweets with each bahaviour'''
-    beh_stat('fed2', 'com', 'timeline', 'fedbev')
-    # beh_stat('random', 'scom', 'timeline', 'rdbev')
-    # beh_stat('young', 'scom', 'timeline', 'ygbev')
 
-    store_ratio_behavoir('fed2', 'com', 'fedbev')
-    # store_ratio_behavoir('random', 'scom', 'rdbev')
-    # store_ratio_behavoir('young', 'scom', 'ygbev')
+    beh_pro('depression', 'com', 'timeline')
+
+    # '''how many tweets with each bahaviour'''
+    # stat = beh_stat('depression', 'com', 'timeline', 'depbev')
+    # # beh_stat('random', 'scom', 'timeline', 'rdbev')
+    # # beh_stat('young', 'scom', 'timeline', 'ygbev')
+    #
+    # store_ratio_behavoir('depression', 'com', stat)
+    # # store_ratio_behavoir('random', 'scom', 'rdbev')
+    # # store_ratio_behavoir('young', 'scom', 'ygbev')
 
     '''Plot distribution of bahavior ratio'''
     # plot_distribution('edbev', 'rdbev', 'ygbev')

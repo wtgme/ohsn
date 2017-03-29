@@ -57,7 +57,10 @@ def tag_entroy(dbname, comname, timename):
                 key = hashtag['text'].lower()
                 val = tag_map.get(key, 0)
                 tag_map[key] = val + 1
-        ent = entropy(tag_map.values())
+        ent = 0
+        if len(tag_map) > 0:
+            ent = entropy(tag_map.values())
+
         data = user.get('behavior', {})
         data['hashtag_div'] = ent
         com.update_one({'id': user['id']}, {'$set': {'behavior': data}}, upsert=False)
@@ -206,13 +209,13 @@ if __name__ == '__main__':
 
     ###do hashtag network###
     # hashtag_net('fed2', 'com', 'timeline')
-    tag_entroy('fed2', 'com', 'timeline')
+    tag_entroy('depression', 'com', 'timeline')
     # '''Compare diversity of behaviors'''
-    dbnames = ['fed2', 'random', 'young']
+    dbnames = ['fed2', 'random', 'young', 'depression']
 
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:
-        ed = diversity_db(dbnames[0], 'com', behavior)
+        ed = diversity_db(dbnames[4], 'com', behavior)
         # rd = diversity_db(dbnames[1], behavior)
         # yg = diversity_db(dbnames[2], behavior)
         # compore_distribution(behavior, ed, rd, yg)

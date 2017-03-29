@@ -325,6 +325,7 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     network_mining(sample_poi, sample_time, sample_network, level)
 
 if __name__ == '__main__':
+    # process_db('depression', 'com', 'timeline', 'bnet', 10000)
     # process_db('fed2', 'com', 'timeline', 'bnet', 10000)
     # process_db('random', 'scom', 'timeline', 'bnet', 10000)
     # process_db('young', 'scom', 'timeline', 'bnet', 10000)
@@ -332,9 +333,9 @@ if __name__ == '__main__':
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
-    times = dbutil.db_connect_col('fed', 'proed_tag_refine')
-    # times = dbutil.db_connect_col('fed', 'prorec_tag_refine')
-    nets = dbutil.db_connect_col('fed', 'bnet_tag_refine')
+    times = dbutil.db_connect_col('fed', 'proed_tag')
+    # times = dbutil.db_connect_col('fed', 'prorec_tag')
+    nets = dbutil.db_connect_col('fed', 'bnet_tag')
     nets.create_index([("id0", pymongo.ASCENDING),
                                  ("id1", pymongo.ASCENDING),
                                  ("type", pymongo.ASCENDING),

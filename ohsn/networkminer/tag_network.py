@@ -251,7 +251,6 @@ def community_net(rec_g, ped_g):
     return tagets_communities
 
 
-
 def community(g=None):
     '''
     Detect communities in the co-occurrence network of hashtag
@@ -262,8 +261,11 @@ def community(g=None):
     hash_com: {hashtag: community_index}
     com_size: {community_index: community_size}
     '''
-
+    gt.summary(g)
+    vs = g.vs(weight_gt=3, user_gt=3)
+    g = g.subgraph(vs)
     gc = gt.giant_component(g)
+    gt.summary(gc)
     com = gc.community_multilevel(weights='weight', return_levels=False)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
@@ -275,12 +277,13 @@ def community(g=None):
         # if comclu.vcount() > 10:
         tag_weight = {}
         for v in comclu.vs:
-            hash_com[v['name']] = index
+            if v['weight'] > 5:
+                hash_com[v['name']] = index
             tag_weight[v['name']] = v['weight']
             count = com_size.get(index, 0)
             com_size[index] = v['weight'] + count
         sort_list = list(sorted(tag_weight, key=tag_weight.get, reverse=True))
-        for key in sort_list[:min(15, len(sort_list))]:
+        for key in sort_list[:min(len(sort_list), len(sort_list))]:
             print key, tag_weight[key]
         print '-------------Community size: ', com_size[index], '---------------------'
         print
@@ -290,6 +293,34 @@ def community(g=None):
     # print set(hash_com.values())
     print '------------------all size:', sum(com_size.values()), '---------------------'
     return hash_com, com_size
+
+
+def tag_jaccard(dbname, hash_time, gfilename):
+    # Calculate the jaccard index of hashtag
+    g = gt.Graph.Read_GraphML(gfilename+'_tag_undir.graphml')
+    times = dbt.db_connect_col(dbname, hash_time)
+    tag_tweets = {}
+    for tweet in times.find({'$where': 'this.entities.hashtags.length>0'}):
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        for hash in hash_set:
+            ids = tag_tweets.get(hash, set())
+            ids.add(tweet['id'])
+            tag_tweets[hash] = ids
+    pickle.dump(tag_tweets, open(gfilename+'.pick', 'w'))
+
+    g.es['jaccard'] = 0.0
+    for edge in g.es:
+        source_vertex_id = edge.source
+        target_vertex_id = edge.target
+        source_name = g.vs[source_vertex_id]['name']
+        target_name = g.vs[target_vertex_id]['name']
+        source_set, target_set = tag_tweets.get(source_name), tag_tweets.get(target_name)
+        edge['jaccard'] = float(len(source_set.intersection(target_set)))/len(source_set.union(target_set))
+    g.write_graphml(gfilename+'_tag_undir_jarccard.graphml')
+
 
 
 
@@ -519,6 +550,7 @@ def pmi(g, filename):
     g.write_graphml(filename+'_pmi_tag.graphml')
 
 
+
 # def plot_graph(filename):
 #     g = gta.load_graph(filename)
 #     age = g.vertex_properties["weight"]
@@ -530,19 +562,23 @@ def pmi(g, filename):
 
 if __name__ == '__main__':
     # pall = tag_record('fed', 'pall_tag', 'pall')
-    rec = tag_record('fed', 'prorec_tag', 'prorec')
-    ped = tag_record('fed', 'proed_tag', 'proed')
-    target_comms = community_net(rec, ped)
-    print target_comms
-    # transform('ed_tag')
-    # rec = gt.Graph.Read_GraphML('prorec_tag_undir.graphml')
-    # hash_com_all, com_size_all = community(pall)
-    # hash_com_rec, com_size_rec = community(rec)
+    # rec = tag_record('fed', 'prorec_tag', 'prorec')
+    # ped = tag_record('fed', 'proed_tag', 'proed')
+    # # target_comms = community_net(rec, ped)
+    # # print target_comms
+    # # transform('ed_tag')
+    # core = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
+    # # hash_com_all, com_size_all = community(pall)
+    # hash_com_rec, com_size_rec = community(core)
     # hash_com_ped, com_size_ped = community(ped)
-    # user_hashtag_profile('fed', hash_com)
-    # label_ed_recovery(hash_com_rec, com_size_rec)
+    # # user_hashtag_profile('fed', hash_com)
+    # # label_ed_recovery(hash_com_rec, com_size_rec)
     # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
     # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
+
+
+    # tag_jaccard('fed', 'prorec_tag', 'prorec')
+    # tag_jaccard('fed', 'proed_tag', 'proed')
 
     # users = iot.get_values_one_field('fed', 'scom', 'id')
     # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
@@ -567,4 +603,6 @@ if __name__ == '__main__':
     # com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     # print com.modularity
 
+    # depress = tag_record('fed', 'ed_tag', 'alled')
+    hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
 

@@ -26,15 +26,45 @@ def read_fields(split=False):
                     line = line.split('.')[-1]
                 fileds.append(line)
     return np.array(fileds)
+#
+# def read_recovery_ed_keywords():
+#     MYDIR = os.path.dirname(__file__)
+#     fileds = {}
+#     with open(os.path.join(MYDIR, 'reced.txt'), 'r') as fo:
+#         for line in fo.readlines():
+#             tokens = line.strip().split(' ')
+#             fileds[tokens[0]] = int(tokens[1])
+#     return fileds
 
-def read_recovery_ed_keywords():
+
+def read_ed_hashtags():
     MYDIR = os.path.dirname(__file__)
-    fileds = {}
-    with open(os.path.join(MYDIR, 'reced.txt'), 'r') as fo:
+    tag_list = []
+    with open(os.path.join(MYDIR, 'ed_hashtag.txt'), 'r') as fo:
         for line in fo.readlines():
-            tokens = line.strip().split(' ')
-            fileds[tokens[0]] = int(tokens[1])
-    return fileds
+            tokens = line.strip().split()
+            tag_list.append(tokens[0])
+    return tag_list
+
+
+def read_ed_recovery_hashtags():
+    MYDIR = os.path.dirname(__file__)
+    tag_list = []
+    with open(os.path.join(MYDIR, 'ed_recovery.txt'), 'r') as fo:
+        for line in fo.readlines():
+            tokens = line.strip().split()
+            tag_list.append(tokens[0])
+    return tag_list
+
+
+def read_ed_pro_hashtags():
+    MYDIR = os.path.dirname(__file__)
+    tag_list = []
+    with open(os.path.join(MYDIR, 'ed_pro.txt'), 'r') as fo:
+        for line in fo.readlines():
+            tokens = line.strip().split()
+            tag_list.append(tokens[0])
+    return tag_list
 
 
 def get_fields_one_doc(x, fields):

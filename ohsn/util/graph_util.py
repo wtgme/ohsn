@@ -303,7 +303,7 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
     name_list = list(sorted(name_map, key=name_map.get))
     g.vs["name"] = name_list
     g.vs["weight"] = [node_weight[name_map[name]] for name in name_list] ## numbers of occurrences
-    g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list]
+    g.vs['user'] = [len(tag_user[name_map[name]]) for name in name_list] ## numbers of users who use
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values() ## numbers of co-occurrence
     return g
