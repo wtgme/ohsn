@@ -603,6 +603,6 @@ if __name__ == '__main__':
     # com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     # print com.modularity
 
-    # depress = tag_record('fed', 'ed_tag', 'alled')
-    hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
+    depress = tag_record('fed', 'timeline', 'fed')
+    # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
 

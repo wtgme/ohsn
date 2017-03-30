@@ -256,8 +256,8 @@ if __name__ == '__main__':
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
 
 
-    two_community('rec-proed-retweet-hashtag-refine.graphml')
-    two_community('rec-proed-communication-hashtag-refine.graphml')
+    two_community('ed-retweet-hashtag-rmspam.graphml')
+    two_community('ed-communication-hashtag-rmspam.graphml')
     # test_significant('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
     # compare_communities('rec-proed-communication-hashtag-refine.graphml')
@@ -270,6 +270,6 @@ if __name__ == '__main__':
     # rec_user = iot.get_values_one_field('fed', 'prorec_tag_refine', 'user.id')
     # print len(set(rec_user))
 
-    statis_dbs()
+    # statis_dbs()
 
 

@@ -120,4 +120,7 @@ def print_tweets(dbname, timeline):
             pass
 
 if __name__ == '__main__':
-    print_tweets('fed', 'stimeline')
+    # print_tweets('fed', 'stimeline')
+    uids = get_values_one_field('depression', 'com', 'screen_name')
+    for uid in uids:
+        print uid
