@@ -266,6 +266,7 @@ def community(g=None):
     g = g.subgraph(vs)
     gc = gt.giant_component(g)
     gt.summary(gc)
+    g.write_graphml('fed_tag_undir_over3.graphml')
     com = gc.community_multilevel(weights='weight', return_levels=False)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
@@ -564,15 +565,15 @@ if __name__ == '__main__':
     # pall = tag_record('fed', 'pall_tag', 'pall')
     # rec = tag_record('fed', 'prorec_tag', 'prorec')
     # ped = tag_record('fed', 'proed_tag', 'proed')
-    # # target_comms = community_net(rec, ped)
-    # # print target_comms
-    # # transform('ed_tag')
-    # core = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
-    # # hash_com_all, com_size_all = community(pall)
-    # hash_com_rec, com_size_rec = community(core)
+    # target_comms = community_net(rec, ped)
+    # print target_comms
+    # transform('ed_tag')
+    core = gt.Graph.Read_GraphML('fed_tag_undir.graphml')
+    # hash_com_all, com_size_all = community(pall)
+    hash_com_rec, com_size_rec = community(core)
     # hash_com_ped, com_size_ped = community(ped)
-    # # user_hashtag_profile('fed', hash_com)
-    # # label_ed_recovery(hash_com_rec, com_size_rec)
+    # user_hashtag_profile('fed', hash_com)
+    # label_ed_recovery(hash_com_rec, com_size_rec)
     # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
     # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
 
@@ -603,6 +604,6 @@ if __name__ == '__main__':
     # com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     # print com.modularity
 
-    depress = tag_record('fed', 'timeline', 'fed')
+    # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
 
