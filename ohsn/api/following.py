@@ -25,6 +25,7 @@ import time
 import math
 import profiles_check
 import lookup
+import random
 
 app_id_friend, twitter_friend = twutil.twitter_auth()
 following_remain, following_lock = 0, 1
@@ -211,15 +212,19 @@ def snowball_following_proportion(poi_db, net_db, level, check='N', proportation
                                     if check_flag:
                                         profile['following_prelevel_node'] = user['id_str']
                                         profile['level'] = start_level+1
-                                        try:
-                                            poi_db.insert(profile)
-                                        except pymongo.errors.DuplicateKeyError:
-                                            pass
-                                        try:
-                                            net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']),
-                                                       'scraped_at': datetime.datetime.now()})
-                                        except pymongo.errors.DuplicateKeyError:
-                                            pass
+                                        probablity = float(user['friends_count'])/profile['followers_count']
+                                        # probablity = 1.0/profile['followers_count']
+                                        randomv = random.uniform(0, 1)
+                                        if randomv <= probablity:
+                                            try:
+                                                poi_db.insert(profile)
+                                            except pymongo.errors.DuplicateKeyError:
+                                                pass
+                                            try:
+                                                net_db.insert({'user': int(profile['id_str']), 'follower': int(user['id_str']),
+                                                           'scraped_at': datetime.datetime.now()})
+                                            except pymongo.errors.DuplicateKeyError:
+                                                pass
                         # prepare for next iterator
                         next_cursor = followees['next_cursor']
                     else:
