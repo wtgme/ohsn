@@ -37,6 +37,7 @@ from igraph import *
 import collections
 import re
 from pattern.en import sentiment
+import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
 from afinn import Afinn
@@ -430,6 +431,7 @@ def network_pro_hashtags():
 
 
 def remove_spam(btype):
+    # remove nodes that have too much outdegree but few indegree
     g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag.graphml')
     gt.summary(g)
     g.vs['ratio'] = (np.array(g.outdegree())+1)/(np.array(g.indegree())+1)
@@ -441,6 +443,26 @@ def remove_spam(btype):
     gt.summary(g)
     g.write_graphml('ed-'+btype+'-hashtag-rmspam.graphml')
 
+
+def count_existing_user(btype=''):
+    # count how many fed users in network
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag.graphml')
+    gt.summary(g)
+    # users = iot.get_values_one_field('fed', 'com', 'id_str')
+    # pickle.dump(users, open('fed-user-id.pick', 'w'))
+    users = set(pickle.load(open('fed-user-id.pick', 'r')))
+    print len(users)
+    # nodes = g.vs.select(name_in=users)
+    nodes = []
+    count = 0
+    for v in g.vs:
+        if v['name'] in users:
+            count += 1
+            nodes.append(v)
+    print float(count)/len(g.vs)
+    g = g.subgraph(nodes)
+    gt.summary(g)
+    g.write_graphml('ed-'+btype+'-hashtag-fed.graphml')
 
 
 
@@ -952,8 +974,10 @@ if __name__ == '__main__':
     # pro_tag_user()
 
     # network_pro_hashtags()
-    remove_spam('retweet')
-    remove_spam('communication')
+    # remove_spam('retweet')
+    # remove_spam('communication')
+    count_existing_user('retweet')
+    count_existing_user('communication')
     # combine_rec_ped_hashtags()
     # hashtag_users()
     # hashtag_users_label_proed()
