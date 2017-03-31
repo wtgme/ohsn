@@ -418,7 +418,7 @@ def network_pro_hashtags():
     only_rec = rec_tag_users - ped_tag_users
     # all_users = list(rec_tag_users.union(ped_tag_users))
     for btype in ['retweet', 'communication']:
-        gb = gt.load_beh_network('fed', 'bnet_ed_tag', btype)
+        gb = gt.load_beh_network('fed', 'bnet_pro_tag', btype)
         for v in gb.vs:
             if int(v['name']) in only_ped:
                 v['set'] = -1
@@ -427,7 +427,7 @@ def network_pro_hashtags():
             else:
                 v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('ed-'+btype+'-hashtag.graphml')
+        gb.write_graphml('pro-'+btype+'-hashtag.graphml')
 
 
 def remove_spam(btype):
@@ -446,7 +446,7 @@ def remove_spam(btype):
 
 def count_existing_user(btype=''):
     # count how many fed users in network
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag.graphml')
+    g = gt.Graph.Read_GraphML('pro-'+btype+'-hashtag.graphml')
     gt.summary(g)
     # users = iot.get_values_one_field('fed', 'com', 'id_str')
     # pickle.dump(users, open('fed-user-id.pick', 'w'))
@@ -462,7 +462,7 @@ def count_existing_user(btype=''):
     print float(count)/len(g.vs)
     g = g.subgraph(nodes)
     gt.summary(g)
-    g.write_graphml('ed-'+btype+'-hashtag-fed.graphml')
+    g.write_graphml('pro-'+btype+'-hashtag-fed.graphml')
 
 
 
@@ -973,7 +973,7 @@ if __name__ == '__main__':
     # ed_hashtag()
     # pro_tag_user()
 
-    # network_pro_hashtags()
+    network_pro_hashtags()
     # remove_spam('retweet')
     # remove_spam('communication')
     count_existing_user('retweet')

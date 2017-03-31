@@ -110,22 +110,23 @@ def two_community(file_path):
     # get two community from networks
     g = gt.Graph.Read_GraphML(file_path)
     gt.summary(g)
-    g = g.as_undirected(combine_edges=dict(weight="sum"))
+    # g = g.as_undirected(combine_edges=dict(weight="sum"))
     g = gt.giant_component(g)
     gt.summary(g)
-    fast = g.community_fastgreedy(weights='weight')
-    fast_com = fast.as_clustering(n=2)
+    # ml = g.community_multilevel(weights='weight', return_levels=True)
+    # fast = g.community_fastgreedy(weights='weight')
+    # fast_com = fast.as_clustering(n=2)
     # walk = g.community_walktrap(weights='weight')
     # walk_com = walk.as_clustering(n=2)
-    # infor = g.community_infomap(edge_weights='weight', vertex_weights=None, trials=2)
+    infor = g.community_infomap(edge_weights='weight', vertex_weights=None, trials=2)
     # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
     # label_pro = g.community_label_propagation(weights='weight', initial=eigen.membership)
     # betweet = g.community_edge_betweenness(weights='weight')
     # bet_com = betweet.as_clustering(n=2)
-    g.vs['community'] = fast_com.membership
+    g.vs['community'] = infor.membership
     g.write_graphml('com-'+file_path)
 
-    return fast_com.subgraphs()
+    return infor.subgraphs()
 
 
 def compare_communities(file_path):
@@ -258,8 +259,8 @@ if __name__ == '__main__':
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
 
 
-    two_community('ed-retweet-hashtag-rmspam.graphml')
-    two_community('ed-communication-hashtag-rmspam.graphml')
+    # two_community('ed-retweet-hashtag-fed.graphml')
+    # two_community('ed-communication-hashtag-fed.graphml')
     # test_significant('rec-proed-communication-hashtag-refine.graphml')
     # test_significant('rec-proed-retweet-hashtag-refine.graphml')
     # compare_communities('rec-proed-communication-hashtag-refine.graphml')
@@ -273,5 +274,12 @@ if __name__ == '__main__':
     # print len(set(rec_user))
 
     # statis_dbs()
-
+    btype = 'communication'
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed.graphml')
+    g = gt.giant_component(g)
+    import louvain
+    # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
+    part = louvain.find_partition(g, method='Modularity', weight='weight')
+    print len(set(part.membership))
+    print part.quality
 

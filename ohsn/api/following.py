@@ -212,7 +212,7 @@ def snowball_following_proportion(poi_db, net_db, level, check='N', proportation
                                     if check_flag:
                                         profile['following_prelevel_node'] = user['id_str']
                                         profile['level'] = start_level+1
-                                        probablity = float(user['friends_count'])/profile['followers_count']
+                                        probablity = float(user['friends_count']+1)/(profile['followers_count']+1)
                                         # probablity = 1.0/profile['followers_count']
                                         randomv = random.uniform(0, 1)
                                         if randomv <= probablity:
