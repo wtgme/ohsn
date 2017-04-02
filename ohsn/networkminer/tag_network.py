@@ -539,11 +539,37 @@ def friend_community():
             hash_com[v['name']] = index
         index += 1
 
+def insert_cluster_tweets(dbname, timename, cluster):
+    time = dbt.db_connect_col(dbname, timename)
+    time.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    time.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    ed_tweet = dbt.db_connect_col(dbname, 'ed_tag')
+    for uid in cluster:
+        for tweet in ed_tweet.find({'user.id':int(uid)}):
+            try:
+                time.insert(tweet)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+
+
 
 def tags_user_cluster():
     # put tweet of two cluster into two set
     g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
-    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
+    g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-cluster.graphml')
+    cluster0, cluster1 = set(), set()
+    for g in [g_retweet, g_mention]:
+        for v in g.vs:
+            if v['cluster'] == 0:
+                cluster0.add(v['name'])
+            elif v['cluster'] == 1:
+                cluster1.add(v['name'])
+    insert_cluster_tweets('fed', 'cluster0', cluster0)
+    insert_cluster_tweets('fed', 'cluster1', cluster1)
+
+
 
 
 
@@ -627,5 +653,7 @@ if __name__ == '__main__':
 
     # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
+    #
+    # user_cluster_hashtag('ed-retweet.data')
 
-    user_cluster_hashtag('ed-retweet.data')
+    tags_user_cluster()
