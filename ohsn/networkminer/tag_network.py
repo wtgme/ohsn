@@ -540,6 +540,7 @@ def friend_community():
         index += 1
 
 def insert_cluster_tweets(dbname, timename, cluster):
+    # insert tweets of different clusters into two database collections
     time = dbt.db_connect_col(dbname, timename)
     time.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
@@ -559,15 +560,27 @@ def tags_user_cluster():
     # put tweet of two cluster into two set
     g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
     g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-cluster.graphml')
-    cluster0, cluster1 = set(), set()
-    for g in [g_retweet, g_mention]:
+
+    for i in range(2):
+        g = [g_retweet, g_mention][i]
+        cluster0, cluster1 = set(), set()
         for v in g.vs:
             if v['cluster'] == 0:
-                cluster0.add(v['name'])
+                cluster0.add(int(v['name']))
             elif v['cluster'] == 1:
-                cluster1.add(v['name'])
-    insert_cluster_tweets('fed', 'cluster0', cluster0)
-    insert_cluster_tweets('fed', 'cluster1', cluster1)
+                cluster1.add(int(v['name']))
+        g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster0))
+        gt.summary(g)
+        filename = ['ed_retweet', 'ed_communication'][i] + '_cluster0'
+        g.write_graphml(filename+'_tag_undir.graphml')
+
+        g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
+        gt.summary(g)
+        filename = ['ed_retweet', 'ed_communication'][i] + '_cluster1'
+        g.write_graphml(filename+'_tag_undir.graphml')
+
+        # insert_cluster_tweets('fed', 'mention-cluster0', list(cluster0))
+        # insert_cluster_tweets('fed', 'mention-cluster1', cluster1)
 
 
 
