@@ -78,10 +78,9 @@ def color_classify(userlabels, field_names, file_name, dbname):
     fw.close()
 
 
-def feature_output(field_names, file_name, dbname, label, outids=False, userset=[], extend_features={}):
+def feature_output(field_names, file_name, dbname, colname, label=None, outids=False, userset=[], extend_features={}):
     fw = open(file_name+'.data', 'a')
-    db = dbt.db_connect_no_auth(dbname)
-    poi = db['scom']
+    poi = dbt.db_connect_col(dbname, colname)
     index = 0
     maxsize = 10000000000000000
     uids = list()
@@ -100,9 +99,10 @@ def feature_output(field_names, file_name, dbname, label, outids=False, userset=
             uid = int(x['id'])
             uids.append(uid)
             values = io.get_fields_one_doc(x, field_names)
-            if uid in extend_features:
-                values.extend(extend_features[uid])
-            outstr = label + ' '
+            # if uid in extend_features:
+            #     values.extend(extend_features[uid])
+            # outstr = label + ' '
+            outstr = x['id_str'] + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
@@ -156,18 +156,24 @@ if __name__ == '__main__':
 
     # feature_output(fields, 'data/random-younger', 'younger', '-1', False, [])
 
-    '''Generate Pro-ed and pro-recovery data'''
-    import ohsn.edrelated.edrelatedcom as er
-    rec_users, ed_users = er.rec_proed()
-    common = set(ed_users).intersection(rec_users)
-    print len(ed_users), len(rec_users), len(common)
-    # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
-    feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users)
-    feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users)
+    # '''Generate Pro-ed and pro-recovery data'''
+    # import ohsn.edrelated.edrelatedcom as er
+    # rec_users, ed_users = er.rec_proed()
+    # common = set(ed_users).intersection(rec_users)
+    # print len(ed_users), len(rec_users), len(common)
+    # # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
+    # feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users)
+    # feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users)
 
 
     # """Generate Data for GBMI regression"""
     # fields = io.read_fields()
     # feature_output(fields, 'data/gbmi', 'fed', '0', True)
+
+    import ohsn.networkminer.recovery as rec
+    users = rec.network_users('retweet')
+    print len(users)
+    feature_output(fields, 'data/ed-retweet', 'fed', 'com', None, False, users)
+
 
 

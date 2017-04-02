@@ -103,19 +103,26 @@ def split_treatment():
                 prior.insert(tweet)
 
 
+
 def count_recovery_tweets(dbname, comname):
     times = dbt.db_connect_col(dbname, 'timeline')
     com = dbt.db_connect_col(dbname, comname)
+    recovery = set(iot.read_ed_recovery_hashtags())
     for user in com.find({'level': 1}, no_cursor_timeout=True):
         uid = user['id']
         count = 0
-        for tweet in times.find({'user.id': uid}):  # sort: 1 = ascending, -1 = descending
-            if ('retweeted_status' not in tweet) and ('quoted_status' not in tweet):
-                text = tweet['text'].encode('utf8')
-                text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-                text = text.strip().lower()
-                if 'treatment' in text or 'therap' in text \
-                       or 'doctor' in text or 'recover' in text:
+        for tweet in times.find({'user.id': uid, '$where': 'this.entities.hashtags.length>0'}, no_cursor_timeout=True):  # sort: 1 = ascending, -1 = descending
+            # if ('retweeted_status' not in tweet) and ('quoted_status' not in tweet):
+            #     text = tweet['text'].encode('utf8')
+            #     text = re.sub(r"(?:(RT\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+            #     text = text.strip().lower()
+            #     if 'treatment' in text or 'therap' in text \
+            #            or 'doctor' in text or 'recover' in text:
+            #         count += 1
+            hashtags = tweet['entities']['hashtags']
+            for hash in hashtags:
+                value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+                if value in recovery:
                     count += 1
         com.update({'id': uid}, {'$set': {'recovery_tweets': count}}, upsert=False)
 
@@ -249,4 +256,4 @@ if __name__ == '__main__':
     # split_control()
     # out_data()
 
-    count_recovery_tweets('fed', 'com')
+    count_recovery_tweets('fed2', 'com')

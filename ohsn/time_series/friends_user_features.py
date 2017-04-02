@@ -29,7 +29,7 @@ print 'Centrality Calculate .........'
 # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
 # network1 = gt.load_network('fed', 'net')
 # pickle.dump(network1, open('net.pick', 'w'))
-network1 = pickle.load(open('net.pick','r'))
+network1 = pickle.load(open('net.pick', 'r'))
 
 '''Centralities Calculation'''
 eigen = network1.eigenvector_centrality()

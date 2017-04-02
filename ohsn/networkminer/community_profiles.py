@@ -413,12 +413,15 @@ def network_pro_hashtags():
     # ped_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'ped_tageted': True}))
     rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
     ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+    fedusers = iot.get_values_one_field('fed', 'com', 'id')
+    print len(fedusers)
 
     only_ped = ped_tag_users - rec_tag_users
     only_rec = rec_tag_users - ped_tag_users
     # all_users = list(rec_tag_users.union(ped_tag_users))
     for btype in ['retweet', 'communication']:
-        gb = gt.load_beh_network('fed', 'bnet_pro_tag', btype)
+        # gb = gt.load_beh_network('fed', 'bnet_ed_tag', btype)
+        gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet_ed_tag', btype)
         for v in gb.vs:
             if int(v['name']) in only_ped:
                 v['set'] = -1
@@ -427,7 +430,7 @@ def network_pro_hashtags():
             else:
                 v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('pro-'+btype+'-hashtag.graphml')
+        gb.write_graphml('ed-'+btype+'-hashtag-only-fed.graphml')
 
 
 def remove_spam(btype):
@@ -976,8 +979,8 @@ if __name__ == '__main__':
     network_pro_hashtags()
     # remove_spam('retweet')
     # remove_spam('communication')
-    count_existing_user('retweet')
-    count_existing_user('communication')
+    # count_existing_user('retweet')
+    # count_existing_user('communication')
     # combine_rec_ped_hashtags()
     # hashtag_users()
     # hashtag_users_label_proed()

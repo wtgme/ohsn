@@ -419,37 +419,49 @@ def remove_nan():
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
 
 
-def user_cluster_hashtag():
+def user_cluster_hashtag(filepath):
     '''
     Cluster users based on the profiles of hashtag preference
     :return:
     '''
     from sklearn.cluster import KMeans
-    from sklearn.metrics import silhouette_score
-    user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
-    X = np.array(user_hash_profile.values())
+    from sklearn.metrics import silhouette_score, calinski_harabaz_score
+    from sklearn.datasets import load_svmlight_file
+    from sklearn import preprocessing
+    # from sklearn.datasets import load_iris
+    # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
+    # X = np.array(user_hash_profile.values())
+    X, y = load_svmlight_file(filepath)
+    X = X.toarray()
+    scaler = preprocessing.StandardScaler().fit(X)
+    X = scaler.transform(X)
+    # X = load_iris().data
+    # y = load_iris().target
     print X.shape
 
-    '''Select the best K for K-means'''
+    # '''Select the best K for K-means'''
     # range_n_clusters = range(2, 21)
     # values = []
     # for n_clusters in range_n_clusters:
-    #     clusterer = KMeans(n_clusters=n_clusters, random_state=10)
+    #     clusterer = KMeans(n_clusters=n_clusters)
     #     cluster_labels = clusterer.fit_predict(X)
-    #     silhouette_avg = silhouette_score(X, cluster_labels)
-    #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+    #     silhouette_avg = calinski_harabaz_score(X, cluster_labels)
+    #     print("For n_clusters =", n_clusters, "The average calinski_harabaz_score is :", silhouette_avg)
     #     values.append(silhouette_avg)
     # print values
     # print range_n_clusters
 
-    clusterer = KMeans(n_clusters=2, random_state=10)
+    clusterer = KMeans(n_clusters=2)
     cluster_labels = clusterer.fit_predict(X)
-    dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
 
-    print 'Follow network'
-    net = gt.load_network('fed', 'snet')
-    gt.net_stat(net)
-    cluster_assort(dictionary, net)
+    return cluster_labels
+
+    # dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
+
+    # print 'Follow network'
+    # net = gt.load_network('fed', 'snet')
+    # gt.net_stat(net)
+    # cluster_assort(dictionary, net)
     # print 'Retweet network'
     # net = gt.load_beh_network('fed', 'sbnet', 'retweet')
     # gt.net_stat(net)
@@ -528,6 +540,15 @@ def friend_community():
         index += 1
 
 
+def tags_user_cluster():
+    # put tweet of two cluster into two set
+    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
+    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
+
+
+
+
+
 def pmi(g, filename):
     '''
     Calculate the PMI weight for edges
@@ -562,20 +583,20 @@ def pmi(g, filename):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
-    # pall = tag_record('fed', 'pall_tag', 'pall')
-    # rec = tag_record('fed', 'prorec_tag', 'prorec')
-    # ped = tag_record('fed', 'proed_tag', 'proed')
-    # target_comms = community_net(rec, ped)
-    # print target_comms
-    # transform('ed_tag')
-    core = gt.Graph.Read_GraphML('fed_tag_undir.graphml')
-    # hash_com_all, com_size_all = community(pall)
-    hash_com_rec, com_size_rec = community(core)
-    # hash_com_ped, com_size_ped = community(ped)
-    # user_hashtag_profile('fed', hash_com)
-    # label_ed_recovery(hash_com_rec, com_size_rec)
-    # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
-    # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
+    # # pall = tag_record('fed', 'pall_tag', 'pall')
+    # # rec = tag_record('fed', 'prorec_tag', 'prorec')
+    # # ped = tag_record('fed', 'proed_tag', 'proed')
+    # # target_comms = community_net(rec, ped)
+    # # print target_comms
+    # # transform('ed_tag')
+    # core = gt.Graph.Read_GraphML('fed_tag_undir.graphml')
+    # # hash_com_all, com_size_all = community(pall)
+    # hash_com_rec, com_size_rec = community(core)
+    # # hash_com_ped, com_size_ped = community(ped)
+    # # user_hashtag_profile('fed', hash_com)
+    # # label_ed_recovery(hash_com_rec, com_size_rec)
+    # # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
+    # # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
 
 
     # tag_jaccard('fed', 'prorec_tag', 'prorec')
@@ -607,3 +628,4 @@ if __name__ == '__main__':
     # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
 
+    user_cluster_hashtag('ed-retweet.data')

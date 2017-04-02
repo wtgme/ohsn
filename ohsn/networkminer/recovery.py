@@ -254,6 +254,34 @@ def statis_dbs():
     df.to_csv('pro-tweet-stats-refine.csv')
 
 
+def network_users(btype = 'communication'):
+    # get user list in a network
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed.graphml')
+    g = gt.giant_component(g)
+    return g.vs['name']
+
+
+def cluseter_nodes(btype = 'communication'):
+    # cluster users in networks
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag.graphml')
+    # g = gt.giant_component(g)
+    import tag_network as tn
+    cluters = tn.user_cluster_hashtag('ed-'+btype+'.data')
+
+    ids = []
+    with open('ed-'+btype+'.data', 'r') as fo:
+        for line in fo.readlines():
+            ids.append(line.split(' ')[0])
+
+    g.vs['cluster'] = -1
+    for i in xrange(len(cluters)):
+        id = ids[i]
+        v = g.vs.find(name=id)
+        v['cluster'] = cluters[i]
+    g.write_graphml('ed-'+btype+'-hashtag-cluster.graphml')
+
+
+
 if __name__ == '__main__':
     # cluster('rec-proed-communication-hashtag-refine.graphml')
     # cluster('rec-proed-retweet-hashtag-refine.graphml')
@@ -274,12 +302,28 @@ if __name__ == '__main__':
     # print len(set(rec_user))
 
     # statis_dbs()
-    btype = 'communication'
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed.graphml')
-    g = gt.giant_component(g)
-    import louvain
-    # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
-    part = louvain.find_partition(g, method='Modularity', weight='weight')
-    print len(set(part.membership))
-    print part.quality
+
+    cluseter_nodes('communication')
+    cluseter_nodes('retweet')
+
+    # btype = 'communication'
+    # g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed-cluster.graphml')
+    # gt.summary(g)
+    # import louvain
+    # # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
+    # part = louvain.find_partition(g, method='Surprise', weight='weight', resolution_parameter=20)
+    # print len(set(part.membership))
+    # print part.modularity
+
+    # infor = g.community_infomap(edge_weights='weight', trials=10)
+    # print len(set(infor.membership))
+    # print infor.modularity
+    #
+    # g = g.as_undirected(combine_edges=dict(weight="sum"))
+    # ml = g.community_multilevel(weights='weight')
+    # print len(set(ml.membership))
+    # print ml.modularity
+
+
+
 
