@@ -79,7 +79,7 @@ def color_classify(userlabels, field_names, file_name, dbname):
 
 
 def feature_output(field_names, file_name, dbname, colname, label=None, outids=False, userset=[], extend_features={}):
-    fw = open(file_name+'.data', 'a')
+    fw = open(file_name+'.data', 'w')
     poi = dbt.db_connect_col(dbname, colname)
     index = 0
     maxsize = 10000000000000000
@@ -171,9 +171,9 @@ if __name__ == '__main__':
     # feature_output(fields, 'data/gbmi', 'fed', '0', True)
 
     import ohsn.networkminer.recovery as rec
-    users = rec.network_users('retweet')
+    users = rec.network_users('communication')
     print len(users)
-    feature_output(fields, 'data/ed-retweet', 'fed', 'com', None, False, users)
+    feature_output(fields, 'data/ed-communication', 'fed', 'com', None, False, users)
 
 
 

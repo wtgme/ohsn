@@ -27,7 +27,7 @@ import pickle
 import ohsn.util.plot_util as plu
 from scipy import stats
 from datetime import datetime
-
+import tag_network as tn
 
 
 def cluster(file_path):
@@ -256,16 +256,16 @@ def statis_dbs():
 
 def network_users(btype = 'communication'):
     # get user list in a network
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed.graphml')
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-only-fed.graphml')
     g = gt.giant_component(g)
     return g.vs['name']
 
 
 def cluseter_nodes(btype = 'communication'):
     # cluster users in networks
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag.graphml')
-    # g = gt.giant_component(g)
-    import tag_network as tn
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-only-fed.graphml')
+    g = gt.giant_component(g)
+
     cluters = tn.user_cluster_hashtag('ed-'+btype+'.data')
 
     ids = []
@@ -278,7 +278,69 @@ def cluseter_nodes(btype = 'communication'):
         id = ids[i]
         v = g.vs.find(name=id)
         v['cluster'] = cluters[i]
-    g.write_graphml('ed-'+btype+'-hashtag-cluster.graphml')
+    g.write_graphml('ed-'+btype+'-hashtag-only-fed-cluster.graphml')
+
+
+def count_pro_ratio(btype = 'communication'):
+    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed-cluster.graphml')
+    time = dbt.db_connect_col('fed', 'ed_tag')
+    pro_ed_tag = set(iot.read_ed_pro_hashtags())
+    pro_rec_tag = set(iot.read_ed_recovery_hashtags())
+    for i in range(2):
+        clusterset = g.vs.select(cluster=i)
+        cluseter_size = len(clusterset)
+        print cluseter_size
+        pro_ed_count, pro_rec_count = 0.0, 0.0
+        for v in clusterset:
+            uid = int(v['name'])
+            tags = set()
+            for tweet in time.find({'user.id': uid}, no_cursor_timeout=True):
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    hashtags = tweet['entities']['hashtags']
+                    for hash in hashtags:
+                        value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+                        tags.add(value)
+            if len(tags.intersection(pro_ed_tag)) > 0:
+                pro_ed_count += 1
+            if len(tags.intersection(pro_rec_tag)) > 0:
+                pro_rec_count += 1
+        print pro_ed_count, pro_rec_count, cluseter_size, pro_ed_count/cluseter_size, pro_rec_count/cluseter_size
+
+
+
+def test_clustering_stable(btype = 'communication'):
+    # test the stable of clustering users
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score, calinski_harabaz_score
+    from sklearn.datasets import load_svmlight_file
+    from sklearn import preprocessing
+    seperations = []
+    modularity = []
+    X, y = load_svmlight_file('ed-'+btype+'.data')
+    X = X.toarray()
+    scaler = preprocessing.StandardScaler().fit(X)
+    X = scaler.transform(X)
+    # X = load_iris().data
+    # y = load_iris().target
+    print X.shape
+    clusterer = KMeans(n_clusters=2)
+
+    for i in xrange(10):
+        cluster_labels = clusterer.fit_predict(X)
+        silhouette_avg = silhouette_score(X, cluster_labels)
+        seperations.append(cluster_labels)
+        modularity.append(silhouette_avg)
+    aRI = []
+    for i in xrange(10):
+        for j in xrange(i+1, 10):
+            aRI.append(metrics.adjusted_rand_score(seperations[i], seperations[j]))
+    print len(modularity), len(aRI)
+    print '%.3f, %.3f, %.3f' %(min(modularity), max(modularity), np.mean(modularity))
+    print '%.3f, %.3f, %.3f' %(min(aRI), max(aRI), np.mean(aRI))
 
 
 
@@ -305,6 +367,12 @@ if __name__ == '__main__':
 
     cluseter_nodes('communication')
     cluseter_nodes('retweet')
+
+    # test_clustering_stable('communication')
+    # test_clustering_stable('retweet')
+
+    # count_pro_ratio('communication')
+    # count_pro_ratio('retweet')
 
     # btype = 'communication'
     # g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed-cluster.graphml')

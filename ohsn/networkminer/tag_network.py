@@ -554,12 +554,39 @@ def insert_cluster_tweets(dbname, timename, cluster):
             except pymongo.errors.DuplicateKeyError:
                 pass
 
+def tags_two_user_moduls():
+    #load network from gephi output
+    g = gt.Graph.Read_GraphML('communication-3-moduls.graphml')
+    cluster0, cluster1, cluster2 = set(), set(), set()
+    for v in g.vs:
+        if v['Modularity Class'] == 0:
+            cluster0.add(int(v['name']))
+        elif v['Modularity Class'] == 1:
+            cluster1.add(int(v['name']))
+        elif v['Modularity Class'] == 2:
+            cluster2.add(int(v['name']))
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster0))
+    gt.summary(g)
+    filename = 'communication_fed_cluster0'
+    g.write_graphml(filename+'_tag_undir.graphml')
+
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
+    gt.summary(g)
+    filename = 'communication__fed_cluster1'
+    g.write_graphml(filename+'_tag_undir.graphml')
+
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster2))
+    gt.summary(g)
+    filename = 'communication_fed_cluster2'
+    g.write_graphml(filename+'_tag_undir.graphml')
 
 
 def tags_user_cluster():
     # put tweet of two cluster into two set
-    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-cluster.graphml')
-    g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-cluster.graphml')
+    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-only-fed-cluster.graphml')
+    g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-only-fed-cluster.graphml')
+    gt.summary(g_retweet)
+    gt.summary(g_mention)
 
     for i in range(2):
         g = [g_retweet, g_mention][i]
@@ -571,19 +598,57 @@ def tags_user_cluster():
                 cluster1.add(int(v['name']))
         g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster0))
         gt.summary(g)
-        filename = ['ed_retweet', 'ed_communication'][i] + '_cluster0'
+        filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster0'
         g.write_graphml(filename+'_tag_undir.graphml')
 
         g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
         gt.summary(g)
-        filename = ['ed_retweet', 'ed_communication'][i] + '_cluster1'
+        filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
         g.write_graphml(filename+'_tag_undir.graphml')
 
         # insert_cluster_tweets('fed', 'mention-cluster0', list(cluster0))
         # insert_cluster_tweets('fed', 'mention-cluster1', cluster1)
 
 
+def tfidf_tag_cluster(btype= 'retweet'):
+    # Calculate the TFIDF of tags in two clusters
+    cluster0 = gt.Graph.Read_GraphML('ed_'+btype+'_fed_cluster0_tag_undir.graphml')
+    cluster1 = gt.Graph.Read_GraphML('ed_'+btype+'_fed_cluster1_tag_undir.graphml')
 
+    gt.summary(cluster0)
+    vs = cluster0.vs(weight_gt=3, user_gt=3)
+    cluster0 = cluster0.subgraph(vs)
+    cluster0 = gt.giant_component(cluster0)
+    gt.summary(cluster0)
+
+    gt.summary(cluster1)
+    vs = cluster1.vs(weight_gt=3, user_gt=3)
+    cluster1 = cluster1.subgraph(vs)
+    cluster1 = gt.giant_component(cluster1)
+    gt.summary(cluster1)
+
+    for v in cluster0.vs:
+        exist = True
+        count_ov = 0.0
+        try:
+            ov = cluster1.vs.find(name=v['name'])
+        except ValueError:
+            exist = False
+        if exist:
+            count_ov = ov['weight']
+        v['tfidf'] = float(v['weight'])/(v['weight']+count_ov)
+    for v in cluster1.vs:
+        exist = True
+        count_ov = 0.0
+        try:
+            ov = cluster0.vs.find(name=v['name'])
+        except ValueError:
+            exist = False
+        if exist:
+            count_ov = ov['weight']
+        v['tfidf'] = float(v['weight'])/(v['weight']+count_ov)
+    cluster0.write_graphml('ed_'+btype+'_fed_cluster0_tfidf_tag_undir.graphml')
+    cluster1.write_graphml('ed_'+btype+'_fed_cluster1_tfidf_tag_undir.graphml')
 
 
 
@@ -669,4 +734,7 @@ if __name__ == '__main__':
     #
     # user_cluster_hashtag('ed-retweet.data')
 
-    tags_user_cluster()
+    # tags_user_cluster()
+    tags_two_user_moduls()
+    # tfidf_tag_cluster('retweet')
+    # tfidf_tag_cluster('communication')
