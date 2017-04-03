@@ -976,7 +976,7 @@ if __name__ == '__main__':
     # ed_hashtag()
     # pro_tag_user()
 
-    network_pro_hashtags()
+    # network_pro_hashtags()
     # remove_spam('retweet')
     # remove_spam('communication')
     # count_existing_user('retweet')
@@ -989,3 +989,9 @@ if __name__ == '__main__':
     # g = gt.load_network('fed', 'snet')
     # gt.summary(g)
     # g.write_graphml('core-ed-follow'+'.graphml')
+
+    fedusers = iot.get_values_one_field('fed', 'com', 'id')
+    gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet', 'communication')
+    # gb = gt.load_beh_network('fed', 'bnet', 'communication')
+    gt.summary(gb)
+    gb.write_graphml('fed-communication.graphml')
