@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import ohsn.util.io_util as iot
 
+
 def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
 
@@ -38,8 +39,7 @@ def read_user_time():
             else:
                 death = 0
             values = iot.get_fields_one_doc(user, fields)
-            data.append([user['id_str'], created_at, last_post, scraped_at, 'ED', death].extend(values))
-
+            data.append([user['id_str'], created_at, last_post, scraped_at, 'ED', death]+values)
     com = dbt.db_connect_col('random', 'scom')
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         if 'status' in user:
@@ -51,7 +51,7 @@ def read_user_time():
             else:
                 death = 0
             values = iot.get_fields_one_doc(user, fields)
-            data.append([user['id_str'], created_at, last_post, scraped_at, 'RD', death].extend(values))
+            data.append([user['id_str'], created_at, last_post, scraped_at, 'RD', death]+values)
 
     com = dbt.db_connect_col('younger', 'scom')
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
@@ -64,10 +64,12 @@ def read_user_time():
             else:
                 death = 0
             values = iot.get_fields_one_doc(user, fields)
-            data.append([user['id_str'], created_at, last_post, scraped_at, 'YG', death].extend(values))
+            data.append([user['id_str'], created_at, last_post, scraped_at, 'YG', death]+values)
 
-    df = pd.DataFrame(data, columns=['uid', 'created_at', 'last_post', 'scraped_at', 'group', 'death'].extend(trimed_fields))
+    df = pd.DataFrame(data, columns=['uid', 'created_at', 'last_post', 'scraped_at', 'group', 'death']+trimed_fields)
     df.to_csv('user-durations.csv')
+
+
 
 if __name__ == '__main__':
 
