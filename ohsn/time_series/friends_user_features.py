@@ -30,18 +30,23 @@ print 'Centrality Calculate .........'
 # network1 = gt.load_network('fed', 'net')
 # pickle.dump(network1, open('net.pick', 'w'))
 network1 = pickle.load(open('net.pick', 'r'))
+gt.summary(network1)
 
 '''Centralities Calculation'''
 eigen = network1.eigenvector_centrality()
+pageranks = network1.pagerank()
 # closeness = network.closeness()
 # betweenness = network.betweenness()
 # print len(eigen), len(closeness), len(betweenness)
 
 nodes = [int(v['name']) for v in network1.vs]
-print len(nodes), len(eigen)
-print type(nodes), type(eigen)
+# print len(nodes), len(eigen)
+# print type(nodes), type(eigen)
+
 eigen_map = dict(zip(nodes, eigen))
-print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
+pagerank_map = dict(zip(nodes, pageranks))
+# print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
+
 # closeness_map = dict(zip(nodes, closeness))
 # betweenness_map = dict(zip(nodes, betweenness))
 print 'Centrality Calculate .........'
@@ -273,7 +278,7 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank']
     attr_names = ['uid', 'attr']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
@@ -321,6 +326,7 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
         # set profile, active days and eigenvector centrality
         row.extend(active_days(u1))
         row.extend([eigen_map.get(u1['id'])])
+        row.extend([pagerank_map.get(u1['id'])])
         row.extend([u1['recovery_tweets'], u1['timeline_count']])
 
         exist = True
@@ -344,6 +350,7 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
                         fatt = iot.get_fields_one_doc(fu, fields)
                         fatt.extend(active_days(fu))
                         fatt.extend([eigen_map.get(fu['id'])])
+                        fatt.extend([pagerank_map.get(fu['id'])])
                         fatt.extend([fu['timeline_count']])
                         fatts.append(fatt)
 
@@ -517,4 +524,4 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
-    emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
+    # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
