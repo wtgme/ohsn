@@ -15,7 +15,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import ohsn.util.io_util as iot
-
+from lifelines.utils import datetimes_to_durations
 
 def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
@@ -66,7 +66,7 @@ def read_user_time():
             values = iot.get_fields_one_doc(user, fields)
             data.append([user['id_str'], created_at, last_post, scraped_at, 'YG', death]+values)
 
-    df = pd.DataFrame(data, columns=['uid', 'created_at', 'last_post', 'scraped_at', 'group', 'death']+trimed_fields)
+    df = pd.DataFrame(data, columns=['uid', 'created_at', 'last_post', 'scraped_at', 'group', 'event']+trimed_fields)
     df.to_csv('user-durations.csv')
 
 
@@ -75,3 +75,5 @@ if __name__ == '__main__':
 
     read_user_time()
     # print diff_month(datetime(2010, 10,1), datetime(2010,9,1))
+    from lifelines.utils import k_fold_cross_validation
+
