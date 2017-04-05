@@ -21,6 +21,10 @@ def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
 
 
+def diff_day(d1, d2):
+    delta = d2 - d1
+    return delta.days
+
 def read_user_time():
     com = dbt.db_connect_col('fed', 'scom')
     fields = iot.read_fields()
@@ -34,7 +38,9 @@ def read_user_time():
             created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             scraped_at = user['scrape_timeline_at']
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-            if diff_month(scraped_at, last_post) > 2:
+            life_time = diff_day(last_post, created_at)
+            average_time = float(life_time)/min(1, user['statuses_count'])
+            if (diff_day(scraped_at, last_post)-average_time) > 60:
                 death = 1
             else:
                 death = 0
@@ -46,7 +52,9 @@ def read_user_time():
             created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             scraped_at = user['scrape_timeline_at']
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-            if diff_month(scraped_at, last_post) > 2:
+            life_time = diff_day(last_post, created_at)
+            average_time = float(life_time)/min(1, user['statuses_count'])
+            if (diff_day(scraped_at, last_post)-average_time) > 60:
                 death = 1
             else:
                 death = 0
@@ -59,7 +67,9 @@ def read_user_time():
             created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             scraped_at = user['scrape_timeline_at']
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-            if diff_month(scraped_at, last_post) > 2:
+            life_time = diff_day(last_post, created_at)
+            average_time = float(life_time)/min(1, user['statuses_count'])
+            if (diff_day(scraped_at, last_post)-average_time) > 60:
                 death = 1
             else:
                 death = 0
@@ -75,5 +85,5 @@ if __name__ == '__main__':
 
     read_user_time()
     # print diff_month(datetime(2010, 10,1), datetime(2010,9,1))
-    from lifelines.utils import k_fold_cross_validation
+    # from lifelines.utils import k_fold_cross_validation
 
