@@ -148,9 +148,9 @@ if __name__ == '__main__':
     # test = 'fadfji aji  jaojf asfdj. ajfoia, fjaial aja.'
     # print test.split()
 
-    timelines = dbutil.db_connect_col('random', 'timeline')
+    timelines = dbutil.db_connect_col('fed', 'timeline')
     textmass = ''
-    for tweet in timelines.find({'user.id': 970287355}):
+    for tweet in timelines.find({'user.id': 1523951395}):
         if 'retweeted_status' in tweet:
             continue
         elif 'quoted_status' in tweet:
