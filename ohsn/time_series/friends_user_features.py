@@ -513,6 +513,12 @@ def states_change(dbname1, dbname2, comname1, comname2):
     print index
 
 
+def users_with_collected_friends(dbname, comname, netname):
+    users = iot.get_values_one_field(dbname, comname, 'id')
+    net = gt.load_network_subset(dbname, netname, {
+        'user': {'$in': users}, 'follower': {'in': users}
+    })
+    net.write_graphml(dbname+'-net.graphml')
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
@@ -523,5 +529,8 @@ if __name__ == '__main__':
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
-    emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
+    # emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
+
+    users_with_collected_friends('random', 'scom', 'net')
+    users_with_collected_friends('younger', 'scom', 'net')
