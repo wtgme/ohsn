@@ -21,7 +21,7 @@ def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
 
 
-def diff_day(d1, d2):
+def diff_day(d2, d1):
     delta = d2 - d1
     return delta.days
 
