@@ -160,8 +160,8 @@ if __name__ == '__main__':
     # for user in cols.find({'level': {'$lte': 1}}, ['id', 'screen_name']):
     #     print user['screen_name']
 
-    select_sub_poi('random', 'com', 'scom', {'timeline_count': {'$exists': True}})
-    select_sub_poi('young', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    # select_sub_poi('random', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    select_sub_poi('younger', 'com', 'scom', {'timeline_count': {'$exists': True}})
 
     # select_sub('fed', 'com', 'scom', 'timeline', 'stimeline')
 
