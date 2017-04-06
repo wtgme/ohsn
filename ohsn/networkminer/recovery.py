@@ -366,7 +366,7 @@ if __name__ == '__main__':
     # statis_dbs()
 
     cluseter_nodes('communication')
-    cluseter_nodes('retweet')
+    # cluseter_nodes('retweet')
 
     # test_clustering_stable('communication')
     # test_clustering_stable('retweet')
@@ -375,11 +375,24 @@ if __name__ == '__main__':
     # count_pro_ratio('retweet')
 
     # btype = 'communication'
-    # g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-fed-cluster.graphml')
+    # g = gt.Graph.Read_GraphML('communication-3-moduls.graphml')
     # gt.summary(g)
     # import louvain
-    # # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
-    # part = louvain.find_partition(g, method='Surprise', weight='weight', resolution_parameter=20)
+    # # part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=10)
+    # for r in np.linspace(0, 1, 100):
+    #     part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=r)
+    #     print r, louvain.quality(g, part, method='Surprise'), len(set(part.membership)), part.modularity
+    # res_parts = louvain.bisect(g, method='CPM', resolution_range=[0, 1], weight='weight')
+    # import pandas as pd
+    # import matplotlib.pyplot as plt
+    # res_df = pd.DataFrame({
+    #          'resolution': res_parts.keys(),
+    #          'bisect_value': [louvain.quality(g, bisect.partition, method='Surprise') for bisect in res_parts.values()]});
+    # plt.step(res_df['resolution'], res_df['bisect_value']);
+    # plt.xscale('log');
+    # plt.yscale('log')
+    # plt.show()
+
     # print len(set(part.membership))
     # print part.modularity
 
@@ -394,4 +407,14 @@ if __name__ == '__main__':
 
 
 
-
+    # import louvain
+    # G = gt.Graph.Erdos_Renyi(100, 0.1);
+    # res_parts = louvain.bisect(G, method='CPM', resolution_range=[0,1]);
+    # import pandas as pd
+    # import matplotlib.pyplot as plt
+    # res_df = pd.DataFrame({
+    #          'resolution': res_parts.keys(),
+    #          'bisect_value': [bisect.bisect_value for bisect in res_parts.values()]});
+    # plt.step(res_df['resolution'], res_df['bisect_value']);
+    # plt.xscale('log');
+    # plt.show()

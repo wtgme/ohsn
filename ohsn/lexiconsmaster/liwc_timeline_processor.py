@@ -70,11 +70,11 @@ def process(poi, timelines, fieldname, level):
 
     while True:
         # How many users whose timelines have not been processed by LIWC
-        count = poi.count({"timeline_count": {'$gt': 0}, target: {'$exists': False}, 'level': {'$lte': level}})
-        if count == 0:
+        finded = poi.find_one({"timeline_count": {'$gt': 0}, target: {'$exists': False}, 'level': {'$lte': level}})
+        if finded is None:
             break
-        else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
+        # else:
+        #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
         for user in poi.find({"timeline_count": {'$gt': 0}, target: {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
@@ -110,18 +110,18 @@ def process_db(dbname, colname, timename, fieldname):
     '''Connecting db and collections'''
     db = dbutil.db_connect_no_auth(dbname)
     sample_poi = db[colname]
-    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well'
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting POI dbs well', dbname, colname
 
     sample_time = db[timename]
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connecting timeline dbs well'
 
     '''Counting the number of users whose timelines have been processed by LIWC'''
-    print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({fieldname+'.mined': {'$exists': False}}))
+    # print 'LIWC mined user in Sample Col: ' + str(sample_poi.count({fieldname+'.mined': {'$exists': False}}))
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
     # process_db('depression', 'com', 'timeline', 'liwc_anal')
-    process_db('random', 'com', 'timeline', 'liwc_anal')
+    # process_db('random', 'com', 'timeline', 'liwc_anal')
     process_db('younger', 'com', 'timeline', 'liwc_anal')
     # process_db('fed2', 'com', 'timeline', 'liwc_anal')
     # print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]

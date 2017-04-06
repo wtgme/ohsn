@@ -148,7 +148,7 @@ def remove_non_targeted_user():
             netdb.delete_many({'follower': user['id']})
 
 if __name__ == '__main__':
-    test_common()
+    # test_common()
     '''Random and Young have common users'''
     # common_user = set([131440683, 845244367, 954124423, 923196810, 60784269, 1444610702, 2724721424L, 716641426, 70689475, 474063127, 1527039008, 2299584033L, 2570478117L, 924127014, 2817935658L, 65084587, 17810992, 415304375, 3197798516L, 4170340703L, 627783996, 415556669, 461747789, 631594784, 335713091, 1685873604, 163995592, 4888509389L, 1257645007, 915137490, 1053231187, 1205510869, 330611545, 485170011, 2889291231L, 401563492, 2661407845L, 95307879, 1144191595, 361493650, 41803502, 96648433, 2828410228L, 223145087])
     # remove_common_user(common_user, 'random', 'com', 'timeline', 'net')
@@ -160,8 +160,8 @@ if __name__ == '__main__':
     # for user in cols.find({'level': {'$lte': 1}}, ['id', 'screen_name']):
     #     print user['screen_name']
 
-    # select_sub_poi('random', 'com', 'scom', {'timeline_count': {'$exists': True}})
-    # select_sub_poi('young', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    select_sub_poi('random', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    select_sub_poi('young', 'com', 'scom', {'timeline_count': {'$exists': True}})
 
     # select_sub('fed', 'com', 'scom', 'timeline', 'stimeline')
 

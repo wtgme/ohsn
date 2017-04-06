@@ -432,29 +432,29 @@ def user_cluster_hashtag(filepath):
     # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
     # X = np.array(user_hash_profile.values())
     X, y = load_svmlight_file(filepath)
-    X = X.toarray()
+    X = X.toarray()[:, 17:]
     scaler = preprocessing.StandardScaler().fit(X)
     X = scaler.transform(X)
     # X = load_iris().data
     # y = load_iris().target
     print X.shape
 
-    # '''Select the best K for K-means'''
-    # range_n_clusters = range(2, 21)
-    # values = []
-    # for n_clusters in range_n_clusters:
-    #     clusterer = KMeans(n_clusters=n_clusters)
-    #     cluster_labels = clusterer.fit_predict(X)
-    #     silhouette_avg = calinski_harabaz_score(X, cluster_labels)
-    #     print("For n_clusters =", n_clusters, "The average calinski_harabaz_score is :", silhouette_avg)
-    #     values.append(silhouette_avg)
-    # print values
-    # print range_n_clusters
+    '''Select the best K for K-means'''
+    range_n_clusters = range(2, 21)
+    values = []
+    for n_clusters in range_n_clusters:
+        clusterer = KMeans(n_clusters=n_clusters)
+        cluster_labels = clusterer.fit_predict(X)
+        silhouette_avg = calinski_harabaz_score(X, cluster_labels)
+        print("For n_clusters =", n_clusters, "The average calinski_harabaz_score is :", silhouette_avg)
+        values.append(silhouette_avg)
+    print values
+    print range_n_clusters
 
-    clusterer = KMeans(n_clusters=2)
-    cluster_labels = clusterer.fit_predict(X)
-
-    return cluster_labels
+    # clusterer = KMeans(n_clusters=2)
+    # cluster_labels = clusterer.fit_predict(X)
+    #
+    # return cluster_labels
 
     # dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
 
@@ -732,9 +732,9 @@ if __name__ == '__main__':
     # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
     #
-    # user_cluster_hashtag('ed-retweet.data')
+    user_cluster_hashtag('ed-communication.data')
 
     # tags_user_cluster()
-    tags_two_user_moduls()
+    # tags_two_user_moduls()
     # tfidf_tag_cluster('retweet')
     # tfidf_tag_cluster('communication')
