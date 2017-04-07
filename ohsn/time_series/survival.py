@@ -26,13 +26,11 @@ def diff_day(d2, d1):
     return delta.days
 
 def read_user_time():
-    com = dbt.db_connect_col('fed', 'scom')
     fields = iot.read_fields()
     trimed_fields = [field.split('.')[-1] for field in fields]
-
-
     data = []
 
+    com = dbt.db_connect_col('fed', 'scom')
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         if 'status' in user:
             created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -46,6 +44,7 @@ def read_user_time():
                 death = 0
             values = iot.get_fields_one_doc(user, fields)
             data.append([user['id_str'], created_at, last_post, scraped_at, 'ED', death]+values)
+
     com = dbt.db_connect_col('random', 'scom')
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         if 'status' in user:

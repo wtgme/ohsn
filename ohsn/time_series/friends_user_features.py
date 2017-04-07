@@ -22,34 +22,6 @@ import pandas as pd
 import pickle
 
 
-print 'Centrality Calculate .........'
-# users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
-
-# print 'Number of users', len(users)
-# network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
-# network1 = gt.load_network('fed', 'net')
-# pickle.dump(network1, open('net.pick', 'w'))
-network1 = pickle.load(open('net.pick', 'r'))
-gt.summary(network1)
-
-'''Centralities Calculation'''
-eigen = network1.eigenvector_centrality()
-pageranks = network1.pagerank()
-# closeness = network.closeness()
-# betweenness = network.betweenness()
-# print len(eigen), len(closeness), len(betweenness)
-
-nodes = [int(v['name']) for v in network1.vs]
-# print len(nodes), len(eigen)
-# print type(nodes), type(eigen)
-
-eigen_map = dict(zip(nodes, eigen))
-pagerank_map = dict(zip(nodes, pageranks))
-# print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
-
-# closeness_map = dict(zip(nodes, closeness))
-# betweenness_map = dict(zip(nodes, betweenness))
-print 'Centrality Calculate .........'
 
 
 def friend_user_change(dbname1, dbname2, comname1, comname2):
@@ -259,9 +231,41 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
     :param comname2:
     :return:
     '''
+
+    print 'Centrality Calculate .........'
+    # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
+
+    # print 'Number of users', len(users)
+    # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
+    # network1 = gt.load_network('fed', 'net')
+    # pickle.dump(network1, open('net.pick', 'w'))
+
+    network1= gt.Graph()
+    # network1 = pickle.load(open('net.pick', 'r'))
+    gt.summary(network1)
+
+    '''Centralities Calculation'''
+    eigen = network1.eigenvector_centrality()
+    pageranks = network1.pagerank()
+    # closeness = network.closeness()
+    # betweenness = network.betweenness()
+    # print len(eigen), len(closeness), len(betweenness)
+
+    nodes = [int(v['name']) for v in network1.vs]
+    # print len(nodes), len(eigen)
+    # print type(nodes), type(eigen)
+
+    eigen_map = dict(zip(nodes, eigen))
+    pagerank_map = dict(zip(nodes, pageranks))
+    # print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
+
+    # closeness_map = dict(zip(nodes, closeness))
+    # betweenness_map = dict(zip(nodes, betweenness))
+    print 'Centrality Calculate .........'
+
     print 'load liwc 2 batches'
     df = pd.read_pickle('ed-liwc2stage.csv'+'.pick')
-    filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists': True}}
+    filter_que = {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}
     user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
     com1 = dbt.db_connect_col(dbname1, comname1)
     com2 = dbt.db_connect_col(dbname2, comname2)
@@ -514,11 +518,20 @@ def states_change(dbname1, dbname2, comname1, comname2):
 
 
 def users_with_collected_friends(dbname, comname, netname):
-    users = iot.get_values_one_field(dbname, comname, 'id')
-    net = gt.load_network_subset(dbname, netname, {
-        'user': {'$in': users}, 'follower': {'in': users}
-    })
-    net.write_graphml(dbname+'-net.graphml')
+    # get network from random and younger datasets
+    users = iot.get_values_one_field(dbname, comname, 'id', {'level':1})
+    # net = gt.load_network_subset(dbname, netname, {
+    #     'user': {'$in': users}, 'follower': {'$in': users}
+    # })
+    # net.write_graphml(dbname+'-net.graphml')
+
+    g = gt.Graph.Read_GraphML(dbname+'-net.graphml')
+    g.vs['outk'] = g.indegree()
+    nodes = g.vs.select(outk_gt=0)
+    user_ids = [int(v['name']) for v in nodes]
+    print len(set(users).intersection(set(user_ids)))
+
+
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
@@ -529,8 +542,8 @@ if __name__ == '__main__':
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
-    # emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
+    emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
-    users_with_collected_friends('random', 'scom', 'net')
-    users_with_collected_friends('younger', 'scom', 'net')
+    # users_with_collected_friends('random', 'scom', 'net')
+    # users_with_collected_friends('younger', 'scom', 'net')

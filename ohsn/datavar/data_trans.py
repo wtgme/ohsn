@@ -69,6 +69,17 @@ def select_sub_poi(dbname, colname, newcolname, filter):
             pass
 
 
+def updata_liwc(dbname, colname, newcolname):
+    db = dbt.db_connect_no_auth(dbname)
+    com = db[colname]
+    newcom = db[newcolname]
+
+    for user in newcom.find(no_cursor_timeout=True):
+        old_user = com.find_one({'id': user['id']})
+        if 'liwc_anal' in old_user:
+            newcom.update_one({'id': user['id']}, {'$set': {'liwc_anal': old_user['liwc_anal']}}, upsert=True)
+
+
 def get_users(dbname, colname, filter):
     user_set = set()
     db = dbt.db_connect_no_auth(dbname)
@@ -161,9 +172,13 @@ if __name__ == '__main__':
     #     print user['screen_name']
 
     # select_sub_poi('random', 'com', 'scom', {'timeline_count': {'$exists': True}})
-    select_sub_poi('younger', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    # select_sub_poi('younger', 'com', 'scom', {'timeline_count': {'$exists': True}})
+    # select_sub_poi('fed', 'com', 'scom', {'timeline_count': {'$exists': True}, 'level':1})
 
     # select_sub('fed', 'com', 'scom', 'timeline', 'stimeline')
+
+    updata_liwc('random', 'com', 'scom')
+    updata_liwc('younger', 'com', 'scom')
 
 
 

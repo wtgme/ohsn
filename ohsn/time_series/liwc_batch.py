@@ -247,9 +247,12 @@ def compare_periods(filename, prefix):
 
 
 if __name__ == '__main__':
-    # filename = 'ed-liwc2stage.csv'
-    # bunch_user_tweets_dataframe('fed', 'scom', 'timeline', filename)
-    compare_periods('ed-liwc2stage.csv', 'ed')
+    filename = 'rd-liwc2stage.csv'
+    bunch_user_tweets_dataframe('random', 'scom', 'timeline', filename)
+    filename = 'yg-liwc2stage.csv'
+    bunch_user_tweets_dataframe('younger', 'scom', 'timeline', filename)
+
+    # compare_periods('ed-liwc2stage.csv', 'ed')
 
 
 

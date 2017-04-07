@@ -237,13 +237,13 @@ def compare_post_time():
 
 def statis_dbs():
     '''Stats of proed and prorec tweets'''
-    rec_time = dbt.db_connect_col('fed', 'prorec_tag_refine')
+    rec_time = dbt.db_connect_col('fed', 'ed_tag')
     ped_time = dbt.db_connect_col('fed', 'proed_tag_refine')
     data = []
 
-    for i in xrange(2):
+    for i in xrange(1):
         time = [rec_time, ped_time][i]
-        name = ['Pro-recovery', 'Pro-ED'][i]
+        name = ['ED', 'Pro-ED'][i]
         for tweet in time.find(no_cursor_timeout=True):
             ts = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             data.append([name, tweet['id'], tweet['user']['id'],
@@ -251,7 +251,24 @@ def statis_dbs():
                         ts])
     df = pd.DataFrame(data, columns=['set', 'id', 'user_id', 'retweet_count',
                                      'favorite_count', 'created_at'])
-    df.to_csv('pro-tweet-stats-refine.csv')
+    df.to_csv('ed-tweet-stats.csv')
+
+
+def ed_tweet_normal_tweet_count():
+    user_ids = set(iot.get_values_one_field('fed', 'ed_tag', 'user.id'))
+    print len(user_ids)
+    com = dbt.db_connect_col('fed', 'com')
+    tags = dbt.db_connect_col('fed', 'ed_tag')
+    data = []
+    for uid in user_ids:
+        ed_count = tags.count({'user.id': uid})
+        all_count = com.find_one({'id': uid})['timeline_count']
+        data.append([uid, ed_count, all_count])
+    df = pd.DataFrame(data, columns=['id', 'ed_tweet_count', 'all_tweet_count'])
+    df.to_csv('user-ed-stats.csv')
+
+
+
 
 
 def network_users(btype = 'communication'):
@@ -365,7 +382,9 @@ if __name__ == '__main__':
 
     # statis_dbs()
 
-    cluseter_nodes('communication')
+    # ed_tweet_normal_tweet_count()
+
+    # cluseter_nodes('communication')
     # cluseter_nodes('retweet')
 
     # test_clustering_stable('communication')
@@ -375,23 +394,28 @@ if __name__ == '__main__':
     # count_pro_ratio('retweet')
 
     # btype = 'communication'
-    # g = gt.Graph.Read_GraphML('communication-3-moduls.graphml')
-    # gt.summary(g)
-    # import louvain
-    # # part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=10)
-    # for r in np.linspace(0, 1, 100):
+    g = gt.Graph.Read_GraphML('communication-3-moduls.graphml')
+    gt.summary(g)
+    import louvain
+    part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=1)
+    print len(set(part.membership)), part.modularity
+    part = louvain.find_partition(g, method='Modularity', weight='weight', resolution_parameter=1)
+    print len(set(part.membership)), part.modularity
+
+    # for r in np.linspace(0, 1, 200):
     #     part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=r)
-    #     print r, louvain.quality(g, part, method='Surprise'), len(set(part.membership)), part.modularity
-    # res_parts = louvain.bisect(g, method='CPM', resolution_range=[0, 1], weight='weight')
-    # import pandas as pd
-    # import matplotlib.pyplot as plt
-    # res_df = pd.DataFrame({
-    #          'resolution': res_parts.keys(),
-    #          'bisect_value': [louvain.quality(g, bisect.partition, method='Surprise') for bisect in res_parts.values()]});
-    # plt.step(res_df['resolution'], res_df['bisect_value']);
+    #     print r, len(set(part.membership)), part.modularity
+
+    res_parts = louvain.bisect(g, method='RBConfiguration', resolution_range=[0, 1], weight='weight')
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    res_df = pd.DataFrame({
+             'resolution': res_parts.keys(),
+             'bisect_value': [len(set(bisect.partition.membership)) for bisect in res_parts.values()]});
+    plt.step(res_df['resolution'], res_df['bisect_value']);
     # plt.xscale('log');
     # plt.yscale('log')
-    # plt.show()
+    plt.show()
 
     # print len(set(part.membership))
     # print part.modularity
