@@ -707,8 +707,16 @@ if __name__ == '__main__':
     # tag_jaccard('fed', 'proed_tag', 'proed')
 
     # users = iot.get_values_one_field('fed', 'scom', 'id')
-    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
-    # g.write_graphml('core_ed_hashtag.graphml')
+    g = gt.load_hashtag_coocurrent_network('fed', 'ed_tag')
+    g.write_graphml('alled_tag.graphml')
+    # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
+    nodes = g.vs.select(weight_gt=3)
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    nodes = g.vs.select(user_gt=3)
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    g.write_graphml('alled_tag_filter.graphml')
 
 
     # pmi(g, filename='ed')
@@ -732,7 +740,7 @@ if __name__ == '__main__':
     # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
     #
-    user_cluster_hashtag('ed-communication.data')
+    # user_cluster_hashtag('ed-communication.data')
 
     # tags_user_cluster()
     # tags_two_user_moduls()
