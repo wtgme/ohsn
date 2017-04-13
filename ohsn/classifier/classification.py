@@ -117,8 +117,8 @@ def plot_classification(results):
     print max(results), min(results)
     bins = np.linspace(-2, 2, 3)
     print bins
-    # print len(results[np.where(results > 1)])
-    # print len(results[np.where(results < 0)])
+    print len(results[np.where(results == 1)])
+    print len(results[np.where(results == 0)])
     hist, bin_edges = np.histogram(results, bins)
     print hist, sum(hist)
     # print len(results[np.where(results > 1)]) + len(results[np.where(results < 0)]) + sum(hist)
@@ -251,13 +251,27 @@ def ite_classification(train, test):
     # predict_verify('fed', 'com', 'data/fed', y_pre_2)
 
 
+def out_predicted_users_ids(results, test_file):
+    # output the users ids that have been predicted as positive
+    ids = []
+    with open(test_file, 'r') as fo:
+        i = 0
+        for line in fo.readlines():
+            id = line.strip().split()[0]
+            if results[i] == 1:
+                ids.append(id)
+            i += 1
+    print len(ids)
+    pickle.dump(ids, open('data/positive.pick', 'w'))
+
+
 if __name__ == '__main__':
     '''classification with all features'''
-    # # classification('data/ed-rd.data', 'data/fed.data',
-    # #                'data/fed.pick')
-    # results = pickle.load(open('data/fed.pick', 'r'))
-    # # plot_classification(results)
-    #
+    # classification('data/ed-noned.data', 'data/fed.data',
+    #                'data/fed.pick')
+    results = pickle.load(open('data/fed.pick', 'r'))
+    # plot_classification(results)
+    out_predicted_users_ids(results, 'data/fed.data')
     # predict_verify('fed', 'com', 'data/fed', results)
 
 
@@ -284,6 +298,6 @@ if __name__ == '__main__':
 
 
     # ite_classification('data/ed-rd.data', 'data/fed.data')
-    y_pre1 = pickle.load(open('data/prediction-'+str(2), 'r'))
-    y_pre2 = pickle.load(open('data/prediction-'+str(3), 'r'))
-    compare_round('fed', 'com', 'data/fed', y_pre1, y_pre2)
+    # y_pre1 = pickle.load(open('data/prediction-'+str(2), 'r'))
+    # y_pre2 = pickle.load(open('data/prediction-'+str(3), 'r'))
+    # compare_round('fed', 'com', 'data/fed', y_pre1, y_pre2)

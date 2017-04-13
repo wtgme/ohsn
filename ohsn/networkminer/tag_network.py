@@ -23,6 +23,7 @@ from scipy import spatial
 import networkx as nx
 import random as rand
 import pymongo
+import pandas as pd
 
 def pdf(data):
     pll.plot_pdf_mul_data([data], ['Edge Weight'], ['r'], ['o'], labels=['Edge Weight'],
@@ -171,8 +172,9 @@ def compare_direct_undir():
 
 def transform(filename):
     # transform networt types
-    g = nx.read_graphml(filename+'.graphml')
-    nx.write_pajek(g, filename+".net")
+    g = gt.Graph.Read_GraphML(filename+'.graphml')
+    g.vs['id'] = g.vs['name']
+    g.write_pajek(filename+".net")
 
 
 def plot_graph(g, filename):
@@ -262,12 +264,13 @@ def community(g=None):
     com_size: {community_index: community_size}
     '''
     gt.summary(g)
-    vs = g.vs(weight_gt=3, user_gt=3)
-    g = g.subgraph(vs)
+    # vs = g.vs(weight_gt=3, user_gt=3)
+    # g = g.subgraph(vs)
     gc = gt.giant_component(g)
     gt.summary(gc)
-    g.write_graphml('fed_tag_undir_over3.graphml')
-    com = gc.community_multilevel(weights='weight', return_levels=False)
+    # g.write_graphml('fed_tag_undir_over3.graphml')
+    # com = gc.community_multilevel(weights='weight', return_levels=False)
+    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
     index = 0
@@ -325,7 +328,7 @@ def tag_jaccard(dbname, hash_time, gfilename):
 
 
 
-def user_hashtag_profile(dbname, hash_com):
+def user_hashtag_profile(tag_net, users):
     '''
     Map the hashtags that a user has used to communities of hashtag network
     Get the <commnity: proportion> vector for users' hashtag profiles
@@ -333,27 +336,40 @@ def user_hashtag_profile(dbname, hash_com):
     :param hash_com:
     :return:
     '''
-    ed_users = iot.get_values_one_field(dbname, 'scom', 'id')
-    db = dbt.db_connect_no_auth(dbname)
+
+    # Cluster tag network
+    gt.summary(tag_net)
+    gc = gt.giant_component(tag_net)
+    gt.summary(gc)
+    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
+    comclus = com.subgraphs()
+    print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    index = 0
+    hash_com = {}
+    for comclu in comclus:
+        if len(comclu.vs) > 1:
+            for v in comclu.vs:
+                hash_com[v['name']] = index
+            index += 1
+    pickle.dump(hash_com, open('hash_com.pick', 'w'))
+
+    hash_com = pickle.load(open('hash_com.pick', 'r'))
     com_length = len(set(hash_com.values()))
-    times = db['timeline']
+    print com_length
+    # Count tag usages
+
+    times = dbt.db_connect_col('fed', 'ed_tag')
     user_hash_profile = {}
-    for uid in ed_users:
-        counter = {}
-        for tweet in times.find({'user.id': uid, '$where': 'this.entities.hashtags.length>0'}):
-            hashtags = tweet['entities']['hashtags']
-            hash_set = set()
-            for hash in hashtags:
-                hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-            hash_list = list(hash_set)
-            for hash in hash_list:
-                v = counter.get(hash, 0)
-                counter[hash] = v+1
+    for uid in users:
         vector = [0.0]*com_length
-        for hash in counter:
-            if hash in hash_com:
-                comid = hash_com[hash]
-                vector[comid] += counter[hash]
+        for tweet in times.find({'user.id': int(uid), '$where': 'this.entities.hashtags.length>0'}):
+            hashtags = tweet['entities']['hashtags']
+            for hash in hashtags:
+                tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+                com_id = hash_com.get(tag, -1)
+                if com_id > -1:
+                    vector[com_id] += 1
+        # print vector
         if sum(vector) == 0:
             user_hash_profile[uid] = np.array(vector)
         else:
@@ -429,32 +445,34 @@ def user_cluster_hashtag(filepath):
     from sklearn.datasets import load_svmlight_file
     from sklearn import preprocessing
     # from sklearn.datasets import load_iris
-    # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
-    # X = np.array(user_hash_profile.values())
-    X, y = load_svmlight_file(filepath)
-    X = X.toarray()[:, 17:]
-    scaler = preprocessing.StandardScaler().fit(X)
-    X = scaler.transform(X)
-    # X = load_iris().data
-    # y = load_iris().target
+    # Based on hashtag community proportation profiles
+    user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
+    X = np.array(user_hash_profile.values())
+    # Based on LIWC feature
+    # X, y = load_svmlight_file(filepath)
+    # X = X.toarray()[:, 17:]
+    # scaler = preprocessing.StandardScaler().fit(X)
+    # X = scaler.transform(X)
+
     print X.shape
+    print X
 
     '''Select the best K for K-means'''
-    range_n_clusters = range(2, 21)
-    values = []
-    for n_clusters in range_n_clusters:
-        clusterer = KMeans(n_clusters=n_clusters)
-        cluster_labels = clusterer.fit_predict(X)
-        silhouette_avg = calinski_harabaz_score(X, cluster_labels)
-        print("For n_clusters =", n_clusters, "The average calinski_harabaz_score is :", silhouette_avg)
-        values.append(silhouette_avg)
-    print values
-    print range_n_clusters
+    # range_n_clusters = range(2, 21)
+    # data = []
+    # for n_clusters in range_n_clusters:
+    #     clusterer = KMeans(n_clusters=n_clusters)
+    #     cluster_labels = clusterer.fit_predict(X)
+    #     silhouette_avg = silhouette_score(X, cluster_labels)
+    #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+    #     data.append([n_clusters, silhouette_avg])
+    # df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
+    # df.to_csv('user-kmeans-hashtag.csv')
 
-    # clusterer = KMeans(n_clusters=2)
-    # cluster_labels = clusterer.fit_predict(X)
-    #
-    # return cluster_labels
+    '''Single run kmeans'''
+    clusterer = KMeans(n_clusters=2)
+    cluster_labels = clusterer.fit_predict(X)
+    return cluster_labels, user_hash_profile.keys()
 
     # dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
 
@@ -581,33 +599,52 @@ def tags_two_user_moduls():
     g.write_graphml(filename+'_tag_undir.graphml')
 
 
-def tags_user_cluster():
+def tags_user_cluster(graph_file_path, filename):
     # put tweet of two cluster into two set
-    g_retweet = gt.Graph.Read_GraphML('ed-retweet'+'-hashtag-only-fed-cluster.graphml')
-    g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-only-fed-cluster.graphml')
-    gt.summary(g_retweet)
-    gt.summary(g_mention)
+    g = gt.Graph.Read_GraphML(graph_file_path)
+    # g_mention = gt.Graph.Read_GraphML('ed-communication'+'-hashtag-only-fed-cluster.graphml')
+    gt.summary(g)
+    # gt.summary(g_mention)
 
-    for i in range(2):
-        g = [g_retweet, g_mention][i]
-        cluster0, cluster1 = set(), set()
-        for v in g.vs:
-            if v['cluster'] == 0:
-                cluster0.add(int(v['name']))
-            elif v['cluster'] == 1:
-                cluster1.add(int(v['name']))
-        g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster0))
-        gt.summary(g)
-        filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster0'
-        g.write_graphml(filename+'_tag_undir.graphml')
+    # for i in range(2):
+    #     g = [g_retweet, g_mention][i]
+    cluster0, cluster1, cluster2 = set(), set(), set()
+    for v in g.vs:
+        if v['cluster'] == 0:
+            cluster0.add(int(v['name']))
+        elif v['cluster'] == 1:
+            cluster1.add(int(v['name']))
+        elif v['cluster'] == -1:
+            cluster2.add(int(v['name']))
+    print 'cluster size;', len(cluster0)
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster0))
+    gt.summary(g)
+    # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster0'
+    vs = g.vs(weight_gt=3, user_gt=3)
+    g = g.subgraph(vs)
+    gt.summary(g)
+    g.write_graphml(filename+'_alltag_undir_cluster0.graphml')
 
-        g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
-        gt.summary(g)
-        filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
-        g.write_graphml(filename+'_tag_undir.graphml')
+    print 'cluster size;', len(cluster1)
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster1))
+    gt.summary(g)
+    # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
+    vs = g.vs(weight_gt=3, user_gt=3)
+    g = g.subgraph(vs)
+    gt.summary(g)
+    g.write_graphml(filename+'_alltag_undir_cluster1.graphml')
 
-        # insert_cluster_tweets('fed', 'mention-cluster0', list(cluster0))
-        # insert_cluster_tweets('fed', 'mention-cluster1', cluster1)
+    print 'cluster size;', len(cluster2)
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster2))
+    gt.summary(g)
+    vs = g.vs(weight_gt=3, user_gt=3)
+    g = g.subgraph(vs)
+    gt.summary(g)
+    # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
+    g.write_graphml(filename+'_alltag_undir_cluster2.graphml')
+
+    # insert_cluster_tweets('fed', 'mention-cluster0', list(cluster0))
+    # insert_cluster_tweets('fed', 'mention-cluster1', cluster1)
 
 
 def tfidf_tag_cluster(btype= 'retweet'):
@@ -653,14 +690,14 @@ def tfidf_tag_cluster(btype= 'retweet'):
 
 
 
-def pmi(g, filename):
+def pmi(g, filename=None):
     '''
     Calculate the PMI weight for edges
     :param g:
     :param filename:
     :return:
     '''
-    print g.is_loop()
+    # print g.is_loop()
     vw_sum = sum(g.vs["weight"])
     for edge in g.es:
         source_vertex_id = edge.source
@@ -668,13 +705,14 @@ def pmi(g, filename):
         source_vertex = g.vs[source_vertex_id]
         target_vertex = g.vs[target_vertex_id]
         ew = edge['weight']
-        edge['pmi'] = np.log(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight']))
+        edge['pmi'] = float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight'])
     # pickle.dump(g, open('data/'+filename+'_pmi_tag.pick', 'w'))
     # g = pickle.load(open('data/'+filename+'_pmi_tag.pick', 'r'))
     # pdf(g.es['weight'])
     # plot_graph(g, 'ed-hashtag')
-    g.write_graphml(filename+'_pmi_tag.graphml')
-
+    # g.write_graphml(filename+'_pmi_tag.graphml')
+    g.es['weight'] = g.es['pmi']
+    return g
 
 
 # def plot_graph(filename):
@@ -693,12 +731,14 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    # core = gt.Graph.Read_GraphML('fed_tag_undir.graphml')
-    # # hash_com_all, com_size_all = community(pall)
-    # hash_com_rec, com_size_rec = community(core)
-    # # hash_com_ped, com_size_ped = community(ped)
-    # # user_hashtag_profile('fed', hash_com)
-    # # label_ed_recovery(hash_com_rec, com_size_rec)
+    # core = gt.Graph.Read_GraphML('alled_tag.graphml')
+    #
+    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    #
+    # # # # hash_com_all, com_size_all = community(pall)
+    # # hash_com_rec, com_size_rec = community(core)
+    # # # hash_com_ped, com_size_ped = community(ped)
+    # label_ed_recovery(hash_com_rec, com_size_rec)
     # # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
     # # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
 
@@ -706,17 +746,50 @@ if __name__ == '__main__':
     # tag_jaccard('fed', 'prorec_tag', 'prorec')
     # tag_jaccard('fed', 'proed_tag', 'proed')
 
-    # users = iot.get_values_one_field('fed', 'scom', 'id')
-    g = gt.load_hashtag_coocurrent_network('fed', 'ed_tag')
-    g.write_graphml('alled_tag.graphml')
-    # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
-    nodes = g.vs.select(weight_gt=3)
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    nodes = g.vs.select(user_gt=3)
-    print 'Filtered nodes: %d' %len(nodes)
-    g = g.subgraph(nodes)
-    g.write_graphml('alled_tag_filter.graphml')
+    # #-----------------------Filter network-----------------------------------------------
+    # # # users = iot.get_values_one_field('fed', 'scom', 'id')
+    '''directed network'''
+    # g = gt.load_hashtag_coocurrent_network('fed', 'ed_tag')
+    # g.write_graphml('alled_tag.graphml')
+    # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
+    # gt.summary(g)
+    # nodes = g.vs.select(weight_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # nodes = g.vs.select(user_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # # g = pmi(g)
+    # g.write_graphml('alled_tag_filter.graphml')
+
+    '''undirected network'''
+    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag')
+    # g.write_graphml('alled_tag_undir.graphml')
+    # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
+    # gt.summary(g)
+    # nodes = g.vs.select(weight_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # nodes = g.vs.select(user_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # g.write_graphml('alled_tag_undir_filter.graphml')
+
+    #-----------------------Filter network-----------------------------------------------
+
+    #-----------------------Community detection-----------------------------------------------
+    # g = gt.Graph.Read_GraphML('core_ed_hashtag_filter.graphml')
+    # g = gt.giant_component(g)
+    # gt.summary(g)
+    # infor = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # print len(set(infor.membership))
+    # print infor.modularity
+    #
+    # import louvain
+    # part = louvain.find_partition(g, method='Modularity', weight='weight')
+    # print len(set(part.membership)), part.modularity
+
+
 
 
     # pmi(g, filename='ed')
@@ -724,7 +797,17 @@ if __name__ == '__main__':
     # friend_community()
     # plot_graph('ed_tag.graphml')
 
-    # user_cluster_hashtag()
+    #-------------------------------------------------------------------------
+    '''cluster user Kmeans'''
+    # user_cluster_hashtag('ed-communication.data')
+
+    #-------------------------------------------------------------------------
+
+
+    #-------------------------------------------------------------------------
+    '''hashtags network of differnet clusters'''
+    # tags_user_cluster('communication-only-fed-filter-cluster.graphml', 'communication-only-fed-filter-cluster')
+    #-------------------------------------------------------------------------
 
     # community_vis('ed', 'info')
     # community_vis('ed', 'ml')
@@ -740,9 +823,29 @@ if __name__ == '__main__':
     # depress = tag_record('fed', 'timeline', 'fed')
     # hash_com_all, com_size_all = community(gt.Graph.Read_GraphML('alled_tag_undir.graphml'))
     #
-    # user_cluster_hashtag('ed-communication.data')
+
 
     # tags_user_cluster()
     # tags_two_user_moduls()
     # tfidf_tag_cluster('retweet')
     # tfidf_tag_cluster('communication')
+
+
+
+    # transform('communication-only-fed-filter')
+
+
+    #----------------------------------------------------------------------------------------------
+    '''User's hashtag profile'''
+
+    core = gt.Graph.Read_GraphML('alled_tag_filter.graphml')
+    gt.summary(core)
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    user_hashtag_profile(core, users)
+
+    #----------------------------------------------------------------------------------------------

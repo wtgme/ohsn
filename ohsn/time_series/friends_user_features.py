@@ -63,7 +63,10 @@ def friend_user_change(dbname1, dbname2, comname1, comname2):
 def active_days(user):
     # print user['id']
     ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-    tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    try:
+        tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    except KeyError:
+        tts = ts
     delta = tts.date() - ts.date()
     days = delta.days+1
     status_count = abs(float(user['statuses_count']))
@@ -122,14 +125,14 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     attr_names.extend(['co_num', 'co_palive'])
     print attr_names
     attr_length = len(fields) + len(prof_names) + 2
-    # network1 = gt.load_network(dbname1, 'net')
+    network1 = gt.load_network(dbname1, 'net')
 
     '''Centralities Calculation'''
-    # eigen = network1.eigenvector_centrality()
+    eigen = network1.eigenvector_centrality()
     # closeness = network1.closeness()
     # betweenness = network1.betweenness()
-    # nodes = [int(v['name']) for v in network1.vs]
-    # eigen_map = dict(zip(nodes, eigen))
+    nodes = [int(v['name']) for v in network1.vs]
+    eigen_map = dict(zip(nodes, eigen))
     # closeness_map = dict(zip(nodes, closeness))
     # betweenness_map = dict(zip(nodes, betweenness))
 
@@ -222,7 +225,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     df.to_csv('data-attr-split.csv', index = False)
 
 
-def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
+def emotion_dropout_IV_following():
     '''
     Only use following stats
     :param dbname1:
@@ -232,43 +235,6 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
     :return:
     '''
 
-    print 'Centrality Calculate .........'
-    # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
-
-    # print 'Number of users', len(users)
-    # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
-    # network1 = gt.load_network('fed', 'net')
-    # pickle.dump(network1, open('net.pick', 'w'))
-
-    network1= gt.Graph()
-    # network1 = pickle.load(open('net.pick', 'r'))
-    gt.summary(network1)
-
-    '''Centralities Calculation'''
-    eigen = network1.eigenvector_centrality()
-    pageranks = network1.pagerank()
-    # closeness = network.closeness()
-    # betweenness = network.betweenness()
-    # print len(eigen), len(closeness), len(betweenness)
-
-    nodes = [int(v['name']) for v in network1.vs]
-    # print len(nodes), len(eigen)
-    # print type(nodes), type(eigen)
-
-    eigen_map = dict(zip(nodes, eigen))
-    pagerank_map = dict(zip(nodes, pageranks))
-    # print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
-
-    # closeness_map = dict(zip(nodes, closeness))
-    # betweenness_map = dict(zip(nodes, betweenness))
-    print 'Centrality Calculate .........'
-
-    print 'load liwc 2 batches'
-    df = pd.read_pickle('ed-liwc2stage.csv'+'.pick')
-    filter_que = {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}
-    user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
-    com1 = dbt.db_connect_col(dbname1, comname1)
-    com2 = dbt.db_connect_col(dbname2, comname2)
     fields = ['liwc_anal.result.posemo',
               'liwc_anal.result.negemo',
               'liwc_anal.result.ingest',
@@ -283,95 +249,174 @@ def emotion_dropout_IV_following(dbname1, dbname2, comname1, comname2):
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank']
-    attr_names = ['uid', 'attr']
+    attr_names = ['uid', 'group', 'attr']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
     attr_names.extend(['u_post_'+field for field in trimed_fields])
     attr_names.extend(['u_change_'+field for field in trimed_fields])
     attr_names.extend(['u_'+field for field in prof_names])
-    attr_names.extend(['u_recovery_tweets', 'u_timeline_count'])
+    attr_names.extend([
+        # 'u_recovery_tweets',
+                       'u_timeline_count'])
     attr_names.extend(['f_'+field.split('.')[-1] for field in fields])
     attr_names.extend(['f_'+field for field in prof_names])
     attr_names.extend(['f_timeline_count', 'f_num', 'f_palive'])
     print attr_names
 
-
     data = []
-    for uid in user1:
-        # set uid
-        row = [uid]
-        # set attrition states
-        u1 = com1.find_one({'id': uid})
-        u2 = com2.find_one({'id': uid})
-        if u2 is None or u2['timeline_count'] == 0:
-            row.append(1)
-        else:
-            row.append(0)
-        # set users liwc feature
-        uatt = iot.get_fields_one_doc(u1, fields)
-        row.extend(uatt)
-        # set users liwc changes
-        uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
-        # print uvs
-        if len(uvs) == 2:
-            changes, priors, posts = [], [], []
-            for name in trimed_fields:
-                old = uvs.iloc[0][name]
-                new = uvs.iloc[1][name]
-                priors.append(old)
-                posts.append(new)
-                changes.append(new - old)
-            row.extend(priors)
-            row.extend(posts)
-            row.extend(changes)
-        else:
-            row.extend([None]*(len(trimed_fields)*3))
 
-        # set profile, active days and eigenvector centrality
-        row.extend(active_days(u1))
-        row.extend([eigen_map.get(u1['id'])])
-        row.extend([pagerank_map.get(u1['id'])])
-        row.extend([u1['recovery_tweets'], u1['timeline_count']])
+    name_map = {
+        'ed': ('fed', 'fed2', 'com', 'com'),
+        'yg': ('younger', 'younger2', 'scom', 'com'),
+        'rd': ('random', 'random2', 'scom', 'com')
+    }
+    for groupname in ['yg', 'rd', 'ed']:
+        dbname1, dbname2, comname1, comname2 = name_map[groupname]
+        print 'Centrality Calculate .........'
+        # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
 
-        exist = True
-        try:
-            v = network1.vs.find(name=str(uid))
-        except ValueError:
-            exist = False
-        if exist:
-            # friends = set(network1.neighbors(str(uid))) # id or name
-            friends = set(network1.successors(str(uid)))
-            if len(friends) > 0:
-                friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
-                print uid in friend_ids
-                print len(friend_ids)
-                fatts = []
-                alive = 0
-                for fid in friend_ids:
-                    fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}, 'status':{'$exists':True}})
-                    fu2 = com2.find_one({'id': fid})
-                    if fu != None:
-                        fatt = iot.get_fields_one_doc(fu, fields)
-                        fatt.extend(active_days(fu))
-                        fatt.extend([eigen_map.get(fu['id'])])
-                        fatt.extend([pagerank_map.get(fu['id'])])
-                        fatt.extend([fu['timeline_count']])
-                        fatts.append(fatt)
+        # print 'Number of users', len(users)
+        # network1 = gt.load_network_subset('fed', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
+        # network1 = gt.load_network('fed', 'net')
+        # pickle.dump(network1, open('net.pick', 'w'))
 
-                        if fu2 is None or fu2['timeline_count'] == 0:
-                            alive += 0
-                        else:
-                            alive += 1
-                if len(fatts) > 0:
-                    fatts = np.array(fatts)
-                    fmatts = np.mean(fatts, axis=0)
-                    row.extend(fmatts)
-                    row.append(len(fatts))
-                    paliv = float(alive)/len(fatts)
-                    print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
-                    row.append(paliv)
-        # print row
-        data.append(row)
+        print 'load network: ' + groupname+'-net.graphml'
+        network1= gt.Graph.Read_GraphML(groupname+'-net.graphml')
+        # network1 = pickle.load(open('net.pick', 'r'))
+        gt.summary(network1)
+
+        '''Centralities Calculation'''
+        eigen = network1.eigenvector_centrality()
+        pageranks = network1.pagerank()
+        # closeness = network.closeness()
+        # betweenness = network.betweenness()
+        # print len(eigen), len(closeness), len(betweenness)
+
+        nodes = [int(v['name']) for v in network1.vs]
+        # print len(nodes), len(eigen)
+        # print type(nodes), type(eigen)
+
+        eigen_map = dict(zip(nodes, eigen))
+        pagerank_map = dict(zip(nodes, pageranks))
+        # print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
+
+        # closeness_map = dict(zip(nodes, closeness))
+        # betweenness_map = dict(zip(nodes, betweenness))
+        print 'Centrality Calculate .........'
+
+        print 'load liwc 2 batches: ' + groupname+'-liwc2stage.csv'
+        df = pd.read_pickle(groupname+'-liwc2stage.csv'+'.pick')
+        filter_que = {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}
+        user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
+
+        print 'load db1: ', dbname1, comname1
+        com1 = dbt.db_connect_col(dbname1, comname1)
+        print 'load db2: ', dbname2, comname2
+        com2 = dbt.db_connect_col(dbname2, comname2)
+
+
+        for uid in user1:
+            # set uid
+            row = [uid, groupname]
+            # set attrition states
+            u1 = com1.find_one({'id': uid})
+            u2 = com2.find_one({'id': uid})
+            # if u2 is None or u2['timeline_count'] == 0:
+            if (u2 is None):
+                row.append(1)
+            else:
+                if 'status' not in u1 and 'status' not in u2:
+                    row.append(1)
+                elif 'status' not in u1 and 'status' in u2:
+                    row.append(0)
+                elif 'status' in u1 and 'status' not in u2:
+                    row.append(0)
+                elif u2['status']['id'] == u1['status']['id']:
+                    row.append(1)
+                elif u2['status']['id'] != u1['status']['id']:
+                    row.append(0)
+
+            # set users liwc feature
+            uatt = iot.get_fields_one_doc(u1, fields)
+            row.extend(uatt)
+            # set users liwc changes
+            uvs = df[df.user_id == str(uid)].loc[:, trimed_fields]
+            # print uvs
+            if len(uvs) == 2:
+                changes, priors, posts = [], [], []
+                for name in trimed_fields:
+                    old = uvs.iloc[0][name]
+                    new = uvs.iloc[1][name]
+                    priors.append(old)
+                    posts.append(new)
+                    changes.append(new - old)
+                row.extend(priors)
+                row.extend(posts)
+                row.extend(changes)
+            else:
+                row.extend([None]*(len(trimed_fields)*3))
+
+            # set profile, active days and eigenvector centrality
+            print u1['id']
+            row.extend(active_days(u1))
+            row.extend([eigen_map.get(u1['id'])])
+            row.extend([pagerank_map.get(u1['id'])])
+            row.extend([
+                # u1['recovery_tweets'],
+                u1['timeline_count']])
+
+            exist = True
+            try:
+                v = network1.vs.find(name=str(uid))
+            except ValueError:
+                exist = False
+            if exist:
+                # friends = set(network1.neighbors(str(uid))) # id or name
+                friends = set(network1.successors(str(uid)))
+                if len(friends) > 0:
+                    friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
+                    print uid in friend_ids
+                    print len(friend_ids)
+                    fatts = []
+                    alive = 0
+                    for fid in friend_ids:
+                        fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
+                        fu2 = com2.find_one({'id': fid})
+                        if fu != None:
+                            fatt = iot.get_fields_one_doc(fu, fields)
+                            fatt.extend(active_days(fu))
+                            fatt.extend([eigen_map.get(fu['id'])])
+                            fatt.extend([pagerank_map.get(fu['id'])])
+                            fatt.extend([fu['timeline_count']])
+                            fatts.append(fatt)
+                            if (fu2 is None):
+                                alive += 0
+                            else:
+                                if 'status' not in fu and 'status' not in fu2:
+                                    alive += 0
+                                elif 'status' not in fu and 'status' in fu2:
+                                    alive += 1
+                                elif 'status' in fu and 'status' not in fu2:
+                                    alive += 1
+                                elif fu2['status']['id'] == fu['status']['id']:
+                                    alive += 0
+                                elif fu2['status']['id'] != fu['status']['id']:
+                                    alive += 1
+
+                            # if fu2 is None or fu['status']['id'] == fu2['status']['id']:
+                            #     alive += 0
+                            # else:
+                            #     alive += 1
+                    if len(fatts) > 0:
+                        fatts = np.array(fatts)
+                        fmatts = np.mean(fatts, axis=0)
+                        row.extend(fmatts)
+                        row.append(len(fatts))
+                        paliv = float(alive)/len(fatts)
+                        print 'Alive %d %d %.3f' % (alive, len(fatts), paliv)
+                        row.append(paliv)
+            # print row
+            data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
     df.to_csv('data-attr-following.csv', index = False)
 
@@ -526,12 +571,25 @@ def users_with_collected_friends(dbname, comname, netname):
     # net.write_graphml(dbname+'-net.graphml')
 
     g = gt.Graph.Read_GraphML(dbname+'-net.graphml')
+    gt.summary(g)
     g.vs['outk'] = g.indegree()
     nodes = g.vs.select(outk_gt=0)
+    print len(nodes)
     user_ids = [int(v['name']) for v in nodes]
     print len(set(users).intersection(set(user_ids)))
 
 
+def load_net():
+    g = gt.load_network('fed', 'net')
+    g.write_graphml('ed-net.graphml')
+
+    users = iot.get_values_one_field('random', 'scom', 'id')
+    g = gt.load_network_subset('random', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
+    g.write_graphml('rd-net.graphml')
+
+    users = iot.get_values_one_field('younger', 'scom', 'id')
+    g = gt.load_network_subset('younger', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
+    g.write_graphml('yg-net.graphml')
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
@@ -542,8 +600,10 @@ if __name__ == '__main__':
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
-    emotion_dropout_IV_following('fed', 'fed2', 'com', 'com')
+    load_net()
+    emotion_dropout_IV_following()
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
     # users_with_collected_friends('random', 'scom', 'net')
     # users_with_collected_friends('younger', 'scom', 'net')
+

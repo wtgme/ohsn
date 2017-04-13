@@ -256,4 +256,4 @@ if __name__ == '__main__':
     # split_control()
     # out_data()
 
-    count_recovery_tweets('fed2', 'com')
+    count_recovery_tweets('random', 'scom')

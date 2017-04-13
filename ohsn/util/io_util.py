@@ -42,8 +42,11 @@ def read_ed_hashtags():
     tag_list = []
     with open(os.path.join(MYDIR, 'ed_hashtag.txt'), 'r') as fo:
         for line in fo.readlines():
-            tokens = line.strip().split()
-            tag_list.append(tokens[0])
+            if line.startswith('#'):
+                continue
+            else:
+                tokens = line.strip().split()
+                tag_list.append(tokens[0])
     return tag_list
 
 

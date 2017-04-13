@@ -271,31 +271,32 @@ def ed_tweet_normal_tweet_count():
 
 
 
-def network_users(btype = 'communication'):
+def network_users(file_path):
     # get user list in a network
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-only-fed.graphml')
+    g = gt.Graph.Read_GraphML(file_path)
     g = gt.giant_component(g)
+    gt.summary(g)
     return g.vs['name']
 
 
 def cluseter_nodes(btype = 'communication'):
     # cluster users in networks
-    g = gt.Graph.Read_GraphML('ed-'+btype+'-hashtag-only-fed.graphml')
+    g = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     g = gt.giant_component(g)
 
-    cluters = tn.user_cluster_hashtag('ed-'+btype+'.data')
+    cluters, ids = tn.user_cluster_hashtag('ed-'+btype+'.data')
 
-    ids = []
-    with open('ed-'+btype+'.data', 'r') as fo:
-        for line in fo.readlines():
-            ids.append(line.split(' ')[0])
+    # ids = []
+    # with open('ed-'+btype+'.data', 'r') as fo:
+    #     for line in fo.readlines():
+    #         ids.append(line.split(' ')[0])
 
     g.vs['cluster'] = -1
     for i in xrange(len(cluters)):
         id = ids[i]
         v = g.vs.find(name=id)
         v['cluster'] = cluters[i]
-    g.write_graphml('ed-'+btype+'-hashtag-only-fed-cluster.graphml')
+    g.write_graphml('communication-only-fed-filter-filtered-hashtag-cluster.graphml')
 
 
 def count_pro_ratio(btype = 'communication'):
@@ -382,7 +383,7 @@ if __name__ == '__main__':
 
     # statis_dbs()
 
-    # ed_tweet_normal_tweet_count()
+
 
     # cluseter_nodes('communication')
     # cluseter_nodes('retweet')
@@ -393,29 +394,59 @@ if __name__ == '__main__':
     # count_pro_ratio('communication')
     # count_pro_ratio('retweet')
 
-    # btype = 'communication'
-    g = gt.Graph.Read_GraphML('communication-3-moduls.graphml')
-    gt.summary(g)
-    import louvain
-    part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=1)
-    print len(set(part.membership)), part.modularity
-    part = louvain.find_partition(g, method='Modularity', weight='weight', resolution_parameter=1)
-    print len(set(part.membership)), part.modularity
+    #-------------------------------Filter network by ed post counts---------------------------------------
+    # ed_tweet_normal_tweet_count()
+    # g = gt.Graph.Read_GraphML('communication-only-fed.graphml')
+    # gt.summary(g)
+    #
+    # df = pd.read_csv('user-ed-stats.csv')
+    # intest = df[df.ed_tweet_count > 2]
+    # print (intest)
+    # # intest = pickle.load(open('ed-positive-id-str.pick', 'r'))
+    #
+    # nodes = g.vs.select(name_in=[str(i) for i in intest['id']])
+    # print len(nodes)
+    # # nodes = g.vs.select(name_in=intest)
+    # g = g.subgraph(nodes)
+    # gt.summary(g)
+    #
+    # g.vs.select(_degree=0).delete()
+    # gt.summary(g)
+    #
+    # g.write_graphml('communication-only-fed-filter.graphml')
+
+    #----------------------------------------------------------------------
+
+    #-----------------KMeans for user cluster-----------------------------------------------------
+    cluseter_nodes()
+    #----------------------------------------------------------------------
+
+
+    #----------------test louvain lib----------------------------------------------------------
+    # import louvain
+    # g = gt.Graph.Read_GraphML('communication-only-fed-filter-cluster.graphml')
+    # gt.summary(g)
+    # part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=0.02)
+    # print len(set(part.membership)), part.modularity
+    # part = louvain.find_partition(g, method='Modularity', weight='weight', resolution_parameter=1)
+    # print len(set(part.membership)), part.modularity
 
     # for r in np.linspace(0, 1, 200):
     #     part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=r)
     #     print r, len(set(part.membership)), part.modularity
 
-    res_parts = louvain.bisect(g, method='RBConfiguration', resolution_range=[0, 1], weight='weight')
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    res_df = pd.DataFrame({
-             'resolution': res_parts.keys(),
-             'bisect_value': [len(set(bisect.partition.membership)) for bisect in res_parts.values()]});
-    plt.step(res_df['resolution'], res_df['bisect_value']);
-    # plt.xscale('log');
-    # plt.yscale('log')
-    plt.show()
+    # res_parts = louvain.bisect(g, method='RBConfiguration', resolution_range=[0, 1], weight='weight')
+    # import pandas as pd
+    # import matplotlib.pyplot as plt
+    # res_df = pd.DataFrame({
+    #          'resolution': res_parts.keys(),
+    #          'bisect_value': [bisect.bisect_value for bisect in res_parts.values()],
+    #          'cluster_number': [len(set(bisect.partition.membership)) for bisect in res_parts.values()]});
+    # # plt.step(res_df['resolution'], res_df['bisect_value']);
+    # plt.step(res_df['resolution'], res_df['cluster_number']);
+    # # plt.xscale('log');
+    # # plt.yscale('log')
+    # plt.show()
 
     # print len(set(part.membership))
     # print part.modularity
@@ -442,3 +473,44 @@ if __name__ == '__main__':
     # plt.step(res_df['resolution'], res_df['bisect_value']);
     # plt.xscale('log');
     # plt.show()
+    #----------------test louvain lib----------------------------------------------------------
+
+    #------------test hierachy structure--------------------------------------------
+    # g = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    # gt.summary(g)
+    # g = gt.giant_component(g)
+    # gt.summary(g)
+    # for edge in g.es:
+    #     source_vertex_id = edge.source
+    #     target_vertex_id = edge.target
+    #     source_vertex = g.vs[source_vertex_id]
+    #     target_vertex = g.vs[target_vertex_id]
+    #     ew = edge['weight']
+    #     print str(source_vertex_id) + ' ' + str(target_vertex_id) + ' ' + str(ew)
+    # # # clus = g.community_edge_betweenness(clusters=1, weights='weight')## too mixed, not working
+    # # clus = g.community_walktrap(weights='weight')
+    # # gt.plot(clus)
+    # # plt.show()
+
+    #------------networkx louvain--------------------------------------------
+    '''Not support directed networks'''
+    # import community
+    # import networkx as nx
+    # import matplotlib.pyplot as plt
+    # G = nx.read_graphml('communication-only-fed-filter.graphml')
+    # # giant = max(nx.connected_component_subgraphs(G), key=len)
+    # partition = community.best_partition(G)
+    # size = float(len(set(partition.values())))
+    # pos = nx.spring_layout(G)
+    # count = 0.
+    # for com in set(partition.values()) :
+    #     count = count + 1.
+    #     list_nodes = [nodes for nodes in partition.keys()
+    #                                 if partition[nodes] == com]
+    #     nx.draw_networkx_nodes(G, pos, list_nodes, node_size = 20,
+    #                                 node_color = str(count / size))
+    #
+    #
+    # nx.draw_networkx_edges(G,pos, alpha=0.5)
+    # plt.show()
+    #------------------------------------------------------------------

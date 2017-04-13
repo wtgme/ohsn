@@ -1,3 +1,4 @@
+# starts with # means to ignore
 ana 5056.0
 anamia 354.0
 anatip 95.0
@@ -32,7 +33,7 @@ anorexicprob 20.0
 eatingdisorders 324.0
 bulimic 224.0
 thinsporation 247.0
-binge 199.0
+#binge 199.0
 bingeing 6.0
 binger 4.0
 thincommandments 15.0
@@ -75,7 +76,6 @@ purged 25.0
 edconfession 22.0
 edawarenessday 19.0
 edstruggles 19.0
-edchat 17.0
 edfood 16.0
 edtips 16.0
 30dayedchallenge 15.0
@@ -114,6 +114,7 @@ anamiasisters	132
 anamotivation	131
 anaproblems	129
 anaprobs	129
+miaprobs 84.0
 anaprobz	129
 anaquotes	128
 anarules	127
@@ -141,7 +142,6 @@ eddiariesproject	24
 edfacts	24
 edhelp	24
 edirony	24
-edsheeran	24
 dyingtobethin	25
 getthin	17
 gettingthin	17
@@ -221,8 +221,6 @@ skinnysongs	6
 skinnysoon	6
 skinnytips	6
 skinnywaist	6
-skins	6
-skinsuk	6
 stayskinny	5
 staystronggetskinny	5
 thinkskinny	5
@@ -291,10 +289,7 @@ skinny4xmas	1941
 thin	1584
 bonespo	1543
 hipbones	1534
-ribs	1130
-fitspo	2677
-bones	721
-legs	674
+#fitspo	2677
 thinkthin	581
 legspo	528
 mythinspo	458
@@ -303,7 +298,7 @@ askanamia	258
 skinnierwinter	256
 thinspiraton	226
 thinpso	196
-fitspiration	153
+#fitspiration	153
 thinspirationoftheday	149
 thinspogoals	148
 chestbones	125

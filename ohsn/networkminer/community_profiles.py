@@ -411,26 +411,29 @@ def network_pro_hashtags():
     # Select only recovery users who have hashtags from ED hashtag topics
     # rec_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'rec_tageted': True}))
     # ped_tag_users = set(iot.get_values_one_field('fed', 'tag_com', 'id', {'ped_tageted': True}))
-    rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
-    ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
-    fedusers = iot.get_values_one_field('fed', 'com', 'id')
-    print len(fedusers)
 
-    only_ped = ped_tag_users - rec_tag_users
-    only_rec = rec_tag_users - ped_tag_users
+    # rec_tag_users = set(iot.get_values_one_field('fed', 'prorec_tag', 'user.id'))
+    # ped_tag_users = set(iot.get_values_one_field('fed', 'proed_tag', 'user.id'))
+    # fedusers = iot.get_values_one_field('fed', 'com', 'id')
+    fedusers = pickle.load(open('fed-user-id-str.pick', 'r'))
+    print len(fedusers)
+    users = [int(uid) for uid in fedusers]
+
+    # only_ped = ped_tag_users - rec_tag_users
+    # only_rec = rec_tag_users - ped_tag_users
     # all_users = list(rec_tag_users.union(ped_tag_users))
-    for btype in ['retweet', 'communication']:
+    for btype in ['communication']:
         # gb = gt.load_beh_network('fed', 'bnet_ed_tag', btype)
-        gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet_ed_tag', btype)
-        for v in gb.vs:
-            if int(v['name']) in only_ped:
-                v['set'] = -1
-            elif int(v['name']) in only_rec:
-                v['set'] = 1
-            else:
-                v['set'] = 0
+        gb = gt.load_beh_network_subset(users, 'fed', 'bnet_ed_tag', btype)
+        # for v in gb.vs:
+        #     if int(v['name']) in only_ped:
+        #         v['set'] = -1
+        #     elif int(v['name']) in only_rec:
+        #         v['set'] = 1
+        #     else:
+        #         v['set'] = 0
         gt.summary(gb)
-        gb.write_graphml('ed-'+btype+'-hashtag-only-fed.graphml')
+        gb.write_graphml(btype+'-only-fed.graphml')
 
 
 def remove_spam(btype):
@@ -943,6 +946,25 @@ def test():
         print user['screen_name']
 
 
+def remove_noise_tags():
+    # refinde the ed tag list to remove "edsheern"
+    times = dbt.db_connect_col('fed', 'ed_tag')
+    taged = dbt.db_connect_col('fed', 'ed_tag_refine')
+    taged.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    taged.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    ed_tags = set(iot.read_ed_hashtags())
+    for tweet in times.find(no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        for hash in hashtags:
+            value = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+            if value in ed_tags:
+                try:
+                    taged.insert(tweet)
+                except pymongo.errors.DuplicateKeyError:
+                    pass
+
 if __name__ == '__main__':
     # ED_followee()
     # ed_follow_net()
@@ -975,8 +997,10 @@ if __name__ == '__main__':
 
     # ed_hashtag()
     # pro_tag_user()
+    # remove_noise_tags()
 
-    # network_pro_hashtags()
+    network_pro_hashtags()
+
     # remove_spam('retweet')
     # remove_spam('communication')
     # count_existing_user('retweet')
@@ -990,8 +1014,8 @@ if __name__ == '__main__':
     # gt.summary(g)
     # g.write_graphml('core-ed-follow'+'.graphml')
 
-    fedusers = iot.get_values_one_field('fed', 'com', 'id')
-    gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet', 'communication')
-    # gb = gt.load_beh_network('fed', 'bnet', 'communication')
-    gt.summary(gb)
-    gb.write_graphml('fed-communication.graphml')
+    # fedusers = iot.get_values_one_field('fed', 'com', 'id')
+    # gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet', 'communication')
+    # # gb = gt.load_beh_network('fed', 'bnet', 'communication')
+    # gt.summary(gb)
+    # gb.write_graphml('fed-communication.graphml')

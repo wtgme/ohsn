@@ -335,7 +335,7 @@ if __name__ == '__main__':
 
     times = dbutil.db_connect_col('fed', 'ed_tag')
     # times = dbutil.db_connect_col('fed', 'prorec_tag')
-    nets = dbutil.db_connect_col('fed', 'bnet_tag')
+    nets = dbutil.db_connect_col('fed', 'bnet_ed_tag')
     nets.create_index([("id0", pymongo.ASCENDING),
                                  ("id1", pymongo.ASCENDING),
                                  ("type", pymongo.ASCENDING),

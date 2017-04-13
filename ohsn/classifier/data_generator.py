@@ -101,8 +101,10 @@ def feature_output(field_names, file_name, dbname, colname, label=None, outids=F
             values = io.get_fields_one_doc(x, field_names)
             # if uid in extend_features:
             #     values.extend(extend_features[uid])
-            # outstr = label + ' '
-            outstr = x['id_str'] + ' '
+            if label:
+                outstr = label + ' '
+            else:
+                outstr = x['id_str'] + ' '
             for i in xrange(len(values)):
                 outstr += str(i+1)+':'+str(values[i])+' '
             index += 1
@@ -163,7 +165,7 @@ if __name__ == '__main__':
     # print len(ed_users), len(rec_users), len(common)
     # # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
     # feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users)
-    # feature_output(fields, 'data/pro-ed-rec', 'fed', '-1', False, ed_users)
+    # feature_output(fields, 'data/fed', 'fed', 'com', None, False)
 
 
     # """Generate Data for GBMI regression"""
@@ -171,7 +173,7 @@ if __name__ == '__main__':
     # feature_output(fields, 'data/gbmi', 'fed', '0', True)
 
     import ohsn.networkminer.recovery as rec
-    users = rec.network_users('communication')
+    users = rec.network_users('communication-only-fed-filter.graphml')
     print len(users)
     feature_output(fields, 'data/ed-communication', 'fed', 'com', None, False, users)
 
