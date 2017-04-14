@@ -30,15 +30,15 @@ def read_user_time():
     trimed_fields = [field.split('.')[-1] for field in fields]
     data = []
 
-    com = dbt.db_connect_col('fed', 'scom')
-    for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
+    com = dbt.db_connect_col('fed', 'com')
+    for user in com.find({'liwc_anal.result.WC': {'$exists': True}, 'level': 1}, no_cursor_timeout=True):
         if 'status' in user:
             created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             scraped_at = user['scrape_timeline_at']
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             life_time = diff_day(last_post, created_at)
             average_time = float(life_time)/min(1, user['statuses_count'])
-            longest_tweet_intervalb = user['longest_tweet_interval'] - 1
+            longest_tweet_intervalb = user['longest_tweet_interval']
 
             observation_interval = diff_day(scraped_at, last_post)
             if (observation_interval-longest_tweet_intervalb) > 30:
@@ -56,7 +56,7 @@ def read_user_time():
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             # life_time = diff_day(last_post, created_at)
             # average_time = float(life_time)/min(1, user['statuses_count'])
-            longest_tweet_intervalb = user['longest_tweet_interval'] - 1
+            longest_tweet_intervalb = user['longest_tweet_interval']
             observation_interval = diff_day(scraped_at, last_post)
             if (observation_interval-longest_tweet_intervalb) > 30:
                 death = 1
@@ -74,7 +74,7 @@ def read_user_time():
             last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             # life_time = diff_day(last_post, created_at)
             # average_time = float(life_time)/min(1, user['statuses_count'])
-            longest_tweet_intervalb = user['longest_tweet_interval'] - 1
+            longest_tweet_intervalb = user['longest_tweet_interval']
             observation_interval = diff_day(scraped_at, last_post)
             if (observation_interval-longest_tweet_intervalb) > 30:
                 death = 1
@@ -100,7 +100,7 @@ def count_longest_tweeting_period(dbname, timename, comname):
             datas.append(created_at)
         # print user['id']
         # print datas
-        diff = [((datas[i]-datas[i+1]).days + 1) for i in xrange(len(datas)-1)]
+        diff = [((datas[i]-datas[i+1]).days) for i in xrange(len(datas)-1)]
         max_period = max(diff)
         # print max_period
         com.update({'id': user_id}, {'$set': {'longest_tweet_interval': max_period}}, upsert=False)
@@ -108,10 +108,10 @@ def count_longest_tweeting_period(dbname, timename, comname):
 
 if __name__ == '__main__':
 
-    read_user_time()
     # print diff_day(datetime(2010, 10,1), datetime(2010,9,1))
     # from lifelines.utils import k_fold_cross_validation
-    # count_longest_tweeting_period('fed', 'timeline', 'scom')
-    # count_longest_tweeting_period('random', 'timeline', 'scom')
-    # count_longest_tweeting_period('younger', 'timeline', 'scom')
+    count_longest_tweeting_period('fed', 'timeline', 'com')
+    count_longest_tweeting_period('random', 'timeline', 'scom')
+    count_longest_tweeting_period('younger', 'timeline', 'scom')
+    read_user_time()
 

@@ -8,7 +8,7 @@ This is explore the community of ED and their common followees
 who are they?
 What are they talk about?
 
-Tried: using sentiment on recovery to select pro-ed and pro-recoery users, NOT working.
+Tried: using sentiments on recovery to select pro-ed and pro-recoery users, NOT working.
 """
 import sys
 from os import path
@@ -493,7 +493,7 @@ def recover_proed_community_all_connection():
     '''
     # Filtering users
     # prorec, proed = edrelatedcom.rec_proed() ## based on profiles
-    # prorec, proed = filter_recovery_sentiment() # based on tweets' sentiment
+    # prorec, proed = filter_recovery_sentiment() # based on tweets' sentiments
     # users = iot.get_values_one_field('fed', 'recover', 'user.id') # based on tweet content
     # prorec = [str(i) for i in users]
     # cols = dbt.db_connect_col('fed', 'follownet')
@@ -789,7 +789,7 @@ def recovery_sentiment():
         text = text.strip().lower()
         text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
         sent = afinn.score(text)
-        # sent = sentiment(text)
+        # sent = sentiments(text)
         times.update_one({'id': tweet['id']}, {'$set':{"polarity": sent[0]
             # , "subjectivity": sent[1]
                                                     }}, upsert=False)

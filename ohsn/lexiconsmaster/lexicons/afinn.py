@@ -24,8 +24,8 @@ class Afinn(LookupLexicon):
 
     Links:
 
-    * http://fnielsen.posterous.com/afinn-a-new-word-list-for-sentiment-analysis ->
-      - http://web.archive.org/web/20130328101613/http://fnielsen.posterous.com/afinn-a-new-word-list-for-sentiment-analysis
+    * http://fnielsen.posterous.com/afinn-a-new-word-list-for-sentiments-analysis ->
+      - http://web.archive.org/web/20130328101613/http://fnielsen.posterous.com/afinn-a-new-word-list-for-sentiments-analysis
     * http://www2.imm.dtu.dk/pubdb/views/publication_details.php?id=6010
       - http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/6010/zip/imm6010.zip
     * http://arxiv.org/abs/1103.2903

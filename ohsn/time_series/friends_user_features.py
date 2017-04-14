@@ -591,6 +591,14 @@ def load_net():
     g = gt.load_network_subset('younger', 'net', {'user': {'$in': users}, 'follower': {'$in': users}})
     g.write_graphml('yg-net.graphml')
 
+
+def screte_tweet():
+    times = dbt.db_connect_col('fed', 'ed_tag')
+    for time in times.find():
+        text = time['text'].lower()
+        if 'secret' in text and 'follow' in text:
+            print time['id'], text
+
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
     # network1 = gt.load_network('fed', 'snet')
@@ -600,10 +608,11 @@ if __name__ == '__main__':
     # print friends_old
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
-    load_net()
+    # load_net()
     emotion_dropout_IV_following()
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
     # users_with_collected_friends('random', 'scom', 'net')
     # users_with_collected_friends('younger', 'scom', 'net')
+    # screte_tweet()
 

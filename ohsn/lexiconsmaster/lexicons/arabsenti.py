@@ -7,7 +7,7 @@ class Arabsenti(LookupLexicon):
     corpus_filepath = '/usr/local/data/arabsenti_lexicon.txt'
 
     def _parse_corpus(self, corpus_file):
-        # the lexicon has the following sentiment scores: 0=NEUT, 1=POS, 2=NEG
+        # the lexicon has the following sentiments scores: 0=NEUT, 1=POS, 2=NEG
         # we want to remap these as: NEG=-1, NEUT=0, POS=+1
         remapping = {'0': 0, '2': -1, '1': 1}
         # with codecs.open(lexicon, encoding='utf-8', mode='r') as corpus_file:
@@ -15,7 +15,7 @@ class Arabsenti(LookupLexicon):
             line = line.decode('utf8')
             parts = line.split(u'\t')
             # [0]         [1]   [2]        [3]       [4]   [5]            [6]
-            # arabic_dia, freq, sentiment, buck_dia, buck, arabic_no_ham, arabic_ham = parts
+            # arabic_dia, freq, sentiments, buck_dia, buck, arabic_no_ham, arabic_ham = parts
             score = remapping[parts[2]]
             yield parts[0].strip(), score
             yield parts[5].strip(), score
