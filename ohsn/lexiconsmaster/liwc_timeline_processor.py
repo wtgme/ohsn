@@ -64,39 +64,44 @@ def process(poi, timelines, fieldname, level):
     target = fieldname + '.mined'
     result = fieldname + '.result'
     # poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
-    poi.create_index([('timeline_count', pymongo.DESCENDING),
+    poi.create_index([
+        # ('timeline_count', pymongo.DESCENDING),
                       (target, pymongo.ASCENDING),
                       ('level', pymongo.ASCENDING)])
 
     while True:
         # How many users whose timelines have not been processed by LIWC
-        finded = poi.find_one({"timeline_count": {'$gt': 0}, target: {'$exists': False}, 'level': {'$lte': level}})
+        finded = poi.find_one({
+            # "timeline_count": {'$gt': 0},
+            target: {'$exists': False}, 'level': {'$lte': level}})
         if finded is None:
             break
         # else:
         #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
-        for user in poi.find({"timeline_count": {'$gt': 0}, target: {'$exists': False},
+        for user in poi.find({
+            # "timeline_count": {'$gt': 0},
+            target: {'$exists': False},
                               'level': {'$lte': level}}, {'id': 1}).limit(250):
             # print user['id']
             textmass = ""
 
             for tweet in timelines.find({'user.id': user['id']}):
-                if 'retweeted_status' in tweet:
-                    continue
-                elif 'quoted_status' in tweet:
-                    continue
-                else:
-                    text = tweet['text'].encode('utf8')
-                    # replace RT, @, # and Http://
-                    text = rtgrex.sub('', text)
-                    text = mgrex.sub('', text)
-                    text = hgrex.sub('', text)
-                    text = ugrex.sub('', text)
-                    text = text.strip()
-                    if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-                        text += '.'
-                    textmass += " " + text.lower()
+                # if 'retweeted_status' in tweet:
+                #     continue
+                # elif 'quoted_status' in tweet:
+                #     continue
+                # else:
+                text = tweet['text'].encode('utf8')
+                # replace RT, @, # and Http://
+                text = rtgrex.sub('', text)
+                text = mgrex.sub('', text)
+                text = hgrex.sub('', text)
+                text = ugrex.sub('', text)
+                text = text.strip()
+                if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                    text += '.'
+                textmass += " " + text.lower()
             words = textmass.split()
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 50:
@@ -120,7 +125,7 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    # process_db('depression', 'com', 'timeline', 'liwc_anal')
+    process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline', 'liwc_anal')
     # process_db('younger', 'com', 'timeline', 'liwc_anal')
     # process_db('fed2', 'com', 'timeline', 'liwc_anal')
@@ -152,26 +157,26 @@ if __name__ == '__main__':
 
 
     '''test one user'''
-    timelines = dbutil.db_connect_col('younger', 'timeline')
-    textmass = ''
-    for tweet in timelines.find({'user.id': 467223304}):
-        if 'retweeted_status' in tweet:
-            continue
-        elif 'quoted_status' in tweet:
-            continue
-        else:
-            text = tweet['text'].encode('utf8')
-            # replace RT, @, # and Http://
-            text = rtgrex.sub('', text)
-            text = mgrex.sub('', text)
-            text = hgrex.sub('', text)
-            text = ugrex.sub('', text)
-            text = text.strip()
-            if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-                text += '.'
-            textmass += " " + text.lower()
-    words = textmass.split()
-    # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-    if len(words) > 50:
-        liwc_result = liwc.summarize_document(' '.join(words))
-        print liwc_result
+    # timelines = dbutil.db_connect_col('younger', 'timeline')
+    # textmass = ''
+    # for tweet in timelines.find({'user.id': 467223304}):
+    #     if 'retweeted_status' in tweet:
+    #         continue
+    #     elif 'quoted_status' in tweet:
+    #         continue
+    #     else:
+    #         text = tweet['text'].encode('utf8')
+    #         # replace RT, @, # and Http://
+    #         text = rtgrex.sub('', text)
+    #         text = mgrex.sub('', text)
+    #         text = hgrex.sub('', text)
+    #         text = ugrex.sub('', text)
+    #         text = text.strip()
+    #         if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+    #             text += '.'
+    #         textmass += " " + text.lower()
+    # words = textmass.split()
+    # # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+    # if len(words) > 50:
+    #     liwc_result = liwc.summarize_document(' '.join(words))
+    #     print liwc_result

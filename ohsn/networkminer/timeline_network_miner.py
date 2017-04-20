@@ -149,19 +149,17 @@ def network_mining(poi, timelines, network, level):
     # TODO: change net_anal.tnmined as int not bool for multiple processing
     #### Start to mining relationship network from users' timelines
     while True:
-        count = poi.count({'$or': [{'net_anal.tnmined': {'$exists': False}},
-                                            {'net_anal.tnmined': False}]})
+        count = poi.find_one({'net_anal.tnmined': {'$exists': False}})
         # count = poi.count({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
         #                                      {'net_anal.tnmined': False}], 'level': {'$lte': level}})
-        if count == 0:
+        if count is None:
             break
-        else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
+        # else:
+        #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") +"\t"+ str(count) + " remaining"
 
         # for user in poi.find({"timeline_count": {'$gt': 0}, '$or': [{'net_anal.tnmined': {'$exists': False}},
         #                                      {'net_anal.tnmined': False}], 'level': {'$lte': level}}, {'id': 1}).limit(250):
-        for user in poi.find({'$or': [{'net_anal.tnmined': {'$exists': False}},
-                                            {'net_anal.tnmined': False}]}).limit(250):
+        for user in poi.find({'net_anal.tnmined': {'$exists': False}}).limit(250):
             for tweet in timelines.find({'user.id': user['id']}):
                 # parse the tweet for mrr edges:
 
@@ -325,7 +323,7 @@ def process_db(dbname, poicol, timecol, bnetcol, level):
     network_mining(sample_poi, sample_time, sample_network, level)
 
 if __name__ == '__main__':
-    # process_db('depression', 'com', 'timeline', 'bnet', 10000)
+    process_db('depression', 'neg_com', 'neg_timeline', 'neg_bnet', 10000)
     # process_db('fed2', 'com', 'timeline', 'bnet', 10000)
     # process_db('random', 'scom', 'timeline', 'bnet', 10000)
     # process_db('young', 'scom', 'timeline', 'bnet', 10000)
@@ -333,15 +331,15 @@ if __name__ == '__main__':
     # process_db('srd', 'com', 'timeline', 'bnet', 10)
     # process_db('syg', 'com', 'timeline', 'bnet', 10)
 
-    times = dbutil.db_connect_col('fed', 'ed_tag')
-    # times = dbutil.db_connect_col('fed', 'prorec_tag')
-    nets = dbutil.db_connect_col('fed', 'bnet_ed_tag')
-    nets.create_index([("id0", pymongo.ASCENDING),
-                                 ("id1", pymongo.ASCENDING),
-                                 ("type", pymongo.ASCENDING),
-                                 ("statusid", pymongo.ASCENDING)],
-                                unique=True)
-    process_tweets(times, nets)
+    # times = dbutil.db_connect_col('fed', 'ed_tag')
+    # # times = dbutil.db_connect_col('fed', 'prorec_tag')
+    # nets = dbutil.db_connect_col('fed', 'bnet_ed_tag')
+    # nets.create_index([("id0", pymongo.ASCENDING),
+    #                              ("id1", pymongo.ASCENDING),
+    #                              ("type", pymongo.ASCENDING),
+    #                              ("statusid", pymongo.ASCENDING)],
+    #                             unique=True)
+    # process_tweets(times, nets)
 
     # hashtag_related_networks('fed', 'timeline', 'hbnet')
     # refine_recovery('fed', 'hbnet')

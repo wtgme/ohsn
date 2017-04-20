@@ -24,7 +24,8 @@ from behavior_tweet_types import compore_distribution
 
 def bahavior_net(dbname, comname, bnetname, btype):
     userlist = iot.get_values_one_field(dbname, comname, 'id',
-                                        {'timeline_count': {'$gt': 0}})
+                                        # {'timeline_count': {'$gt': 0}}
+                                        )
     return gt.load_beh_network_subset(userlist, dbname, bnetname, btype)
 
 
@@ -49,7 +50,9 @@ def tag_entroy(dbname, comname, timename):
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     time = db[timename]
-    for user in com.find({'timeline_count': {'$gt': 0}}, no_cursor_timeout=True):
+    for user in com.find(
+            # {'timeline_count': {'$gt': 0}},
+                         no_cursor_timeout=True):
         tag_map = {}
         for tweet in time.find({'user.id': user['id'], '$where': "this.entities.hashtags.length>0"}, no_cursor_timeout=True):
             hashtags = tweet['entities']['hashtags']
@@ -179,10 +182,11 @@ def plot_error_bars(data):
     plt.show()
 
 
-def diversity_db(dbname, comname, behavior):
+def diversity_db(dbname, comname, behavior, netname):
     userlist = iot.get_values_one_field(dbname, comname, 'id_str',
-                                        {'timeline_count': {'$gt': 0}})
-    g = bahavior_net(dbname, comname, 'bnet', behavior)
+                                        # {'timeline_count': {'$gt': 0}}
+                                        )
+    g = bahavior_net(dbname, comname, netname, behavior)
     # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     print dbname, behavior
     # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
@@ -209,13 +213,13 @@ if __name__ == '__main__':
 
     ###do hashtag network###
     # hashtag_net('fed2', 'com', 'timeline')
-    # tag_entroy('depression', 'com', 'timeline')
+    tag_entroy('depression', 'neg_com', 'neg_timeline')
     # '''Compare diversity of behaviors'''
     dbnames = ['fed2', 'random', 'young', 'depression']
 
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:
-        ed = diversity_db(dbnames[-1], 'com', behavior)
+        ed = diversity_db(dbnames[-1], 'neg_com', behavior, 'neg_bnet')
         # rd = diversity_db(dbnames[1], behavior)
         # yg = diversity_db(dbnames[2], behavior)
         # compore_distribution(behavior, ed, rd, yg)

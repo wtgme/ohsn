@@ -153,7 +153,7 @@ def gagement(dbname, colname):
 if __name__ == '__main__':
     # profile_feature_stat()
     # profile_feature_dependence()
-    gagement('depression', 'com')
+    gagement('depression', 'neg_com')
     # gagement('random', 'scom')
     # gagement('young', 'scom')
 

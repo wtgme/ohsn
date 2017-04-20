@@ -293,7 +293,7 @@ def beh_pro(dbname, comname, timename):
 
 if __name__ == '__main__':
 
-    beh_pro('depression', 'com', 'timeline')
+    beh_pro('depression', 'neg_com', 'neg_timeline')
 
     # '''how many tweets with each bahaviour'''
     # stat = beh_stat('depression', 'com', 'timeline', 'depbev')
