@@ -99,7 +99,7 @@ def netstatis(dbname, behavior_name, g, userlist, comname):
     # assort = g.assortativity_degree(directed=False)
 
 
-    gnode = g.vs.select()["name"]
+    gnode = g.vs["name"]
     target_nodes = list(set(userlist).intersection(gnode))
 
     '''Remove nodes with tailed strength'''
@@ -187,7 +187,10 @@ def diversity_db(dbname, comname, behavior, netname):
     userlist = iot.get_values_one_field(dbname, comname, 'id_str',
                                         # {'timeline_count': {'$gt': 0}}
                                         )
-    g = bahavior_net(dbname, comname, netname, behavior)
+    g = gt.load_beh_network_subset(userlist, dbname, netname, behavior)
+    gt.summary(g)
+
+    # g = bahavior_net(dbname, comname, netname, behavior)
     # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     print dbname, behavior
     # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
