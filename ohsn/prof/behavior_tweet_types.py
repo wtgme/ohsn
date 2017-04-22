@@ -18,6 +18,8 @@ from ohsn.util import statis_util
 import ohsn.util.io_util as io
 import pickle
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def get_one_value(diclist, field):
@@ -276,6 +278,13 @@ def compore_distribution(field, feds, randoms, youngs=None):
     print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s \\\\' \
           % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ed_rdz[2],
              pvalue(ed_rdz[3]))
+
+    sns.distplot(feds, hist=False, label='Positive')
+    sns.distplot(randoms, hist=False, label='Negative')
+    plt.savefig('data/' + field + '.pdf')
+    plt.clf()
+
+
 
     # print 'ED & ' + str(edcomm[0]) + ' & ' + str(edcomm[1]) \
     #       + ' & ' + str(edcomm[2]) + ' & ' + str(edcomm[3]) + '\\\\'
