@@ -184,17 +184,17 @@ def plot_error_bars(data):
 
 
 def diversity_db(dbname, comname, behavior, netname):
-    userlist = iot.get_values_one_field(dbname, comname, 'id_str',
+    userlist = iot.get_values_one_field(dbname, comname, 'id',
                                         # {'timeline_count': {'$gt': 0}}
                                         )
-    g = gt.load_beh_network_subset([int(i) for i in userlist], dbname, netname, behavior)
+    g = gt.load_beh_network_subset(userlist, dbname, netname, behavior)
     gt.summary(g)
 
     # g = bahavior_net(dbname, comname, netname, behavior)
     # pickle.dump(g, open('data/'+dbname+'_'+behavior+'.pick', 'w'))
     print dbname, behavior
     # g = pickle.load(open('data/' + dbname + '_' + behavior + '.pick', 'r'))
-    return netstatis(dbname, behavior, g, userlist, comname)
+    return netstatis(dbname, behavior, g, [str(i) for i in userlist], comname)
     # return True
 
 
