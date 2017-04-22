@@ -132,9 +132,12 @@ def gagement(dbname, colname):
         tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         delta = tts.date() - ts.date()
         days = delta.days+1
-        status_count = abs(float(user['statuses_count']))
-        friend_count = abs(float(user['friends_count']))
-        follower_count = abs(float(user['followers_count']))
+        try:
+            status_count = abs(float(user['statuses_count']))
+            friend_count = abs(float(user['friends_count']))
+            follower_count = abs(float(user['followers_count']))
+        except KeyError:
+            continue
         # try:
         engage['statuses_day'] = np.log(1 + status_count/days)
         engage['friends_day'] = np.log(1 + friend_count/days)

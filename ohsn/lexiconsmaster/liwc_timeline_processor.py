@@ -67,13 +67,16 @@ def process(poi, timelines, fieldname, level):
     poi.create_index([
         # ('timeline_count', pymongo.DESCENDING),
                       (target, pymongo.ASCENDING),
-                      ('level', pymongo.ASCENDING)])
+                      # ('level', pymongo.ASCENDING)
+    ])
 
     while True:
         # How many users whose timelines have not been processed by LIWC
         finded = poi.find_one({
             # "timeline_count": {'$gt': 0},
-            target: {'$exists': False}, 'level': {'$lte': level}})
+            target: {'$exists': False},
+            # 'level': {'$lte': level}
+        })
         if finded is None:
             break
         # else:
@@ -82,7 +85,8 @@ def process(poi, timelines, fieldname, level):
         for user in poi.find({
             # "timeline_count": {'$gt': 0},
             target: {'$exists': False},
-                              'level': {'$lte': level}}, {'id': 1}).limit(250):
+                              # 'level': {'$lte': level}
+        }, {'id': 1}).limit(250):
             # print user['id']
             textmass = ""
 
@@ -106,9 +110,9 @@ def process(poi, timelines, fieldname, level):
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 50:
                 liwc_result = liwc.summarize_document(' '.join(words))
-                poi.update({'id': user['id']}, {'$set': {target: True, result: liwc_result}}, upsert=False)
+                poi.update_one({'id': user['id']}, {'$set': {target: True, result: liwc_result}}, upsert=False)
             else:
-                poi.update({'id': user['id']}, {'$set': {target: True, result: None}}, upsert=False)
+                poi.update_one({'id': user['id']}, {'$set': {target: True, result: None}}, upsert=False)
 
 
 def process_db(dbname, colname, timename, fieldname):

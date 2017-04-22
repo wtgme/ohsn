@@ -92,7 +92,7 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
     name_map, edges = {}, {}
     # for row in cols.find({}):
     for row in cols.find({'$and': [{'type': {'$in': btype_dic[btype]}}, {'id0': {'$in': userlist}}
-        , {'id1': {'$in': userlist}}
+        # , {'id1': {'$in': userlist}}
                                    ]}, no_cursor_timeout=True):
         n1 = str(row['id0'])
         n2 = str(row['id1'])

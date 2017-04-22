@@ -34,11 +34,16 @@ def feature_stat(dumped=False):
     assert isinstance(fields, object)
     for field in fields:
         keys = field.split('.')
-        filter = {field: {'$exists': True}}
-        eds = io.get_values_one_field('fed', 'scom', field, filter)
-        randoms = io.get_values_one_field('random', 'scom', field, filter)
-        youngs = io.get_values_one_field('young', 'scom', field, filter)
-        compore_distribution(keys[-1], eds, randoms, youngs)
+        # filter = {field: {'$exists': True}}
+        # eds = io.get_values_one_field('fed', 'scom', field, filter)
+        # randoms = io.get_values_one_field('random', 'scom', field, filter)
+        # youngs = io.get_values_one_field('young', 'scom', field, filter)
+        # compore_distribution(keys[-1], eds, randoms, youngs)
+
+        positive = io.get_values_one_field('depression', 'com', field, {field: {'$exists': True}, 'checked':True})
+        negative = io.get_values_one_field('depression', 'neg_com', field, {field: {'$exists': True}})
+        compore_distribution(keys[-1], positive, negative)
+
 
     # field_name = 'liwc_anal.result'
     # filter = {'liwc_anal.result.WC': {'$exists': True}}
@@ -255,18 +260,22 @@ def pvalue(p):
     return s
 
 
-def compore_distribution(field, feds, randoms, youngs):
+def compore_distribution(field, feds, randoms, youngs=None):
     # print '---------------Compare ' + field + '---------------------'
     edcomm = statis_util.comm_stat(feds)
     rdcomm = statis_util.comm_stat(randoms)
-    ygcomm = statis_util.comm_stat(youngs)
+    # ygcomm = statis_util.comm_stat(youngs)
     ed_rdz = statis_util.ks_test(randoms, feds)
-    ed_ygz = statis_util.ks_test(youngs, feds)
-    yg_rdz = statis_util.ks_test(youngs, randoms)
+    # ed_ygz = statis_util.ks_test(youngs, feds)
+    # yg_rdz = statis_util.ks_test(youngs, randoms)
     # if min(ed_rdz[2], ed_ygz[2])>yg_rdz[2]:
-    print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s & %.2f%s & %.2f%s \\\\' \
-          % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], ed_rdz[2],
-             pvalue(ed_rdz[3]), ed_ygz[2], pvalue(ed_ygz[3]), yg_rdz[2], pvalue(yg_rdz[3]))
+    # print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s & %.2f%s & %.2f%s \\\\' \
+    #       % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ygcomm[2], ygcomm[3], ed_rdz[2],
+    #          pvalue(ed_rdz[3]), ed_ygz[2], pvalue(ed_ygz[3]), yg_rdz[2], pvalue(yg_rdz[3]))
+
+    print '%s & %.2f($\sigma$=%.2f) & %.2f($\sigma$=%.2f) & %.2f%s \\\\' \
+          % (field, edcomm[2], edcomm[3], rdcomm[2], rdcomm[3], ed_rdz[2],
+             pvalue(ed_rdz[3]))
 
     # print 'ED & ' + str(edcomm[0]) + ' & ' + str(edcomm[1]) \
     #       + ' & ' + str(edcomm[2]) + ' & ' + str(edcomm[3]) + '\\\\'
@@ -282,9 +291,9 @@ def compore_distribution(field, feds, randoms, youngs):
     # print 'ks-test(Younger, Random): & $n_1$: ' + str(yg_rdz[0]) + ' & $n_2$: ' + str(yg_rdz[1]) \
     #       + ' & ks-value: ' + str(yg_rdz[2]) + ' & p-value: ' + str(yg_rdz[3]) + '\\\\'
 
-    plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
-                           ['ED', 'Random', 'Younger'],
-                           linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
+    # plot.plot_pdf_mul_data([feds, randoms, youngs], field, ['--g', '--b', '--r'], ['s', 'o', '^'],
+    #                        ['ED', 'Random', 'Younger'],
+    #                        linear_bins=True, central=True, fit=False, fitranges=None, savefile=field + '.pdf')
 
 
 def beh_pro(dbname, comname, timename):
@@ -295,7 +304,7 @@ if __name__ == '__main__':
 
     beh_pro('depression', 'neg_com', 'neg_timeline')
 
-    # '''how many tweets with each bahaviour'''
+    '''how many tweets with each bahaviour'''
     # stat = beh_stat('depression', 'com', 'timeline', 'depbev')
     # # beh_stat('random', 'scom', 'timeline', 'rdbev')
     # # beh_stat('young', 'scom', 'timeline', 'ygbev')
@@ -339,5 +348,5 @@ if __name__ == '__main__':
     # plot.plot_pdf_mul_data([edtags.values(), rdtags.values(), ygtags.values()], ['--bo', '--r^', '--ks'], 'Hashtags',  ['ED', 'Random', 'Young'], False)
     # plot.plot_pdf_mul_data([edments.values(), rdments.values(), ygments.values()], ['--bo', '--r^', '--ks'], 'Mentions',  ['ED', 'Random', 'Young'], False)
 
-    # '''compare Distributions of LIWC features'''
-    # feature_stat()
+    '''compare Distributions of LIWC features'''
+    feature_stat()

@@ -47,7 +47,16 @@ def store_tweets():
                 except pymongo.errors.DuplicateKeyError:
                     pass
 
+def label_positive():
+    com = dbt.db_connect_col('depression', 'com')
+    with open('/home/wt/Code/ohsn/ohsn/depression/data/positive/positive_users_selections_screennaes.txt') as data_file:
+        for line in data_file.readlines():
+            print line
+            screen_name = line.strip()
+            com.update_one({'screen_name': screen_name}, {'$set': {'checked': True}}, upsert=False)
+
 
 if __name__ == '__main__':
     # store_users_profile()
-    store_tweets()
+    # store_tweets()
+    label_positive()

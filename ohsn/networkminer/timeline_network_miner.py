@@ -187,7 +187,7 @@ def network_mining(poi, timelines, network, level):
 
                         else:  # original mentions
                             add_direct_mentions_edge(network, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
-            poi.update({'id': user['id']}, {'$set': {"net_anal.tnmined": True}}, upsert=False)
+            poi.update_one({'id': user['id']}, {'$set': {"net_anal.tnmined": True}}, upsert=False)
 
 
 def process_tweets(timelines, network):

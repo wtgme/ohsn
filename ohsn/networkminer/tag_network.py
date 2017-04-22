@@ -347,6 +347,7 @@ def user_hashtag_profile(tag_net, users):
     index = 0
     hash_com = {}
     for comclu in comclus:
+        # filter single-node communities
         if len(comclu.vs) > 1:
             for v in comclu.vs:
                 hash_com[v['name']] = index
