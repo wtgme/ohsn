@@ -40,7 +40,7 @@ def feature_stat(dumped=False):
         # youngs = io.get_values_one_field('young', 'scom', field, filter)
         # compore_distribution(keys[-1], eds, randoms, youngs)
 
-        positive = io.get_values_one_field('depression', 'com', field, {field: {'$exists': True}, 'checked':True})
+        positive = io.get_values_one_field('depression', 'com', field, {field: {'$exists': True}, 'checked': True})
         negative = io.get_values_one_field('depression', 'neg_com', field, {field: {'$exists': True}})
         compore_distribution(keys[-1], positive, negative)
 
@@ -302,7 +302,7 @@ def beh_pro(dbname, comname, timename):
 
 if __name__ == '__main__':
 
-    beh_pro('depression', 'neg_com', 'neg_timeline')
+    # beh_pro('depression', 'neg_com', 'neg_timeline')
 
     '''how many tweets with each bahaviour'''
     # stat = beh_stat('depression', 'com', 'timeline', 'depbev')
