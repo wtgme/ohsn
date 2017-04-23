@@ -44,6 +44,7 @@ def feature_stat(dumped=False):
 
         positive = io.get_values_one_field('depression', 'com', field, {field: {'$exists': True}, 'checked': True})
         negative = io.get_values_one_field('depression', 'neg_com', field, {field: {'$exists': True}})
+        # print len(positive), len(negative)
         compore_distribution(keys[-1], positive, negative)
 
 
@@ -281,6 +282,8 @@ def compore_distribution(field, feds, randoms, youngs=None):
 
     sns.distplot(feds, hist=False, label='Positive')
     sns.distplot(randoms, hist=False, label='Negative')
+    plt.xlabel('value')
+    plt.ylabel('PDF')
     plt.savefig('data/' + field + '.pdf')
     plt.clf()
 
