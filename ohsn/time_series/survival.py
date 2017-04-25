@@ -78,9 +78,19 @@ def read_user_time_iv(filename):
         com = dbt.db_connect_col(dbname, comname)
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
         gt.summary(network1)
+        network1 = gt.giant_component(network1)
+        gt.summary(network1)
+        '''Centralities Calculation'''
+        eigen = network1.eigenvector_centrality()
+
+        nodes = [int(v['name']) for v in network1.vs]
+        eigen_map = dict(zip(nodes, eigen))
+        print 'load liwc 2 batches: ' + tag.lower()+'-liwc2stage.csv'
+        liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
 
         for user in com.find(filter_values, no_cursor_timeout=True):
             if 'status' in user:
+                uid = user['id']
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 scraped_at = user['scrape_timeline_at']
                 last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -94,9 +104,26 @@ def read_user_time_iv(filename):
                 else:
                     death = 0
                 values = iot.get_fields_one_doc(user, fields)
+                level = user['level']
+
+                # set users liwc changes
+                uvs = liwc_df[liwc_df.user_id == str(uid)].loc[:, trimed_fields]
+                # print uvs
+                if len(uvs) == 2:
+                    changes, priors, posts = [], [], []
+                    for name in trimed_fields:
+                        old = uvs.iloc[0][name]
+                        new = uvs.iloc[1][name]
+                        priors.append(old)
+                        posts.append(new)
+                        changes.append(new - old)
+                    liwc_changes = priors + posts + changes
+                else:
+                    liwc_changes = [None]*(len(trimed_fields)*3)
+                u_centrality = eigen_map.get(user['id'], 0)
+                values.extend(liwc_changes)
 
                 '''Get friends' profiles'''
-                uid = user['id']
                 exist = True
                 try:
                     v = network1.vs.find(name=str(uid))
@@ -113,17 +140,23 @@ def read_user_time_iv(filename):
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             if fu != None:
                                 fatt = iot.get_fields_one_doc(fu, fields)
+                                fatt.extend([eigen_map.get(fu['id'], 0)])
                                 fatts.append(fatt)
-                        if len(fatts) > 0:
+                        # thredhold = user['friends_count']*0.5
+                        if len(fatts) > 3:
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
-                            data.append([user['id_str'], created_at, last_post, scraped_at, average_time,
-                             longest_tweet_intervalb, observation_interval, tag, death] + values)
+                            data.append([user['id_str'], level, created_at, last_post, scraped_at, average_time,
+                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality] + values)
 
-    df = pd.DataFrame(data, columns=['uid', 'created_at', 'last_post', 'scraped_at',
+    df = pd.DataFrame(data, columns=['uid', 'level', 'created_at', 'last_post', 'scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
-                                     'group', 'event'] + trimed_fields + ['f_'+tf for tf in trimed_fields])
+                                     'group', 'event', 'u_centrality'] + trimed_fields +
+                                    ['u_prior_'+field for field in trimed_fields] +
+                                    ['u_post_'+field for field in trimed_fields] +
+                                    ['u_change_'+field for field in trimed_fields] +
+                                    ['f_'+tf for tf in trimed_fields] + ['f_centrality'])
     df.to_csv(filename)
 
 
@@ -152,6 +185,6 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('fed', 'timeline', 'com')
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
-    read_user_time('user-durations-2.csv')
+    # read_user_time('user-durations-2.csv')
     read_user_time_iv('user-durations-iv-2.csv')
 

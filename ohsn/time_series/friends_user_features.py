@@ -5,6 +5,7 @@ Created on 10:09, 08/11/16
 @author: wt
 
 This script is to explore that users' emotions would lead to their dropouts in Twitter
+Checked activity of all users and their friends for random and younger users
 """
 
 import sys
@@ -264,14 +265,13 @@ def emotion_dropout_IV_following():
     print attr_names
 
     data = []
-
     name_map = {
-        'ed': ('fed', 'fed2', 'com', 'com'),
-        'yg': ('younger', 'younger2', 'scom', 'com'),
-        'rd': ('random', 'random2', 'scom', 'com')
+        'ed': ('fed', 'fed2', 'com', 'com', {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}),
+        'yg': ('younger', 'younger2', 'scom', 'com_check', {'liwc_anal.result.WC': {'$exists': True}}),
+        'rd': ('random', 'random2', 'scom', 'com_check', {'liwc_anal.result.WC': {'$exists': True}})
     }
     for groupname in ['yg', 'rd', 'ed']:
-        dbname1, dbname2, comname1, comname2 = name_map[groupname]
+        dbname1, dbname2, comname1, comname2, filter_que = name_map[groupname]
         print 'Centrality Calculate .........'
         # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
 
@@ -283,6 +283,8 @@ def emotion_dropout_IV_following():
         print 'load network: ' + groupname+'-net.graphml'
         network1= gt.Graph.Read_GraphML(groupname+'-net.graphml')
         # network1 = pickle.load(open('net.pick', 'r'))
+        gt.summary(network1)
+        network1 = gt.giant_component(network1)
         gt.summary(network1)
 
         '''Centralities Calculation'''
@@ -306,7 +308,7 @@ def emotion_dropout_IV_following():
 
         print 'load liwc 2 batches: ' + groupname+'-liwc2stage.csv'
         df = pd.read_pickle(groupname+'-liwc2stage.csv'+'.pick')
-        filter_que = {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}
+
         user1 = iot.get_values_one_field(dbname1, comname1, 'id', filter_que)
 
         print 'load db1: ', dbname1, comname1
@@ -359,8 +361,8 @@ def emotion_dropout_IV_following():
             # set profile, active days and eigenvector centrality
             print u1['id']
             row.extend(active_days(u1))
-            row.extend([eigen_map.get(u1['id'])])
-            row.extend([pagerank_map.get(u1['id'])])
+            row.extend([eigen_map.get(u1['id'], 0)])
+            row.extend([pagerank_map.get(u1['id'], 0)])
             row.extend([
                 # u1['recovery_tweets'],
                 u1['timeline_count']])
@@ -385,8 +387,8 @@ def emotion_dropout_IV_following():
                         if fu != None:
                             fatt = iot.get_fields_one_doc(fu, fields)
                             fatt.extend(active_days(fu))
-                            fatt.extend([eigen_map.get(fu['id'])])
-                            fatt.extend([pagerank_map.get(fu['id'])])
+                            fatt.extend([eigen_map.get(fu['id'], 0)])
+                            fatt.extend([pagerank_map.get(fu['id'], 0)])
                             fatt.extend([fu['timeline_count']])
                             fatts.append(fatt)
                             if (fu2 is None):
@@ -407,7 +409,7 @@ def emotion_dropout_IV_following():
                             #     alive += 0
                             # else:
                             #     alive += 1
-                    if len(fatts) > 0:
+                    if len(fatts) > 3:
                         fatts = np.array(fatts)
                         fmatts = np.mean(fatts, axis=0)
                         row.extend(fmatts)
@@ -598,6 +600,7 @@ def screte_tweet():
         text = time['text'].lower()
         if 'secret' in text and 'follow' in text:
             print time['id'], text
+
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
