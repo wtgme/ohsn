@@ -710,13 +710,13 @@ def pmi(g, filename=None):
         source_vertex = g.vs[source_vertex_id]
         target_vertex = g.vs[target_vertex_id]
         ew = edge['weight']
-        edge['pmi'] = float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight'])
+        edge['pmi'] = max(np.log2(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight'])), 0)
     # pickle.dump(g, open('data/'+filename+'_pmi_tag.pick', 'w'))
     # g = pickle.load(open('data/'+filename+'_pmi_tag.pick', 'r'))
     # pdf(g.es['weight'])
     # plot_graph(g, 'ed-hashtag')
-    # g.write_graphml(filename+'_pmi_tag.graphml')
-    g.es['weight'] = g.es['pmi']
+    g.write_graphml(filename+'_pmi.graphml')
+    # g.es['weight'] = g.es['pmi']
     return g
 
 
@@ -730,22 +730,24 @@ def pmi(g, filename=None):
 #                vcmap=matplotlib.cm.gist_heat_r, output="hashtag.pdf")
 
 if __name__ == '__main__':
+
     # # pall = tag_record('fed', 'pall_tag', 'pall')
     # # rec = tag_record('fed', 'prorec_tag', 'prorec')
     # # ped = tag_record('fed', 'proed_tag', 'proed')
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    core = gt.Graph.Read_GraphML('core_ed_hashtag_filter.graphml')
-
-    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
-
-    # # # hash_com_all, com_size_all = community(pall)
-    hash_com_rec, com_size_rec = community(core)
-    # # hash_com_ped, com_size_ped = community(ped)
-    # label_ed_recovery(hash_com_rec, com_size_rec)
-    # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
-    # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    pmi(core, 'alled_tag_undir_filter')
+    #
+    # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    #
+    # # # # hash_com_all, com_size_all = community(pall)
+    # hash_com_rec, com_size_rec = community(core)
+    # # # hash_com_ped, com_size_ped = community(ped)
+    # # label_ed_recovery(hash_com_rec, com_size_rec)
+    # # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
+    # # refine_recovery_tweets(hash_com_ped, 'proed_tag', 'proed_tag_refine', [0, 1, 2])
 
 
     # tag_jaccard('fed', 'prorec_tag', 'prorec')
