@@ -269,8 +269,8 @@ def community(g=None):
     gc = gt.giant_component(g)
     gt.summary(gc)
     # g.write_graphml('fed_tag_undir_over3.graphml')
-    # com = gc.community_multilevel(weights='weight', return_levels=False)
-    com = g.community_infomap(edge_weights='weight', vertex_weights='weight', trials=1)
+    com = g.community_multilevel(weights='pmi', return_levels=False)
+    # com = g.community_infomap(edge_weights='weight', vertex_weights='weight', trials=1)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
     index = 0
@@ -345,20 +345,24 @@ def user_hashtag_profile(tag_net, users):
     gt.summary(tag_net)
     gc = gt.giant_component(tag_net)
     gt.summary(gc)
-    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
-    comclus = com.subgraphs()
-    print 'Community stats: #communities, modularity', len(comclus), com.modularity
-    index = 0
-    hash_com = {}
-    for comclu in comclus:
-        # filter single-node communities
-        if len(comclu.vs) > 1:
-            for v in comclu.vs:
-                hash_com[v['name']] = index
-            index += 1
-    pickle.dump(hash_com, open('hash_com.pick', 'w'))
 
-    hash_com = pickle.load(open('hash_com.pick', 'r'))
+    # # com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # com = gc.community_multilevel(weights='pmi', return_levels=False)
+    # comclus = com.subgraphs()
+    # print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    # index = 0
+    # hash_com = {}
+    # for comclu in comclus:
+    #     # filter single-node communities
+    #     if len(comclu.vs) > 1:
+    #         for v in comclu.vs:
+    #             hash_com[v['name']] = index
+    #         index += 1
+    # pickle.dump(hash_com, open('hash_com.pick', 'w'))
+
+    # hash_com = pickle.load(open('hash_com.pick', 'r'))
+
+    hash_com = dict(zip(gc.vs['name'], range(len(gc.vs['name']))))
     com_length = len(set(hash_com.values()))
     print com_length
     # Count tag usages
@@ -737,8 +741,8 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
-    pmi(core, 'alled_tag_undir_filter')
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter_pmi.graphml')
+    # pmi(core, 'core_ed_hashtag_undir_filter')
     #
     # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     #
@@ -845,14 +849,14 @@ if __name__ == '__main__':
     #----------------------------------------------------------------------------------------------
     '''User's hashtag profile'''
 
-    # core = gt.Graph.Read_GraphML('alled_tag_filter.graphml')
-    # gt.summary(core)
-    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
-    # gt.summary(communication)
-    # communication = gt.giant_component(communication)
-    # gt.summary(communication)
-    # users = [(v['name']) for v in communication.vs]
-    # print len(users)
-    # user_hashtag_profile(core, users)
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter_pmi.graphml')
+    gt.summary(core)
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    user_hashtag_profile(core, users)
 
     #----------------------------------------------------------------------------------------------

@@ -283,6 +283,7 @@ def cluseter_nodes(btype = 'communication'):
     # cluster users in networks
     g = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     g = gt.giant_component(g)
+    gt.summary(g)
 
     cluters, ids = tn.user_cluster_hashtag('ed-'+btype+'.data')
 
@@ -395,7 +396,7 @@ if __name__ == '__main__':
     # count_pro_ratio('retweet')
 
     #-------------------------------Filter network by ed post counts---------------------------------------
-    # ed_tweet_normal_tweet_count()
+    ed_tweet_normal_tweet_count()
     # g = gt.Graph.Read_GraphML('communication-only-fed.graphml')
     # gt.summary(g)
     #
