@@ -24,6 +24,13 @@ import networkx as nx
 import random as rand
 import pymongo
 import pandas as pd
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, calinski_harabaz_score
+from sklearn.datasets import load_svmlight_file
+from sklearn import preprocessing
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+import louvain
+from sklearn import metrics
 
 def pdf(data):
     pll.plot_pdf_mul_data([data], ['Edge Weight'], ['r'], ['o'], labels=['Edge Weight'],
@@ -269,8 +276,9 @@ def community(g=None):
     gc = gt.giant_component(g)
     gt.summary(gc)
     # g.write_graphml('fed_tag_undir_over3.graphml')
-    com = g.community_multilevel(weights='pmi', return_levels=False)
-    # com = g.community_infomap(edge_weights='weight', vertex_weights='weight', trials=1)
+    # com = g.community_multilevel(weights='pmi', return_levels=False)
+    com = g.community_infomap(edge_weights='weight', vertex_weights=None, trials=1)
+    # com = louvain.find_partition(gc, method='Significance', weight=None)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
     index = 0
@@ -330,8 +338,6 @@ def tag_jaccard(dbname, hash_time, gfilename):
     g.write_graphml(gfilename+'_tag_undir_jarccard.graphml')
 
 
-
-
 def user_hashtag_profile(tag_net, users):
     '''
     Map the hashtags that a user has used to communities of hashtag network
@@ -346,38 +352,38 @@ def user_hashtag_profile(tag_net, users):
     gc = gt.giant_component(tag_net)
     gt.summary(gc)
 
-    # # com = gc.community_infomap(edge_weights='weight', vertex_weights='weight')
+    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight', trials=1)
     # com = gc.community_multilevel(weights='pmi', return_levels=False)
-    # comclus = com.subgraphs()
-    # print 'Community stats: #communities, modularity', len(comclus), com.modularity
-    # index = 0
-    # hash_com = {}
-    # for comclu in comclus:
-    #     # filter single-node communities
-    #     if len(comclu.vs) > 1:
-    #         for v in comclu.vs:
-    #             hash_com[v['name']] = index
-    #         index += 1
-    # pickle.dump(hash_com, open('hash_com.pick', 'w'))
+    # com = louvain.find_partition(gc, method='Surprise', weight='pmi')
+    # com = louvain.find_partition(gc, method='Significance', weight=None)
+    comclus = com.subgraphs()
+    print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    index = 0
+    hash_com = {}
+    for comclu in comclus:
+        # filter single-node communities
+        if len(comclu.vs) > 1:
+            for v in comclu.vs:
+                hash_com[v['name']] = index
+            index += 1
+    pickle.dump(hash_com, open('hash_com.pick', 'w'))
 
     # hash_com = pickle.load(open('hash_com.pick', 'r'))
 
-    hash_com = dict(zip(gc.vs['name'], range(len(gc.vs['name']))))
+    # hash_com = dict(zip(gc.vs['name'], range(len(gc.vs['name']))))
+
     com_length = len(set(hash_com.values()))
     print com_length
     # Count tag usages
 
-    times = dbt.db_connect_col('fed', 'ed_tag')
+    tag_vector = pickle.load(open('data/user-hash-vector.pick', 'r'))
     user_hash_profile = {}
     for uid in users:
         vector = [0.0]*com_length
-        for tweet in times.find({'user.id': int(uid), '$where': 'this.entities.hashtags.length>0'}):
-            hashtags = tweet['entities']['hashtags']
-            for hash in hashtags:
-                tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
-                com_id = hash_com.get(tag, -1)
-                if com_id > -1:
-                    vector[com_id] += 1
+        for tag in tag_vector[uid].split(' '):
+            com_id = hash_com.get(tag, -1)
+            if com_id > -1:
+                vector[com_id] += 1
         # print vector
         if sum(vector) == 0:
             user_hash_profile[uid] = np.array(vector)
@@ -385,6 +391,22 @@ def user_hashtag_profile(tag_net, users):
             user_hash_profile[uid] = np.array(vector)/sum(vector)
 
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
+
+
+def user_hashtag_vector(dbname, timename, users):
+    # get all tags as features, text not in int
+    times = dbt.db_connect_col(dbname, timename)
+    user_hash_profile = {}
+    for uid in users:
+        tag_list = user_hash_profile.get(uid, [])
+        for tweet in times.find({'user.id': int(uid), '$where': 'this.entities.hashtags.length>0'}):
+            hashtags = tweet['entities']['hashtags']
+            for hash in hashtags:
+                tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+                tag_list.append(tag)
+        user_hash_profile[uid] = ' '.join(tag_list)
+    pickle.dump(user_hash_profile, open('data/user-hash-vector.pick', 'w'))
+
 
 
 def label_ed_recovery(hash_com, com_size, idx=[18, 102]):
@@ -444,15 +466,22 @@ def remove_nan():
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
 
 
+
+def user_cluster_hashtag_vector(filepath):
+    user_hash_profile = pickle.load(open('data/user-hash-vector.pick', 'r'))
+    vectorizer = TfidfVectorizer(min_df=1, use_idf=False)
+    X = vectorizer.fit_transform(user_hash_profile.values())
+    print X.shape
+    print X
+    clusterer = KMeans(n_clusters=2)
+    cluster_labels = clusterer.fit_predict(X)
+    return cluster_labels, user_hash_profile.keys()
+
 def user_cluster_hashtag(filepath):
     '''
     Cluster users based on the profiles of hashtag preference
     :return:
     '''
-    from sklearn.cluster import KMeans
-    from sklearn.metrics import silhouette_score, calinski_harabaz_score
-    from sklearn.datasets import load_svmlight_file
-    from sklearn import preprocessing
     # from sklearn.datasets import load_iris
     # Based on hashtag community proportation profiles
     user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
@@ -714,11 +743,14 @@ def pmi(g, filename=None):
         source_vertex = g.vs[source_vertex_id]
         target_vertex = g.vs[target_vertex_id]
         ew = edge['weight']
-        edge['pmi'] = max(np.log2(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight'])), 0)
+        edge['pmi'] = np.log2(float(ew*vw_sum)/(source_vertex['weight']*target_vertex['weight']))
     # pickle.dump(g, open('data/'+filename+'_pmi_tag.pick', 'w'))
     # g = pickle.load(open('data/'+filename+'_pmi_tag.pick', 'r'))
     # pdf(g.es['weight'])
     # plot_graph(g, 'ed-hashtag')
+    gt.summary(g)
+    g = g.subgraph_edges(g.es.select(pmi_gt=0))
+    gt.summary(g)
     g.write_graphml(filename+'_pmi.graphml')
     # g.es['weight'] = g.es['pmi']
     return g
@@ -741,8 +773,8 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter_pmi.graphml')
-    # pmi(core, 'core_ed_hashtag_undir_filter')
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    # core = pmi(core, 'alled_tag_undir_filter')
     #
     # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     #
@@ -758,12 +790,12 @@ if __name__ == '__main__':
     # tag_jaccard('fed', 'proed_tag', 'proed')
 
     # #-----------------------Filter network-----------------------------------------------
-    # # # users = iot.get_values_one_field('fed', 'scom', 'id')
+    # users = iot.get_values_one_field('fed', 'scom', 'id')
     '''directed network'''
     # g = gt.load_hashtag_coocurrent_network('fed', 'ed_tag')
     # g.write_graphml('alled_tag.graphml')
-    # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
     # gt.summary(g)
+    # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
     # nodes = g.vs.select(weight_gt=3)
     # print 'Filtered nodes: %d' %len(nodes)
     # g = g.subgraph(nodes)
@@ -774,8 +806,8 @@ if __name__ == '__main__':
     # g.write_graphml('alled_tag_filter.graphml')
 
     '''undirected network'''
-    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag')
-    # g.write_graphml('alled_tag_undir.graphml')
+    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
+    # g.write_graphml('coreed_tag_undir.graphml')
     # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
     # gt.summary(g)
     # nodes = g.vs.select(weight_gt=3)
@@ -784,7 +816,7 @@ if __name__ == '__main__':
     # nodes = g.vs.select(user_gt=3)
     # print 'Filtered nodes: %d' %len(nodes)
     # g = g.subgraph(nodes)
-    # g.write_graphml('alled_tag_undir_filter.graphml')
+    # g.write_graphml('coreed_tag_undir_filter.graphml')
 
     #-----------------------Filter network-----------------------------------------------
 
@@ -848,15 +880,43 @@ if __name__ == '__main__':
 
     #----------------------------------------------------------------------------------------------
     '''User's hashtag profile'''
+    #
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    # gt.summary(core)
+    # core = gt.giant_component(core)
+    # gt.summary(core)
+    # # core = core.subgraph_edges(core.es.select(weight_gt=5))
+    # # gt.summary(core)
+    # com1 = core.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # com2 = core.community_infomap(edge_weights='weight', vertex_weights=None)
+    # # com1 = core.community_multilevel(weights='pmi', return_levels=False)
+    # # com2 = core.community_multilevel(weights=None, return_levels=False)
+    # # com3 = core.community_multilevel(weights='weight', return_levels=False)
+    # print metrics.adjusted_rand_score(com1.membership, com2.membership)
+    #
+    #
+    # core = gt.Graph.Read_GraphML('core_ed_hashtag_undir_filter.graphml')
+    # gt.summary(core)
+    # core = gt.giant_component(core)
+    # gt.summary(core)
+    # # core = core.subgraph_edges(core.es.select(weight_gt=5))
+    # # gt.summary(core)
+    # com3 = core.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # com4 = core.community_infomap(edge_weights='weight', vertex_weights=None)
+    # # com1 = core.community_multilevel(weights='pmi', return_levels=False)
+    # # com2 = core.community_multilevel(weights=None, return_levels=False)
+    # # com3 = core.community_multilevel(weights='weight', return_levels=False)
+    # print metrics.adjusted_rand_score(com3.membership, com4.membership)
+    # print metrics.adjusted_rand_score(com1.membership, com3.membership)
+    # print metrics.adjusted_rand_score(com2.membership, com4.membership)
 
-    core = gt.Graph.Read_GraphML('alled_tag_undir_filter_pmi.graphml')
-    gt.summary(core)
+
     communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     gt.summary(communication)
     communication = gt.giant_component(communication)
     gt.summary(communication)
     users = [(v['name']) for v in communication.vs]
     print len(users)
+    # user_hashtag_vector('fed', 'ed_tag', users)
     user_hashtag_profile(core, users)
-
-    #----------------------------------------------------------------------------------------------
+    # #----------------------------------------------------------------------------------------------

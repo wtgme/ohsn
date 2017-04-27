@@ -297,7 +297,7 @@ def cluseter_nodes(btype = 'communication'):
         id = ids[i]
         v = g.vs.find(name=id)
         v['cluster'] = cluters[i]
-    g.write_graphml('communication-only-fed-filter-filtered-hashtag-cluster.graphml')
+    g.write_graphml('communication-only-fed-filter-hashtag-cluster.graphml')
 
 
 def count_pro_ratio(btype = 'communication'):
@@ -396,7 +396,7 @@ if __name__ == '__main__':
     # count_pro_ratio('retweet')
 
     #-------------------------------Filter network by ed post counts---------------------------------------
-    ed_tweet_normal_tweet_count()
+    # ed_tweet_normal_tweet_count()
     # g = gt.Graph.Read_GraphML('communication-only-fed.graphml')
     # gt.summary(g)
     #
@@ -425,10 +425,11 @@ if __name__ == '__main__':
 
     #----------------test louvain lib----------------------------------------------------------
     # import louvain
-    # g = gt.Graph.Read_GraphML('communication-only-fed-filter-cluster.graphml')
+    # g = gt.Graph.Read_GraphML('alled_tag_undir_filter_pmi.graphml')
     # gt.summary(g)
-    # part = louvain.find_partition(g, method='RBConfiguration', weight='weight', resolution_parameter=0.02)
+    # part = louvain.find_partition(g, method='Surprise', weight='pmi')
     # print len(set(part.membership)), part.modularity
+
     # part = louvain.find_partition(g, method='Modularity', weight='weight', resolution_parameter=1)
     # print len(set(part.membership)), part.modularity
 
