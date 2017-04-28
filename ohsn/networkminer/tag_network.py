@@ -25,11 +25,11 @@ import random as rand
 import pymongo
 import pandas as pd
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, calinski_harabaz_score
+from sklearn.metrics import silhouette_score
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-import louvain
+# import louvain
 from sklearn import metrics
 
 def pdf(data):
@@ -277,7 +277,7 @@ def community(g=None):
     gt.summary(gc)
     # g.write_graphml('fed_tag_undir_over3.graphml')
     # com = g.community_multilevel(weights='pmi', return_levels=False)
-    com = g.community_infomap(edge_weights='weight', vertex_weights=None, trials=1)
+    com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     # com = louvain.find_partition(gc, method='Significance', weight=None)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
@@ -376,7 +376,7 @@ def user_hashtag_profile(tag_net, users):
     print com_length
     # Count tag usages
 
-    tag_vector = pickle.load(open('data/user-hash-vector.pick', 'r'))
+    tag_vector = pickle.load(open('data/user-hash-vector.pick', 'r')) // {'uid': 'tag1 tag2 tag3'}
     user_hash_profile = {}
     for uid in users:
         vector = [0.0]*com_length
@@ -773,13 +773,13 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    core = gt.Graph.Read_GraphML('coreed_tag_undir_filter.graphml')
     # core = pmi(core, 'alled_tag_undir_filter')
     #
     # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     #
     # # # # hash_com_all, com_size_all = community(pall)
-    # hash_com_rec, com_size_rec = community(core)
+    hash_com_rec, com_size_rec = community(core)
     # # # hash_com_ped, com_size_ped = community(ped)
     # # label_ed_recovery(hash_com_rec, com_size_rec)
     # # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
@@ -881,7 +881,7 @@ if __name__ == '__main__':
     #----------------------------------------------------------------------------------------------
     '''User's hashtag profile'''
     #
-    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+
     # gt.summary(core)
     # core = gt.giant_component(core)
     # gt.summary(core)
@@ -910,13 +910,13 @@ if __name__ == '__main__':
     # print metrics.adjusted_rand_score(com1.membership, com3.membership)
     # print metrics.adjusted_rand_score(com2.membership, com4.membership)
 
-
-    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
-    gt.summary(communication)
-    communication = gt.giant_component(communication)
-    gt.summary(communication)
-    users = [(v['name']) for v in communication.vs]
-    print len(users)
-    # user_hashtag_vector('fed', 'ed_tag', users)
-    user_hashtag_profile(core, users)
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    # gt.summary(communication)
+    # communication = gt.giant_component(communication)
+    # gt.summary(communication)
+    # users = [(v['name']) for v in communication.vs]
+    # print len(users)
+    # # user_hashtag_vector('fed', 'ed_tag', users)
+    # user_hashtag_profile(core, users)
     # #----------------------------------------------------------------------------------------------
