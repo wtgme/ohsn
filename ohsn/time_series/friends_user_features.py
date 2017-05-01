@@ -250,7 +250,7 @@ def emotion_dropout_IV_following():
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank']
-    attr_names = ['uid', 'group', 'attr']
+    attr_names = ['uid', 'group', 'attr', 'level']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
     attr_names.extend(['u_post_'+field for field in trimed_fields])
@@ -284,17 +284,17 @@ def emotion_dropout_IV_following():
         network1= gt.Graph.Read_GraphML(groupname+'-net.graphml')
         # network1 = pickle.load(open('net.pick', 'r'))
         gt.summary(network1)
-        network1 = gt.giant_component(network1)
-        gt.summary(network1)
+        network1_gc = gt.giant_component(network1)
+        gt.summary(network1_gc)
 
         '''Centralities Calculation'''
-        eigen = network1.eigenvector_centrality()
-        pageranks = network1.pagerank()
+        eigen = network1_gc.eigenvector_centrality()
+        pageranks = network1_gc.pagerank()
         # closeness = network.closeness()
         # betweenness = network.betweenness()
         # print len(eigen), len(closeness), len(betweenness)
 
-        nodes = [int(v['name']) for v in network1.vs]
+        nodes = [int(v['name']) for v in network1_gc.vs]
         # print len(nodes), len(eigen)
         # print type(nodes), type(eigen)
 
@@ -337,7 +337,7 @@ def emotion_dropout_IV_following():
                     row.append(1)
                 elif u2['status']['id'] != u1['status']['id']:
                     row.append(0)
-
+            row.append(u1['level'])
             # set users liwc feature
             uatt = iot.get_fields_one_doc(u1, fields)
             row.extend(uatt)
@@ -409,7 +409,7 @@ def emotion_dropout_IV_following():
                             #     alive += 0
                             # else:
                             #     alive += 1
-                    if len(fatts) > 3:
+                    if len(fatts) > 0:
                         fatts = np.array(fatts)
                         fmatts = np.mean(fatts, axis=0)
                         row.extend(fmatts)
@@ -420,7 +420,7 @@ def emotion_dropout_IV_following():
             # print row
             data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
-    df.to_csv('data-attr-following.csv', index = False)
+    df.to_csv('data-attr-following-2.csv', index = False)
 
 
 

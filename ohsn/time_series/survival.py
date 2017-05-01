@@ -63,9 +63,42 @@ def read_user_time(filename):
                                      'event'] + trimed_fields)
     df.to_csv(filename)
 
+def active_days(user):
+    # print user['id']
+    ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    try:
+        tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    except KeyError:
+        tts = ts
+    delta = tts.date() - ts.date()
+    days = delta.days+1
+    status_count = abs(float(user['statuses_count']))
+    friend_count = abs(float(user['friends_count']))
+    follower_count = abs(float(user['followers_count']))
+    friends_day = friend_count/days
+    statuses_day = status_count/days
+    followers_day = follower_count/days
+    return[friend_count, status_count, follower_count,
+           friends_day, statuses_day, followers_day,
+           days]
+
 
 def read_user_time_iv(filename):
-    fields = iot.read_fields()
+    # fields = iot.read_fields()
+    fields = ['liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.death'
+              # 'liwc_anal.result.anx',
+              # 'liwc_anal.result.anger',
+              # 'liwc_anal.result.sad'
+              ]
+    prof_names = ['friends_count', 'statuses_count', 'followers_count',
+        'friends_day', 'statuses_day', 'followers_day', 'days']
+
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
          ('ED', 'fed', 'com', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
@@ -78,12 +111,12 @@ def read_user_time_iv(filename):
         com = dbt.db_connect_col(dbname, comname)
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
         gt.summary(network1)
-        network1 = gt.giant_component(network1)
-        gt.summary(network1)
+        network1_gc = gt.giant_component(network1)
+        gt.summary(network1_gc)
         '''Centralities Calculation'''
-        eigen = network1.eigenvector_centrality()
+        eigen = network1_gc.eigenvector_centrality()
 
-        nodes = [int(v['name']) for v in network1.vs]
+        nodes = [int(v['name']) for v in network1_gc.vs]
         eigen_map = dict(zip(nodes, eigen))
         print 'load liwc 2 batches: ' + tag.lower()+'-liwc2stage.csv'
         liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
@@ -122,6 +155,7 @@ def read_user_time_iv(filename):
                     liwc_changes = [None]*(len(trimed_fields)*3)
                 u_centrality = eigen_map.get(user['id'], 0)
                 values.extend(liwc_changes)
+                values.extend(active_days(user))
 
                 '''Get friends' profiles'''
                 exist = True
@@ -140,15 +174,17 @@ def read_user_time_iv(filename):
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             if fu != None:
                                 fatt = iot.get_fields_one_doc(fu, fields)
+                                fatt.extend(active_days(fu))
                                 fatt.extend([eigen_map.get(fu['id'], 0)])
+
                                 fatts.append(fatt)
                         # thredhold = user['friends_count']*0.5
-                        if len(fatts) > 3:
+                        if len(fatts) > 0:
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
                             data.append([user['id_str'], level, created_at, last_post, scraped_at, average_time,
-                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality] + values)
+                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality] + values + [len(fatts)])
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'created_at', 'last_post', 'scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
@@ -156,7 +192,10 @@ def read_user_time_iv(filename):
                                     ['u_prior_'+field for field in trimed_fields] +
                                     ['u_post_'+field for field in trimed_fields] +
                                     ['u_change_'+field for field in trimed_fields] +
-                                    ['f_'+tf for tf in trimed_fields] + ['f_centrality'])
+                                    ['u_'+field for field in prof_names] +
+                                    ['f_'+tf for tf in trimed_fields] +
+                                    ['f_'+field for field in prof_names] +
+                                    ['f_centrality', 'f_num'])
     df.to_csv(filename)
 
 
@@ -176,6 +215,30 @@ def count_longest_tweeting_period(dbname, timename, comname):
         max_period = max(diff)
         # print max_period
         com.update({'id': user_id}, {'$set': {'longest_tweet_interval': max_period}}, upsert=False)
+
+def user_statis():
+    groups = [
+         ('ED', 'fed', 'com', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('RD', 'random', 'scom', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('YG', 'younger', 'scom', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1})
+    ]
+
+    data = []
+    for tag, dbname, comname, filter_values in groups:
+        com = dbt.db_connect_col(dbname, comname)
+        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
+        gt.summary(network1)
+        network1_gc = gt.giant_component(network1)
+        gt.summary(network1_gc)
+
+        users_time = iot.get_values_one_field(dbname, comname, 'id_str', filter_values)
+        try:
+            v = network1.vs.find(name=str(uid))
+        except ValueError:
+            exist = False
+        if exist:
+            friends = set(network1.successors(str(uid)))
+
 
 
 if __name__ == '__main__':

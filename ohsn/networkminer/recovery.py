@@ -30,7 +30,7 @@ from datetime import datetime
 import tag_network as tn
 
 
-def cluster(file_path):
+def cluster_test(file_path):
     '''
     community_multilevel and community_infomap cannot produce two clusters
     only community_leading_eigenvector and community_fastgreedy can produce two clusters
@@ -42,68 +42,29 @@ def cluster(file_path):
     '''
     g = gt.Graph.Read_GraphML(file_path)
     gt.summary(g)
-    g = g.as_undirected(combine_edges=dict(weight="sum"))
-    g = gt.giant_component(g)
-    gt.summary(g)
-    #----------------------test--------------
-    '''
-    # ml = g.community_multilevel(weights='weight', return_levels=True)
-    # for m in ml:
-    #     print len(m)
-    #     print m.modularity
-    # comclus = ml[-1].subgraphs()
-    eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
-    print 'eigenvector:', eigen.modularity
-    # label_pro = g.community_label_propagation(weights='weight')
-    # print 'label propagation:', label_pro.modularity
-    label_pro = g.community_label_propagation(weights='weight', initial=eigen.membership)
-    print len(label_pro)
-    print 'label propagation with eigenvector:',label_pro.modularity
-    fast = g.community_fastgreedy(weights='weight')
-    fast_com = fast.as_clustering(n=2)
-    print len(fast_com)
-    print 'Fast', fast_com.modularity
-
-
-    fast2 = g.community_fastgreedy(weights='weight')
-    fast2_com = fast2.as_clustering(n=2)
-    print len(fast2_com)
-    print 'Fast', fast2_com.modularity
-
-    print metrics.adjusted_rand_score(fast_com.membership, label_pro.membership)
-    print metrics.normalized_mutual_info_score(fast_com.membership, label_pro.membership)
-
-    print metrics.adjusted_rand_score(fast_com.membership, fast2_com.membership)
-    print metrics.normalized_mutual_info_score(fast_com.membership, fast2_com.membership)
-
-    # between = g.community_edge_betweenness(clusters=2, directed=False, weights='weight')
-    # print between.modularity
-
-    # -----end choose eigenvector and label propogation to community detection-------------
-    '''
-
+    # g = g.as_undirected(combine_edges=dict(weight="sum"))
+    # g = gt.giant_component(g)
     # ---------treated as directed network
-    '''g = gt.giant_component(g)
-    gt.summary(g)
-    com = g.community_infomap(edge_weights='weight', trials=2)
-    # com = g.community_leading_eigenvector(weights='weight')
-    print com.modularity
-    print len(com)'''
-
     seperations = []
-    modularity = []
+    # modularity = []
+    sizes = []
     for i in xrange(100):
-        eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
-        label_pro = g.community_label_propagation(weights='weight', initial=eigen.membership)
-        seperations.append(label_pro.membership)
-        modularity.append(label_pro.modularity)
+        # eigen = g.community_leading_eigenvector(clusters=2, weights='weight')
+        # label_pro = g.community_label_propagation(weights='weight', initial=eigen.membership)
+        print i
+        com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+        seperations.append(com.membership)
+        # modularity.append(com.modularity)
+        print len(com)
+        sizes.append(len(com))
+    print '%.3f, %.3f, %.3f, %.3f' %(min(sizes), max(sizes), np.mean(sizes), np.std(sizes))
     aRI = []
     for i in xrange(100):
         for j in xrange(i+1, 100):
             aRI.append(metrics.adjusted_rand_score(seperations[i], seperations[j]))
-    print len(modularity), len(aRI)
-    print '%.3f, %.3f, %.3f' %(min(modularity), max(modularity), np.mean(modularity))
-    print '%.3f, %.3f, %.3f' %(min(aRI), max(aRI), np.mean(aRI))
+    print len(aRI)
+    # print '%.3f, %.3f, %.3f, %.3f' %(min(modularity), max(modularity), np.mean(modularity), np.std(modularity))
+    print '%.3f, %.3f, %.3f, %.3f' %(min(aRI), max(aRI), np.mean(aRI), np.std(aRI))
 
 
 def two_community(file_path):
@@ -167,6 +128,19 @@ def test_significant(file_path):
     #         np.sum(ass_list <= -absobserved))/float(len(ass_list))
     zscore = (orig_mod-amean)/astd
     print 'z-score: %.3f' %zscore
+
+
+def test_stable_infomap_kmean():
+    # Test the stable for the whole process, from infomap clustering hashtag and k-means clustering users
+    import tag_network
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    tag_network.user_hashtag_profile(core, users)
 
 
 def compare_post_time():
@@ -516,3 +490,6 @@ if __name__ == '__main__':
     # nx.draw_networkx_edges(G,pos, alpha=0.5)
     # plt.show()
     #------------------------------------------------------------------
+
+
+    cluster_test('alled_tag_undir_filter.graphml')

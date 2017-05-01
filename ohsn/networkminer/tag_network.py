@@ -349,10 +349,10 @@ def user_hashtag_profile(tag_net, users):
 
     # Cluster tag network
     gt.summary(tag_net)
-    gc = gt.giant_component(tag_net)
-    gt.summary(gc)
+    # gc = gt.giant_component(tag_net)
+    # gt.summary(gc)
 
-    com = gc.community_infomap(edge_weights='weight', vertex_weights='weight', trials=1)
+    com = tag_net.community_infomap(edge_weights='weight', vertex_weights='weight')
     # com = gc.community_multilevel(weights='pmi', return_levels=False)
     # com = louvain.find_partition(gc, method='Surprise', weight='pmi')
     # com = louvain.find_partition(gc, method='Significance', weight=None)
@@ -366,24 +366,24 @@ def user_hashtag_profile(tag_net, users):
             for v in comclu.vs:
                 hash_com[v['name']] = index
             index += 1
-    pickle.dump(hash_com, open('hash_com.pick', 'w'))
+    # pickle.dump(hash_com, open('hash_com.pick', 'w'))
 
     # hash_com = pickle.load(open('hash_com.pick', 'r'))
 
     # hash_com = dict(zip(gc.vs['name'], range(len(gc.vs['name']))))
 
-    com_length = len(set(hash_com.values()))
+    com_length = len(set(hash_com.values())) + 1
     print com_length
     # Count tag usages
 
-    tag_vector = pickle.load(open('data/user-hash-vector.pick', 'r')) // {'uid': 'tag1 tag2 tag3'}
+    tag_vector = pickle.load(open('data/user-hash-vector.pick', 'r')) # {'uid': 'tag1 tag2 tag3'}
     user_hash_profile = {}
     for uid in users:
         vector = [0.0]*com_length
         for tag in tag_vector[uid].split(' '):
             com_id = hash_com.get(tag, -1)
-            if com_id > -1:
-                vector[com_id] += 1
+            # if com_id > -1:
+            vector[com_id] += 1
         # print vector
         if sum(vector) == 0:
             user_hash_profile[uid] = np.array(vector)
@@ -467,17 +467,43 @@ def remove_nan():
 
 
 
-def user_cluster_hashtag_vector(filepath):
+def user_cluster_hashtag_vector(filepath=None):
+#     ('For n_clusters =', 2, 'The average silhouette_score is :', 0.23433491661541597)
+# ('For n_clusters =', 3, 'The average silhouette_score is :', 0.22825673279693764)
+# ('For n_clusters =', 4, 'The average silhouette_score is :', 0.24005669112547426)
+# ('For n_clusters =', 5, 'The average silhouette_score is :', 0.2465705138326017)
+# ('For n_clusters =', 6, 'The average silhouette_score is :', 0.24876534042920526)
+# ('For n_clusters =', 7, 'The average silhouette_score is :', 0.19457625162128431)
+# ('For n_clusters =', 8, 'The average silhouette_score is :', 0.16119752988551278)
+# ('For n_clusters =', 9, 'The average silhouette_score is :', 0.11216903013234503)
+# ('For n_clusters =', 10, 'The average silhouette_score is :', 0.113540009695938)
+# ('For n_clusters =', 11, 'The average silhouette_score is :', 0.1619263294107095)
+# ('For n_clusters =', 12, 'The average silhouette_score is :', 0.11038840888634334)
+# ('For n_clusters =', 13, 'The average silhouette_score is :', 0.11573223414322037)
+# ('For n_clusters =', 14, 'The average silhouette_score is :', 0.11579963917610303)
+
     user_hash_profile = pickle.load(open('data/user-hash-vector.pick', 'r'))
     vectorizer = TfidfVectorizer(min_df=1, use_idf=False)
     X = vectorizer.fit_transform(user_hash_profile.values())
     print X.shape
     print X
-    clusterer = KMeans(n_clusters=2)
+    clusterer = KMeans(n_clusters=6)
     cluster_labels = clusterer.fit_predict(X)
     return cluster_labels, user_hash_profile.keys()
 
-def user_cluster_hashtag(filepath):
+    # range_n_clusters = range(2, 21)
+    # data = []
+    # for n_clusters in range_n_clusters:
+    #     clusterer = KMeans(n_clusters=n_clusters)
+    #     cluster_labels = clusterer.fit_predict(X)
+    #     silhouette_avg = silhouette_score(X, cluster_labels)
+    #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+    #     data.append([n_clusters, silhouette_avg])
+    # # df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
+    # df.to_csv('user-kmeans-hashtag.csv')
+
+
+def user_cluster_hashtag(filepath=None):
     '''
     Cluster users based on the profiles of hashtag preference
     :return:
@@ -504,6 +530,7 @@ def user_cluster_hashtag(filepath):
     #     silhouette_avg = silhouette_score(X, cluster_labels)
     #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
     #     data.append([n_clusters, silhouette_avg])
+    # return data
     # df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
     # df.to_csv('user-kmeans-hashtag.csv')
 
@@ -531,6 +558,48 @@ def user_cluster_hashtag(filepath):
     # gt.net_stat(net)
     # cluster_assort(dictionary, net)
 
+
+def test_user_cluster_stable():
+    # Test stable of using infomap and test best k for k-means
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    # user_hashtag_vector('fed', 'ed_tag', users)
+    data = []
+    for i in xrange(100):
+        user_hashtag_profile(core, users)
+        data += user_cluster_hashtag()
+    df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
+    df.to_csv('user-kmeans-hashtag.csv')
+
+
+def test_user_cluster_assign_stable():
+    # Test stable how final user clustering assignments
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    # user_hashtag_vector('fed', 'ed_tag', users)
+    seperations = []
+    for i in xrange(100):
+        print i
+        user_hashtag_profile(core, users)
+        # data += user_cluster_hashtag()
+        cluters, ids = user_cluster_hashtag()
+        seperations.append(cluters)
+    aRI = []
+    for i in xrange(100):
+        for j in xrange(i+1, 100):
+            aRI.append(metrics.adjusted_rand_score(seperations[i], seperations[j]))
+    print len(aRI)
+    print '%.3f, %.3f, %.3f, %.3f' %(min(aRI), max(aRI), np.mean(aRI), np.std(aRI))
 
 
 def cluster_assort(dictionary, net):
@@ -773,13 +842,13 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    core = gt.Graph.Read_GraphML('coreed_tag_undir_filter.graphml')
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
     # core = pmi(core, 'alled_tag_undir_filter')
     #
     # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     #
     # # # # hash_com_all, com_size_all = community(pall)
-    hash_com_rec, com_size_rec = community(core)
+    # hash_com_rec, com_size_rec = community(core)
     # # # hash_com_ped, com_size_ped = community(ped)
     # # label_ed_recovery(hash_com_rec, com_size_rec)
     # # refine_recovery_tweets(hash_com_rec, 'prorec_tag', 'prorec_tag_refine', [4, 39, 58])
@@ -806,8 +875,10 @@ if __name__ == '__main__':
     # g.write_graphml('alled_tag_filter.graphml')
 
     '''undirected network'''
-    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', users)
-    # g.write_graphml('coreed_tag_undir.graphml')
+    # users_net = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    # users = [int(uid) for uid in users_net.vs['name']]
+    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', users)
+    # g.write_graphml('ed_tag_undir.graphml')
     # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
     # gt.summary(g)
     # nodes = g.vs.select(weight_gt=3)
@@ -816,7 +887,7 @@ if __name__ == '__main__':
     # nodes = g.vs.select(user_gt=3)
     # print 'Filtered nodes: %d' %len(nodes)
     # g = g.subgraph(nodes)
-    # g.write_graphml('coreed_tag_undir_filter.graphml')
+    # g.write_graphml('ed_tag_undir_filter.graphml')
 
     #-----------------------Filter network-----------------------------------------------
 
@@ -919,4 +990,8 @@ if __name__ == '__main__':
     # print len(users)
     # # user_hashtag_vector('fed', 'ed_tag', users)
     # user_hashtag_profile(core, users)
-    # #----------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------
+
+    # user_cluster_hashtag()
+    test_user_cluster_assign_stable()
+    # test_user_cluster_stable()
