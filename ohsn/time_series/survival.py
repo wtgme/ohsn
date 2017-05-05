@@ -130,6 +130,7 @@ def read_user_time_iv(filename):
                 life_time = diff_day(last_post, created_at)
                 average_time = float(life_time)/min(1, user['statuses_count'])
                 longest_tweet_intervalb = user['longest_tweet_interval']
+                u_timeline_count = user['timeline_count']
 
                 observation_interval = diff_day(scraped_at, last_post)
                 if (observation_interval-longest_tweet_intervalb) > 30:
@@ -184,11 +185,13 @@ def read_user_time_iv(filename):
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
                             data.append([user['id_str'], level, created_at, last_post, scraped_at, average_time,
-                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality] + values + [len(fatts)])
+                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_timeline_count] +
+                                        values + [len(fatts)])
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'created_at', 'last_post', 'scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
-                                     'group', 'event', 'u_centrality'] + trimed_fields +
+                                     'group', 'event', 'u_centrality', 'u_timeline_count'] +
+                                    ['u_'+field for field in trimed_fields] +
                                     ['u_prior_'+field for field in trimed_fields] +
                                     ['u_post_'+field for field in trimed_fields] +
                                     ['u_change_'+field for field in trimed_fields] +

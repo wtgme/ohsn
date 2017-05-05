@@ -271,13 +271,15 @@ def community(g=None):
     com_size: {community_index: community_size}
     '''
     gt.summary(g)
-    # vs = g.vs(weight_gt=3, user_gt=3)
-    # g = g.subgraph(vs)
+    vs = g.vs(weight_gt=100, user_gt=10)
+    g = g.subgraph(vs)
+    g = g.subgraph_edges(g.es.select(rWeight_gt=0, rWeight_lt=float('Inf')))
+    gt.summary(g)
     gc = gt.giant_component(g)
     gt.summary(gc)
     # g.write_graphml('fed_tag_undir_over3.graphml')
-    # com = g.community_multilevel(weights='pmi', return_levels=False)
-    com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # com = g.community_multilevel(weights='rWeight', return_levels=False)
+    com = g.community_infomap(edge_weights='rWeight', vertex_weights=None)
     # com = louvain.find_partition(gc, method='Significance', weight=None)
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
@@ -349,11 +351,17 @@ def user_hashtag_profile(tag_net, users):
 
     # Cluster tag network
     gt.summary(tag_net)
+    vs = tag_net.vs(weight_gt=100, user_gt=10)
+    tag_net = tag_net.subgraph(vs)
+    gt.summary(tag_net)
+    tag_net = tag_net.subgraph_edges(tag_net.es.select(rWeight_gt=0, rWeight_lt=float('Inf')))
+    gt.summary(tag_net)
     # gc = gt.giant_component(tag_net)
     # gt.summary(gc)
 
-    com = tag_net.community_infomap(edge_weights='weight', vertex_weights='weight')
-    # com = gc.community_multilevel(weights='pmi', return_levels=False)
+    # com = tag_net.community_infomap(edge_weights='weight', vertex_weights='weight')
+    com = tag_net.community_infomap(edge_weights='rWeight', vertex_weights=None)
+    # com = tag_net.community_multilevel(weights='rWeight', return_levels=False)
     # com = louvain.find_partition(gc, method='Surprise', weight='pmi')
     # com = louvain.find_partition(gc, method='Significance', weight=None)
     comclus = com.subgraphs()
@@ -724,31 +732,31 @@ def tags_user_cluster(graph_file_path, filename):
         elif v['cluster'] == -1:
             cluster2.add(int(v['name']))
     print 'cluster size;', len(cluster0)
-    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster0))
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster0))
     gt.summary(g)
     # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster0'
     vs = g.vs(weight_gt=3, user_gt=3)
     g = g.subgraph(vs)
     gt.summary(g)
-    g.write_graphml(filename+'_alltag_undir_cluster0.graphml')
+    g.write_graphml(filename+'_edtag_undir_cluster0.graphml')
 
     print 'cluster size;', len(cluster1)
-    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster1))
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
     gt.summary(g)
     # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
     vs = g.vs(weight_gt=3, user_gt=3)
     g = g.subgraph(vs)
     gt.summary(g)
-    g.write_graphml(filename+'_alltag_undir_cluster1.graphml')
+    g.write_graphml(filename+'_edtag_undir_cluster1.graphml')
 
-    print 'cluster size;', len(cluster2)
-    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster2))
-    gt.summary(g)
-    vs = g.vs(weight_gt=3, user_gt=3)
-    g = g.subgraph(vs)
-    gt.summary(g)
-    # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
-    g.write_graphml(filename+'_alltag_undir_cluster2.graphml')
+    # print 'cluster size;', len(cluster2)
+    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster2))
+    # gt.summary(g)
+    # vs = g.vs(weight_gt=3, user_gt=3)
+    # g = g.subgraph(vs)
+    # gt.summary(g)
+    # # filename = ['ed_retweet', 'ed_communication'][i] + '_fed_cluster1'
+    # g.write_graphml(filename+'_alltag_undir_cluster2.graphml')
 
     # insert_cluster_tweets('fed', 'mention-cluster0', list(cluster0))
     # insert_cluster_tweets('fed', 'mention-cluster1', cluster1)
@@ -825,6 +833,65 @@ def pmi(g, filename=None):
     return g
 
 
+def z_scores(filename):
+    # Test the significance betweet the links of two nodes
+    g = gt.Graph.Read_GraphML(filename + '.graphml')
+    gt.summary(g)
+    ds = g.vs["weight"]
+    dsum = sum(ds)
+    if dsum%2:
+        g.vs[0]['weight'] += 1
+        ds = g.vs["weight"]
+
+    # distrition = {}
+    # for i in xrange(1000):
+    #     print i
+    #     rg = gt.Graph.Degree_Sequence(ds)
+    #     rg.es['weight'] = 1
+    #     rg.vs['name'] = rg.degree()
+    #     rg.simplify(combine_edges=sum)
+    #     for edge in rg.es:
+    #         source_vertex_id = edge.source
+    #         target_vertex_id = edge.target
+    #         source_vertex_name = rg.vs[source_vertex_id]['name']
+    #         target_vertex_name = rg.vs[target_vertex_id]['name']
+    #         ew = edge['weight']
+    #         if source_vertex_name < target_vertex_name:
+    #             key = (source_vertex_name, target_vertex_name)
+    #         else:
+    #             key = (target_vertex_name, source_vertex_name)
+    #
+    #         dis = distrition.get(key, [])
+    #         dis.append(ew)
+    #         distrition[key] = dis
+    # pickle.dump(distrition, open('dis-all.pick', 'w'))
+    distrition = pickle.load(open('dis-all.pick', 'r'))
+    for edge in g.es:
+        source_vertex_id = edge.source
+        target_vertex_id = edge.target
+        source_vertex_name = g.vs[source_vertex_id]['weight']
+        target_vertex_name = g.vs[target_vertex_id]['weight']
+        if source_vertex_name < target_vertex_name:
+            key = (source_vertex_name, target_vertex_name)
+        else:
+            key = (target_vertex_name, source_vertex_name)
+        dis = distrition.get(key)
+        dm = np.mean(dis)
+        dst = np.std(dis)
+        var = (edge['weight'] - dm)
+        if dst == 0 and var == 0:
+            zscore = 0
+        else:
+            zscore = var/dst
+        edge['rWeight'] = zscore
+        if zscore < 0 or zscore > 1.96:
+            print g.vs[source_vertex_id]['name'], g.vs[target_vertex_id]['name'], key, edge['weight'], dm, dst, zscore
+
+    g.write_graphml(filename+'_zscore.graphml')
+
+
+
+
 # def plot_graph(filename):
 #     g = gta.load_graph(filename)
 #     age = g.vertex_properties["weight"]
@@ -842,7 +909,7 @@ if __name__ == '__main__':
     # # target_comms = community_net(rec, ped)
     # # print target_comms
     # # transform('ed_tag')
-    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter_zscore.graphml')
     # core = pmi(core, 'alled_tag_undir_filter')
     #
     # # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
@@ -920,7 +987,9 @@ if __name__ == '__main__':
 
     #-------------------------------------------------------------------------
     '''hashtags network of differnet clusters'''
-    # tags_user_cluster('communication-only-fed-filter-cluster.graphml', 'communication-only-fed-filter-cluster')
+    # tags_user_cluster('communication-only-fed-filter-hashtag-cluster.graphml', 'communication-only-fed-filter-cluster')
+
+
     #-------------------------------------------------------------------------
 
     # community_vis('ed', 'info')
@@ -981,17 +1050,21 @@ if __name__ == '__main__':
     # print metrics.adjusted_rand_score(com1.membership, com3.membership)
     # print metrics.adjusted_rand_score(com2.membership, com4.membership)
 
-    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
-    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
-    # gt.summary(communication)
-    # communication = gt.giant_component(communication)
-    # gt.summary(communication)
-    # users = [(v['name']) for v in communication.vs]
-    # print len(users)
-    # # user_hashtag_vector('fed', 'ed_tag', users)
-    # user_hashtag_profile(core, users)
+    core = gt.Graph.Read_GraphML('alled_tag_undir_filter_zscore.graphml')
+    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    gt.summary(communication)
+    communication = gt.giant_component(communication)
+    gt.summary(communication)
+    users = [(v['name']) for v in communication.vs]
+    print len(users)
+    # user_hashtag_vector('fed', 'ed_tag', users)
+    user_hashtag_profile(core, users)
     #----------------------------------------------------------------------------------------------
 
+    # ------------------------------test cluster stable
     # user_cluster_hashtag()
-    test_user_cluster_assign_stable()
+    # test_user_cluster_assign_stable()
     # test_user_cluster_stable()
+
+    # ---------------user z-score to reweight link weights
+    # z_scores('alled_tag_undir_filter')
