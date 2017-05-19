@@ -101,14 +101,15 @@ def read_user_time_iv(filename):
 
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
-         ('ED', 'fed', 'com', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         ('RD', 'random', 'scom', {'liwc_anal.result.WC': {'$exists': True}}),
-         ('YG', 'younger', 'scom', {'liwc_anal.result.WC': {'$exists': True}})
+         ('ED', 'fed', 'com', 'fed2', 'com', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('RD', 'random', 'scom', 'random2', 'com_check', {'liwc_anal.result.WC': {'$exists': True}}),
+         ('YG', 'younger', 'scom', 'younger2', 'com_check', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 
     data = []
-    for tag, dbname, comname, filter_values in groups:
+    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
+        com2 = dbt.db_connect_col(dbname2, comname2)
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
         gt.summary(network1)
         network1_gc = gt.giant_component(network1)
@@ -124,6 +125,24 @@ def read_user_time_iv(filename):
         for user in com.find(filter_values, no_cursor_timeout=True):
             if 'status' in user:
                 uid = user['id']
+                u2 = com2.find_one({'id': uid})
+                if (u2 is None): # protected or delete
+                    drop = 1
+                else:
+                    if 'status' not in user and 'status' not in u2: # no tweeting
+                        drop = 1
+                    elif 'status' not in user and 'status' in u2: # start to post
+                        drop = 0
+                    elif 'status' in user and 'status' not in u2: # delete
+                        drop = 0
+                    elif u2['status']['id'] == user['status']['id']: # no new post
+                        drop = 1
+                    elif u2['status']['id'] != user['status']['id']: # new post
+                        drop = 0
+
+
+
+
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 scraped_at = user['scrape_timeline_at']
                 last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -137,6 +156,7 @@ def read_user_time_iv(filename):
                     death = 1
                 else:
                     death = 0
+
                 values = iot.get_fields_one_doc(user, fields)
                 level = user['level']
 
@@ -184,11 +204,11 @@ def read_user_time_iv(filename):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
-                            data.append([user['id_str'], level, created_at, last_post, scraped_at, average_time,
+                            data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, average_time,
                              longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_timeline_count] +
                                         values + [len(fatts)])
 
-    df = pd.DataFrame(data, columns=['uid', 'level', 'created_at', 'last_post', 'scraped_at',
+    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
                                      'group', 'event', 'u_centrality', 'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields] +
