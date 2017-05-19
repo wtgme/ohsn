@@ -145,6 +145,7 @@ def read_user_time_iv(filename):
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 scraped_at = user['scrape_timeline_at']
+                second_scraped_at = u2['_id'].generation_time
                 last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 life_time = diff_day(last_post, created_at)
                 average_time = float(life_time)/min(1, user['statuses_count'])
@@ -204,11 +205,11 @@ def read_user_time_iv(filename):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
-                            data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, average_time,
+                            data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, second_scraped_at, average_time,
                              longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_timeline_count] +
                                         values + [len(fatts)])
 
-    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'scraped_at',
+    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'scraped_at', 'second_scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
                                      'group', 'event', 'u_centrality', 'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields] +
@@ -262,6 +263,10 @@ def user_statis():
         if exist:
             friends = set(network1.successors(str(uid)))
 
+def insert_timestamp(dbname, colname):
+    com = dbt.db_connect_col(dbname, colname)
+    for user in com.find():
+        print user['_id'].generation_time
 
 
 if __name__ == '__main__':
@@ -274,3 +279,4 @@ if __name__ == '__main__':
     # read_user_time('user-durations-2.csv')
     read_user_time_iv('user-durations-iv-2.csv')
 
+    # insert_timestamp('younger2', 'com_check')
