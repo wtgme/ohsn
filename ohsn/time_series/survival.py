@@ -133,7 +133,7 @@ def read_user_time_iv(filename):
                 u2 = com2.find_one({'id': uid})
                 if (u2 is None): # protected or delete
                     drop = 1
-                    second_scraped_at = datetime.strptime(second_time, '%a-%b-%d %H:%M:%S+00:00')
+                    second_scraped_at = datetime.strptime(second_time, '%Y-%m-%d %H:%M:%S+00:00')
                 else:
                     second_scraped_at = u2['_id'].generation_time
                     if 'status' not in user and 'status' not in u2: # no tweeting
