@@ -3,6 +3,11 @@
 Created on 14:45, 04/04/17
 
 @author: wt
+
+Younger check again at: 2017-04-25 15:46:20+00:00
+Random check again at: 2017-04-25 15:46:20+00:00
+Fed check again at: 2016-09-29 14:57:39+00:00
+
 """
 
 import sys
@@ -101,13 +106,13 @@ def read_user_time_iv(filename):
 
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
-         ('ED', 'fed', 'com', 'fed2', 'com', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         ('RD', 'random', 'scom', 'random2', 'com_check', {'liwc_anal.result.WC': {'$exists': True}}),
-         ('YG', 'younger', 'scom', 'younger2', 'com_check', {'liwc_anal.result.WC': {'$exists': True}})
+         ('ED', 'fed', 'com', 'fed2', 'com', '2016-09-29 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('RD', 'random', 'scom', 'random2', 'com_check', '2017-04-25 15:46:20+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         ('YG', 'younger', 'scom', 'younger2', 'com_check', '2017-04-25 15:46:20+00:00', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 
     data = []
-    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
+    for tag, dbname, comname, dbname2, comname2, second_time, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
@@ -128,7 +133,9 @@ def read_user_time_iv(filename):
                 u2 = com2.find_one({'id': uid})
                 if (u2 is None): # protected or delete
                     drop = 1
+                    second_scraped_at = datetime.strptime(second_time, '%a-%b-%d %H:%M:%S+00:00')
                 else:
+                    second_scraped_at = u2['_id'].generation_time
                     if 'status' not in user and 'status' not in u2: # no tweeting
                         drop = 1
                     elif 'status' not in user and 'status' in u2: # start to post
@@ -145,7 +152,6 @@ def read_user_time_iv(filename):
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 scraped_at = user['scrape_timeline_at']
-                second_scraped_at = u2['_id'].generation_time
                 last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 life_time = diff_day(last_post, created_at)
                 average_time = float(life_time)/min(1, user['statuses_count'])
@@ -279,4 +285,4 @@ if __name__ == '__main__':
     # read_user_time('user-durations-2.csv')
     read_user_time_iv('user-durations-iv-2.csv')
 
-    # insert_timestamp('younger2', 'com_check')
+    # insert_timestamp('fed2', 'com')
