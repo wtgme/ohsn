@@ -19,6 +19,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import ohsn.util.io_util as iot
 import matplotlib.pyplot as plt
+import ohsn.util.plot_util as plu
 
 import numpy as np
 from sklearn.datasets import load_svmlight_file
@@ -26,7 +27,7 @@ from sklearn import decomposition
 from sklearn import cross_validation
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn import preprocessing
+from sklearn import preprocessing, linear_model
 from sklearn.svm import LinearSVC, SVC
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV, RFE, SelectFromModel
@@ -73,7 +74,8 @@ def pac_svc(X_digits, y_digits):
 def ref(X, y, n_features_to_select=1, kernel='linear'):
     # specify the desired number of features
     # return the masks and ranking of selected features
-    estimator = SVC(kernel=kernel, class_weight='balanced')
+    estimator = linear_model.LogisticRegression(class_weight='balanced', n_jobs=8)
+    # estimator = SVC(kernel=kernel, class_weight='balanced')
     selector = RFE(estimator, n_features_to_select=n_features_to_select, step=1)
     selector = selector.fit(X, y)
     return (selector)
@@ -85,13 +87,15 @@ def rfecv(X, y, kernel='linear'):
     # recursive feature elimination with SVM
     # CV to find the best set of features
     # Create the RFE object and compute a cross-validated score.
-    svc = SVC(kernel=kernel, class_weight='balanced')
+    # svc = SVC(kernel=kernel, class_weight='balanced')
+    svc = linear_model.LogisticRegression(class_weight='balanced', n_jobs=8)
     # The "accuracy" scoring is proportional to the number of correct
     # classifications
     # Tested: StratifiedKFold works for imbalanced labeled data.
     rfecv = RFECV(estimator=svc, step=1, cv=StratifiedKFold(y, 5),
-                  scoring='accuracy')
+                  scoring='roc_auc')
     rfecv.fit(X, y)
+    print"Ranking of features :", rfecv.ranking_
     print("Optimal number of features : %d" % rfecv.n_features_)
     return (rfecv)
 
@@ -107,22 +111,23 @@ def mlrfecv(X, y, kernel='linear', class_weight=None):
 
 def plot_rfecvs(rfecvs, labels):
     # Plot number of features VS. cross-validation scores
-    plt.figure()
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
+    plu.plot_config()
     marker = itertools.cycle((',', 'x', 'o', '.', '*'))
     plt.xlabel("#Features")
-    plt.ylabel("Cross validation accuracy")
+    plt.ylabel("Cross validation ROC_AUC")
     for i in xrange(len(rfecvs)):
         rfecv = rfecvs[i]
         label = labels[i]
-        c = np.random.rand(3)
+        # c = np.random.rand(3)
 
         plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_,
-                 label=label,
-                 c=c, marker=marker.next(), lw=2
+                 # label=label,
+                 # c=c,
+                 marker=marker.next(), lw=2
                  )
-        plt.axvline(rfecv.n_features_, linestyle='dashdot', c=c, lw=4)
+        plt.axvline(rfecv.n_features_, linestyle='dashdot',
+                    # c=c,
+                    lw=4)
         plt.annotate('Best: (' + str(rfecv.n_features_) + ', ' + str(round(rfecv.grid_scores_[rfecv.n_features_-1]*100, 2))+'%)',
                  xy=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]),  xycoords='data',
                  xytext=(-30, -30*(i+1)), textcoords='offset points', fontsize=20,
@@ -132,7 +137,7 @@ def plot_rfecvs(rfecvs, labels):
         #              xytext=(rfecv.n_features_, rfecv.grid_scores_[rfecv.n_features_-1]-0.2)
         #              )
     plt.legend(loc="best")
-    plt.grid()
+    plt.grid(True)
     plt.show()
     plt.savefig('refcv.pdf')
     plt.clf()
@@ -497,11 +502,26 @@ if __name__ == '__main__':
     # print feature2[:20]
     # print list(set(feature1[:20]).intersection(set(feature2[:20])))
 
-    feature_rank('data/pro-ed-rec.data')
+    # feature_rank('data/cluster-feature.data')
 
-    # ''' evaluate performance with reducing features
-    # Need a scoring metric'''
-    # '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
-    # X1, y1 = load_scale_data('data/pro-ed-rec.data')
-    # refcv = rfecv(X1, y1)
-    # plot_rfecvs([refcv], ['Pro-rec VS Pro-ED'])
+    ''' evaluate performance with reducing features
+    Need a scoring metric'''
+    '''Accuracy: ed-random-refcv, AUC: ed-random-refcvAUC'''
+    X1, y1 = load_scale_data('data/cluster-feature.data')
+    refcv = rfecv(X1, y1)
+    plot_rfecvs([refcv], ['Pro-ED VS Pro-Recovery'])
+
+    '''Ranking to feature names'''
+#     feat = iot.read_fields()
+# #     indexs = [1,64,1,1,52,1,25,11,12,78,9,41,59,1,44,45,61,1,27,1,80,81,67,47,1
+# # ,69,68,79,62,23,42,7,38,8,6,29,18,72,74,14,33,56,1,1,73,16,49,1,71,2
+# # ,4,3,60,30,82,48,46,22,21,63,83,31,70,20,26,53,1,1,66,15,1,10,35,5,32
+# # ,39,40,54,34,43,58,77,24,19,50,1,51,55,36,13,57,37,76,28,65,17,75]
+#
+#     indexs = [3,24,54,2,25,1,15,1,1,70,29,55,87,1,69,68,38,9,32,8,84,50,88,57,1
+# ,20,35,64,65,41,46,22,56,23,21,53,31,60,89,6,79,59,58,5,63,12,45,10,71,26
+# ,4,43,13,73,72,39,44,37,42,66,51,74,62,30,28,61,1,1,76,7,1,17,19,11,18
+# ,85,40,52,34,33,75,82,36,27,77,1,86,81,47,14,67,48,83,49,78,16,80]
+#     for i, x in enumerate(indexs):
+#         if x == 1:
+#             print feat[i].split('.')[-1], ','

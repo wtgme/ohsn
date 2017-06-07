@@ -351,16 +351,16 @@ def user_hashtag_profile(tag_net, users):
 
     # Cluster tag network
     gt.summary(tag_net)
-    vs = tag_net.vs(weight_gt=100, user_gt=10)
-    tag_net = tag_net.subgraph(vs)
-    gt.summary(tag_net)
-    tag_net = tag_net.subgraph_edges(tag_net.es.select(rWeight_gt=0, rWeight_lt=float('Inf')))
-    gt.summary(tag_net)
+    # vs = tag_net.vs(weight_gt=100, user_gt=10)
+    # tag_net = tag_net.subgraph(vs)
+    # gt.summary(tag_net)
+    # tag_net = tag_net.subgraph_edges(tag_net.es.select(rWeight_gt=0, rWeight_lt=float('Inf')))
+    # gt.summary(tag_net)
     # gc = gt.giant_component(tag_net)
     # gt.summary(gc)
 
-    # com = tag_net.community_infomap(edge_weights='weight', vertex_weights='weight')
-    com = tag_net.community_infomap(edge_weights='rWeight', vertex_weights=None)
+    com = tag_net.community_infomap(edge_weights='weight', vertex_weights='weight')
+    # com = tag_net.community_infomap(edge_weights='rWeight', vertex_weights=None)
     # com = tag_net.community_multilevel(weights='rWeight', return_levels=False)
     # com = louvain.find_partition(gc, method='Surprise', weight='pmi')
     # com = louvain.find_partition(gc, method='Significance', weight=None)
@@ -527,25 +527,24 @@ def user_cluster_hashtag(filepath=None):
     # X = scaler.transform(X)
 
     print X.shape
-    print X
 
     '''Select the best K for K-means'''
-    # range_n_clusters = range(2, 21)
-    # data = []
-    # for n_clusters in range_n_clusters:
-    #     clusterer = KMeans(n_clusters=n_clusters)
-    #     cluster_labels = clusterer.fit_predict(X)
-    #     silhouette_avg = silhouette_score(X, cluster_labels)
-    #     print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
-    #     data.append([n_clusters, silhouette_avg])
-    # return data
+    range_n_clusters = range(2, 21)
+    data = []
+    for n_clusters in range_n_clusters:
+        clusterer = KMeans(n_clusters=n_clusters)
+        cluster_labels = clusterer.fit_predict(X)
+        silhouette_avg = silhouette_score(X, cluster_labels)
+        print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+        data.append([n_clusters, silhouette_avg])
+    return data
     # df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
     # df.to_csv('user-kmeans-hashtag.csv')
 
     '''Single run kmeans'''
-    clusterer = KMeans(n_clusters=2)
-    cluster_labels = clusterer.fit_predict(X)
-    return cluster_labels, user_hash_profile.keys()
+    # clusterer = KMeans(n_clusters=2)
+    # cluster_labels = clusterer.fit_predict(X)
+    # return cluster_labels, user_hash_profile.keys()
 
     # dictionary = dict(zip(user_hash_profile.keys(), cluster_labels))
 
@@ -569,8 +568,8 @@ def user_cluster_hashtag(filepath=None):
 
 def test_user_cluster_stable():
     # Test stable of using infomap and test best k for k-means
-    core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
-    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    core = gt.Graph.Read_GraphML('data/alled_tag_undir_filter.graphml')
+    communication = gt.Graph.Read_GraphML('data/communication-only-fed-filter.graphml')
     gt.summary(communication)
     communication = gt.giant_component(communication)
     gt.summary(communication)
@@ -584,6 +583,18 @@ def test_user_cluster_stable():
     df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
     df.to_csv('user-kmeans-hashtag.csv')
 
+
+def plot_boxplot(filename='user-kmeans-hashtag.csv'):
+    import ohsn.util.plot_util as plu
+    plu.plot_config()
+    df = pd.read_csv(filename, index_col=0)
+    # sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="lightblue")
+    sns.pointplot(x="cluster", y="silhouette_avg", data=df, errcolor='red')
+    sns.despine(offset=10, trim=True)
+    plt.xlabel('K')
+    plt.ylabel('Average Silhouette')
+    plt.ylim(0.38, 0.81)
+    plt.show()
 
 def test_user_cluster_assign_stable():
     # Test stable how final user clustering assignments
@@ -1050,21 +1061,23 @@ if __name__ == '__main__':
     # print metrics.adjusted_rand_score(com1.membership, com3.membership)
     # print metrics.adjusted_rand_score(com2.membership, com4.membership)
 
-    core = gt.Graph.Read_GraphML('alled_tag_undir_filter_zscore.graphml')
-    communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
-    gt.summary(communication)
-    communication = gt.giant_component(communication)
-    gt.summary(communication)
-    users = [(v['name']) for v in communication.vs]
-    print len(users)
-    # user_hashtag_vector('fed', 'ed_tag', users)
-    user_hashtag_profile(core, users)
+    '''Profile user based on hashtag topics'''
+    # core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
+    # communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
+    # gt.summary(communication)
+    # communication = gt.giant_component(communication)
+    # gt.summary(communication)
+    # users = [(v['name']) for v in communication.vs]
+    # print len(users)
+    # # user_hashtag_vector('fed', 'ed_tag', users)
+    # user_hashtag_profile(core, users)
     #----------------------------------------------------------------------------------------------
 
     # ------------------------------test cluster stable
     # user_cluster_hashtag()
-    # test_user_cluster_assign_stable()
+    test_user_cluster_assign_stable()
     # test_user_cluster_stable()
+    # plot_boxplot()
 
     # ---------------user z-score to reweight link weights
     # z_scores('alled_tag_undir_filter')

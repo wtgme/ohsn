@@ -441,7 +441,7 @@ def plot_config():
     plt.rcParams['xtick.labelsize'] = 12
     plt.rcParams['ytick.labelsize'] = 12
     plt.rcParams['legend.fontsize'] = 15
-    plt.rcParams['lines.markersize'] = 5
+    # plt.rcParams['lines.markersize'] = 2
     # plt.rcParams['lines.linewidth'] = 2
     plt.rcParams['pdf.fonttype'] = 42
     plt.rcParams['ps.fonttype'] = 42

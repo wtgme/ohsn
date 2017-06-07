@@ -271,7 +271,7 @@ def cluseter_nodes(btype = 'communication'):
         id = ids[i]
         v = g.vs.find(name=id)
         v['cluster'] = cluters[i]
-    g.write_graphml('communication-only-fed-filter-hashtag-cluster-zscore.graphml')
+    g.write_graphml('communication-only-fed-filter-hashtag-cluster.graphml')
 
 
 def count_pro_ratio(btype = 'communication'):

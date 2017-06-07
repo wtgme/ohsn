@@ -8,7 +8,7 @@ import numpy as np
 from scipy import interp
 import matplotlib.pyplot as plt
 
-from sklearn import svm
+from sklearn import svm, linear_model
 from sklearn.metrics import roc_curve, auc
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.datasets import load_svmlight_file
@@ -32,8 +32,10 @@ def load_scale_data(file_path, multilabeltf=False):
 
 
 def cross_val_roc(X, y):
+    print X.shape
     cv = StratifiedKFold(y, n_folds=5)
     classifier = svm.SVC(kernel='linear', class_weight='balanced')
+    # classifier = linear_model.LogisticRegression()
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
     for i, (train, test) in enumerate(cv):
@@ -47,6 +49,7 @@ def cross_val_roc(X, y):
     mean_auc = auc(mean_fpr, mean_tpr)
     # plt.plot(mean_fpr, mean_tpr, color+'--',
     #          label=feature+' (area = %0.2f)' % mean_auc, lw=2)
+    print mean_auc
     return mean_fpr, mean_tpr, mean_auc
 
 
@@ -97,24 +100,21 @@ def roc_plot(datafile, savename, pca_num=10):
 
     '''social status features'''
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:6], y)
-    print X[:, 0:6].shape
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (area = %0.2f)' % mean_auc, lw=3, ms=10)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'soc-short.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'soc-short.pick', 'r'))
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''Behavioral pattern features'''
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 6:17], y)
-    print X[:, 6:17].shape
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'beh.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'beh.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Beh. (area = %0.2f)' % mean_auc, lw=3, ms=10)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'beh.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'beh.pick', 'r'))
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Beh. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''LIWC features'''
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 17:], y)
-    print X[:, 17:].shape
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='Psy. (area = %0.2f)' % mean_auc, lw=3, ms=10)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'liwc.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'liwc.pick', 'r'))
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='Psy. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
 
     # '''Plus Hashtag features'''
     # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 21:], y)
@@ -127,10 +127,9 @@ def roc_plot(datafile, savename, pca_num=10):
     # X_short = np.delete(X, [6,7,8,9], 1)
 
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    print X.shape
-    pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
-    mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--*', label='All. (area = %0.2f)' % mean_auc, lw=3, ms=10)
+    # pickle.dump((mean_fpr, mean_tpr, mean_auc), open(datafile+'all-short.pick', 'w'))
+    # mean_fpr, mean_tpr, mean_auc = pickle.load(open(datafile+'all-short.pick', 'r'))
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'k--*', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
 
     '''PCA'''
     # from sklearn import decomposition
@@ -153,9 +152,9 @@ def roc_plot(datafile, savename, pca_num=10):
 
 if __name__ == '__main__':
 
-    # roc_plot('data/pro-ed-rec.data', 'pro-ed-rec.pdf', 90)
+    roc_plot('data/cluster-feature.data', 'pro-ed-recovery.pdf', 90)
 
-    roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
-    roc_plot('data/ed-younger.data', 'ed-young-roc.pdf', 70)
-    roc_plot('data/random-younger.data', 'random-young-roc.pdf', 100)
+    # roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
+    # roc_plot('data/ed-younger.data', 'ed-young-roc.pdf', 70)
+    # roc_plot('data/random-younger.data', 'random-young-roc.pdf', 100)
 

@@ -14,6 +14,7 @@ import shlex, subprocess
 
 
 def rate_sentiment(sentiString):
+    # Return positive negative neutral tuple
     MYDIR = os.path.dirname(__file__)
     #open a subprocess using shlex to get the command line string into the correct args list format
     p = subprocess.Popen(shlex.split("java -jar SentiStrengthCom.jar stdin sentidata "
