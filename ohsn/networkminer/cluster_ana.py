@@ -14,6 +14,11 @@ import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import pandas as pd
 import numpy as np
+import pickle
+from collections import Counter
+import seaborn as sns
+import matplotlib.pyplot as plt
+import ohsn.util.plot_util as plu
 
 
 def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -67,6 +72,8 @@ def assortative_test(filename='data/communication-only-fed-filter-hashtag-cluste
     g = gt.Graph.Read_GraphML(filename)
     raw_values = np.array(g.vs['cluster'])
     raw_assort = g.assortativity('cluster', 'cluster', directed=True)
+    modu = g.modularity(g.vs['cluster'], weights='weight')
+    print raw_assort, modu
     ass_list = list()
     for i in xrange(3000):
         np.random.shuffle(raw_values)
@@ -85,7 +92,7 @@ def assortative_test(filename='data/communication-only-fed-filter-hashtag-cluste
         mark = '**'
     if pval < 0.001:
         mark = '***'
-    print ('Raw assort: %.3f, mean: %.3f std: %.3f z: %.3f, p: %.3f %s' %(raw_assort, amean, astd, zscore, pval, mark))
+    print ('Raw assort: %.3f, mean: %.3f std: %.3f z: %.3f, p: %.100f %s' %(raw_assort, amean, astd, zscore, pval, mark))
 
 
 def interaction_ratio(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -117,12 +124,48 @@ def interaction_ratio(filename='data/communication-only-fed-filter-hashtag-clust
     # print ('%.3f %.3f %.3f %.3f ' %(float(aa)/eaa, float(ab)/eab, float(ba)/eba, float(bb)/ebb))
 
 
-def prominence():
+def prominence(filename='data/communication-only-fed-filter-hashtag-cluster.graphml',
+               tagfile='data/user-hash-vector.pick'):
     # TODO calculate the prominence of hashtag
-    print
+    g = gt.Graph.Read_GraphML(filename)
+    user_tag = pickle.load(open(tagfile, 'r')) # {'uid': 'tag1 tag2 tag3'}
+    uid_lable = dict(zip(g.vs['name'], g.vs['cluster']))
+    clusterA, clusterB = [], []
+    for uid in user_tag.keys():
+        if uid_lable[str(uid)] == 0:
+            clusterA += user_tag[uid].split()
+        elif uid_lable[str(uid)] == 1:
+            clusterB += user_tag[uid].split()
+        else:
+            print 'not existing cluster'
+    NA = len(clusterA)
+    NB = len(clusterB)
+
+    Acounter = Counter(clusterA)
+    Bcounter = Counter(clusterB)
+
+    tags = set(Acounter.keys() + Bcounter.keys())
+    valance = {}
+    for tag in tags:
+        pa = float(Acounter.get(tag, 0))
+        pb = float(Bcounter.get(tag, 0))
+        v = 2*pb/(pa + pb)-1
+        valance[tag] = v
+
+    pickle.dump(valance, open('data/hashtag-valance.pick', 'w'))
+    valance = pickle.load(open('data/hashtag-valance.pick', 'r'))
+    print valance
+    plu.plot_config()
+    x = valance.values()
+    bin = np.linspace(min(x), max(x), 100)
+    sns.distplot(x, bins=bin)
+    plt.xlabel('V(h)')
+    plt.ylabel('PDF')
+    plt.show()
 
 if __name__ == '__main__':
     # net_attr()
     # regression()
     # assortative_test()
-    interaction_ratio()
+    # interaction_ratio()
+    prominence()
