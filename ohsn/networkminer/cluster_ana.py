@@ -125,41 +125,87 @@ def interaction_ratio(filename='data/communication-only-fed-filter-hashtag-clust
 
 
 def prominence(filename='data/communication-only-fed-filter-hashtag-cluster.graphml',
-               tagfile='data/user-hash-vector.pick'):
+               tagfile='data/user-hash-vector.pick'
+                ):
     # TODO calculate the prominence of hashtag
     g = gt.Graph.Read_GraphML(filename)
     user_tag = pickle.load(open(tagfile, 'r')) # {'uid': 'tag1 tag2 tag3'}
+
     uid_lable = dict(zip(g.vs['name'], g.vs['cluster']))
     clusterA, clusterB = [], []
+    clusterA_user_no, clusterB_user_no = [], [] #count how many users have used a tag
     for uid in user_tag.keys():
+        tag_list = user_tag[uid].split()
         if uid_lable[str(uid)] == 0:
-            clusterA += user_tag[uid].split()
+            clusterA += tag_list
+            clusterA_user_no += list(set(tag_list))
         elif uid_lable[str(uid)] == 1:
-            clusterB += user_tag[uid].split()
+            clusterB += tag_list
+            clusterB_user_no += list(set(tag_list))
         else:
             print 'not existing cluster'
     NA = len(clusterA)
     NB = len(clusterB)
+    NALL = NA + NB
 
     Acounter = Counter(clusterA)
     Bcounter = Counter(clusterB)
+    Allcounter = Counter(clusterA + clusterB) # counting how many times of a tag being used
+    Allcounter_user = Counter(clusterA_user_no + clusterB_user_no) # counting how many users using a tag
 
     tags = set(Acounter.keys() + Bcounter.keys())
     valance = {}
     for tag in tags:
-        pa = float(Acounter.get(tag, 0))
-        pb = float(Bcounter.get(tag, 0))
-        v = 2*pb/(pa + pb)-1
-        valance[tag] = v
+        '''Self defined values'''
+        # if Allcounter.get(tag, 0) > 3 and Allcounter_user.get(tag, 0) > 3:
+        #     fa = Acounter.get(tag, 0)
+        #     fb = Bcounter.get(tag, 0)
+        #     pa = float(fa)/NA
+        #     pb = float(fb)/NB
+        #     pall = pa + pb
+        #     if pall > 0:
+        #         v = ((pb - pa)/(pa + pb))
+        #         if pb >= pa:
+        #             v *= np.log(fb)
+        #         else:
+        #             v *= np.log(fa)
+        #         valance[tag] = v
+        #         print tag, fa, fb, v
+        #     else:
+        #         print tag, '-------------------------------------'
+        '''PMI'''
+        TALL = Allcounter.get(tag, 0)
+        if TALL > 3 and Allcounter_user.get(tag, 0) > 3:
+            fa = Acounter.get(tag, 0)
+            fb = Bcounter.get(tag, 0)
+            if fa>0:
+                pmiA = np.log(float(fa*NALL)/(TALL*NA))/(-np.log(float(fa)/NALL))
+                # pmiA = np.log(float(fa*NALL)/(TALL*NA))
+            else:
+                pmiA = 0
+            if fb > 0:
+                pmiB = np.log(float(fb*NALL)/(TALL*NB))/(-np.log(float(fb)/NALL))
+                # pmiB = np.log(float(fb*NALL)/(TALL*NB))
+            else:
+                pmiB = 0
+            value = pmiB - pmiA
+            valance[tag] = value
+            print tag, fa, fb, TALL, pmiA, pmiB, value
+            # if fa > 0:
+            #     pmiB = np.log(float(fa*NALL)/(TALL*NA))/(-np.log(float(fa)/NALL))
+            # else:
+            #     pmiB = 0
+            # valance[tag] = pmiB
 
-    pickle.dump(valance, open('data/hashtag-valance.pick', 'w'))
-    valance = pickle.load(open('data/hashtag-valance.pick', 'r'))
-    print valance
+    # pickle.dump(valance, open('data/hashtag-valance.pick', 'w'))
+    # valance = pickle.load(open('data/hashtag-valance.pick', 'r'))
     plu.plot_config()
     x = valance.values()
-    bin = np.linspace(min(x), max(x), 100)
-    sns.distplot(x, bins=bin)
-    plt.xlabel('V(h)')
+    # print np.min(x), np.percentile(x, 25), np.percentile(x, 50), np.percentile(x, 75), np.max(x)
+
+    # bin = np.linspace(min(x), max(x), 100)
+    sns.distplot(x)
+    plt.xlabel(r'PI(h)')
     plt.ylabel('PDF')
     plt.show()
 
