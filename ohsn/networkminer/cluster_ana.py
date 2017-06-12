@@ -19,6 +19,9 @@ from collections import Counter
 import seaborn as sns
 import matplotlib.pyplot as plt
 import ohsn.util.plot_util as plu
+from sklearn.datasets import load_svmlight_file
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn import preprocessing
 
 
 def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -35,6 +38,47 @@ def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphm
 def sentiment_quanti(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     # TODO analysis sentiment of different groups of users for hashtags
     print ''
+
+
+def liwc_sim(filename='data/cluster-feature.data'):
+    X, y = load_svmlight_file(filename)
+    X = X.toarray()
+    print X.shape
+    # X = preprocessing.scale(X)
+    fields = iot.read_fields()
+    trim_files = [f.split('.')[-1] for f in fields]
+    print len(trim_files)
+    select_f = ['i', 'we', 'swear', 'posemo',
+                'negemo', 'anx', 'anger', 'sad',
+                'body', 'health', 'ingest', 'death']
+    indecs = [trim_files.index(f) for f in select_f]
+    X = X[:, indecs]
+    print X.shape
+    sims = cosine_similarity(X)
+    length = len(X)
+    AA, BB, AB = [], [], []
+    for i in xrange(length):
+        for j in xrange(i+1, length):
+            if y[i] == y[j]:
+                if y[i] == 0:
+                    # data.append([sims[i][j], 'AA'])
+                    AA.append(sims[i][j])
+                elif y[i] == 1:
+                    # data.append([sims[i][j], 'BB'])
+                    BB.append(sims[i][j])
+            else:
+                # data.append([sims[i][j], 'AB/BA'])
+                AB.append(sims[i][j])
+    # df = pd.DataFrame(data, columns=['cos', 'group'])
+
+    sns.distplot(AA, hist=False)
+    sns.distplot(BB, hist=False)
+    sns.distplot(AB, hist=False)
+    sns.distplot(AA+BB+AB, hist=False)
+    plt.show()
+
+    # df.to_csv('cos.csv', index=False)
+
 
 
 def regression(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -214,4 +258,5 @@ if __name__ == '__main__':
     # regression()
     # assortative_test()
     # interaction_ratio()
-    prominence()
+    # prominence()
+    liwc_sim()

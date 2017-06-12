@@ -259,7 +259,8 @@ def convert_fields(LIWC, rank):
 def load_scale_data(file_path, multilabeltf=False):
     X, y = load_svmlight_file(file_path, multilabel=multilabeltf)
     X = X.toarray()
-    X = preprocessing.scale(X)
+    X = X[:, 17:]
+    # X = preprocessing.scale(X)
     # min_max_scaler = preprocessing.MinMaxScaler()
     # X = min_max_scaler.fit_transform(X_dentise)
     if multilabeltf == True:
@@ -269,7 +270,7 @@ def load_scale_data(file_path, multilabeltf=False):
 
 def feature_rank(file_path):
     # Ranking feature usefulness
-    LIWC = iot.read_fields()
+    LIWC = iot.read_fields()[17:]
     LIWC = [line.strip().split('.')[-1] for line in LIWC]
     X1, y1 = load_scale_data(file_path)
     ref1 = ref(X1, y1)
@@ -502,7 +503,7 @@ if __name__ == '__main__':
     # print feature2[:20]
     # print list(set(feature1[:20]).intersection(set(feature2[:20])))
 
-    # feature_rank('data/cluster-feature.data')
+    feature_rank('data/cluster-feature.data')
 
     ''' evaluate performance with reducing features
     Need a scoring metric'''

@@ -13,6 +13,8 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
+import ohsn.util.plot_util as plu
+import ohsn.util.io_util as iot
 import pickle
 import seaborn as sns
 
@@ -23,7 +25,7 @@ def load_scale_data(file_path, multilabeltf=False):
     # print X[:, 0]
     # print X[:, 10]
     # print X[:, 21]
-    X = preprocessing.scale(X)
+    # X = preprocessing.scale(X)
     # min_max_scaler = preprocessing.MinMaxScaler()
     # X = min_max_scaler.fit_transform(X_dentise)
     if multilabeltf == True:
@@ -84,17 +86,44 @@ def cross_val_roc_plot(X, y):
     plt.show()
 
 
+def roc_plot_feature(datafile):
+    X, y = load_scale_data(datafile)
+    fields = iot.read_fields()
+    trim_files = [f.split('.')[-1] for f in fields]
+    print len(trim_files)
+    select_f = ['i', 'we', 'swear', 'negate', 'posemo',
+                'affect', 'insight', 'body', 'health',
+                'ingest', 'social']
+
+    indecs = [trim_files.index(f) for f in select_f]
+    X = X[:, indecs]
+
+    print X.shape
+    plu.plot_config()
+    ax = plt.gca()
+    ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='AUC = %0.2f' % mean_auc, lw=3, ms=10)
+    ax.set_xlim([0, 1])
+    ax.set_ylim([0, 1])
+    ax.set_xlabel('False Positive Rate')
+    ax.set_ylabel('True Positive Rate')
+    ax.legend(loc="lower right")
+    ax.grid(True)
+    plt.show()
+
+
 def roc_plot(datafile, savename, pca_num=10):
     X, y = load_scale_data(datafile)
     print X.shape
-
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['xtick.labelsize'] = 15
-    plt.rcParams['ytick.labelsize'] = 15
-    plt.rcParams['legend.fontsize'] = 20
-    plt.rcParams['lines.markersize'] = 50
-    plt.rcParams['pdf.fonttype'] = 42
-    plt.rcParams['ps.fonttype'] = 42
+    plu.plot_config()
+    # plt.rcParams['axes.labelsize'] = 20
+    # plt.rcParams['xtick.labelsize'] = 15
+    # plt.rcParams['ytick.labelsize'] = 15
+    # plt.rcParams['legend.fontsize'] = 20
+    # plt.rcParams['lines.markersize'] = 50
+    # plt.rcParams['pdf.fonttype'] = 42
+    # plt.rcParams['ps.fonttype'] = 42
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
@@ -152,8 +181,8 @@ def roc_plot(datafile, savename, pca_num=10):
 
 if __name__ == '__main__':
 
-    roc_plot('data/cluster-feature.data', 'pro-ed-recovery.pdf', 90)
-
+    # roc_plot('data/cluster-feature.data', 'pro-ed-recovery.pdf', 90)
+    roc_plot_feature('data/cluster-feature.data')
     # roc_plot('data/ed-random.data', 'ed-random-roc.pdf', 90)
     # roc_plot('data/ed-younger.data', 'ed-young-roc.pdf', 70)
     # roc_plot('data/random-younger.data', 'random-young-roc.pdf', 100)
