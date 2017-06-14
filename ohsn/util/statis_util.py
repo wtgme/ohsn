@@ -28,9 +28,13 @@ def z_test(list1, list2):
     return n1, n2, z, pval
 
 
-def ks_test(list1, list2):
+def ks_test(list1, list2, n=1):
     d, p = stats.ks_2samp(list1, list2)
-    return len(list1), len(list2), (d), (p)
+    return len(list1), len(list2), (d), (p*n)
+
+def ttest(list1, list2, n=1):
+    d, p = stats.ttest_ind(list1, list2)
+    return np.mean(list1), np.mean(list2), (d), (p*n)
 
 
 def comm_stat(lista):

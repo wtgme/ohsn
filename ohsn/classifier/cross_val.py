@@ -4,9 +4,14 @@ Created on 18:25, 06/06/16
 
 @author: wt
 """
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
 import numpy as np
 from scipy import interp
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from sklearn import svm, linear_model
 from sklearn.metrics import roc_curve, auc
@@ -91,12 +96,28 @@ def roc_plot_feature(datafile):
     fields = iot.read_fields()
     trim_files = [f.split('.')[-1] for f in fields]
     print len(trim_files)
-    select_f = ['i', 'we', 'swear', 'negate', 'posemo',
-                'affect', 'insight', 'body', 'health',
-                'ingest', 'social']
+    select_f = ['body', 'ingest', 'health', 'i', 'we', 'swear', 'insight', 'negate', 'social', 'posemo',
+                'negemo']
 
     indecs = [trim_files.index(f) for f in select_f]
+    print indecs
     X = X[:, indecs]
+    '''Calculate positive emotion ratio'''
+    print X.shape
+    X[:,-2] /= (X[:,-2] + X[:, -1])
+
+    X = X[:, :-1]
+    X[:, -1][~np.isfinite(X[:, -1])] = 0
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X = min_max_scaler.fit_transform(X)
+
+    # X = preprocessing.scale(X)
+
+    print X.shape, y.shape
+    Z = np.append(X, y.reshape((len(y), 1)), axis=1)
+    df = pd.DataFrame(Z, columns=['body', 'ingest', 'health', 'i', 'we', 'swear', 'insight', 'negate', 'social', 'posemor', 'label'])
+    df.to_csv('scaling-clsuter-feature.csv', index=False)
 
     print X.shape
     plu.plot_config()
@@ -178,6 +199,8 @@ def roc_plot(datafile, savename, pca_num=10):
     # plt.gca().set_aspect('equal')
     plt.savefig(savename)
     plt.clf()
+
+
 
 if __name__ == '__main__':
 

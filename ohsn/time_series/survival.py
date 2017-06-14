@@ -198,22 +198,39 @@ def read_user_time_iv(filename):
                         print uid in friend_ids
                         print len(friend_ids)
                         fatts = []
+                        alive = 0
                         for fid in friend_ids:
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
+                            fu2 = com2.find_one({'id': fid})
                             if fu != None:
                                 fatt = iot.get_fields_one_doc(fu, fields)
                                 fatt.extend(active_days(fu))
                                 fatt.extend([eigen_map.get(fu['id'], 0)])
-
                                 fatts.append(fatt)
+
+                                if (fu2 is None):
+                                    alive += 0
+                                else:
+                                    if 'status' not in fu and 'status' not in fu2:
+                                        alive += 0
+                                    elif 'status' not in fu and 'status' in fu2:
+                                        alive += 1
+                                    elif 'status' in fu and 'status' not in fu2:
+                                        alive += 1
+                                    elif fu2['status']['id'] == fu['status']['id']:
+                                        alive += 0
+                                    elif fu2['status']['id'] != fu['status']['id']:
+                                        alive += 1
+
                         # thredhold = user['friends_count']*0.5
                         if len(fatts) > 0:
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
+                            paliv = float(alive)/len(fatts)
                             data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, second_scraped_at, average_time,
                              longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_timeline_count] +
-                                        values + [len(fatts)])
+                                        values + [len(fatts), paliv])
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'scraped_at', 'second_scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
@@ -225,7 +242,7 @@ def read_user_time_iv(filename):
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields] +
                                     ['f_'+field for field in prof_names] +
-                                    ['f_centrality', 'f_num'])
+                                    ['f_centrality', 'f_num', 'f_palive'])
     df.to_csv(filename)
 
 

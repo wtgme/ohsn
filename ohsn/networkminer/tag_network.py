@@ -588,8 +588,8 @@ def plot_boxplot(filename='user-kmeans-hashtag.csv'):
     import ohsn.util.plot_util as plu
     plu.plot_config()
     df = pd.read_csv(filename, index_col=0)
-    # sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="lightblue")
-    sns.pointplot(x="cluster", y="silhouette_avg", data=df, errcolor='red')
+    sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="lightblue")
+    # sns.pointplot(x="cluster", y="silhouette_avg", data=df, errcolor='red')
     sns.despine(offset=10, trim=True)
     plt.xlabel('K')
     plt.ylabel('Average Silhouette')
@@ -1075,9 +1075,9 @@ if __name__ == '__main__':
 
     # ------------------------------test cluster stable
     # user_cluster_hashtag()
-    test_user_cluster_assign_stable()
+    # test_user_cluster_assign_stable()
     # test_user_cluster_stable()
-    # plot_boxplot()
+    plot_boxplot()
 
     # ---------------user z-score to reweight link weights
     # z_scores('alled_tag_undir_filter')
