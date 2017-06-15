@@ -133,7 +133,7 @@ def analysis_sentiments(file='tweets.txt'):
     df = pd.DataFrame(data, columns=['Cluster', 'Topic', 'Sentiment'])
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, palette={"A": "r", "B": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Other"])
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Unspecified"])
     # sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='A-A ($\mu=%0.2f$)' % (np.mean(AA)))
     # sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 'o'}, label='B-B ($\mu=%0.2f$)' % (np.mean(BB)))
     # sns.distplot(AB, hist=False, kde_kws={"color": "y", "lw": 2, "marker": 's'}, label='A-B ($\mu=%0.2f$)' % (np.mean(AB)))
@@ -305,32 +305,43 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     # Compare the relation between in and out degree in two clustsers of users.
     g = gt.Graph.Read_GraphML(filename)
     gt.summary(g)
-    g1 = g.subgraph(g.vs(cluster=0))
-    g2 = g.subgraph(g.vs(cluster=1))
 
-    # BUG of igraph https://github.com/igraph/python-igraph/issues/64
-    data = []
-    for i, net in enumerate([g1, g2]):
-        label = ['A', 'B'][i]
-        for v in net.vs:
-            sout = sum(net.es.select(_source=v.index)['weight'])
-            sin = sum(net.es.select(_target=v.index)['weight'])
-            dout = len(net.es.select(_source=v.index))
-            din = len(net.es.select(_target=v.index))
-            data.append([dout, din, sout, sin,   label])
-    df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Group'])
-
-    intervals = []
-    for name in ['d_out', 'd_in', 's_out', 's_in']:
-        intervals.append(sms.DescrStatsW(df[name]).tconfint_mean())
-    for i, name in enumerate(['d_out', 'd_in', 's_out', 's_in']):
-        minv, maxv = intervals[i]
-        df = df[(df[name]>minv) & (df[name]<maxv)]
-
-
-    plu.plot_config()
-    sns.pairplot(df, kind="reg", hue="Group", diag_kind="kde",  palette={"A": "r", "B": "g"})
+    inds = g.indegree()
+    outds = g.outdegree()
+    sns.distplot(np.array(inds)+1, hist=False, color="g")
+    sns.distplot(np.array(outds)+1, hist=False, color="r")
+    plt.xscale('log')
+    plt.yscale('log')
     plt.show()
+
+    # cl1 = g.vs(cluster=0)
+    # cl2 = g.vs(cluster=1)
+    # # g1 = g.subgraph(g.vs(cluster=0))
+    # # g2 = g.subgraph(g.vs(cluster=1))
+    #
+    # # BUG of igraph https://github.com/igraph/python-igraph/issues/64
+    # data = []
+    # for i, net in enumerate([cl1, cl2]):
+    #     label = ['A', 'B'][i]
+    #     for v in net:
+    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
+    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
+    #         dout = np.log(1+len(g.es.select(_source=v.index)))
+    #         din = np.log(1+len(g.es.select(_target=v.index)))
+    #         data.append([dout, din, sout, sin, label])
+    # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Group'])
+
+    # intervals = []
+    # for name in ['d_out', 'd_in', 's_out', 's_in']:
+    #     intervals.append(sms.DescrStatsW(df[name]).tconfint_mean())
+    # for i, name in enumerate(['d_out', 'd_in', 's_out', 's_in']):
+    #     minv, maxv = intervals[i]
+    #     df = df[(df[name]>minv) & (df[name]<maxv)]
+
+
+    # plu.plot_config()
+    # sns.pairplot(df, kind="reg", hue="Group", diag_kind="kde",  palette={"A": "r", "B": "g"})
+    # plt.show()
     # print len(sa), len(ta)
     # print statu.stats.kendalltau(sa, ta)
     # sns.jointplot(x=np.array(sa), y=np.array(ta), stat_func=statu.stats.kendalltau)
