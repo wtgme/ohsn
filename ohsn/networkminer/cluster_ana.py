@@ -27,6 +27,7 @@ from scipy.stats import ttest_ind
 import ohsn.sentiment.senstrength as sentre
 import re
 import statsmodels.stats.api as sms
+import powerlaw
 
 rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
 mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
@@ -131,9 +132,15 @@ def analysis_sentiments(file='tweets.txt'):
 
     print both_tweets, all_tweets, float(both_tweets/all_tweets)
     df = pd.DataFrame(data, columns=['Cluster', 'Topic', 'Sentiment'])
+    # print np.mean(df[(df['Cluster']=='A')&(df['Topic']==1)]['Sentiment'])
+
+    #change values in colcumn
+    df['Cluster'] = df['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
+
     plu.plot_config()
-    g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, palette={"A": "r", "B": "g"})
+    g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, legend=False, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Unspecified"])
+    plt.legend(loc='best')
     # sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='A-A ($\mu=%0.2f$)' % (np.mean(AA)))
     # sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 'o'}, label='B-B ($\mu=%0.2f$)' % (np.mean(BB)))
     # sns.distplot(AB, hist=False, kde_kws={"color": "y", "lw": 2, "marker": 's'}, label='A-B ($\mu=%0.2f$)' % (np.mean(AB)))
@@ -141,6 +148,7 @@ def analysis_sentiments(file='tweets.txt'):
     plt.show()
     plt.clf()
 
+    df['Cluster'] = df['Cluster'].map({'Pro-ED': 'A', 'Pro-Rec.': 'B'})
     dat = []
     A = len(df[df.Cluster=='A'])
     B = len(df[df.Cluster=='B'])
@@ -158,11 +166,14 @@ def analysis_sentiments(file='tweets.txt'):
     BCc = len(df[(df.Cluster=='B') & (df.Topic==2)])
     dat.append(['B', 2, float(BCc)/B])
 
+
     pro = pd.DataFrame(dat, columns=['Cluster', 'Topic', 'Proportion'])
+    pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
     print pro
     plu.plot_config()
-    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", data=pro, palette={"A": "r", "B": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Other"])
+    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, data=pro, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Unspecified"])
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -177,7 +188,6 @@ def liwc_sim(filename='data/cluster-feature.data'):
     X, y = load_svmlight_file(filename)
     X = X.toarray()
     print X.shape
-    # X = preprocessing.scale(X)
     fields = iot.read_fields()
     trim_files = [f.split('.')[-1] for f in fields]
     print len(trim_files)
@@ -193,10 +203,10 @@ def liwc_sim(filename='data/cluster-feature.data'):
     X[:, -1][~np.isfinite(X[:, -1])] = 0
     print X.shape
 
-    # min_max_scaler = preprocessing.MinMaxScaler()
-    # X = min_max_scaler.fit_transform(X)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X = min_max_scaler.fit_transform(X)
 
-    X = preprocessing.scale(X)
+    # X = preprocessing.scale(X)
 
     sims = cosine_similarity(X)
     length = len(X)
@@ -221,9 +231,9 @@ def liwc_sim(filename='data/cluster-feature.data'):
     print statu.ttest(AB, BB)
 
     plu.plot_config()
-    sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='A-A ($\mu=%0.2f$)' % (np.mean(AA)))
-    sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 's'}, label='B-B ($\mu=%0.2f$)' % (np.mean(BB)))
-    sns.distplot(AB, hist=False, kde_kws={"color": "k", "lw": 2, "marker": '^'}, label='A-B ($\mu=%0.2f$)' % (np.mean(AB)))
+    sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='Pro-ED ($\mu=%0.2f$)' % (np.mean(AA)))
+    sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 's'}, label='Pro-Rec. ($\mu=%0.2f$)' % (np.mean(BB)))
+    sns.distplot(AB, hist=False, kde_kws={"color": "k", "lw": 2, "marker": '^'}, label='Cross-Cluster ($\mu=%0.2f$)' % (np.mean(AB)))
     # sns.distplot(AA+BB+AB, hist=False)
     plt.axvline(np.mean(AA), linestyle='dashdot',
                     c='r', lw=4)
@@ -235,7 +245,7 @@ def liwc_sim(filename='data/cluster-feature.data'):
     # plt.xlim(0, 1)
     plt.legend(loc="best")
     plt.xlabel('cos(a,b)')
-    plt.ylabel('PDF')
+    plt.ylabel('P(cos(a,b))')
     plt.show()
 
 
@@ -302,51 +312,70 @@ def assortative_test(filename='data/communication-only-fed-filter-hashtag-cluste
     print ('Raw assort: %.3f, mean: %.3f std: %.3f z: %.3f, p: %.100f %s' %(raw_assort, amean, astd, zscore, pval, mark))
 
 def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
-    # Compare the relation between in and out degree in two clustsers of users.
-    g = gt.Graph.Read_GraphML(filename)
-    gt.summary(g)
-
-    inds = g.indegree()
-    outds = g.outdegree()
-    sns.distplot(np.array(inds)+1, hist=False, color="g")
-    sns.distplot(np.array(outds)+1, hist=False, color="r")
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.show()
-
-    # cl1 = g.vs(cluster=0)
-    # cl2 = g.vs(cluster=1)
-    # # g1 = g.subgraph(g.vs(cluster=0))
-    # # g2 = g.subgraph(g.vs(cluster=1))
+    # # Compare the relation between in and out degree in two clustsers of users.
+    # g = gt.Graph.Read_GraphML(filename)
+    # gt.summary(g)
+    #
+    # # cl1 = g.vs(cluster=0)
+    # # cl2 = g.vs(cluster=1)
+    # g1 = g.subgraph(g.vs(cluster=0))
+    # g2 = g.subgraph(g.vs(cluster=1))
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    # g1 = gt.giant_component(g1)
+    # g2 = gt.giant_component(g2)
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    #
+    # # inds1 = g1.indegree()
+    # # outds1 = g1.outdegree()
+    # # inds2 = g2.indegree()
+    # # outds2 = g2.outdegree()
+    #
+    # # plu.plot_config()
+    # # figPDF = powerlaw.plot_pdf(np.array(inds1)+1, color='r')
+    # # powerlaw.plot_pdf(np.array(inds1)+1, linear_bins=True, color='r', ax=figPDF)
+    # # powerlaw.plot_pdf(np.array(inds2)+1, color='g', ax=figPDF)
+    # # powerlaw.plot_pdf(np.array(inds2)+1, linear_bins=True, color='g', ax=figPDF)
+    # # figPDF.set_ylabel("p(X)")
+    # # figPDF.set_xlabel(r"Indegree")
+    # # plt.show()
     #
     # # BUG of igraph https://github.com/igraph/python-igraph/issues/64
     # data = []
-    # for i, net in enumerate([cl1, cl2]):
-    #     label = ['A', 'B'][i]
-    #     for v in net:
-    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
-    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
-    #         dout = np.log(1+len(g.es.select(_source=v.index)))
-    #         din = np.log(1+len(g.es.select(_target=v.index)))
+    # for i, net in enumerate([g1, g2]):
+    #     label = ['Pro-ED', 'Pro-Rec.'][i]
+    #     for v in net.vs:
+    #         sout = np.log(1+sum(net.es.select(_source=v.index)['weight']))
+    #         sin = np.log(1+sum(net.es.select(_target=v.index)['weight']))
+    #         dout = np.log(1+len(net.es.select(_source=v.index)))
+    #         din = np.log(1+len(net.es.select(_target=v.index)))
     #         data.append([dout, din, sout, sin, label])
-    # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Group'])
+    # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Cluster'])
+    # pickle.dump(df, open('df.pick', 'w'))
 
-    # intervals = []
-    # for name in ['d_out', 'd_in', 's_out', 's_in']:
-    #     intervals.append(sms.DescrStatsW(df[name]).tconfint_mean())
-    # for i, name in enumerate(['d_out', 'd_in', 's_out', 's_in']):
-    #     minv, maxv = intervals[i]
-    #     df = df[(df[name]>minv) & (df[name]<maxv)]
+    df = pickle.load(open('df.pick', 'r'))
+    plu.plot_config()
+    xa, ya = df[df['Cluster']=='Pro-ED']['s_in'], df[df['Cluster']=='Pro-ED']['s_out']
+    xb, yb = df[df['Cluster']=='Pro-Rec.']['s_in'], df[df['Cluster']=='Pro-Rec.']['s_out']
+    g = sns.JointGrid(xa, ya)
+    g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
+    g.annotate(statu.stats.kendalltau)
+    g.x = xb
+    g.y = yb
+    g.plot_joint(plt.scatter, marker='^', s=50, color="g", label=r'Pro-Rec.: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xb, yb))[0])
+    g.plot_joint(sns.regplot, color="g")
+    g.annotate(statu.stats.kendalltau)
+    g.ax_marg_x.set_axis_off()
+    g.ax_marg_y.set_axis_off()
+    plt.legend(loc="best", frameon=True)
+    plt.xlabel(r'$\log(1+s_{in})$')
+    plt.ylabel(r'$\log(1+s_{out})$')
 
 
-    # plu.plot_config()
-    # sns.pairplot(df, kind="reg", hue="Group", diag_kind="kde",  palette={"A": "r", "B": "g"})
-    # plt.show()
-    # print len(sa), len(ta)
-    # print statu.stats.kendalltau(sa, ta)
-    # sns.jointplot(x=np.array(sa), y=np.array(ta), stat_func=statu.stats.kendalltau)
-    # plt.show()
-
+    # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    # plt.legend(loc="best", frameon=True)
+    plt.show()
 
 
 def interaction_ratio(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -481,15 +510,18 @@ def compare_liwc(filepath='data/scaling-clsuter-feature.csv'):
             mark = '***'
         print "%s, %.2f, %.2f, %.2f, %.2f %s" %(col, m1, m2, t, p, mark)
 
+
     data = pd.melt(df, id_vars=['label'])
     print data
     data['label'] = data['label'].map({0.0: 'A', 1.0: 'B'})
     data.columns = ['Cluster', 'Measure', 'Value']
+    data['Cluster'] = data['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
     print data
+
 
     plu.plot_config()
     sns.violinplot(x="Measure", y="Value", hue="Cluster", data=data, split=True,
-               inner="quart", palette={"A": "r", "B": "g"})
+               inner="quart", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
     # sns.boxplot(x="Measure", y="Value", hue="Cluster", data=data,
     #             palette={"A": "r", "B": "g"})
     sns.despine(left=True)
@@ -507,5 +539,5 @@ if __name__ == '__main__':
     # liwc_sim()
     # compare_liwc()
     # sentiment_quanti()
-    # analysis_sentiments('all-tweet.txt')
-    compare_in_out_degree()
+    analysis_sentiments('all-tweet.txt')
+    # compare_in_out_degree()
