@@ -249,7 +249,7 @@ def emotion_dropout_IV_following():
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank', 'indegree', 'outdegree']
     attr_names = ['uid', 'group', 'attr', 'level']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
@@ -290,6 +290,8 @@ def emotion_dropout_IV_following():
         '''Centralities Calculation'''
         eigen = network1_gc.eigenvector_centrality()
         pageranks = network1_gc.pagerank()
+        indegree = network1_gc.indegree()
+        outdegree = network1_gc.outdegree()
         # closeness = network.closeness()
         # betweenness = network.betweenness()
         # print len(eigen), len(closeness), len(betweenness)
@@ -300,6 +302,8 @@ def emotion_dropout_IV_following():
 
         eigen_map = dict(zip(nodes, eigen))
         pagerank_map = dict(zip(nodes, pageranks))
+        indegree_map = dict(zip(nodes, indegree))
+        outdegree_map = dict(zip(nodes, outdegree))
         # print eigen_map.get(nodes[1]), type(eigen_map.get(nodes[1]))
 
         # closeness_map = dict(zip(nodes, closeness))
@@ -363,6 +367,8 @@ def emotion_dropout_IV_following():
             row.extend(active_days(u1))
             row.extend([eigen_map.get(u1['id'], 0)])
             row.extend([pagerank_map.get(u1['id'], 0)])
+            row.extend([indegree_map.get(u1['id'], 0)])
+            row.extend([outdegree_map.get(u1['id'], 0)])
             row.extend([
                 # u1['recovery_tweets'],
                 u1['timeline_count']])
@@ -389,6 +395,8 @@ def emotion_dropout_IV_following():
                             fatt.extend(active_days(fu))
                             fatt.extend([eigen_map.get(fu['id'], 0)])
                             fatt.extend([pagerank_map.get(fu['id'], 0)])
+                            fatt.extend([indegree_map.get(fu['id'], 0)])
+                            fatt.extend([outdegree_map.get(fu['id'], 0)])
                             fatt.extend([fu['timeline_count']])
                             fatts.append(fatt)
                             if (fu2 is None):

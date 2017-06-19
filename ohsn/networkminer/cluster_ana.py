@@ -109,8 +109,7 @@ def analysis_sentiments(file='tweets.txt'):
                 c += 1
             if len(prec)>2:
                 c += 1
-            if c == 2:
-                both_tweets += 1
+
             if c==1:
                 if label==0 and len(ped)>3:
                     # AA.append(float(sentiment)/c)
@@ -124,22 +123,33 @@ def analysis_sentiments(file='tweets.txt'):
                 if label == 1 and len(prec)>2:
                     # BB.append(float(sentiment)/c)
                     data.append(['B', 1, float(sentiment)/c])
-            else:
+            elif c == 2:
+                both_tweets += 1
                 if label == 0:
                     data.append(['A', 2, float(sentiment)])
                 if label == 1:
                     data.append(['B', 2, float(sentiment)])
+            else:
+                if label == 0:
+                    data.append(['A', 3, float(sentiment)])
+                if label == 1:
+                    data.append(['B', 3, float(sentiment)])
+            # add average for all
+            if label == 0:
+                    data.append(['A', 4, float(sentiment)])
+            if label == 1:
+                data.append(['B', 4, float(sentiment)])
 
     print both_tweets, all_tweets, float(both_tweets/all_tweets)
     df = pd.DataFrame(data, columns=['Cluster', 'Topic', 'Sentiment'])
     # print np.mean(df[(df['Cluster']=='A')&(df['Topic']==1)]['Sentiment'])
 
     #change values in colcumn
-    df['Cluster'] = df['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
+    df['Cluster'] = df['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
 
     plu.plot_config()
-    g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, legend=False, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Unspecified"])
+    g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, kind="bar", legend=False, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified", "All"])
     plt.legend(loc='best')
     # sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='A-A ($\mu=%0.2f$)' % (np.mean(AA)))
     # sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 'o'}, label='B-B ($\mu=%0.2f$)' % (np.mean(BB)))
@@ -148,7 +158,7 @@ def analysis_sentiments(file='tweets.txt'):
     plt.show()
     plt.clf()
 
-    df['Cluster'] = df['Cluster'].map({'Pro-ED': 'A', 'Pro-Rec.': 'B'})
+    df['Cluster'] = df['Cluster'].map({'Pro-ED Clust.': 'A', 'Pro-Rec. Clust.': 'B'})
     dat = []
     A = len(df[df.Cluster=='A'])
     B = len(df[df.Cluster=='B'])
@@ -159,20 +169,25 @@ def analysis_sentiments(file='tweets.txt'):
     dat.append(['A', 1, float(ABc)/A])
     ACc = len(df[(df.Cluster=='A') & (df.Topic==2)])
     dat.append(['A', 2, float(ACc)/A])
+    ADc = len(df[(df.Cluster=='A') & (df.Topic==3)])
+    dat.append(['A', 3, float(ADc)/A])
+
     BAc = len(df[(df.Cluster=='B') & (df.Topic==0)])
     dat.append(['B', 0, float(BAc)/B])
     BBc = len(df[(df.Cluster=='B') & (df.Topic==1)])
     dat.append(['B', 1, float(BBc)/B])
     BCc = len(df[(df.Cluster=='B') & (df.Topic==2)])
     dat.append(['B', 2, float(BCc)/B])
+    BDc = len(df[(df.Cluster=='B') & (df.Topic==3)])
+    dat.append(['B', 3, float(BDc)/B])
 
 
     pro = pd.DataFrame(dat, columns=['Cluster', 'Topic', 'Proportion'])
-    pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
+    pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
     print pro
     plu.plot_config()
-    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, data=pro, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Unspecified"])
+    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.","Mixed", "Unspecified"])
     plt.legend(loc='best')
     plt.show()
 
@@ -180,6 +195,7 @@ def analysis_sentiments(file='tweets.txt'):
     print statu.ttest(df[(df.Cluster=='A') & (df.Topic==0)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==0)]['Sentiment'])
     print statu.ttest(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment'])
     print statu.ttest(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment'])
+    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment'])
 
 
 
@@ -316,16 +332,16 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     # g = gt.Graph.Read_GraphML(filename)
     # gt.summary(g)
     #
-    # # cl1 = g.vs(cluster=0)
-    # # cl2 = g.vs(cluster=1)
-    # g1 = g.subgraph(g.vs(cluster=0))
-    # g2 = g.subgraph(g.vs(cluster=1))
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
-    # g1 = gt.giant_component(g1)
-    # g2 = gt.giant_component(g2)
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
+    # cl1 = g.vs.select(cluster=0)
+    # cl2 = g.vs.select(cluster=1)
+    # # g1 = g.subgraph(g.vs.select(cluster=0))
+    # # g2 = g.subgraph(g.vs.select(cluster=1))
+    # # gt.net_stat(g1)
+    # # gt.net_stat(g2)
+    # # g1 = gt.giant_component(g1)
+    # # g2 = gt.giant_component(g2)
+    # # gt.net_stat(g1)
+    # # gt.net_stat(g2)
     #
     # # inds1 = g1.indegree()
     # # outds1 = g1.outdegree()
@@ -343,21 +359,21 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     #
     # # BUG of igraph https://github.com/igraph/python-igraph/issues/64
     # data = []
-    # for i, net in enumerate([g1, g2]):
+    # for i, net in enumerate([cl1, cl2]):
     #     label = ['Pro-ED', 'Pro-Rec.'][i]
-    #     for v in net.vs:
-    #         sout = np.log(1+sum(net.es.select(_source=v.index)['weight']))
-    #         sin = np.log(1+sum(net.es.select(_target=v.index)['weight']))
-    #         dout = np.log(1+len(net.es.select(_source=v.index)))
-    #         din = np.log(1+len(net.es.select(_target=v.index)))
+    #     for v in net:
+    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
+    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
+    #         dout = np.log(1+len(g.es.select(_source=v.index)))
+    #         din = np.log(1+len(g.es.select(_target=v.index)))
     #         data.append([dout, din, sout, sin, label])
     # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Cluster'])
-    # pickle.dump(df, open('df.pick', 'w'))
+    # pickle.dump(df, open('dfed.pick', 'w'))
 
-    df = pickle.load(open('df.pick', 'r'))
+    df = pickle.load(open('dfed.pick', 'r'))
     plu.plot_config()
-    xa, ya = df[df['Cluster']=='Pro-ED']['s_in'], df[df['Cluster']=='Pro-ED']['s_out']
-    xb, yb = df[df['Cluster']=='Pro-Rec.']['s_in'], df[df['Cluster']=='Pro-Rec.']['s_out']
+    xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
+    xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
     g = sns.JointGrid(xa, ya)
     g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
     g.annotate(statu.stats.kendalltau)
@@ -369,12 +385,108 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     g.ax_marg_x.set_axis_off()
     g.ax_marg_y.set_axis_off()
     plt.legend(loc="best", frameon=True)
-    plt.xlabel(r'$\log(1+s_{in})$')
-    plt.ylabel(r'$\log(1+s_{out})$')
+    plt.xlabel(r'$\log(1+d_{in})$')
+    plt.ylabel(r'$\log(1+d_{out})$')
 
 
     # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
     # plt.legend(loc="best", frameon=True)
+    plt.show()
+
+
+def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml', filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    # # Compare the relation between in and out degree in two clustsers of users.
+    # g = gt.Graph.Read_GraphML(allnet)
+    # gt.summary(g)
+    #
+    # ged = gt.Graph.Read_GraphML(filename)
+    # gt.summary(ged)
+    #
+    # vs = g.vs.select(name_in=ged.vs['name'])
+    # g = g.subgraph(vs)
+    # gt.summary(g)
+    # g.write_graphml('data/communication-all'+'.graphml')
+    #
+    # cl1 = ged.vs.select(cluster=0)['name']
+    # cl2 = ged.vs.select(cluster=1)['name']
+    #
+    # gcl1 = g.vs.select(name_in=cl1)
+    # gcl2 = g.vs.select(name_in=cl2)
+    # # g1 = g.subgraph(g.vs(name_in=cl1))
+    # # g2 = g.subgraph(g.vs(name_in=cl2))
+    # # gt.net_stat(g1)
+    # # gt.net_stat(g2)
+    # # g1 = gt.giant_component(g1)
+    # # g2 = gt.giant_component(g2)
+    # # gt.net_stat(g1)
+    # # gt.net_stat(g2)
+    #
+    # # inds1 = g1.indegree()
+    # # outds1 = g1.outdegree()
+    # # inds2 = g2.indegree()
+    # # outds2 = g2.outdegree()
+    #
+    # # plu.plot_config()
+    # # figPDF = powerlaw.plot_pdf(np.array(inds1)+1, color='r')
+    # # powerlaw.plot_pdf(np.array(inds1)+1, linear_bins=True, color='r', ax=figPDF)
+    # # powerlaw.plot_pdf(np.array(inds2)+1, color='g', ax=figPDF)
+    # # powerlaw.plot_pdf(np.array(inds2)+1, linear_bins=True, color='g', ax=figPDF)
+    # # figPDF.set_ylabel("p(X)")
+    # # figPDF.set_xlabel(r"Indegree")
+    # # plt.show()
+    #
+    # # BUG of igraph https://github.com/igraph/python-igraph/issues/64
+    # data = []
+    # for i, net in enumerate([gcl1, gcl2]):
+    #     label = ['Pro-ED', 'Pro-Rec.'][i]
+    #     for v in net:
+    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
+    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
+    #         dout = np.log(1+len(g.es.select(_source=v.index)))
+    #         din = np.log(1+len(g.es.select(_target=v.index)))
+    #         data.append([dout, din, sout, sin, label])
+    # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Cluster'])
+    # pickle.dump(df, open('dfall.pick', 'w'))
+
+    df = pickle.load(open('dfall.pick', 'r'))
+    plu.plot_config()
+    xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
+    xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
+    g = sns.JointGrid(xa, ya)
+    g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
+    g.annotate(statu.stats.kendalltau)
+    g.x = xb
+    g.y = yb
+    g.plot_joint(plt.scatter, marker='^', s=50, color="g", label=r'Pro-Rec.: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xb, yb))[0])
+    g.plot_joint(sns.regplot, color="g")
+    g.annotate(statu.stats.kendalltau)
+    g.ax_marg_x.set_axis_off()
+    g.ax_marg_y.set_axis_off()
+    plt.legend(loc="best", frameon=True)
+    plt.xlabel(r'$\log(1+d_{in})$')
+    plt.ylabel(r'$\log(1+d_{out})$')
+
+
+    # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    # plt.legend(loc="best", frameon=True)
+    plt.show()
+
+
+def split_in_out_degree(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    # Compare the relation between in and out degree in two clustsers of users.
+    g = gt.Graph.Read_GraphML(filename)
+    gt.summary(g)
+
+    cl1 = g.vs.select(cluster=0)
+    cl2 = g.vs.select(cluster=1)
+    inds1 = g.indegree(cl1)
+    outds1 = g.outdegree(cl1)
+    inds2 = g.indegree(cl2)
+    outds2 = g.outdegree(cl2)
+
+    sns.distplot(np.log(1+np.array(outds1)), kde=False)
+    # sns.distplot(np.array(inds1))
+
     plt.show()
 
 
@@ -537,7 +649,9 @@ if __name__ == '__main__':
     # interaction_ratio()
     # prominence()
     # liwc_sim()
-    # compare_liwc()
+    compare_liwc()
     # sentiment_quanti()
-    analysis_sentiments('all-tweet.txt')
+    # analysis_sentiments('all-tweet.txt')
     # compare_in_out_degree()
+    # compare_in_out_degree_allconnection()
+    # split_in_out_degree()

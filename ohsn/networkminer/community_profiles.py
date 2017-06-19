@@ -1014,6 +1014,7 @@ if __name__ == '__main__':
     # gt.summary(g)
     # g.write_graphml('core-ed-follow'+'.graphml')
 
+    # fed-communication.graphml is the communitication network for all fed users, including core and friends
     # fedusers = iot.get_values_one_field('fed', 'com', 'id')
     # gb = gt.load_beh_network_subset(fedusers, 'fed', 'bnet', 'communication')
     # # gb = gt.load_beh_network('fed', 'bnet', 'communication')
