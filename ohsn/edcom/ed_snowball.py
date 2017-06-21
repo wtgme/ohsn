@@ -38,27 +38,41 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
                          ("follower", pymongo.ASCENDING)],
                         unique=True)
 
+    oldcom = dbt.db_connect_col(olddbname, oldcomname)
     '''Reteive ED core users'''
-    ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id', {'level': 1})
-    list_size = len(ed_users)
-    length = int(math.ceil(list_size/100.0))
-    for index in xrange(length):
-        index_begin = index*100
-        index_end = min(list_size, index_begin+100)
-        lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
+    cursor = oldcom.find({}, ['id'], no_cursor_timeout=True).batch_size(100)
+    print 'pass'
+    idlist = []
+    while(cursor.alive):
+        users = cursor.next()
+        print len(users)
+        for user in users:
+            idlist.append(user['id'])
+        lookup.lookup_user_list(idlist, newcom, 1, 'N')
+        idlist = []
+
+
+    # ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id')
+    # list_size = len(ed_users)
+    # print '%d users to process' %list_size
+    # length = int(math.ceil(list_size/100.0))
+    # for index in xrange(length):
+    #     index_begin = index*100
+    #     index_end = min(list_size, index_begin+100)
+    #     lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
 
 
     '''Snowball sampling round'''
-    level = 1
-    while level < 2:
-        # Each call of snowball_following and snowball_follower only process up to 200 users
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-        following_flag = following.snowball_following(newcom, newnet, level, 'N')
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
-        if following_flag == False and follower_flag == False:
-            level += 1
-        continue
+    # level = 1
+    # while level < 2:
+    #     # Each call of snowball_following and snowball_follower only process up to 200 users
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+    #     following_flag = following.snowball_following(newcom, newnet, level, 'N')
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+    #     follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
+    #     if following_flag == False and follower_flag == False:
+    #         level += 1
+    #     continue
 
     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'START: Snowball friends of seeds for sample db', level
     # t1 = Thread(target=following.snowball_following, args=[newcom, newnet, level, 'N'])
@@ -110,4 +124,7 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('fed2', 'com', 'fed3', 'com') # random2 fed
+    re_snowball_friends('younger', 'scom', 'younger_sur', 'com') # random2 fed
+    re_snowball_friends('random', 'scom', 'random_sur', 'com') # random2 fed
+    re_snowball_friends('fed', 'com', 'fed_sur', 'com') # random2 fed
+

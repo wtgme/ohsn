@@ -606,8 +606,10 @@ def screte_tweet():
     times = dbt.db_connect_col('fed', 'ed_tag')
     for time in times.find():
         text = time['text'].lower()
-        if 'secret' in text and 'follow' in text:
+        # if 'secret' in text and 'follow' in text :
+        if 'deactivate' in text or 'delete' in text:
             print time['id'], text
+
 
 
 if __name__ == '__main__':
