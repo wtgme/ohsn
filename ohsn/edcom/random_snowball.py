@@ -13,14 +13,14 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import datetime
 import pymongo
-from ohsn.api import follower
+# from ohsn.api import follower
 from ohsn.api import following
-from ohsn.api import lookup
-from ohsn.api import profiles_check
+# from ohsn.api import lookup
+# from ohsn.api import profiles_check
 from ohsn.util import db_util as dbt
-import ohsn.util.io_util as iot
-import math
-from threading import Thread
+# import ohsn.util.io_util as iot
+# import math
+# from threading import Thread
 
 
 def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
@@ -96,17 +96,17 @@ def snowball_friends():
     #     else:
     #         lookup.trans_seed_to_poi(ed_seed, ed_poi)
     #         continue
-    level = 1
-    while True:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-        following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
-        if following_flag == False and follower_flag == False:
-            break
-        else:
-            level = level + 1
-            continue
+    # level = 1
+    # while True:
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+    #     following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+    #     follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
+    #     if following_flag == False and follower_flag == False:
+    #         break
+    #     else:
+    #         level = level + 1
+    #         continue
 
 if __name__ == '__main__':
     # snowball_friends()

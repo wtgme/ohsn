@@ -207,13 +207,22 @@ def liwc_sim(filename='data/cluster-feature.data'):
     fields = iot.read_fields()
     trim_files = [f.split('.')[-1] for f in fields]
     print len(trim_files)
-    select_f = ['i', 'we', 'swear', 'negate', 'insight', 'body', 'health',
-                'ingest', 'social', 'posemo',
-                'negemo']
+    select_f = [
+        'friend_count', 'status_count', 'follower_count',
+                # 'friends_day', 'statuses_day', 'followers_day',
+        'retweet_pro',
+        # 'dmention_pro', 'reply_pro',
+        # 'hashtag_pro',
+        'url_pro',
+                'retweet_div',
+        # 'reply_div',
+        'mention_div',
+                'i', 'we', 'swear', 'negate', 'body', 'health',
+                'ingest', 'social', 'posemo', 'negemo']
     indecs = [trim_files.index(f) for f in select_f]
     X = X[:, indecs]
     print X.shape
-    '''Calculate positive emotion ratio'''
+    # '''Calculate positive emotion ratio'''
     X[:, -2] /= (X[:, -2] + X[:, -1])
     X = X[:, :-1]
     X[:, -1][~np.isfinite(X[:, -1])] = 0
@@ -362,10 +371,10 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     # for i, net in enumerate([cl1, cl2]):
     #     label = ['Pro-ED', 'Pro-Rec.'][i]
     #     for v in net:
-    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
-    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
-    #         dout = np.log(1+len(g.es.select(_source=v.index)))
-    #         din = np.log(1+len(g.es.select(_target=v.index)))
+    #         sout = sum(g.es.select(_source=v.index)['weight'])
+    #         sin = sum(g.es.select(_target=v.index)['weight'])
+    #         dout = len(g.es.select(_source=v.index))
+    #         din = len(g.es.select(_target=v.index))
     #         data.append([dout, din, sout, sin, label])
     # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Cluster'])
     # pickle.dump(df, open('dfed.pick', 'w'))
@@ -374,6 +383,11 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     plu.plot_config()
     xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
     xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
+    print len(xa), len(ya)
+    print len(xa[xa>0]) , len(ya[ya>0])
+    print len(xb), len(yb)
+    print len(xb[xb>0]) , len(yb[yb>0])
+
     g = sns.JointGrid(xa, ya)
     g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
     g.annotate(statu.stats.kendalltau)
@@ -395,6 +409,7 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
 
 
 def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml', filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    '''Network built by all tweets, not just for ED-related tweets'''
     # # Compare the relation between in and out degree in two clustsers of users.
     # g = gt.Graph.Read_GraphML(allnet)
     # gt.summary(g)
@@ -440,10 +455,10 @@ def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml',
     # for i, net in enumerate([gcl1, gcl2]):
     #     label = ['Pro-ED', 'Pro-Rec.'][i]
     #     for v in net:
-    #         sout = np.log(1+sum(g.es.select(_source=v.index)['weight']))
-    #         sin = np.log(1+sum(g.es.select(_target=v.index)['weight']))
-    #         dout = np.log(1+len(g.es.select(_source=v.index)))
-    #         din = np.log(1+len(g.es.select(_target=v.index)))
+    #         sout = sum(g.es.select(_source=v.index)['weight'])
+    #         sin = sum(g.es.select(_target=v.index)['weight'])
+    #         dout = len(g.es.select(_source=v.index))
+    #         din = len(g.es.select(_target=v.index))
     #         data.append([dout, din, sout, sin, label])
     # df = pd.DataFrame(data, columns=['d_out', 'd_in', 's_out', 's_in', 'Cluster'])
     # pickle.dump(df, open('dfall.pick', 'w'))
@@ -452,6 +467,11 @@ def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml',
     plu.plot_config()
     xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
     xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
+    print len(xa), len(ya)
+    print len(xa[xa>0]) , len(ya[ya>0])
+    print len(xb), len(yb)
+    print len(xb[xb>0]) , len(yb[yb>0])
+
     g = sns.JointGrid(xa, ya)
     g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
     g.annotate(statu.stats.kendalltau)
@@ -479,15 +499,30 @@ def split_in_out_degree(filename='data/communication-only-fed-filter-hashtag-clu
 
     cl1 = g.vs.select(cluster=0)
     cl2 = g.vs.select(cluster=1)
-    inds1 = g.indegree(cl1)
-    outds1 = g.outdegree(cl1)
-    inds2 = g.indegree(cl2)
-    outds2 = g.outdegree(cl2)
+    inds1 = np.array(g.indegree(cl1))
+    outds1 = np.array(g.outdegree(cl1))
+    inds2 = np.array(g.indegree(cl2))
+    outds2 = np.array(g.outdegree(cl2))
 
-    sns.distplot(np.log(1+np.array(outds1)), kde=False)
+    print len(inds1), len(outds1)
+    print len(inds1[inds1>0]), len(outds1[outds1>0])
+    xa = inds1[(inds1>0)&(outds1>0)]
+    ya = outds1[(inds1>0)&(outds1>0)]
+
+    print len(xa), len(ya)
+    print statu.stats.kendalltau(xa, ya)
+
+    print len(inds2), len(outds2)
+    print len(inds2[inds2>0]), len(outds2[outds2>0])
+    xa = inds2[(inds2>0)&(outds2>0)]
+    ya = outds2[(inds2>0)&(outds2>0)]
+    print len(xa), len(ya)
+    print statu.stats.kendalltau(xa, ya)
+
+    # sns.distplot(np.array(inds2), kde=True)
     # sns.distplot(np.array(inds1))
 
-    plt.show()
+    # plt.show()
 
 
 def interaction_ratio(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -605,30 +640,79 @@ def prominence(filename='data/communication-only-fed-filter-hashtag-cluster.grap
     plt.ylabel('PDF')
     plt.show()
 
-def compare_liwc(filepath='data/scaling-clsuter-feature.csv'):
-    '''Compare difference between two clusters of users'''
-    df = pd.read_csv(filepath)
-    df.rename(columns={'posemor': 'PER'}, inplace=True)
+def compare_liwc(filepath='data/cluster-feature.data'):
+    '''Compare difference between two clusters of users
+    The input file is from classifier/cross_val.py'''
+    X, y = load_svmlight_file(filepath)
+    X = X.toarray()
+    fields = iot.read_fields()
+    trim_files = [f.split('.')[-1] for f in fields]
+    print len(trim_files)
+    select_f = [
+        'friend_count', 'status_count', 'follower_count',
+                # 'friends_day', 'statuses_day', 'followers_day',
+        'retweet_pro',
+        # 'dmention_pro', 'reply_pro',
+        # 'hashtag_pro',
+        'url_pro',
+                'retweet_div',
+        # 'reply_div',
+        'mention_div',
+                'i', 'we', 'swear', 'negate', 'body', 'health',
+                'ingest', 'social', 'posemo', 'negemo']
+
+    indecs = [trim_files.index(f) for f in select_f]
+    print indecs
+    X = X[:, indecs]
+
+    '''Calculate positive emotion ratio'''
+    # print X.shape
+    X[:,-2] /= (X[:,-2] + X[:, -1])
+    X = X[:, :-1]
+    X[:, -1][~np.isfinite(X[:, -1])] = 0
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X = min_max_scaler.fit_transform(X)
+
+    # X = preprocessing.scale(X)
+
+    print X.shape, y.shape
+    Z = np.append(X, y.reshape((len(y), 1)), axis=1)
+    df = pd.DataFrame(Z, columns=select_f[:-1] + ['label'])
+
+    df.rename(columns={'friend_count': '#Fr',
+                       'status_count': '#T',
+                       'follower_count': '#Fo',
+                       'friends_day': '#Fr/D',
+                       'statuses_day': '#T/D',
+                       'followers_day': '#Fo/D',
+                       'retweet_pro': '%RT',
+                       'url_pro': '%URL',
+                       'retweet_div': 'Div(RT)',
+                       'reply_div': 'Div(RP)',
+                       'mention_div': 'Div(@)',
+                       'posemo': 'PER'
+                       },
+              inplace=True)
 
     for col in df.columns[:-1]:
         cat1 = df[col][df['label']==0]
         cat2 = df[col][df['label']==1]
-        m1, m2, t, p = statu.ttest(cat1, cat2, 10)
-        if p < 0.05:
+        m1, m2, t, p, pm = statu.ttest(cat1, cat2, len(select_f))
+        mark = ''
+        if pm < 0.05:
             mark = '*'
-        if p < 0.01:
+        if pm < 0.01:
             mark = '**'
-        if p < 0.001:
+        if pm < 0.001:
             mark = '***'
-        print "%s, %.2f, %.2f, %.2f, %.2f %s" %(col, m1, m2, t, p, mark)
+        print "%s, %.2f, %.2f, %.2f, %.3f %s" %(col, m1, m2, t, p, mark)
 
 
     data = pd.melt(df, id_vars=['label'])
-    print data
     data['label'] = data['label'].map({0.0: 'A', 1.0: 'B'})
     data.columns = ['Cluster', 'Measure', 'Value']
     data['Cluster'] = data['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
-    print data
 
 
     plu.plot_config()
@@ -649,9 +733,9 @@ if __name__ == '__main__':
     # interaction_ratio()
     # prominence()
     # liwc_sim()
-    compare_liwc()
+    # compare_liwc()
     # sentiment_quanti()
     # analysis_sentiments('all-tweet.txt')
-    # compare_in_out_degree()
-    # compare_in_out_degree_allconnection()
+    compare_in_out_degree()
+    compare_in_out_degree_allconnection()
     # split_in_out_degree()

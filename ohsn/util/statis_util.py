@@ -34,7 +34,7 @@ def ks_test(list1, list2, n=1):
 
 def ttest(list1, list2, n=1):
     d, p = stats.ttest_ind(list1, list2)
-    return np.mean(list1), np.mean(list2), (d), (p*n)
+    return np.mean(list1), np.mean(list2), (d), p, (p*n)
 
 
 def comm_stat(lista):

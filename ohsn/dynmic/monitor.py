@@ -14,7 +14,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import datetime
 import pymongo
 from ohsn.api import timelines
-from ohsn.api import lookup, following
+from ohsn.api import following
 from ohsn.util import db_util as dbt
 import time
 from threading import Thread
@@ -31,18 +31,18 @@ def getuid(dbname, colname):
     return uids
 
 
-def seed():
-    db = dbt.db_connect_no_auth('ded')
-    sample_user = db['com']
-    # neiblist = pickle.load(open('ygtimeuid.pick', 'r'))
-    neiblist = getuid('fed', 'com')
-    list_size = len(neiblist)
-    print list_size
-    length = int(math.ceil(list_size/100.0))
-    for index in xrange(length):
-        index_begin = index*100
-        index_end = min(list_size, index_begin+100)
-        lookup.lookup_user_list(neiblist[index_begin:index_end], sample_user, 1, 'N')
+# def seed():
+#     db = dbt.db_connect_no_auth('ded')
+#     sample_user = db['com']
+#     # neiblist = pickle.load(open('ygtimeuid.pick', 'r'))
+#     neiblist = getuid('fed', 'com')
+#     list_size = len(neiblist)
+#     print list_size
+#     length = int(math.ceil(list_size/100.0))
+#     for index in xrange(length):
+#         index_begin = index*100
+#         index_end = min(list_size, index_begin+100)
+#         lookup.lookup_user_list(neiblist[index_begin:index_end], sample_user, 1, 'N')
 
 
 def monitor_network(time_index):

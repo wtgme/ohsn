@@ -22,6 +22,7 @@ import ohsn.util.plot_util as plu
 import ohsn.util.io_util as iot
 import pickle
 import seaborn as sns
+from statsmodels.formula.api import logit
 
 
 def load_scale_data(file_path, multilabeltf=False):
@@ -41,8 +42,8 @@ def load_scale_data(file_path, multilabeltf=False):
 def cross_val_roc(X, y):
     print X.shape
     cv = StratifiedKFold(y, n_folds=5)
-    classifier = svm.SVC(kernel='linear', class_weight='balanced')
-    # classifier = linear_model.LogisticRegression()
+    # classifier = svm.SVC(kernel='linear', class_weight='balanced')
+    classifier = linear_model.LogisticRegression(class_weight='balanced')
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
     for i, (train, test) in enumerate(cv):
@@ -96,16 +97,25 @@ def roc_plot_feature(datafile):
     fields = iot.read_fields()
     trim_files = [f.split('.')[-1] for f in fields]
     print len(trim_files)
-    select_f = ['body', 'ingest', 'health', 'i', 'we', 'swear', 'insight', 'negate', 'social', 'posemo',
-                'negemo']
+    select_f = [
+        'friend_count', 'status_count', 'follower_count',
+                # 'friends_day', 'statuses_day', 'followers_day',
+        'retweet_pro',
+        # 'dmention_pro', 'reply_pro',
+        # 'hashtag_pro',
+        'url_pro',
+                'retweet_div',
+        # 'reply_div',
+        'mention_div',
+                'i', 'we', 'swear', 'negate', 'body', 'health',
+                'ingest', 'social', 'posemo', 'negemo']
 
     indecs = [trim_files.index(f) for f in select_f]
     print indecs
     X = X[:, indecs]
     '''Calculate positive emotion ratio'''
-    print X.shape
+    # print X.shape
     X[:,-2] /= (X[:,-2] + X[:, -1])
-
     X = X[:, :-1]
     X[:, -1][~np.isfinite(X[:, -1])] = 0
 
@@ -116,7 +126,11 @@ def roc_plot_feature(datafile):
 
     print X.shape, y.shape
     Z = np.append(X, y.reshape((len(y), 1)), axis=1)
-    df = pd.DataFrame(Z, columns=['body', 'ingest', 'health', 'i', 'we', 'swear', 'insight', 'negate', 'social', 'posemor', 'label'])
+    df = pd.DataFrame(Z, columns=select_f[:-1] + ['label'])
+
+    affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
+    print(affair_mod.summary())
+
     df.to_csv('scaling-clsuter-feature.csv', index=False)
 
     print X.shape

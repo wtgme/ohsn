@@ -106,9 +106,9 @@ def read_user_time_iv(filename):
 
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
-         ('ED', 'fed', 'com', 'fed2', 'com', '2016-09-29 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         ('RD', 'random', 'scom', 'random2', 'com_check', '2017-04-25 15:46:20+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
-         ('YG', 'younger', 'scom', 'younger2', 'com_check', '2017-04-25 15:46:20+00:00', {'liwc_anal.result.WC': {'$exists': True}})
+         ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 
     data = []

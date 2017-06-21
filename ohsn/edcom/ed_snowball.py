@@ -13,10 +13,10 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import datetime
 import pymongo
-from ohsn.api import follower
-from ohsn.api import following
+# from ohsn.api import follower
+# from ohsn.api import following
 from ohsn.api import lookup
-from ohsn.api import profiles_check
+# from ohsn.api import profiles_check
 from ohsn.util import db_util as dbt
 import ohsn.util.io_util as iot
 import math
@@ -38,28 +38,29 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
                          ("follower", pymongo.ASCENDING)],
                         unique=True)
 
-    oldcom = dbt.db_connect_col(olddbname, oldcomname)
-    '''Reteive ED core users'''
-    cursor = oldcom.find({}, ['id'], no_cursor_timeout=True).batch_size(100)
-    print 'pass'
-    idlist = []
-    while(cursor.alive):
-        users = cursor.next()
-        print len(users)
-        for user in users:
-            idlist.append(user['id'])
-        lookup.lookup_user_list(idlist, newcom, 1, 'N')
-        idlist = []
+    # oldcom = dbt.db_connect_col(olddbname, oldcomname)
+    # '''Reteive ED core users'''
+    # cursor = oldcom.find({}, ['id'], no_cursor_timeout=True).batch_size(100)
+    # print 'pass'
+    # idlist = []
+    # while(cursor.alive):
+    #     users = cursor.next()
+    #     print len(users)
+    #     for user in users:
+    #         print user
+    #         idlist.append(str(user['id']))
+    #     lookup.lookup_user_list(idlist, newcom, 1, 'N')
+    #     idlist = []
 
 
-    # ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id')
-    # list_size = len(ed_users)
-    # print '%d users to process' %list_size
-    # length = int(math.ceil(list_size/100.0))
-    # for index in xrange(length):
-    #     index_begin = index*100
-    #     index_end = min(list_size, index_begin+100)
-    #     lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
+    ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id')
+    list_size = len(ed_users)
+    print '%d users to process' %list_size
+    length = int(math.ceil(list_size/100.0))
+    for index in xrange(length):
+        index_begin = index*100
+        index_end = min(list_size, index_begin+100)
+        lookup.lookup_user_list(ed_users[index_begin:index_end], newcom, 1, 'N')
 
 
     '''Snowball sampling round'''
@@ -110,17 +111,17 @@ def snowball_friends():
     #     else:
     #         lookup.trans_seed_to_poi(ed_seed, ed_poi)
     #         continue
-    level = 1
-    while True:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-        following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-        follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
-        if following_flag == False and follower_flag == False:
-            break
-        else:
-            level = level + 1
-            continue
+    # level = 1
+    # while True:
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+    #     following_flag = following.snowball_following(ed_poi, ed_net, level, 'ED')
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+    #     follower_flag = follower.snowball_follower(ed_poi, ed_net, level, 'ED')
+    #     if following_flag == False and follower_flag == False:
+    #         break
+    #     else:
+    #         level = level + 1
+    #         continue
 
 if __name__ == '__main__':
     # snowball_friends()

@@ -266,9 +266,9 @@ def emotion_dropout_IV_following():
 
     data = []
     name_map = {
-        'ed': ('fed', 'fed2', 'com', 'com', {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}),
-        'yg': ('younger', 'younger2', 'scom', 'com_check', {'liwc_anal.result.WC': {'$exists': True}}),
-        'rd': ('random', 'random2', 'scom', 'com_check', {'liwc_anal.result.WC': {'$exists': True}})
+        'ed': ('fed', 'fed_sur', 'com', 'com', {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}),
+        'yg': ('younger', 'younger_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}}),
+        'rd': ('random', 'random_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}})
     }
     for groupname in ['yg', 'rd', 'ed']:
         dbname1, dbname2, comname1, comname2, filter_que = name_map[groupname]
