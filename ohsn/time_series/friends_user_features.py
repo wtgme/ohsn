@@ -392,15 +392,10 @@ def emotion_dropout_IV_following():
                         fu2 = com2.find_one({'id': fid})
                         if fu != None:
                             fatt = iot.get_fields_one_doc(fu, fields)
-                            fatt.extend(active_days(fu))
-                            fatt.extend([eigen_map.get(fu['id'], 0)])
-                            fatt.extend([pagerank_map.get(fu['id'], 0)])
-                            fatt.extend([indegree_map.get(fu['id'], 0)])
-                            fatt.extend([outdegree_map.get(fu['id'], 0)])
-                            fatt.extend([fu['timeline_count']])
-                            fatts.append(fatt)
+
                             if (fu2 is None):
                                 alive += 0
+                                factive = active_days(fu)
                             else:
                                 if 'status' not in fu and 'status' not in fu2:
                                     alive += 0
@@ -412,6 +407,14 @@ def emotion_dropout_IV_following():
                                     alive += 0
                                 elif fu2['status']['id'] != fu['status']['id']:
                                     alive += 1
+                                factive = active_days(fu2)
+                            fatt.extend(factive)
+                            fatt.extend([eigen_map.get(fu['id'], 0)])
+                            fatt.extend([pagerank_map.get(fu['id'], 0)])
+                            fatt.extend([indegree_map.get(fu['id'], 0)])
+                            fatt.extend([outdegree_map.get(fu['id'], 0)])
+                            fatt.extend([fu['timeline_count']])
+                            fatts.append(fatt)
 
                             # if fu2 is None or fu['status']['id'] == fu2['status']['id']:
                             #     alive += 0

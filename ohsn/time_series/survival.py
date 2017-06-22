@@ -134,6 +134,7 @@ def read_user_time_iv(filename):
                 if (u2 is None): # protected or delete
                     drop = 1
                     second_scraped_at = datetime.strptime(second_time, '%Y-%m-%d %H:%M:%S+00:00')
+                    last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 else:
                     second_scraped_at = u2['_id'].generation_time
                     if 'status' not in user and 'status' not in u2: # no tweeting
@@ -146,13 +147,11 @@ def read_user_time_iv(filename):
                         drop = 1
                     elif u2['status']['id'] != user['status']['id']: # new post
                         drop = 0
-
-
+                    last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
 
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 scraped_at = user['scrape_timeline_at']
-                last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 life_time = diff_day(last_post, created_at)
                 average_time = float(life_time)/min(1, user['statuses_count'])
                 longest_tweet_intervalb = user['longest_tweet_interval']
@@ -204,12 +203,10 @@ def read_user_time_iv(filename):
                             fu2 = com2.find_one({'id': fid})
                             if fu != None:
                                 fatt = iot.get_fields_one_doc(fu, fields)
-                                fatt.extend(active_days(fu))
-                                fatt.extend([eigen_map.get(fu['id'], 0)])
-                                fatts.append(fatt)
 
                                 if (fu2 is None):
                                     alive += 0
+                                    factive = active_days(fu)
                                 else:
                                     if 'status' not in fu and 'status' not in fu2:
                                         alive += 0
@@ -221,6 +218,10 @@ def read_user_time_iv(filename):
                                         alive += 0
                                     elif fu2['status']['id'] != fu['status']['id']:
                                         alive += 1
+                                    factive = active_days(fu2)
+                                fatt.extend(factive)
+                                fatt.extend([eigen_map.get(fu['id'], 0)])
+                                fatts.append(fatt)
 
                         # thredhold = user['friends_count']*0.5
                         if len(fatts) > 0:
