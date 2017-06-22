@@ -121,9 +121,16 @@ def read_user_time_iv(filename):
         gt.summary(network1_gc)
         '''Centralities Calculation'''
         eigen = network1_gc.eigenvector_centrality()
+        pageranks = network1_gc.pagerank()
+        indegree = network1_gc.authority_score()
+        outdegree = network1_gc.hub_score()
 
         nodes = [int(v['name']) for v in network1_gc.vs]
         eigen_map = dict(zip(nodes, eigen))
+        pagerank_map = dict(zip(nodes, pageranks))
+        indegree_map = dict(zip(nodes, indegree))
+        outdegree_map = dict(zip(nodes, outdegree))
+
         print 'load liwc 2 batches: ' + tag.lower()+'-liwc2stage.csv'
         liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
 
@@ -131,10 +138,11 @@ def read_user_time_iv(filename):
             if 'status' in user:
                 uid = user['id']
                 u2 = com2.find_one({'id': uid})
+                first_last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 if (u2 is None): # protected or delete
                     drop = 1
                     second_scraped_at = datetime.strptime(second_time, '%Y-%m-%d %H:%M:%S+00:00')
-                    last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                    last_post = first_last_post
                 else:
                     second_scraped_at = u2['_id'].generation_time
                     if 'status' not in user and 'status' not in u2: # no tweeting
@@ -147,7 +155,10 @@ def read_user_time_iv(filename):
                         drop = 1
                     elif u2['status']['id'] != user['status']['id']: # new post
                         drop = 0
-                    last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                    if 'status' in u2:
+                        last_post = max(first_last_post, datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y'))
+                    else:
+                        last_post = first_last_post
 
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -181,6 +192,10 @@ def read_user_time_iv(filename):
                 else:
                     liwc_changes = [None]*(len(trimed_fields)*3)
                 u_centrality = eigen_map.get(user['id'], 0)
+                u_pagerank = pagerank_map.get(user['id'], 0)
+                u_indegree = indegree_map.get(user['id'], 0)
+                u_outdegree = outdegree_map.get(user['id'], 0)
+
                 values.extend(liwc_changes)
                 values.extend(active_days(user))
 
@@ -220,22 +235,27 @@ def read_user_time_iv(filename):
                                         alive += 1
                                     factive = active_days(fu2)
                                 fatt.extend(factive)
-                                fatt.extend([eigen_map.get(fu['id'], 0)])
+                                fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
+                                             indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
                                 fatts.append(fatt)
 
                         # thredhold = user['friends_count']*0.5
+
+
                         if len(fatts) > 0:
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
                             paliv = float(alive)/len(fatts)
                             data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, second_scraped_at, average_time,
-                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_timeline_count] +
+                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_pagerank,
+                                         u_indegree, u_outdegree, u_timeline_count] +
                                         values + [len(fatts), paliv])
 
-    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'scraped_at', 'second_scraped_at',
+    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'first_scraped_at', 'second_scraped_at',
                                      'average_time', 'longest_time_interval', 'observation_interval',
-                                     'group', 'event', 'u_centrality', 'u_timeline_count'] +
+                                     'group', 'event', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
+                                     'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields] +
                                     ['u_prior_'+field for field in trimed_fields] +
                                     ['u_post_'+field for field in trimed_fields] +
@@ -243,7 +263,7 @@ def read_user_time_iv(filename):
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields] +
                                     ['f_'+field for field in prof_names] +
-                                    ['f_centrality', 'f_num', 'f_palive'])
+                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive'])
     df.to_csv(filename)
 
 

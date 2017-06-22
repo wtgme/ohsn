@@ -249,7 +249,7 @@ def emotion_dropout_IV_following():
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
-        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank', 'indegree', 'outdegree']
+        'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank', 'authority', 'hub']
     attr_names = ['uid', 'group', 'attr', 'level']
     attr_names.extend(['u_'+field for field in trimed_fields])
     attr_names.extend(['u_prior_'+field for field in trimed_fields])
@@ -290,8 +290,8 @@ def emotion_dropout_IV_following():
         '''Centralities Calculation'''
         eigen = network1_gc.eigenvector_centrality()
         pageranks = network1_gc.pagerank()
-        indegree = network1_gc.indegree()
-        outdegree = network1_gc.outdegree()
+        indegree = network1_gc.authority_score()
+        outdegree = network1_gc.hub_score()
         # closeness = network.closeness()
         # betweenness = network.betweenness()
         # print len(eigen), len(closeness), len(betweenness)

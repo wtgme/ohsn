@@ -45,6 +45,43 @@ def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphm
     gt.net_stat(cluster1)
     gt.net_stat(cluster2)
 
+def prelevence():
+    # # counting how popular each type of content overall
+    # ped = set(iot.read_ed_pro_hashtags())
+    # pre = set(iot.read_ed_recovery_hashtags())
+    # times = dbt.db_connect_col('fed', 'ed_tag')
+    # data = []
+    # for tweet in times.find({}, no_cursor_timeout=True):
+    #     # if 'retweeted_status' in tweet:
+    #     #     continue
+    #     # elif 'quoted_status' in tweet:
+    #     #     continue
+    #     # else:
+    #     hashtags = tweet['entities']['hashtags']
+    #     hash_set = set()
+    #     for hash in hashtags:
+    #         hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+    #     pred_sub = hash_set.intersection(ped)
+    #     prec_sub = hash_set.intersection(pre)
+    #     if pred_sub:
+    #         data.append([tweet['retweet_count'], 'Retweet', 'Pro-ED'])
+    #         data.append([tweet['favorite_count'], 'Favorite', 'Pro-ED'])
+    #     if prec_sub:
+    #         data.append([tweet['retweet_count'], 'Retweet', 'Pro-Rec.'])
+    #         data.append([tweet['favorite_count'], 'Favorite', 'Pro-Rec.'])
+    # df = pd.DataFrame(data, columns=['Count', 'Action', 'Cluster'])
+    # pickle.dump(df, open('data/prelence.pick', 'w'))
+
+    df = pickle.load(open('data/prelence.pick', 'r'))
+    df.rename(columns={'Cluster': 'Content'
+                       },
+              inplace=True)
+    plu.plot_config()
+    g = sns.factorplot(x="Action", y="Count", hue="Content", data=df, kind="bar", legend=True, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    plt.show()
+
+
+
 
 def sentiment_quanti(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     # TODO analysis sentiment of different groups of users for hashtags
@@ -384,28 +421,39 @@ def compare_in_out_degree(filename='data/communication-only-fed-filter-hashtag-c
     xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
     xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
     print len(xa), len(ya)
-    print len(xa[xa>0]) , len(ya[ya>0])
+    print len(xa[xa>0]) , len(ya[ya>0]), float(len(xa[xa>0]))/len(xa), float(len(ya[ya>0]))/len(ya)
     print len(xb), len(yb)
-    print len(xb[xb>0]) , len(yb[yb>0])
-
-    g = sns.JointGrid(xa, ya)
-    g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
-    g.annotate(statu.stats.kendalltau)
-    g.x = xb
-    g.y = yb
-    g.plot_joint(plt.scatter, marker='^', s=50, color="g", label=r'Pro-Rec.: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xb, yb))[0])
-    g.plot_joint(sns.regplot, color="g")
-    g.annotate(statu.stats.kendalltau)
-    g.ax_marg_x.set_axis_off()
-    g.ax_marg_y.set_axis_off()
-    plt.legend(loc="best", frameon=True)
-    plt.xlabel(r'$\log(1+d_{in})$')
-    plt.ylabel(r'$\log(1+d_{out})$')
+    print len(xb[xb>0]) , len(yb[yb>0]), float(len(xb[xb>0]))/len(xb), float(len(yb[yb>0]))/len(yb)
 
 
-    # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    xas = xa[(xa>0)&(ya>0)]
+    yas = ya[(xa>0)&(ya>0)]
+    xbs = xb[(xb>0)&(yb>0)]
+    ybs = yb[(xb>0)&(yb>0)]
+
+    plu.dependence(xas, yas, 'd', 'in-degree', 'out-degree')
+
+
+    # xa = np.log(1+xa)
+    # ya = np.log(1+ya)
+    # xb = np.log(1+xb)
+    # yb = np.log(1+yb)
+    # g = sns.JointGrid(xa, ya)
+    # g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
+    # g.annotate(statu.stats.kendalltau)
+    # g.x = xb
+    # g.y = yb
+    # g.plot_joint(plt.scatter, marker='^', s=50, color="g", label=r'Pro-Rec.: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xb, yb))[0])
+    # g.plot_joint(sns.regplot, color="g")
+    # g.annotate(statu.stats.kendalltau)
+    # g.ax_marg_x.set_axis_off()
+    # g.ax_marg_y.set_axis_off()
     # plt.legend(loc="best", frameon=True)
-    plt.show()
+    # plt.xlabel(r'$\log(1+d_{in})$')
+    # plt.ylabel(r'$\log(1+d_{out})$')
+    # # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    # # plt.legend(loc="best", frameon=True)
+    # plt.show()
 
 
 def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml', filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -465,13 +513,18 @@ def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml',
 
     df = pickle.load(open('dfall.pick', 'r'))
     plu.plot_config()
-    xa, ya = df[df['Cluster']=='Pro-ED']['d_in'], df[df['Cluster']=='Pro-ED']['d_out']
-    xb, yb = df[df['Cluster']=='Pro-Rec.']['d_in'], df[df['Cluster']=='Pro-Rec.']['d_out']
+    xa, ya = df[df['Cluster']=='Pro-ED']['s_in'], df[df['Cluster']=='Pro-ED']['s_out']
+    xb, yb = df[df['Cluster']=='Pro-Rec.']['s_in'], df[df['Cluster']=='Pro-Rec.']['s_out']
     print len(xa), len(ya)
-    print len(xa[xa>0]) , len(ya[ya>0])
+    print len(xa[xa>0]) , len(ya[ya>0]), float(len(xa[xa>0]))/len(xa), float(len(ya[ya>0]))/len(ya)
     print len(xb), len(yb)
-    print len(xb[xb>0]) , len(yb[yb>0])
+    print len(xb[xb>0]) , len(yb[yb>0]), float(len(xb[xb>0]))/len(xb), float(len(yb[yb>0]))/len(yb)
 
+
+    xa = np.log(1+xa)
+    ya = np.log(1+ya)
+    xb = np.log(1+xb)
+    yb = np.log(1+yb)
     g = sns.JointGrid(xa, ya)
     g.plot_joint(sns.regplot, color="r", label='Pro-ED: '+r'$\tau$'+' = %.2f' %(statu.stats.kendalltau(xa, ya))[0])
     g.annotate(statu.stats.kendalltau)
@@ -483,8 +536,8 @@ def compare_in_out_degree_allconnection(allnet='data/fed-communication.graphml',
     g.ax_marg_x.set_axis_off()
     g.ax_marg_y.set_axis_off()
     plt.legend(loc="best", frameon=True)
-    plt.xlabel(r'$\log(1+d_{in})$')
-    plt.ylabel(r'$\log(1+d_{out})$')
+    plt.xlabel(r'$\log(1+s_{in})$')
+    plt.ylabel(r'$\log(1+s_{out})$')
 
 
     # sns.pairplot(df, kind="reg", hue="Cluster", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
@@ -505,6 +558,8 @@ def split_in_out_degree(filename='data/communication-only-fed-filter-hashtag-clu
     outds2 = np.array(g.outdegree(cl2))
 
     print len(inds1), len(outds1)
+    print statu.stats.kendalltau(inds1, outds1)
+
     print len(inds1[inds1>0]), len(outds1[outds1>0])
     xa = inds1[(inds1>0)&(outds1>0)]
     ya = outds1[(inds1>0)&(outds1>0)]
@@ -513,6 +568,7 @@ def split_in_out_degree(filename='data/communication-only-fed-filter-hashtag-clu
     print statu.stats.kendalltau(xa, ya)
 
     print len(inds2), len(outds2)
+    print statu.stats.kendalltau(inds2, outds2)
     print len(inds2[inds2>0]), len(outds2[outds2>0])
     xa = inds2[(inds2>0)&(outds2>0)]
     ya = outds2[(inds2>0)&(outds2>0)]
@@ -735,7 +791,8 @@ if __name__ == '__main__':
     # liwc_sim()
     # compare_liwc()
     # sentiment_quanti()
+    # prelevence()
     # analysis_sentiments('all-tweet.txt')
     compare_in_out_degree()
-    compare_in_out_degree_allconnection()
+    # compare_in_out_degree_allconnection()
     # split_in_out_degree()
