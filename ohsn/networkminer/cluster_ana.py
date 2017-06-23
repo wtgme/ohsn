@@ -754,7 +754,7 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     for col in df.columns[:-1]:
         cat1 = df[col][df['label']==0]
         cat2 = df[col][df['label']==1]
-        m1, m2, t, p, pm = statu.ttest(cat1, cat2, len(select_f))
+        m1, m2, t, p, pm = statu.utest(cat1, cat2, len(select_f))
         mark = ''
         if pm < 0.05:
             mark = '*'
@@ -789,10 +789,10 @@ if __name__ == '__main__':
     # interaction_ratio()
     # prominence()
     # liwc_sim()
-    # compare_liwc()
+    compare_liwc()
     # sentiment_quanti()
     # prelevence()
     # analysis_sentiments('all-tweet.txt')
-    compare_in_out_degree()
+    # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
