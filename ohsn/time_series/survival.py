@@ -97,9 +97,9 @@ def read_user_time_iv(filename):
               'liwc_anal.result.body',
               'liwc_anal.result.health',
               'liwc_anal.result.death'
-              # 'liwc_anal.result.anx',
-              # 'liwc_anal.result.anger',
-              # 'liwc_anal.result.sad'
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad'
               ]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days']
@@ -107,8 +107,8 @@ def read_user_time_iv(filename):
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
          ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
-         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
+         # ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         # ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 
     data = []
@@ -217,27 +217,28 @@ def read_user_time_iv(filename):
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             fu2 = com2.find_one({'id': fid})
                             if fu != None:
-                                fatt = iot.get_fields_one_doc(fu, fields)
+                                if eigen_map.get(fu['id'], 0) > 0.0001:
+                                    fatt = iot.get_fields_one_doc(fu, fields)
 
-                                if (fu2 is None):
-                                    alive += 0
-                                    factive = active_days(fu)
-                                else:
-                                    if 'status' not in fu and 'status' not in fu2:
+                                    if (fu2 is None):
                                         alive += 0
-                                    elif 'status' not in fu and 'status' in fu2:
-                                        alive += 1
-                                    elif 'status' in fu and 'status' not in fu2:
-                                        alive += 1
-                                    elif fu2['status']['id'] == fu['status']['id']:
-                                        alive += 0
-                                    elif fu2['status']['id'] != fu['status']['id']:
-                                        alive += 1
-                                    factive = active_days(fu2)
-                                fatt.extend(factive)
-                                fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
-                                             indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
-                                fatts.append(fatt)
+                                        factive = active_days(fu)
+                                    else:
+                                        if 'status' not in fu and 'status' not in fu2:
+                                            alive += 0
+                                        elif 'status' not in fu and 'status' in fu2:
+                                            alive += 1
+                                        elif 'status' in fu and 'status' not in fu2:
+                                            alive += 1
+                                        elif fu2['status']['id'] == fu['status']['id']:
+                                            alive += 0
+                                        elif fu2['status']['id'] != fu['status']['id']:
+                                            alive += 1
+                                        factive = active_days(fu2)
+                                    fatt.extend(factive)
+                                    fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
+                                                 indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
+                                    fatts.append(fatt)
 
                         # thredhold = user['friends_count']*0.5
 
@@ -321,6 +322,10 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    read_user_time_iv('user-durations-iv-2.csv')
+    read_user_time_iv('user-durations-iv-centrality-restric.csv')
 
     # insert_timestamp('fed2', 'com')
+    # network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
+    # gt.summary(network1)
+    # network1_gc = gt.giant_component(network1)
+    # gt.summary(network1_gc)

@@ -243,9 +243,9 @@ def emotion_dropout_IV_following():
               'liwc_anal.result.body',
               'liwc_anal.result.health',
               'liwc_anal.result.death'
-              # 'liwc_anal.result.anx',
-              # 'liwc_anal.result.anger',
-              # 'liwc_anal.result.sad'
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad'
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
@@ -267,10 +267,12 @@ def emotion_dropout_IV_following():
     data = []
     name_map = {
         'ed': ('fed', 'fed_sur', 'com', 'com', {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}),
-        'yg': ('younger', 'younger_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}}),
-        'rd': ('random', 'random_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}})
+        # 'yg': ('younger', 'younger_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}}),
+        # 'rd': ('random', 'random_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}})
     }
-    for groupname in ['yg', 'rd', 'ed']:
+    for groupname in [
+        # 'yg', 'rd',
+        'ed']:
         dbname1, dbname2, comname1, comname2, filter_que = name_map[groupname]
         print 'Centrality Calculate .........'
         # users = iot.get_values_one_field('fed', 'com', 'id', {'level': {'$lt': 3}})
@@ -391,30 +393,31 @@ def emotion_dropout_IV_following():
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
                         if fu != None:
-                            fatt = iot.get_fields_one_doc(fu, fields)
+                            if eigen_map.get(fu['id'], 0) > 0.0001:
+                                fatt = iot.get_fields_one_doc(fu, fields)
 
-                            if (fu2 is None):
-                                alive += 0
-                                factive = active_days(fu)
-                            else:
-                                if 'status' not in fu and 'status' not in fu2:
+                                if (fu2 is None):
                                     alive += 0
-                                elif 'status' not in fu and 'status' in fu2:
-                                    alive += 1
-                                elif 'status' in fu and 'status' not in fu2:
-                                    alive += 1
-                                elif fu2['status']['id'] == fu['status']['id']:
-                                    alive += 0
-                                elif fu2['status']['id'] != fu['status']['id']:
-                                    alive += 1
-                                factive = active_days(fu2)
-                            fatt.extend(factive)
-                            fatt.extend([eigen_map.get(fu['id'], 0)])
-                            fatt.extend([pagerank_map.get(fu['id'], 0)])
-                            fatt.extend([indegree_map.get(fu['id'], 0)])
-                            fatt.extend([outdegree_map.get(fu['id'], 0)])
-                            fatt.extend([fu['timeline_count']])
-                            fatts.append(fatt)
+                                    factive = active_days(fu)
+                                else:
+                                    if 'status' not in fu and 'status' not in fu2:
+                                        alive += 0
+                                    elif 'status' not in fu and 'status' in fu2:
+                                        alive += 1
+                                    elif 'status' in fu and 'status' not in fu2:
+                                        alive += 1
+                                    elif fu2['status']['id'] == fu['status']['id']:
+                                        alive += 0
+                                    elif fu2['status']['id'] != fu['status']['id']:
+                                        alive += 1
+                                    factive = active_days(fu2)
+                                fatt.extend(factive)
+                                fatt.extend([eigen_map.get(fu['id'], 0)])
+                                fatt.extend([pagerank_map.get(fu['id'], 0)])
+                                fatt.extend([indegree_map.get(fu['id'], 0)])
+                                fatt.extend([outdegree_map.get(fu['id'], 0)])
+                                fatt.extend([fu['timeline_count']])
+                                fatts.append(fatt)
 
                             # if fu2 is None or fu['status']['id'] == fu2['status']['id']:
                             #     alive += 0
@@ -431,7 +434,7 @@ def emotion_dropout_IV_following():
             # print row
             data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
-    df.to_csv('data-attr-following-2.csv', index = False)
+    df.to_csv('data-attr-following-centrality-restric.csv', index = False)
 
 
 
@@ -614,10 +617,52 @@ def screte_tweet():
             print time['id'], text
 
 
+def label_dropout_network(g_file, db1n, com1n, db2n, com2n):
+    g = gt.Graph.Read_GraphML(g_file)
+
+    allg = gt.Graph.Read_GraphML('fed-net.graphml')
+    allg.vs['hub'] = allg.eigenvector_centrality()
+
+    com1 = dbt.db_connect_col(db1n, com1n)
+    com2 = dbt.db_connect_col(db2n, com2n)
+
+    labels, hubs = [], []
+    for v in g.vs:
+        uid = int(v['name'])
+        hub = allg.vs.find(name=v['name'])['hub']
+        print hub
+
+        u1 = com1.find_one({'id': uid})
+        u2 = com2.find_one({'id': uid})
+        if (u2 is None): # protected or delete
+            drop = 1
+        else:
+            if 'status' not in u1 and 'status' not in u2: # no tweeting
+                drop = 1
+            elif 'status' not in u1 and 'status' in u2: # start to post
+                drop = 0
+            elif 'status' in u1 and 'status' not in u2: # delete
+                drop = 0
+            elif u2['status']['id'] == u1['status']['id']: # no new post
+                drop = 1
+            elif u2['status']['id'] != u1['status']['id']: # new post
+                drop = 0
+        labels.append(drop)
+        hubs.append(hub)
+    g.vs['drop'] = labels
+    g.vs['cen'] = hubs
+    g.write_graphml('drop-'+g_file)
+
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
     # network1 = gt.load_network('fed', 'snet')
+    # network1.write_graphml('coreed-net.graphml')
+    # g = gt.load_network('fed', 'net')
+    # g.write_graphml('fed-net.graphml')
+    # label_dropout_network('coreed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
+    # label_dropout_network('fed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
+
     # friends_old = network1.successors(str('4036631952'))
 
     # print [network1.vs[v]['name'] for v in friends_old]
