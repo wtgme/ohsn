@@ -226,7 +226,7 @@ def emotion_dropout_IV_split(dbname1, dbname2, comname1, comname2):
     df.to_csv('data-attr-split.csv', index = False)
 
 
-def emotion_dropout_IV_following():
+def emotion_dropout_IV_following(filepath):
     '''
     Only use following stats
     :param dbname1:
@@ -381,8 +381,8 @@ def emotion_dropout_IV_following():
             except ValueError:
                 exist = False
             if exist:
-                # friends = set(network1.neighbors(str(uid))) # id or name
-                friends = set(network1.successors(str(uid)))
+                friends = set(network1.neighbors(str(uid))) # id or name
+                # friends = set(network1.successors(str(uid)))
                 if len(friends) > 0:
                     friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                     print uid in friend_ids
@@ -393,7 +393,8 @@ def emotion_dropout_IV_following():
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
                         if fu != None:
-                            if eigen_map.get(fu['id'], 0) > 0.0001:
+                            # if eigen_map.get(fu['id'], 0) > 0.0001:
+                            if True:
                                 fatt = iot.get_fields_one_doc(fu, fields)
 
                                 if (fu2 is None):
@@ -434,7 +435,7 @@ def emotion_dropout_IV_following():
             # print row
             data.append(row)
     df = pd.DataFrame(data, columns=attr_names)
-    df.to_csv('data-attr-following-centrality-restric.csv', index = False)
+    df.to_csv(filepath, index = False)
 
 
 
@@ -670,7 +671,7 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     # load_net()
-    emotion_dropout_IV_following()
+    emotion_dropout_IV_following('data-attr-friends.csv')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
     # users_with_collected_friends('random', 'scom', 'net')

@@ -206,7 +206,8 @@ def read_user_time_iv(filename):
                 except ValueError:
                     exist = False
                 if exist:
-                    friends = set(network1.successors(str(uid)))
+                    friends = set(network1.neighbors(str(uid))) # id or name
+                    # friends = set(network1.successors(str(uid)))
                     if len(friends) > 0:
                         friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                         print uid in friend_ids
@@ -217,7 +218,8 @@ def read_user_time_iv(filename):
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             fu2 = com2.find_one({'id': fid})
                             if fu != None:
-                                if eigen_map.get(fu['id'], 0) > 0.0001:
+                                # if eigen_map.get(fu['id'], 0) > 0.0001:
+                                if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
 
                                     if (fu2 is None):
@@ -322,7 +324,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    read_user_time_iv('user-durations-iv-centrality-restric.csv')
+    read_user_time_iv('user-durations-iv-friends.csv')
 
     # insert_timestamp('fed2', 'com')
     # network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
