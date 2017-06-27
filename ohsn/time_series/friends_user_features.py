@@ -332,16 +332,14 @@ def emotion_dropout_IV_following(filepath):
             u1_time = u1['_id'].generation_time.replace(tzinfo=None)
 
             # if u2 is None or u2['timeline_count'] == 0:
+            drop = 1
             if u2:
                 u2_time = u2['_id'].generation_time.replace(tzinfo=None)
                 if 'status' in u2:
                     second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                     if u1_time < second_last_post < u2_time:
-                        row.append(0)
-            else:
-                row.append(1)
-
-
+                        drop = 0
+            row.append(drop)
             row.append(u1['level'])
             # set users liwc feature
             uatt = iot.get_fields_one_doc(u1, fields)
