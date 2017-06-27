@@ -141,6 +141,8 @@ def read_user_time_iv(filename):
                 u2 = com2.find_one({'id': uid})
 
                 first_last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                last_post = first_last_post
+                drop = 1
                 if u2:
                     second_scraped_at = u2['_id'].generation_time.replace(tzinfo=None)
                     if 'status' in u2:
@@ -148,9 +150,7 @@ def read_user_time_iv(filename):
                         if first_scraped_at < second_last_post < second_scraped_at:
                             drop = 0
                             last_post = second_last_post
-                else:
-                    drop = 1
-                    last_post = first_last_post
+
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 life_time = diff_day(last_post, created_at)
