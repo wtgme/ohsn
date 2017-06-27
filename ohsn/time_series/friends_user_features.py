@@ -267,11 +267,11 @@ def emotion_dropout_IV_following(filepath):
     data = []
     name_map = {
         'ed': ('fed', 'fed_sur', 'com', 'com', {'level': 1, 'liwc_anal.result.WC': {'$exists': True}}),
-        # 'yg': ('younger', 'younger_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}}),
-        # 'rd': ('random', 'random_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}})
+        'yg': ('younger', 'younger_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}}),
+        'rd': ('random', 'random_sur', 'scom', 'com', {'liwc_anal.result.WC': {'$exists': True}})
     }
     for groupname in [
-        # 'yg', 'rd',
+        'yg', 'rd',
         'ed']:
         dbname1, dbname2, comname1, comname2, filter_que = name_map[groupname]
         print 'Centrality Calculate .........'
@@ -329,20 +329,17 @@ def emotion_dropout_IV_following(filepath):
             # set attrition states
             u1 = com1.find_one({'id': uid})
             u2 = com2.find_one({'id': uid})
+            u1_time = u1['_id'].generation_time
+            u2_time = u2['_id'].generation_time
             # if u2 is None or u2['timeline_count'] == 0:
-            if (u2 is None):
-                row.append(1)
+            if u2 and 'status' in u2:
+                second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                if u1_time < second_last_post < u2_time:
+                    row.append(0)
             else:
-                if 'status' not in u1 and 'status' not in u2:
-                    row.append(1)
-                elif 'status' not in u1 and 'status' in u2:
-                    row.append(0)
-                elif 'status' in u1 and 'status' not in u2:
-                    row.append(0)
-                elif u2['status']['id'] == u1['status']['id']:
-                    row.append(1)
-                elif u2['status']['id'] != u1['status']['id']:
-                    row.append(0)
+                row.append(1)
+
+
             row.append(u1['level'])
             # set users liwc feature
             uatt = iot.get_fields_one_doc(u1, fields)
@@ -381,8 +378,8 @@ def emotion_dropout_IV_following(filepath):
             except ValueError:
                 exist = False
             if exist:
-                friends = set(network1.neighbors(str(uid))) # id or name
-                # friends = set(network1.successors(str(uid)))
+                # friends = set(network1.neighbors(str(uid))) # id or name
+                friends = set(network1.successors(str(uid)))
                 if len(friends) > 0:
                     friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                     print uid in friend_ids
@@ -392,26 +389,19 @@ def emotion_dropout_IV_following(filepath):
                     for fid in friend_ids:
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
-                        if fu != None:
+                        f1_time = fu['_id'].generation_time
+                        f2_time = fu2['_id'].generation_time
+                        if fu:
                             # if eigen_map.get(fu['id'], 0) > 0.0001:
                             if True:
                                 fatt = iot.get_fields_one_doc(fu, fields)
+                                factive = active_days(fu)
+                                if fu2 and 'status' in fu2:
+                                    fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                                    if f1_time < fsecond_last_post < f2_time:
+                                        alive += 1
+                                        factive = active_days(fu2)
 
-                                if (fu2 is None):
-                                    alive += 0
-                                    factive = active_days(fu)
-                                else:
-                                    if 'status' not in fu and 'status' not in fu2:
-                                        alive += 0
-                                    elif 'status' not in fu and 'status' in fu2:
-                                        alive += 1
-                                    elif 'status' in fu and 'status' not in fu2:
-                                        alive += 1
-                                    elif fu2['status']['id'] == fu['status']['id']:
-                                        alive += 0
-                                    elif fu2['status']['id'] != fu['status']['id']:
-                                        alive += 1
-                                    factive = active_days(fu2)
                                 fatt.extend(factive)
                                 fatt.extend([eigen_map.get(fu['id'], 0)])
                                 fatt.extend([pagerank_map.get(fu['id'], 0)])
@@ -420,10 +410,6 @@ def emotion_dropout_IV_following(filepath):
                                 fatt.extend([fu['timeline_count']])
                                 fatts.append(fatt)
 
-                            # if fu2 is None or fu['status']['id'] == fu2['status']['id']:
-                            #     alive += 0
-                            # else:
-                            #     alive += 1
                     if len(fatts) > 0:
                         fatts = np.array(fatts)
                         fmatts = np.mean(fatts, axis=0)
@@ -671,7 +657,7 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     # load_net()
-    emotion_dropout_IV_following('data-attr-friends.csv')
+    emotion_dropout_IV_following('data-attr-followings.csv')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
     # users_with_collected_friends('random', 'scom', 'net')

@@ -107,8 +107,8 @@ def read_user_time_iv(filename):
     trimed_fields = [field.split('.')[-1] for field in fields]
     groups = [
          ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         # ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
-         # ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
+         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 
     data = []
@@ -135,44 +135,26 @@ def read_user_time_iv(filename):
         liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
 
         for user in com.find(filter_values, no_cursor_timeout=True):
+            first_scraped_at = user['_id'].generation_time
             if 'status' in user:
                 uid = user['id']
                 u2 = com2.find_one({'id': uid})
+                second_scraped_at = u2['_id'].generation_time
                 first_last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                if (u2 is None): # protected or delete
-                    drop = 1
-                    second_scraped_at = datetime.strptime(second_time, '%Y-%m-%d %H:%M:%S+00:00')
-                    last_post = first_last_post
+                if u2 and 'status' in u2:
+                    second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                    if first_scraped_at < second_last_post < second_scraped_at:
+                        drop = 0
+                        last_post = second_last_post
                 else:
-                    second_scraped_at = u2['_id'].generation_time
-                    if 'status' not in user and 'status' not in u2: # no tweeting
-                        drop = 1
-                    elif 'status' not in user and 'status' in u2: # start to post
-                        drop = 0
-                    elif 'status' in user and 'status' not in u2: # delete
-                        drop = 0
-                    elif u2['status']['id'] == user['status']['id']: # no new post
-                        drop = 1
-                    elif u2['status']['id'] != user['status']['id']: # new post
-                        drop = 0
-                    if 'status' in u2:
-                        last_post = max(first_last_post, datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y'))
-                    else:
-                        last_post = first_last_post
-
+                    drop = 1
+                    last_post = first_last_post
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                scraped_at = user['scrape_timeline_at']
                 life_time = diff_day(last_post, created_at)
                 average_time = float(life_time)/min(1, user['statuses_count'])
                 longest_tweet_intervalb = user['longest_tweet_interval']
                 u_timeline_count = user['timeline_count']
-
-                observation_interval = diff_day(scraped_at, last_post)
-                if (observation_interval-longest_tweet_intervalb) > 30:
-                    death = 1
-                else:
-                    death = 0
 
                 values = iot.get_fields_one_doc(user, fields)
                 level = user['level']
@@ -206,8 +188,8 @@ def read_user_time_iv(filename):
                 except ValueError:
                     exist = False
                 if exist:
-                    friends = set(network1.neighbors(str(uid))) # id or name
-                    # friends = set(network1.successors(str(uid)))
+                    # friends = set(network1.neighbors(str(uid))) # id or name
+                    friends = set(network1.successors(str(uid)))
                     if len(friends) > 0:
                         friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                         print uid in friend_ids
@@ -217,26 +199,19 @@ def read_user_time_iv(filename):
                         for fid in friend_ids:
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             fu2 = com2.find_one({'id': fid})
+                            f1_time = fu['_id'].generation_time
+                            f2_time = fu2['_id'].generation_time
                             if fu != None:
                                 # if eigen_map.get(fu['id'], 0) > 0.0001:
                                 if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
+                                    factive = active_days(fu)
+                                    if fu2 and 'status' in fu2:
+                                        fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                                        if f1_time < fsecond_last_post < f2_time:
+                                            alive += 1
+                                            factive = active_days(fu2)
 
-                                    if (fu2 is None):
-                                        alive += 0
-                                        factive = active_days(fu)
-                                    else:
-                                        if 'status' not in fu and 'status' not in fu2:
-                                            alive += 0
-                                        elif 'status' not in fu and 'status' in fu2:
-                                            alive += 1
-                                        elif 'status' in fu and 'status' not in fu2:
-                                            alive += 1
-                                        elif fu2['status']['id'] == fu['status']['id']:
-                                            alive += 0
-                                        elif fu2['status']['id'] != fu['status']['id']:
-                                            alive += 1
-                                        factive = active_days(fu2)
                                     fatt.extend(factive)
                                     fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
                                                  indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
@@ -250,14 +225,14 @@ def read_user_time_iv(filename):
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
                             paliv = float(alive)/len(fatts)
-                            data.append([user['id_str'], level, drop, created_at, last_post, scraped_at, second_scraped_at, average_time,
-                             longest_tweet_intervalb, observation_interval, tag, death, u_centrality, u_pagerank,
+                            data.append([user['id_str'], level, drop, created_at, first_last_post, second_last_post, last_post, first_scraped_at, second_scraped_at, average_time,
+                             longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
                                         values + [len(fatts), paliv])
 
-    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'last_post', 'first_scraped_at', 'second_scraped_at',
-                                     'average_time', 'longest_time_interval', 'observation_interval',
-                                     'group', 'event', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
+    df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
+                                     'average_time', 'longest_time_interval',
+                                     'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
                                      'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields] +
                                     ['u_prior_'+field for field in trimed_fields] +
@@ -324,7 +299,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    read_user_time_iv('user-durations-iv-friends.csv')
+    read_user_time_iv('user-durations-iv-following.csv')
 
     # insert_timestamp('fed2', 'com')
     # network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
