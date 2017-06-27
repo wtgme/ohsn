@@ -391,9 +391,9 @@ def emotion_dropout_IV_following(filepath):
                     for fid in friend_ids:
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
-                        f1_time = fu['_id'].generation_time.replace(tzinfo=None)
 
                         if fu:
+                            f1_time = fu['_id'].generation_time.replace(tzinfo=None)
                             # if eigen_map.get(fu['id'], 0) > 0.0001:
                             if True:
                                 fatt = iot.get_fields_one_doc(fu, fields)
