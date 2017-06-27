@@ -135,11 +135,11 @@ def read_user_time_iv(filename):
         liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
 
         for user in com.find(filter_values, no_cursor_timeout=True):
-            first_scraped_at = user['_id'].generation_time
+            first_scraped_at = user['_id'].generation_time.replace(tzinfo=None)
             if 'status' in user:
                 uid = user['id']
                 u2 = com2.find_one({'id': uid})
-                second_scraped_at = u2['_id'].generation_time
+                second_scraped_at = u2['_id'].generation_time.replace(tzinfo=None)
                 first_last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 if u2 and 'status' in u2:
                     second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -199,8 +199,8 @@ def read_user_time_iv(filename):
                         for fid in friend_ids:
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                             fu2 = com2.find_one({'id': fid})
-                            f1_time = fu['_id'].generation_time
-                            f2_time = fu2['_id'].generation_time
+                            f1_time = fu['_id'].generation_time.replace(tzinfo=None)
+                            f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
                             if fu != None:
                                 # if eigen_map.get(fu['id'], 0) > 0.0001:
                                 if True:

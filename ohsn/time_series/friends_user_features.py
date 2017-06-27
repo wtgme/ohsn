@@ -329,8 +329,8 @@ def emotion_dropout_IV_following(filepath):
             # set attrition states
             u1 = com1.find_one({'id': uid})
             u2 = com2.find_one({'id': uid})
-            u1_time = u1['_id'].generation_time
-            u2_time = u2['_id'].generation_time
+            u1_time = u1['_id'].generation_time.replace(tzinfo=None)
+            u2_time = u2['_id'].generation_time.replace(tzinfo=None)
             # if u2 is None or u2['timeline_count'] == 0:
             if u2 and 'status' in u2:
                 second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -389,8 +389,8 @@ def emotion_dropout_IV_following(filepath):
                     for fid in friend_ids:
                         fu = com1.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
                         fu2 = com2.find_one({'id': fid})
-                        f1_time = fu['_id'].generation_time
-                        f2_time = fu2['_id'].generation_time
+                        f1_time = fu['_id'].generation_time.replace(tzinfo=None)
+                        f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
                         if fu:
                             # if eigen_map.get(fu['id'], 0) > 0.0001:
                             if True:
