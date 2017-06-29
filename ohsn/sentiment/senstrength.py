@@ -52,11 +52,13 @@ def process_chunks_db(dbname, timename, comname, n=100):
     com = dbt.db_connect_col(dbname, comname)
     MYDIR = os.path.dirname(__file__)
 
-    #ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
-    #                                                                                     'senti': {'$exists': False}})
-    # for idlist in list(chunks(ids, n)):
-    for idlist in [[557442390, 2155187931, 2881928495]]: #test
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
+                                                                                        'senti': {'$exists': False}})
+    print 'Total users:', len(ids)
+    for idlist in list(chunks(ids, n)):
+    # for idlist in [[557442390, 2155187931, 2881928495]]: #test
         # read buntch of user tweets
+        print 'users no:', len(idlist)
         f = open('tem.txt', 'w')
         id_count = []
         for uid in idlist:
@@ -91,11 +93,9 @@ def process_chunks_db(dbname, timename, comname, n=100):
                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.communicate()
 
-
         '''processs results'''
         fr = open('tem.txt', 'r')
         lines = fr.readlines()
-	#print lines
         index = 0
         for uid,i in id_count:
             half = i/2
@@ -131,8 +131,8 @@ def process_chunks_db(dbname, timename, comname, n=100):
                      'negm': np.mean(neg1+neg2), 'negstd': np.std(neg1+neg2),
                      'scalem': np.mean(scale1+scale2), 'scalestd': np.std(scale1+scale2)}
             reslut['whole'] = whole
-            print uid,  reslut
-            # com.update_one({'id': uid}, {'$set': {'senti.mined': True, 'senti.result': reslut}}, upsert=False)
+            # print uid,  reslut
+            com.update_one({'id': uid}, {'$set': {'senti.mined': True, 'senti.result': reslut}}, upsert=False)
             index += i
         fr.close()
 
@@ -230,5 +230,5 @@ if __name__ == '__main__':
     # print rate_sentiment('I talk to YOU')
 
     process_chunks_db(dbname='fed', timename='timeline', comname='com')
-    # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
-    # process_chunks_db(dbname='random', timename='timeline', comname='scom')
+    process_chunks_db(dbname='younger', timename='timeline', comname='scom')
+    process_chunks_db(dbname='random', timename='timeline', comname='scom')
