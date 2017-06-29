@@ -402,7 +402,7 @@ def user_hashtag_profile(tag_net, users):
 
 
 def user_hashtag_vector(dbname, timename, users):
-    # get all tags as features, text not in int
+    # get all tags as features, text not in int, including retweets
     times = dbt.db_connect_col(dbname, timename)
     user_hash_profile = {}
     for uid in users:

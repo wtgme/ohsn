@@ -11,6 +11,91 @@ import math
 import scipy.stats as stats
 
 
+def mannwhitneyu(x, y, use_continuity=True, alternative=None):
+    """
+    Computes the Mann-Whitney rank test on samples x and y.
+
+    Parameters
+    ----------
+    x, y : array_like
+        Array of samples, should be one-dimensional.
+    use_continuity : bool, optional
+            Whether a continuity correction (1/2.) should be taken into
+            account. Default is True.
+    alternative : None (deprecated), 'less', 'two-sided', or 'greater'
+            Whether to get the p-value for the one-sided hypothesis ('less'
+            or 'greater') or for the two-sided hypothesis ('two-sided').
+            Defaults to None, which results in a p-value half the size of
+            the 'two-sided' p-value and a different U statistic. The
+            default behavior is not the same as using 'less' or 'greater':
+            it only exists for backward compatibility and is deprecated.
+
+    Returns
+    -------
+    statistic : float
+        The Mann-Whitney U statistic, equal to min(U for x, U for y) if
+        `alternative` is equal to None (deprecated; exists for backward
+        compatibility), and U for y otherwise.
+    pvalue : float
+        p-value assuming an asymptotic normal distribution. One-sided or
+        two-sided, depending on the choice of `alternative`.
+
+    Notes
+    -----
+    Use only when the number of observation in each sample is > 20 and
+    you have 2 independent samples of ranks. Mann-Whitney U is
+    significant if the u-obtained is LESS THAN or equal to the critical
+    value of U.
+
+    This test corrects for ties and by default uses a continuity correction.
+
+    """
+    if alternative is None:
+        print("Calling `mannwhitneyu` without specifying "
+                      "`alternative` is deprecated.", DeprecationWarning)
+
+    x = np.asarray(x)
+    y = np.asarray(y)
+    n1 = len(x)
+    n2 = len(y)
+    ranked = stats.rankdata(np.concatenate((x, y)))
+    rankx = ranked[0:n1]  # get the x-ranks
+    u1 = n1*n2 + (n1*(n1+1))/2.0 - np.sum(rankx, axis=0)  # calc U for x
+    u2 = n1*n2 - u1  # remainder is U for y
+    T = stats.tiecorrect(ranked)
+    if T == 0:
+        raise ValueError('All numbers are identical in mannwhitneyu')
+    sd = np.sqrt(T * n1 * n2 * (n1+n2+1) / 12.0)
+
+    meanrank = n1*n2/2.0 + 0.5 * use_continuity
+    if alternative is None or alternative == 'two-sided':
+        bigu = max(u1, u2)
+    elif alternative == 'less':
+        bigu = u1
+    elif alternative == 'greater':
+        bigu = u2
+    else:
+        raise ValueError("alternative should be None, 'less', 'greater' "
+                         "or 'two-sided'")
+
+    z = (bigu - meanrank) / sd
+    if alternative is None:
+        # This behavior, equal to half the size of the two-sided
+        # p-value, is deprecated.
+        p = stats.distributions.norm.sf(abs(z))
+    elif alternative == 'two-sided':
+        p = 2 * stats.distributions.norm.sf(abs(z))
+    else:
+        p = stats.distributions.norm.sf(z)
+
+    u = u2
+    # This behavior is deprecated.
+    if alternative is None:
+        u = min(u1, u2)
+    # print stats.MannwhitneyuResult(u, p)
+    return z
+
+
 def central_data(data):
     maxv = np.percentile(data, 97.5)
     minv = np.percentile(data, 2.5)
@@ -34,11 +119,12 @@ def ks_test(list1, list2, n=1):
 
 def ttest(list1, list2, n=1):
     d, p = stats.ttest_ind(list1, list2)
-    return np.mean(list1), np.mean(list2), (d), p, (p*n)
+    return np.mean(list1), np.std(list1), np.mean(list2), np.std(list2), (d), p, (p*n)
 
 def utest(list1, list2, n=1):
-    d, p = stats.mannwhitneyu(list1, list2, alternative='less')
-    return np.mean(list1), np.mean(list2), (d), p, (p*n)
+    d, p = stats.mannwhitneyu(list1, list2, alternative='two-sided')
+    z = mannwhitneyu(list1, list2, alternative='greater')
+    return np.mean(list1), np.std(list1), np.mean(list2), np.std(list2), (d), p, (p*n), z
 
 def wtest(list1, list2, n=1):
     d, p = stats.wilcoxon(list1, list2)

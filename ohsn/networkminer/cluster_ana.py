@@ -45,49 +45,55 @@ def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphm
     gt.net_stat(cluster1)
     gt.net_stat(cluster2)
 
+
 def prelevence():
     # # counting how popular each type of content overall
-    # ped = set(iot.read_ed_pro_hashtags())
-    # pre = set(iot.read_ed_recovery_hashtags())
-    # times = dbt.db_connect_col('fed', 'ed_tag')
-    # data = []
-    # for tweet in times.find({}, no_cursor_timeout=True):
-    #     # if 'retweeted_status' in tweet:
-    #     #     continue
-    #     # elif 'quoted_status' in tweet:
-    #     #     continue
-    #     # else:
-    #     hashtags = tweet['entities']['hashtags']
-    #     hash_set = set()
-    #     for hash in hashtags:
-    #         hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-    #     pred_sub = hash_set.intersection(ped)
-    #     prec_sub = hash_set.intersection(pre)
-    #     if pred_sub:
-    #         data.append([tweet['retweet_count'], 'Retweet', 'Pro-ED'])
-    #         data.append([tweet['favorite_count'], 'Favorite', 'Pro-ED'])
-    #     if prec_sub:
-    #         data.append([tweet['retweet_count'], 'Retweet', 'Pro-Rec.'])
-    #         data.append([tweet['favorite_count'], 'Favorite', 'Pro-Rec.'])
-    # df = pd.DataFrame(data, columns=['Count', 'Action', 'Cluster'])
-    # pickle.dump(df, open('data/prelence.pick', 'w'))
+    # prelence.pick for all tweets and retweets
+    # tweet-prelence.pick only counting tweets to avoid duplicated counting
+    ped = set(iot.read_ed_pro_hashtags())
+    pre = set(iot.read_ed_recovery_hashtags())
+    times = dbt.db_connect_col('fed', 'ed_tag')
+    data = []
+    for tweet in times.find({}, no_cursor_timeout=True):
+        if 'retweeted_status' in tweet:
+            continue
+        elif 'quoted_status' in tweet:
+            continue
+        else:
+            hashtags = tweet['entities']['hashtags']
+            hash_set = set()
+            for hash in hashtags:
+                hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            pred_sub = hash_set.intersection(ped)
+            prec_sub = hash_set.intersection(pre)
+            if pred_sub and (len(prec_sub) == 0):
+                data.append([tweet['retweet_count'], 'Retweet', 'Pro-ED'])
+                data.append([tweet['favorite_count'], 'Favorite', 'Pro-ED'])
+            if prec_sub and (len(pred_sub) == 0):
+                data.append([tweet['retweet_count'], 'Retweet', 'Pro-Rec.'])
+                data.append([tweet['favorite_count'], 'Favorite', 'Pro-Rec.'])
+            if prec_sub and pred_sub:
+                data.append([tweet['retweet_count'], 'Retweet', 'Mixed.'])
+                data.append([tweet['favorite_count'], 'Favorite', 'Mixed.'])
+    df = pd.DataFrame(data, columns=['Count', 'Action', 'Cluster'])
+    pickle.dump(df, open('data/tweet-prelence.pick', 'w'))
 
-    df = pickle.load(open('data/prelence.pick', 'r'))
-    df.rename(columns={'Cluster': 'Content'
-                       },
-              inplace=True)
-    plu.plot_config()
-    g = sns.factorplot(x="Action", y="Count", hue="Content", data=df, kind="bar", legend=True, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
-    plt.show()
+    # df = pickle.load(open('data/tweet-prelence.pick', 'r'))
+    # df.rename(columns={'Cluster': 'Content'
+    #                    },
+    #           inplace=True)
+    # plu.plot_config()
+    # g = sns.factorplot(x="Action", y="Count", hue="Content", data=df, kind="bar", legend=True, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    # plt.show()
 
 
 
 
 def sentiment_quanti(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
-    # TODO analysis sentiment of different groups of users for hashtags
     # tweet.txt: only contain tweets that have proed or pro-recovery hashtags, not retweets
     # retweet.txt: contain tweets and retweets that have proed or pro-recovery hashtags
-    # all-tweet.txt: contain all tweets that have proed or pro-recovery and other hashtags
+    # all-tweet.txt: contain all tweets and retweets that have proed or pro-recovery and other hashtags
+    # only-tweet.txt: contain only tweets that have pro-ed, pro-rec or other tags
 
     user_net = gt.Graph.Read_GraphML(filename)
     cluster1 = user_net.subgraph(user_net.vs(cluster=0))
@@ -101,33 +107,33 @@ def sentiment_quanti(filename='data/communication-only-fed-filter-hashtag-cluste
     for i, ulist in enumerate([cluster1_uid, cluster2_uid]):
         for uid in ulist:
             for tweet in times.find({'user.id': int(uid)}):
-                # if 'retweeted_status' in tweet:
-                #     continue
-                # elif 'quoted_status' in tweet:
-                #     continue
-                # else:
-                hashtags = tweet['entities']['hashtags']
-                hash_set = set()
-                for hash in hashtags:
-                    hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-                pred_sub = hash_set.intersection(ped)
-                prec_sub = hash_set.intersection(pre)
-                remain = hash_set - pred_sub - prec_sub
-                pred_sub_size = len(pred_sub)
-                prec_sub_size = len(prec_sub)
-                # if pred_sub_size > 0 or prec_sub_size > 0:
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    hashtags = tweet['entities']['hashtags']
+                    hash_set = set()
+                    for hash in hashtags:
+                        hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+                    pred_sub = hash_set.intersection(ped)
+                    prec_sub = hash_set.intersection(pre)
+                    remain = hash_set - pred_sub - prec_sub
+                    pred_sub_size = len(pred_sub)
+                    prec_sub_size = len(prec_sub)
+                    # if pred_sub_size > 0 or prec_sub_size > 0: # only consider pro-ed or pro-rec. content
 
-                text = tweet['text'].encode('utf8')
-                text = rtgrex.sub('', text)
-                text = mgrex.sub('', text)
-                text = hgrex.sub('', text)
-                text = ugrex.sub('', text)
-                words = text.split()
-                if len(words) > 0:
-                    print str(i)+'\t'+ str(uid)+'\t'+ ' '.join(words) + \
-                          '\t'+ '-1:'+' '.join(list(pred_sub)) + \
-                          '\t'+ '1:'+' '.join(list(prec_sub)) + \
-                          '\t' + '0:'+' '.join(list(remain))
+                    text = tweet['text'].encode('utf8')
+                    text = rtgrex.sub('', text)
+                    text = mgrex.sub('', text)
+                    text = hgrex.sub('', text)
+                    text = ugrex.sub('', text)
+                    words = text.split()
+                    if len(words) > 0:
+                        print str(i)+'\t'+ str(uid)+'\t'+ ' '.join(words) + \
+                              '\t'+ '-1:'+' '.join(list(pred_sub)) + \
+                              '\t'+ '1:'+' '.join(list(prec_sub)) + \
+                              '\t' + '0:'+' '.join(list(remain))
 
 def analysis_sentiments(file='tweets.txt'):
     # AB, AA, BB, BA = [], [], [], []
@@ -754,7 +760,7 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     for col in df.columns[:-1]:
         cat1 = df[col][df['label']==0]
         cat2 = df[col][df['label']==1]
-        m1, m2, t, p, pm = statu.utest(cat1, cat2, len(select_f))
+        m1, std1, m2, std2, t, p, pm = statu.ttest(cat1, cat2, len(select_f))
         mark = ''
         if pm < 0.05:
             mark = '*'
@@ -762,7 +768,7 @@ def compare_liwc(filepath='data/cluster-feature.data'):
             mark = '**'
         if pm < 0.001:
             mark = '***'
-        print "%s, %.2f, %.2f, %.2f, %.3f %s" %(col, m1, m2, t, p, mark)
+        print "%s, %.2f (%.3f), %.2f (%.3f), %.2f, %.3f %s" %(col, m1, std1, m2, std2, t, p, mark)
 
 
     data = pd.melt(df, id_vars=['label'])
@@ -789,9 +795,9 @@ if __name__ == '__main__':
     # interaction_ratio()
     # prominence()
     # liwc_sim()
-    compare_liwc()
-    # sentiment_quanti()
-    # prelevence()
+    # compare_liwc()
+    sentiment_quanti()
+    prelevence()
     # analysis_sentiments('all-tweet.txt')
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
