@@ -12,6 +12,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 import os
 import shlex, subprocess
 import ohsn.util.db_util as dbt
+import ohsn.util.io_util as iot
 import re
 import numpy as np
 
@@ -44,10 +45,14 @@ def process_db(dbname, timename, comname):
     com = dbt.db_connect_col(dbname, comname)
     MYDIR = os.path.dirname(__file__)
 
-    for user in com.find({"timeline_count": {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
+                                                                                         'senti': {'$exists': False}})
+
+    # for user in com.find({"timeline_count": {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+    for uid in ids:
         f = open('tem.txt', 'w')
         i = 0
-        uid = user['id']
+        # uid = user['id']
         for tweet in time.find({'user.id': uid}).sort([("id", 1)]): # time from before to now
             if 'retweeted_status' in tweet:
                 continue

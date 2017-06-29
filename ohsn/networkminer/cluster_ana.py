@@ -50,41 +50,42 @@ def prelevence():
     # # counting how popular each type of content overall
     # prelence.pick for all tweets and retweets
     # tweet-prelence.pick only counting tweets to avoid duplicated counting
-    ped = set(iot.read_ed_pro_hashtags())
-    pre = set(iot.read_ed_recovery_hashtags())
-    times = dbt.db_connect_col('fed', 'ed_tag')
-    data = []
-    for tweet in times.find({}, no_cursor_timeout=True):
-        if 'retweeted_status' in tweet:
-            continue
-        elif 'quoted_status' in tweet:
-            continue
-        else:
-            hashtags = tweet['entities']['hashtags']
-            hash_set = set()
-            for hash in hashtags:
-                hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-            pred_sub = hash_set.intersection(ped)
-            prec_sub = hash_set.intersection(pre)
-            if pred_sub and (len(prec_sub) == 0):
-                data.append([tweet['retweet_count'], 'Retweet', 'Pro-ED'])
-                data.append([tweet['favorite_count'], 'Favorite', 'Pro-ED'])
-            if prec_sub and (len(pred_sub) == 0):
-                data.append([tweet['retweet_count'], 'Retweet', 'Pro-Rec.'])
-                data.append([tweet['favorite_count'], 'Favorite', 'Pro-Rec.'])
-            if prec_sub and pred_sub:
-                data.append([tweet['retweet_count'], 'Retweet', 'Mixed.'])
-                data.append([tweet['favorite_count'], 'Favorite', 'Mixed.'])
-    df = pd.DataFrame(data, columns=['Count', 'Action', 'Cluster'])
-    pickle.dump(df, open('data/tweet-prelence.pick', 'w'))
+    # ped = set(iot.read_ed_pro_hashtags())
+    # pre = set(iot.read_ed_recovery_hashtags())
+    # times = dbt.db_connect_col('fed', 'ed_tag')
+    # data = []
+    # for tweet in times.find({}, no_cursor_timeout=True):
+    #     if 'retweeted_status' in tweet:
+    #         continue
+    #     elif 'quoted_status' in tweet:
+    #         continue
+    #     else:
+    #         hashtags = tweet['entities']['hashtags']
+    #         hash_set = set()
+    #         for hash in hashtags:
+    #             hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+    #         pred_sub = hash_set.intersection(ped)
+    #         prec_sub = hash_set.intersection(pre)
+    #         if pred_sub and (len(prec_sub) == 0):
+    #             data.append([tweet['retweet_count'], 'Retweet', 'Pro-ED'])
+    #             data.append([tweet['favorite_count'], 'Favorite', 'Pro-ED'])
+    #         if prec_sub and (len(pred_sub) == 0):
+    #             data.append([tweet['retweet_count'], 'Retweet', 'Pro-Rec.'])
+    #             data.append([tweet['favorite_count'], 'Favorite', 'Pro-Rec.'])
+    #         if prec_sub and pred_sub:
+    #             data.append([tweet['retweet_count'], 'Retweet', 'Mixed.'])
+    #             data.append([tweet['favorite_count'], 'Favorite', 'Mixed.'])
+    # df = pd.DataFrame(data, columns=['Count', 'Action', 'Cluster'])
+    # pickle.dump(df, open('data/tweet-prelence.pick', 'w'))
 
-    # df = pickle.load(open('data/tweet-prelence.pick', 'r'))
-    # df.rename(columns={'Cluster': 'Content'
-    #                    },
-    #           inplace=True)
-    # plu.plot_config()
-    # g = sns.factorplot(x="Action", y="Count", hue="Content", data=df, kind="bar", legend=True, palette={"Pro-ED": "r", "Pro-Rec.": "g"})
-    # plt.show()
+    df = pickle.load(open('data/tweet-prelence.pick', 'r'))
+    df.rename(columns={'Cluster': 'Topic'
+                       },
+              inplace=True)
+    plu.plot_config()
+    g = sns.factorplot(x="Action", y="Count", hue="Topic", data=df, kind="bar", legend=False, palette={"Pro-ED": "r", "Pro-Rec.": "g", 'Mixed.': 'black'})
+    plt.legend(loc='best')
+    plt.show()
 
 
 
@@ -178,10 +179,10 @@ def analysis_sentiments(file='tweets.txt'):
                 if label == 1:
                     data.append(['B', 3, float(sentiment)])
             # add average for all
-            if label == 0:
-                    data.append(['A', 4, float(sentiment)])
-            if label == 1:
-                data.append(['B', 4, float(sentiment)])
+            # if label == 0:
+            #         data.append(['A', 4, float(sentiment)])
+            # if label == 1:
+            #     data.append(['B', 4, float(sentiment)])
 
     print both_tweets, all_tweets, float(both_tweets/all_tweets)
     df = pd.DataFrame(data, columns=['Cluster', 'Topic', 'Sentiment'])
@@ -192,7 +193,7 @@ def analysis_sentiments(file='tweets.txt'):
 
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df, kind="bar", legend=False, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified", "All"])
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     plt.legend(loc='best')
     # sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='A-A ($\mu=%0.2f$)' % (np.mean(AA)))
     # sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 'o'}, label='B-B ($\mu=%0.2f$)' % (np.mean(BB)))
@@ -230,15 +231,16 @@ def analysis_sentiments(file='tweets.txt'):
     print pro
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.","Mixed", "Unspecified"])
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     plt.legend(loc='best')
     plt.show()
 
 
-    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==0)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==0)]['Sentiment'])
-    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment'])
-    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment'])
-    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment'])
+    print statu.utest(df[(df.Cluster=='A') & (df.Topic==0)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==0)]['Sentiment'])
+    print statu.utest(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment'])
+    print statu.utest(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment'])
+    print statu.utest(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment'])
+    # print statu.ttest(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
 
 
 
@@ -796,9 +798,9 @@ if __name__ == '__main__':
     # prominence()
     # liwc_sim()
     # compare_liwc()
-    #sentiment_quanti()
-    prelevence()
-    # analysis_sentiments('all-tweet.txt')
+    # sentiment_quanti()
+    # prelevence()
+    analysis_sentiments('only-tweet.txt')
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
