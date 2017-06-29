@@ -38,8 +38,110 @@ def rate_sentiment(sentiString):
     return [int(v) for v in stdout_text.rstrip().split()]
 
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
+def process_chunks_db(dbname, timename, comname, n=100):
+    ''' measure sentistrength for each user
+    reduce IO
+    '''
+    time = dbt.db_connect_col(dbname, timename)
+    com = dbt.db_connect_col(dbname, comname)
+    MYDIR = os.path.dirname(__file__)
+
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
+                                                                                         'senti': {'$exists': False}})
+    # for idlist in list(chunks(ids, n)):
+    for idlist in [[557442390, 2155187931, 2881928495]]: #test
+        # read buntch of user tweets
+        f = open('tem.txt', 'w')
+        id_count = {}
+        for uid in idlist:
+            i = 0
+            for tweet in time.find({'user.id': uid}).sort([("id", 1)]): # time from before to now
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    text = tweet['text'].encode('utf8')
+                    # replace RT, @, # and Http://
+                    text = rtgrex.sub('', text)
+                    text = mgrex.sub('', text)
+                    text = hgrex.sub('', text)
+                    text = ugrex.sub('', text)
+                    words = text.strip().split()
+                    if len(words) > 0:
+                        # print tweet['created_at']
+                        print >> f, str(tweet['id']) + '\t'+ str(uid)+'\t' + ' '.join(words)
+                        i += 1
+            if i > 0:
+                id_count[uid] = i
+        f.close()
+
+        '''Sentiment process'''
+        # java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input tweets.txt scale annotateCol 3 overwrite
+        #open a subprocess using shlex to get the command line string into the correct args list format
+        p = subprocess.Popen(shlex.split('java -jar '+os.path.join(MYDIR,'SentiStrengthCom.jar') +' sentidata '
+                                     + os.path.join(MYDIR, 'SentiStrength_DataEnglishFeb2017/')
+                                         + ' input tem.txt annotateCol 3 overwrite'),
+                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.communicate()
+
+
+        '''processs results'''
+        fr = open('tem.txt', 'r')
+        lines = fr.readlines()
+        index = 0
+        for uid in id_count.keys():
+            i = id_count[uid]
+            half = i/2
+            pos1, neg1, scale1, pos2, neg2, scale2 = [], [], [], [], [], []
+            reslut = {'N': i}
+            for j, line in enumerate(lines[index, index+i]):
+                tokens = line.strip().split('\t')
+                pos = int(tokens[-2])
+                neg = int(tokens[-1])
+                scale = pos + neg
+                if j < half:
+                    pos1.append(pos)
+                    neg1.append(neg)
+                    scale1.append(scale)
+                else:
+                    pos2.append(pos)
+                    neg2.append(neg)
+                    scale2.append(scale)
+            if len(pos1) > 0:
+                prior = {'N': len(pos1),
+                         'posm': np.mean(pos1), 'posstd': np.std(pos1),
+                         'negm': np.mean(neg1), 'negstd': np.std(neg1),
+                         'scalem': np.mean(scale1), 'scalestd': np.std(scale1)}
+                reslut['prior'] = prior
+            if len(pos2) > 0:
+                post = {'N': len(pos2),
+                        'posm': np.mean(pos2), 'posstd': np.std(pos2),
+                         'negm': np.mean(neg2), 'negstd': np.std(neg2),
+                         'scalem': np.mean(scale2), 'scalestd': np.std(scale2)}
+                reslut['post'] = post
+            whole = {'N': len(pos1+pos2),
+                     'posm': np.mean(pos1+pos2), 'posstd': np.std(pos1+pos2),
+                     'negm': np.mean(neg1+neg2), 'negstd': np.std(neg1+neg2),
+                     'scalem': np.mean(scale1+scale2), 'scalestd': np.std(scale1+scale2)}
+            reslut['whole'] = whole
+            print reslut
+            # com.update_one({'id': uid}, {'$set': {'senti.mined': True, 'senti.result': reslut}}, upsert=False)
+            index += i
+        fr.close()
+
+
+
+
 def process_db(dbname, timename, comname):
     ''' measure sentistrength for each user
+    too much IO
     '''
     time = dbt.db_connect_col(dbname, timename)
     com = dbt.db_connect_col(dbname, comname)
@@ -127,6 +229,6 @@ if __name__ == '__main__':
     # print rate_sentiment('Everynight I hope i wake up thinner, at my UGW. One day it will happen.')
     # print rate_sentiment('I talk to YOU')
 
-    process_db(dbname='fed', timename='timeline', comname='com')
-    process_db(dbname='younger', timename='timeline', comname='scom')
-    process_db(dbname='random', timename='timeline', comname='scom')
+    process_chunks_db(dbname='fed', timename='timeline', comname='com')
+    # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
+    # process_chunks_db(dbname='random', timename='timeline', comname='scom')
