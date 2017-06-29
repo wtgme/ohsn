@@ -52,13 +52,13 @@ def process_chunks_db(dbname, timename, comname, n=100):
     com = dbt.db_connect_col(dbname, comname)
     MYDIR = os.path.dirname(__file__)
 
-    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
-                                                                                         'senti': {'$exists': False}})
+    #ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 0},
+    #                                                                                     'senti': {'$exists': False}})
     # for idlist in list(chunks(ids, n)):
     for idlist in [[557442390, 2155187931, 2881928495]]: #test
         # read buntch of user tweets
         f = open('tem.txt', 'w')
-        id_count = {}
+        id_count = []
         for uid in idlist:
             i = 0
             for tweet in time.find({'user.id': uid}).sort([("id", 1)]): # time from before to now
@@ -79,7 +79,7 @@ def process_chunks_db(dbname, timename, comname, n=100):
                         print >> f, str(tweet['id']) + '\t'+ str(uid)+'\t' + ' '.join(words)
                         i += 1
             if i > 0:
-                id_count[uid] = i
+                id_count.append((uid, i))
         f.close()
 
         '''Sentiment process'''
@@ -95,13 +95,13 @@ def process_chunks_db(dbname, timename, comname, n=100):
         '''processs results'''
         fr = open('tem.txt', 'r')
         lines = fr.readlines()
+	#print lines
         index = 0
-        for uid in id_count.keys():
-            i = id_count[uid]
+        for uid,i in id_count:
             half = i/2
             pos1, neg1, scale1, pos2, neg2, scale2 = [], [], [], [], [], []
             reslut = {'N': i}
-            for j, line in enumerate(lines[index, index+i]):
+            for j, line in enumerate(lines[index: index+i]):
                 tokens = line.strip().split('\t')
                 pos = int(tokens[-2])
                 neg = int(tokens[-1])
@@ -131,7 +131,7 @@ def process_chunks_db(dbname, timename, comname, n=100):
                      'negm': np.mean(neg1+neg2), 'negstd': np.std(neg1+neg2),
                      'scalem': np.mean(scale1+scale2), 'scalestd': np.std(scale1+scale2)}
             reslut['whole'] = whole
-            print reslut
+            print uid,  reslut
             # com.update_one({'id': uid}, {'$set': {'senti.mined': True, 'senti.result': reslut}}, upsert=False)
             index += i
         fr.close()
