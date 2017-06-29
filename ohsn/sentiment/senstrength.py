@@ -44,7 +44,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def process_chunks_db(dbname, timename, comname, n=100):
+def process_chunks_db(dbname, timename, comname, n=250):
     ''' measure sentistrength for each user
     reduce IO
     '''
