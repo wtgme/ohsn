@@ -796,7 +796,7 @@ if __name__ == '__main__':
     # prominence()
     # liwc_sim()
     # compare_liwc()
-    sentiment_quanti()
+    #sentiment_quanti()
     prelevence()
     # analysis_sentiments('all-tweet.txt')
     # compare_in_out_degree()
