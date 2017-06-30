@@ -44,7 +44,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def process_chunks_db(dbname, timename, comname, n=250):
+def process_chunks_db(dbname, timename, comname, n=100):
     ''' measure sentistrength for each user
     reduce IO
     '''
@@ -58,7 +58,7 @@ def process_chunks_db(dbname, timename, comname, n=250):
     for idlist in list(chunks(ids, n)):
     # for idlist in [[557442390, 2155187931, 2881928495]]: #test
         # read buntch of user tweets
-        print 'users no:', len(idlist)
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),'users no:', len(idlist)
         f = open('tem.txt', 'w')
         id_count = []
         for uid in idlist:
