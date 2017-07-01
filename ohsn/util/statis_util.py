@@ -122,6 +122,7 @@ def ttest(list1, list2, n=1):
     return np.mean(list1), np.std(list1), np.mean(list2), np.std(list2), (d), p, (p*n)
 
 def utest(list1, list2, n=1):
+    # return mean, std, mean, std, U, P, P-core, Z
     d, p = stats.mannwhitneyu(list1, list2, alternative='two-sided')
     z = mannwhitneyu(list1, list2, alternative='greater')
     return np.mean(list1), np.std(list1), np.mean(list2), np.std(list2), (d), p, (p*n), z
