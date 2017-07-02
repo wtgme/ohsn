@@ -113,11 +113,11 @@ def roc_plot_feature(datafile):
     indecs = [trim_files.index(f) for f in select_f]
     print indecs
     X = X[:, indecs]
-    '''Calculate positive emotion ratio'''
-    # print X.shape
-    X[:,-2] /= (X[:,-2] + X[:, -1])
-    X = X[:, :-1]
-    X[:, -1][~np.isfinite(X[:, -1])] = 0
+    # '''Calculate positive emotion ratio'''
+    # # print X.shape
+    # X[:,-2] /= (X[:,-2] + X[:, -1])
+    # X = X[:, :-1]
+    # X[:, -1][~np.isfinite(X[:, -1])] = 0
 
     min_max_scaler = preprocessing.MinMaxScaler()
     X = min_max_scaler.fit_transform(X)
@@ -126,7 +126,7 @@ def roc_plot_feature(datafile):
 
     print X.shape, y.shape
     Z = np.append(X, y.reshape((len(y), 1)), axis=1)
-    df = pd.DataFrame(Z, columns=select_f[:-1] + ['label'])
+    df = pd.DataFrame(Z, columns=select_f + ['label'])
 
     affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
     print(affair_mod.summary())
