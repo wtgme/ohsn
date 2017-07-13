@@ -99,16 +99,16 @@ def roc_plot_feature(datafile):
     print len(trim_files)
     select_f = [
         'friend_count', 'status_count', 'follower_count',
-                # 'friends_day', 'statuses_day', 'followers_day',
+        'friends_day', 'statuses_day', 'followers_day',
         'retweet_pro',
-        # 'dmention_pro', 'reply_pro',
+        'dmention_pro', 'reply_pro',
         # 'hashtag_pro',
-        'url_pro',
-                'retweet_div',
-        # 'reply_div',
+        # 'url_pro',
+        'retweet_div',
         'mention_div',
-                'i', 'we', 'swear', 'negate', 'body', 'health',
-                'ingest', 'social', 'posemo', 'negemo']
+        'reply_div',
+        'i', 'we', 'swear', 'negate', 'body', 'health',
+        'ingest', 'social', 'posemo', 'negemo']
 
     indecs = [trim_files.index(f) for f in select_f]
     print indecs

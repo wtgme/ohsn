@@ -222,39 +222,53 @@ def analysis_sentiments(file='tweets.txt'):
     print statu.utest(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment'])
     print statu.utest(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment'])
     print statu.utest(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment'])
-    # print statu.ttest(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
+    print statu.ttest(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment'], df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
 
 
     def mean_std(list):
         return [np.mean(list), np.std(list)]
 
-    annots = [mean_std(df[(df.Cluster=='A') & (df.Topic==0)]['Sentiment']),
-              mean_std(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment']),
-              mean_std(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment']),
-              mean_std(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment']),
-              mean_std(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment']),
-              mean_std(df[(df.Cluster=='B') & (df.Topic==0)]['Sentiment']),
-              mean_std(df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment']),
-              mean_std(df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment']),
-              mean_std(df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment']),
-              mean_std(df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
-              ]
+    # annots = [mean_std(df[(df.Cluster=='A') & (df.Topic==0)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='A') & (df.Topic==1)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='A') & (df.Topic==2)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='A') & (df.Topic==3)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='B') & (df.Topic==0)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='B') & (df.Topic==1)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='B') & (df.Topic==2)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='B') & (df.Topic==3)]['Sentiment']),
+    #           mean_std(df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
+    #           ]
 
+    amean, astd = mean_std(df[(df.Cluster=='A') & (df.Topic==4)]['Sentiment'])
+    bmean, bstd = mean_std(df[(df.Cluster=='B') & (df.Topic==4)]['Sentiment'])
 
+    # Change abosulate value to z-sore.
+    data2 = []
+    for index, row in df.iterrows():
+        if row['Cluster'] == 'A':
+            m, st = amean, astd
+        else:
+            m, st = bmean, bstd
+        if row.Topic!=4:
+            data2.append([row['Cluster'], row['Topic'], (row['Sentiment']-m)/st])
+    df = pd.DataFrame(data2, columns=['Cluster', 'Topic', 'Sentiment'])
+    #---------------------------------
     df['Cluster'] = df['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
 
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Sentiment", hue="Cluster", data=df,
                        kind="bar", legend=False, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
 
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified", 'All'])
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
+    g.set_ylabels('Relative Sentiment')
 
-    ax=g.ax #annotate axis = seaborn axis True if fruit == 'Apple' else False
-    for i, p in enumerate(ax.patches):
-        print p.get_width()
-        ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
-             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
+    # ax=g.ax #annotate axis = seaborn axis True if fruit == 'Apple' else False
+    # for i, p in enumerate(ax.patches):
+    #     print p.get_width()
+    #     ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
+    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+    #          textcoords='offset points')
     plt.legend(loc='best')
     plt.show()
 
@@ -364,16 +378,16 @@ def liwc_sim(filename='data/cluster-feature.data'):
     print len(trim_files)
     select_f = [
         'friend_count', 'status_count', 'follower_count',
-                # 'friends_day', 'statuses_day', 'followers_day',
+        'friends_day', 'statuses_day', 'followers_day',
         'retweet_pro',
-        # 'dmention_pro', 'reply_pro',
+        'dmention_pro', 'reply_pro',
         # 'hashtag_pro',
-        'url_pro',
-                'retweet_div',
-        # 'reply_div',
+        # 'url_pro',
+        'retweet_div',
         'mention_div',
-                'i', 'we', 'swear', 'negate', 'body', 'health',
-                'ingest', 'social', 'posemo', 'negemo']
+        'reply_div',
+        'i', 'we', 'swear', 'negate', 'body', 'health',
+        'ingest', 'social', 'posemo', 'negemo']
     indecs = [trim_files.index(f) for f in select_f]
     X = X[:, indecs]
     print X.shape
@@ -415,7 +429,7 @@ def liwc_sim(filename='data/cluster-feature.data'):
     plu.plot_config()
     sns.distplot(AA, hist=False, kde_kws={"color": "r", "lw": 2, "marker": 'o'}, label='Pro-ED ($\mu=%0.2f \pm %0.2f$)' % (np.mean(AA), np.std(AA)))
     sns.distplot(BB, hist=False, kde_kws={"color": "g", "lw": 2, "marker": 's'}, label='Pro-Rec. ($\mu=%0.2f \pm %0.2f$)' % (np.mean(BB), np.std(BB)))
-    sns.distplot(AB, hist=False, kde_kws={"color": "k", "lw": 2, "marker": '^'}, label='Cross-Cluster ($\mu=%0.2f \pm %0.2f$)' % (np.mean(AB), np.std(AB)))
+    sns.distplot(AB, hist=False, kde_kws={"color": "k", "lw": 2, "marker": '^'}, label='Cross-Clust. ($\mu=%0.2f \pm %0.2f$)' % (np.mean(AB), np.std(AB)))
     # sns.distplot(AA+BB+AB, hist=False)
     plt.axvline(np.mean(AA), linestyle='dashdot',
                     c='r', lw=4)
@@ -826,16 +840,16 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     print len(trim_files)
     select_f = [
         'friend_count', 'status_count', 'follower_count',
-                # 'friends_day', 'statuses_day', 'followers_day',
+        'friends_day', 'statuses_day', 'followers_day',
         'retweet_pro',
-        # 'dmention_pro', 'reply_pro',
+        'dmention_pro', 'reply_pro',
         # 'hashtag_pro',
-        'url_pro',
-                'retweet_div',
-        # 'reply_div',
+        # 'url_pro',
+        'retweet_div',
         'mention_div',
-                'i', 'we', 'swear', 'negate', 'body', 'health',
-                'ingest', 'social', 'posemo', 'negemo']
+        'reply_div',
+        'i', 'we', 'swear', 'negate', 'body', 'health',
+        'ingest', 'social', 'posemo', 'negemo']
 
     indecs = [trim_files.index(f) for f in select_f]
     print indecs
@@ -864,9 +878,11 @@ def compare_liwc(filepath='data/cluster-feature.data'):
                        'followers_day': '#Fo/D',
                        'retweet_pro': '%RT',
                        'url_pro': '%URL',
-                       'retweet_div': 'Div(RT)',
-                       'reply_div': 'Div(RP)',
-                       'mention_div': 'Div(@)',
+                       'dmention_pro': '%@',
+                       'reply_pro': '%RP',
+                       'retweet_div': '$\Delta$(RT)',
+                       'reply_div': '$\Delta$(RP)',
+                       'mention_div': '$\Delta$(@)',
                        # 'posemo': 'PER'
                        },
               inplace=True)
@@ -883,7 +899,7 @@ def compare_liwc(filepath='data/cluster-feature.data'):
             mark = '**'
         if pm < 0.001:
             mark = '***'
-        print "%s & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %.2f & %.3f & %s \\\\" %(col, m1, std1, m2, std2, z, p, mark)
+        print "%s & %.2f $\pm$ %.2f & %.2f $\pm$ %.2f & %.2f & %.3f & %s \\\\" %(col, m1, std1, m2, std2, z, p, mark)
 
 
     data = pd.melt(df, id_vars=['label'])
@@ -902,6 +918,12 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     plt.show()
 
 
+def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    g = gt.Graph.Read_GraphML(netfilename)
+    cluster1 = g.subgraph(g.vs(cluster=0))
+    cluster2 = g.subgraph(g.vs(cluster=1))
+
+
 
 if __name__ == '__main__':
     # net_attr()
@@ -910,10 +932,10 @@ if __name__ == '__main__':
     # interaction_ratio()
     # prominence()
     # liwc_sim()
-    compare_liwc()
+    # compare_liwc()
     # sentiment_quanti()
     # prelevence()
-    # analysis_sentiments('all-tweet.txt')
+    analysis_sentiments('all-tweet.txt')
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()

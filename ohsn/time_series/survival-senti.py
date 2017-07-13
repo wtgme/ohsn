@@ -91,13 +91,15 @@ def active_days(user):
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
     fields = [
-        'senti.result.whole.posm',
+            'senti.result.whole.posm',
             'senti.result.whole.posstd',
             'senti.result.whole.negm',
             'senti.result.whole.negstd',
             'senti.result.whole.scalem',
             'senti.result.whole.scalestd',
-            'senti.result.whole.N'
+            'senti.result.whole.N',
+            'senti.result.prior.scalem',
+            'senti.result.post.scalem',
         # 'liwc_anal.result.posemo',
         #       'liwc_anal.result.negemo',
         #       'liwc_anal.result.ingest',
@@ -112,10 +114,11 @@ def read_user_time_iv(filename):
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days']
 
-    trimed_fields = [field.split('.')[-1] for field in fields]
+    trimed_fields = ['-'.join(field.split('.')[-2:]) for field in fields]
+    print trimed_fields
     groups = [
          ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
-         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         # ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
          ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
     ]
 

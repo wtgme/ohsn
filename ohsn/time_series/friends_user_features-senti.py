@@ -24,6 +24,9 @@ import pickle
 
 
 
+def diff_month(d1, d2):
+    return (d1.year - d2.year) * 12 + d1.month - d2.month
+
 
 def friend_user_change(dbname1, dbname2, comname1, comname2):
     filter_que = {'level': 1, 'liwc_anal.result.WC':{'$exists':True}}
@@ -243,7 +246,9 @@ def emotion_dropout_IV_following(filepath):
             'senti.result.whole.negstd',
             'senti.result.whole.scalem',
             'senti.result.whole.scalestd',
-            'senti.result.whole.N'
+            'senti.result.whole.N',
+            'senti.result.prior.scalem',
+            'senti.result.post.scalem',
               # 'liwc_anal.result.posemo',
               # 'liwc_anal.result.negemo',
               # 'liwc_anal.result.ingest',
@@ -255,7 +260,7 @@ def emotion_dropout_IV_following(filepath):
               # 'liwc_anal.result.anger',
               # 'liwc_anal.result.sad'
               ]
-    trimed_fields = [field.split('.')[-1] for field in fields]
+    trimed_fields = ['-'.join(field.split('.')[-2: -1]) for field in fields]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days', 'eigenvector', 'pagerank', 'authority', 'hub']
     attr_names = ['uid', 'group', 'attr', 'level']
@@ -623,7 +628,7 @@ def label_dropout_network(g_file, db1n, com1n, db2n, com2n):
     com1 = dbt.db_connect_col(db1n, com1n)
     com2 = dbt.db_connect_col(db2n, com2n)
 
-    labels, hubs = [], []
+    labels, hubs, lifes = [], [], []
     for v in g.vs:
         uid = int(v['name'])
         hub = allg.vs.find(name=v['name'])['hub']
@@ -631,23 +636,26 @@ def label_dropout_network(g_file, db1n, com1n, db2n, com2n):
 
         u1 = com1.find_one({'id': uid})
         u2 = com2.find_one({'id': uid})
-        if (u2 is None): # protected or delete
+        first_scraped_at = u1['_id'].generation_time.replace(tzinfo=None)
+        if 'status' in u1:
+            first_last_post = datetime.strptime(u1['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+            last_post = first_last_post
             drop = 1
-        else:
-            if 'status' not in u1 and 'status' not in u2: # no tweeting
-                drop = 1
-            elif 'status' not in u1 and 'status' in u2: # start to post
-                drop = 0
-            elif 'status' in u1 and 'status' not in u2: # delete
-                drop = 0
-            elif u2['status']['id'] == u1['status']['id']: # no new post
-                drop = 1
-            elif u2['status']['id'] != u1['status']['id']: # new post
-                drop = 0
+            if u2:
+                second_scraped_at = u2['_id'].generation_time.replace(tzinfo=None)
+                if 'status' in u2:
+                    second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                    if first_scraped_at < second_last_post < second_scraped_at:
+                        drop = 0
+                        last_post = second_last_post
+        created_at = datetime.strptime(u1['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        life_time = diff_month(last_post, created_at)
+        lifes.append(life_time)
         labels.append(drop)
         hubs.append(hub)
     g.vs['drop'] = labels
     g.vs['cen'] = hubs
+    g.vs['life'] = lifes
     g.write_graphml('drop-'+g_file)
 
 
@@ -658,7 +666,7 @@ if __name__ == '__main__':
     # g = gt.load_network('fed', 'net')
     # g.write_graphml('fed-net.graphml')
     # label_dropout_network('coreed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
-    # label_dropout_network('fed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
+    # label_dropout_netwo('fed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
 
     # friends_old = network1.successors(str('4036631952'))
 
@@ -667,10 +675,13 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     # load_net()
-    emotion_dropout_IV_following('data-attr-followings-senti.csv')
-    # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
-
-    # users_with_collected_friends('random', 'scom', 'net')
+    emotion_dropout_IV_following('data-attr-friends-senti.csv')
+    # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')    # users_with_collected_friends('random', 'scom', 'net')
     # users_with_collected_friends('younger', 'scom', 'net')
     # screte_tweet()
+
+    # allg = gt.Graph.Read_GraphML('fed-net.graphml')
+    # print gt.net_stat(allg)
+
+
 
