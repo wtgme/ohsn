@@ -117,9 +117,12 @@ def read_user_time_iv(filename):
     trimed_fields = ['-'.join(field.split('.')[-2:]) for field in fields]
     print trimed_fields
     groups = [
-         ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}, 'level': 1}),
+         ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
+                                                                              'level': 1,
+                                                                              'senti.result.whole.N': {'$gt': 10}}),
          # ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
-         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}})
+         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
+                                                                                       'senti.result.whole.N': {'$gt': 10}})
     ]
 
     data = []
@@ -210,7 +213,8 @@ def read_user_time_iv(filename):
                         fatts = []
                         alive = 0
                         for fid in friend_ids:
-                            fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True}})
+                            fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True},
+                                               'senti.result.whole.N': {'$gt': 10}})
                             fu2 = com2.find_one({'id': fid})
 
                             if fu:
