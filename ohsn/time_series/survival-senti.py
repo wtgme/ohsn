@@ -156,9 +156,12 @@ def read_user_time_iv(filename):
 
                 first_last_post = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 last_post = first_last_post
+                first_statuses_count = user['statuses_count']
+                second_statuses_count = first_statuses_count
                 drop = 1
                 if u2:
                     second_scraped_at = u2['_id'].generation_time.replace(tzinfo=None)
+                    second_statuses_count = u2['statuses_count']
                     if 'status' in u2:
                         second_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                         if first_scraped_at < second_last_post < second_scraped_at:
@@ -167,8 +170,9 @@ def read_user_time_iv(filename):
 
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                life_time = diff_day(last_post, created_at)
-                average_time = float(life_time)/min(1, user['statuses_count'])
+                # life_time = diff_day(last_post, created_at)
+                # average_time = float(life_time)/min(1, user['statuses_count'])
+
                 longest_tweet_intervalb = user['longest_tweet_interval']
                 u_timeline_count = user['timeline_count']
 
@@ -244,13 +248,14 @@ def read_user_time_iv(filename):
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
                             paliv = float(alive)/len(fatts)
-                            data.append([user['id_str'], level, drop, created_at, first_last_post, second_last_post, last_post, first_scraped_at, second_scraped_at, average_time,
+                            data.append([user['id_str'], level, drop, created_at, first_last_post, second_last_post, last_post,
+                                         first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
                                         values + [len(fatts), paliv])
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
-                                     'average_time', 'longest_time_interval',
+                                     'first_statuses_count', 'second_statuses_count','longest_time_interval',
                                      'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
                                      'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields] +
