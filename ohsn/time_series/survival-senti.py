@@ -173,7 +173,7 @@ def read_user_time_iv(filename):
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 # life_time = diff_day(last_post, created_at)
-                # average_time = float(life_time)/min(1, user['statuses_count'])
+                # average_time = float(life_time)/max(1, user['statuses_count'])
 
                 longest_tweet_intervalb = user['longest_tweet_interval']
                 u_timeline_count = user['timeline_count']
