@@ -928,7 +928,7 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
 if __name__ == '__main__':
     # net_attr()
     # regression()
-    # assortative_test()
+    assortative_test()
     # interaction_ratio()
     # prominence()
     # liwc_sim()

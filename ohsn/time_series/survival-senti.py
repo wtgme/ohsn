@@ -22,6 +22,7 @@ import pandas as pd
 import ohsn.util.io_util as iot
 from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
+import scipy.stats as stats
 
 def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
@@ -120,7 +121,8 @@ def read_user_time_iv(filename):
          ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
                                                                               'level': 1,
                                                                               'senti.result.whole.N': {'$gt': 10}}),
-         # ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True}}),
+         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
+                                                                                       'senti.result.whole.N': {'$gt': 10}}),
          ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
                                                                                        'senti.result.whole.N': {'$gt': 10}})
     ]
@@ -315,6 +317,113 @@ def insert_timestamp(dbname, colname):
         print user['_id'].generation_time
 
 
+def cluster_hashtag(filepath= 'user-durations-iv-following-senti.csv'):
+    # read hashtag networks for dropouts and non-dropouts
+    df = pd.read_csv(filepath)
+    df['f_ratio'] = df.f_num/df.u_friends_count
+    datat = df[df['f_ratio']>0.01]
+    data = datat[datat['group']=='ED']
+    uids_nondropout = [int(uid) for uid in data[(data['dropout']==0)]['uid']]
+    uids_dropout = [int(uid) for uid in data[(data['dropout']==1)]['uid']]
+    print len(uids_nondropout), len(uids_dropout)
+    net_nondropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uids_nondropout)
+    net_dropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uids_dropout)
+    net_nondropout.write_graphml('nondropout-tag.graphml')
+    net_dropout.write_graphml('dropout-tag.graphml')
+
+
+def compare_dropouts_withemotions(filepath= 'user-durations-iv-following-senti-TE.csv'):
+    df = pd.read_csv(filepath)
+    df['f_ratio'] = df.f_num/df.u_friends_count
+    data = df[df['f_ratio']>0.01]
+    datasub = data[data['group'].isin(['ED', 'YG'])]
+    mean_edu_prior = np.mean(datasub[datasub.group=='ED']['u_prior_scalem'])
+    mean_edf_prior = np.mean(datasub[datasub.group=='ED']['f_prior_scalem'])
+    mean_ygu_prior = np.mean(datasub[datasub.group=='YG']['u_prior_scalem'])
+    mean_ygf_prior = np.mean(datasub[datasub.group=='YG']['f_prior_scalem'])
+
+    datasub['u_prior_scalem'] = np.where((datasub.u_prior_scalem==0.0) & (datasub.group=='ED'), mean_edu_prior, datasub['u_prior_scalem'])
+    datasub['f_prior_scalem'] = np.where((datasub.f_prior_scalem==0.0) & (datasub.group=='ED'), mean_edf_prior, datasub['f_prior_scalem'])
+    datasub['u_prior_scalem'] = np.where((datasub.u_prior_scalem==0.0) & (datasub.group=='YG'), mean_ygu_prior, datasub['u_prior_scalem'])
+    datasub['f_prior_scalem'] = np.where((datasub.f_prior_scalem==0.0) & (datasub.group=='YG'), mean_ygf_prior, datasub['f_prior_scalem'])
+
+    datasub['u_changes'] = (datasub.u_post_scalem - datasub.u_prior_scalem)/(datasub.u_prior_scalem)
+    datasub['f_changes'] = (datasub.f_post_scalem - datasub.f_prior_scalem)/(datasub.f_prior_scalem)
+
+    dropouts = datasub[(datasub.group=='ED')][['u_whole_scalem', 'u_changes', 'uid']]
+    print len(dropouts)
+
+    dropouts = dropouts.sort('u_whole_scalem', ascending='True')
+
+    print dropouts
+
+    for i in xrange(3):
+        start, end = i*len(dropouts)/3, (i+1)*len(dropouts)/3
+        print start, end
+        uidlist = []
+        for uid in dropouts['uid'][start: end]:
+            uidlist.append(int(uid))
+        net_dropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uidlist)
+        net_dropout.write_graphml(str(i) + 'dropout-tag-emotion3-rank.graphml')
+    uidlist = [int(uid) for uid in dropouts['uid']]
+    net_dropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uidlist)
+    net_dropout.write_graphml('dropout-tag-emotion3-rank-all.graphml')
+
+
+def tfidf_stat():
+    #ranking tag with tfidf
+    gall = gt.Graph.Read_GraphML('dropout-tag-emotion3-rank-all.graphml')
+    voc = dict(zip(gall.vs['name'], gall.vs['user']))
+    for i in xrange(3):
+        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-emotion3-rank.graphml')
+        # Filter network
+        nodes = g.vs.select(weight_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        nodes = g.vs.select(user_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        g.vs['tfidf'] = 0.0
+        for v in g.vs:
+            tf = float(v['user'])
+            v['tfidf'] = tf/(voc[v['name']])
+        g.write_graphml(str(i) + 'dropout-tag-emotion3-rank-tfidf.graphml')
+
+def tag_similarity_group():
+    # computer similarity of tags between whole group and
+    from scipy import spatial
+    # from sklearn.metrics.pairwise import cosine_similarity
+    gall = gt.Graph.Read_GraphML('dropout-tag-emotion3-rank-all.graphml')
+    nodes = gall.vs.select(weight_gt=10)
+    print 'Filtered nodes: %d' %len(nodes)
+    gall = gall.subgraph(nodes)
+    nodes = gall.vs.select(user_gt=10)
+    print 'Filtered nodes: %d' %len(nodes)
+    gall = gall.subgraph(nodes)
+    voc = dict(zip(gall.vs['name'], gall.vs['user']))
+    gs = []
+    for i in xrange(3):
+        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-emotion3-rank.graphml')
+        nodes = g.vs.select(weight_gt=10)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        nodes = g.vs.select(user_gt=10)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        gvoc = dict(zip(g.vs['name'], g.vs['user']))
+        gs.append(gvoc)
+
+    vockeys = set(voc.keys())
+    for gvoc in gs:
+        glist = [gvoc.get(key, 0) for key in voc.keys()]
+        print 1 - spatial.distance.cosine(glist, voc.values())
+        # print cosine_similarity(glist, voc.values())
+        gkeys = set(gvoc.keys())
+        print 1.0*len(vockeys.intersection(gkeys))/len(vockeys.union(gkeys))
+
+
+
+
 if __name__ == '__main__':
 
     # print diff_day(datetime(2010, 10,1), datetime(2010,9,1))
@@ -323,10 +432,15 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    read_user_time_iv('user-durations-iv-following-senti.csv')
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
     # network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
     # gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)
+
+    # compare_dropouts_withemotions()
+    # tfidf_stat()
+    tag_similarity_group()

@@ -619,7 +619,38 @@ def screte_tweet():
             print time['id'], text
 
 
+def assortative_test(filename='drop-coreed-net.graphml'):
+    '''Test assortative of network in terms of cluster assignments'''
+    g = gt.Graph.Read_GraphML(filename)
+    raw_values = np.array(g.vs['life'])
+    raw_values = np.where(raw_values<0, 0 , raw_values)
+    g.vs["life"] = raw_values
+    raw_assort = g.assortativity('life', 'life', directed=True)
+    modu = g.modularity(g.vs['life'], weights='weight')
+    print raw_assort, modu
+    ass_list = list()
+    for i in xrange(1000):
+        np.random.shuffle(raw_values)
+        g.vs["life"] = raw_values
+        ass_list.append(g.assortativity('life', 'life', directed=True))
+    ass_list = np.array(ass_list)
+    amean, astd = np.mean(ass_list), np.std(ass_list)
+
+    absobserved = abs(raw_assort)
+    pval = (np.sum(ass_list >= absobserved) +
+            np.sum(ass_list <= -absobserved))/float(len(ass_list))
+    zscore = (raw_assort-amean)/astd
+    if pval < 0.05:
+        mark = '*'
+    if pval < 0.01:
+        mark = '**'
+    if pval < 0.001:
+        mark = '***'
+    print ('Raw assort: %.3f, mean: %.3f std: %.3f z: %.3f, p: %.100f %s' %(raw_assort, amean, astd, zscore, pval, mark))
+
+
 def label_dropout_network(g_file, db1n, com1n, db2n, com2n):
+    # load core-ed network on dropout attributes
     g = gt.Graph.Read_GraphML(g_file)
 
     allg = gt.Graph.Read_GraphML('fed-net.graphml')
@@ -665,6 +696,7 @@ if __name__ == '__main__':
     # network1.write_graphml('coreed-net.graphml')
     # g = gt.load_network('fed', 'net')
     # g.write_graphml('fed-net.graphml')
+    assortative_test()
     # label_dropout_network('coreed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
     # label_dropout_netwo('fed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
 
@@ -675,7 +707,7 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     # load_net()
-    emotion_dropout_IV_following('data-attr-friends-senti.csv')
+    # emotion_dropout_IV_following('data-attr-friends-senti.csv')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')    # users_with_collected_friends('random', 'scom', 'net')
     # users_with_collected_friends('younger', 'scom', 'net')
     # screte_tweet()
