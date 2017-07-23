@@ -332,7 +332,28 @@ def cluster_hashtag(filepath= 'user-durations-iv-following-senti.csv'):
     net_dropout.write_graphml('dropout-tag.graphml')
 
 
+def tfidf_stat_dropout():
+    #ranking tag with tfidf
+    gall = gt.Graph.Read_GraphML('dropout-tag-emotion3-rank-all.graphml')
+    voc = dict(zip(gall.vs['name'], gall.vs['user']))
+    for i in ['nondropout-tag.graphml', 'dropout-tag.graphml']:
+        g = gt.Graph.Read_GraphML(i)
+        # Filter network
+        nodes = g.vs.select(weight_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        nodes = g.vs.select(user_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        g.vs['tfidf'] = 0.0
+        for v in g.vs:
+            tf = float(v['user'])
+            v['tfidf'] = tf/(voc[v['name']])
+        g.write_graphml('tfidf'+i)
+
+
 def compare_dropouts_withemotions(filepath= 'user-durations-iv-following-senti-TE.csv'):
+    # out hashtags network for users with different emotions
     df = pd.read_csv(filepath)
     df['f_ratio'] = df.f_num/df.u_friends_count
     data = df[df['f_ratio']>0.01]
@@ -350,32 +371,32 @@ def compare_dropouts_withemotions(filepath= 'user-durations-iv-following-senti-T
     datasub['u_changes'] = (datasub.u_post_scalem - datasub.u_prior_scalem)/(datasub.u_prior_scalem)
     datasub['f_changes'] = (datasub.f_post_scalem - datasub.f_prior_scalem)/(datasub.f_prior_scalem)
 
-    dropouts = datasub[(datasub.group=='ED')][['u_whole_scalem', 'u_changes', 'uid']]
+    dropouts = datasub[(datasub.group=='ED') & (datasub.dropout==0)][['u_whole_scalem', 'u_changes', 'uid', 'u_eigenvector']]
     print len(dropouts)
 
-    dropouts = dropouts.sort('u_whole_scalem', ascending='True')
+    dropouts = dropouts.sort('u_eigenvector', ascending='True')
 
     print dropouts
 
-    for i in xrange(3):
-        start, end = i*len(dropouts)/3, (i+1)*len(dropouts)/3
+    for i in xrange(2):
+        start, end = i*len(dropouts)/2, (i+1)*len(dropouts)/2
         print start, end
         uidlist = []
         for uid in dropouts['uid'][start: end]:
             uidlist.append(int(uid))
         net_dropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uidlist)
-        net_dropout.write_graphml(str(i) + 'dropout-tag-emotion3-rank.graphml')
+        net_dropout.write_graphml(str(i) + 'dropout-tag-centrality2-rank.graphml')
     uidlist = [int(uid) for uid in dropouts['uid']]
     net_dropout = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', uidlist)
-    net_dropout.write_graphml('dropout-tag-emotion3-rank-all.graphml')
+    net_dropout.write_graphml('dropout-tag-centrality2-rank-all.graphml')
 
 
 def tfidf_stat():
     #ranking tag with tfidf
-    gall = gt.Graph.Read_GraphML('dropout-tag-emotion3-rank-all.graphml')
+    gall = gt.Graph.Read_GraphML('dropout-tag-centrality2-rank-all.graphml')
     voc = dict(zip(gall.vs['name'], gall.vs['user']))
-    for i in xrange(3):
-        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-emotion3-rank.graphml')
+    for i in xrange(2):
+        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-centrality2-rank.graphml')
         # Filter network
         nodes = g.vs.select(weight_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
@@ -387,40 +408,83 @@ def tfidf_stat():
         for v in g.vs:
             tf = float(v['user'])
             v['tfidf'] = tf/(voc[v['name']])
-        g.write_graphml(str(i) + 'dropout-tag-emotion3-rank-tfidf.graphml')
+        g.write_graphml(str(i) + 'dropout-tag-centrality2-rank-tfidf.graphml')
 
-def tag_similarity_group():
+def tag_similarity_group_conflit_all():
     # computer similarity of tags between whole group and
     from scipy import spatial
     # from sklearn.metrics.pairwise import cosine_similarity
     gall = gt.Graph.Read_GraphML('dropout-tag-emotion3-rank-all.graphml')
-    nodes = gall.vs.select(weight_gt=10)
+    gt.net_stat(gall)
+    nodes = gall.vs.select(weight_gt=50)
     print 'Filtered nodes: %d' %len(nodes)
     gall = gall.subgraph(nodes)
-    nodes = gall.vs.select(user_gt=10)
+    nodes = gall.vs.select(user_gt=50)
     print 'Filtered nodes: %d' %len(nodes)
     gall = gall.subgraph(nodes)
+    gt.net_stat(gall)
     voc = dict(zip(gall.vs['name'], gall.vs['user']))
     gs = []
-    for i in xrange(3):
-        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-emotion3-rank.graphml')
-        nodes = g.vs.select(weight_gt=10)
+    # for i in xrange(3):
+    #     g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-emotion3-rank.graphml')
+    #     nodes = g.vs.select(weight_gt=10)
+    #     print 'Filtered nodes: %d' %len(nodes)
+    #     g = g.subgraph(nodes)
+    #     nodes = g.vs.select(user_gt=10)
+    #     print 'Filtered nodes: %d' %len(nodes)
+    #     g = g.subgraph(nodes)
+    #     gvoc = dict(zip(g.vs['name'], g.vs['user']))
+    #     gs.append(gvoc)
+    #
+    # vockeys = set(voc.keys())
+    # for gvoc in gs:
+    #     glist = [gvoc.get(key, 0) for key in voc.keys()]
+    #     print 1 - spatial.distance.cosine(glist, voc.values())
+    #     # print cosine_similarity(glist, voc.values())
+    #     gkeys = set(gvoc.keys())
+    #     print 1.0*len(vockeys.intersection(gkeys))/len(vockeys.union(gkeys))
+
+
+def tag_similarity_group_dropout_emotion():
+    # computer similarity of tags between whole group and
+    from scipy import spatial
+    # from sklearn.metrics.pairwise import cosine_similarity
+
+    ds = []
+    for i in ['tfidfnondropout-tag.graphml', 'tfidfdropout-tag.graphml']:
+        g = gt.Graph.Read_GraphML(i)
+        nodes = g.vs.select(weight_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
-        nodes = g.vs.select(user_gt=10)
+        nodes = g.vs.select(user_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
-        gvoc = dict(zip(g.vs['name'], g.vs['user']))
+        gvoc = dict(zip(g.vs['name'], g.vs['tfidf']))
+        ds.append(gvoc)
+
+    gs = []
+    for i in xrange(2):
+        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-centrality2-rank-tfidf.graphml')
+        nodes = g.vs.select(weight_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        nodes = g.vs.select(user_gt=50)
+        print 'Filtered nodes: %d' %len(nodes)
+        g = g.subgraph(nodes)
+        gvoc = dict(zip(g.vs['name'], g.vs['tfidf']))
         gs.append(gvoc)
 
-    vockeys = set(voc.keys())
-    for gvoc in gs:
-        glist = [gvoc.get(key, 0) for key in voc.keys()]
-        print 1 - spatial.distance.cosine(glist, voc.values())
-        # print cosine_similarity(glist, voc.values())
-        gkeys = set(gvoc.keys())
-        print 1.0*len(vockeys.intersection(gkeys))/len(vockeys.union(gkeys))
+    for d in ds:
+        dkeys = set(d.keys())
+        for g in gs:
+            gkeys = set(g.keys())
+            print '-----------------'
+            print '%.3f' %(1.0*len(dkeys.intersection(gkeys))/len(dkeys.union(gkeys)))
 
+            allkeys = dkeys.union(gkeys)
+            dlist = [d.get(key, 0) for key in allkeys]
+            glist = [g.get(key, 0) for key in allkeys]
+            print '%.3f' %(1 - spatial.distance.cosine(dlist, glist))
 
 
 
@@ -443,4 +507,7 @@ if __name__ == '__main__':
 
     # compare_dropouts_withemotions()
     # tfidf_stat()
-    tag_similarity_group()
+    # tag_similarity_group()
+    # tfidf_stat_dropout()
+    # tag_similarity_group_dropout_emotion()
+    tag_similarity_group_conflit_all()
