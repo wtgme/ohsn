@@ -42,8 +42,8 @@ def load_scale_data(file_path, multilabeltf=False):
 def cross_val_roc(X, y):
     print X.shape
     cv = StratifiedKFold(y, n_folds=5)
-    # classifier = svm.SVC(kernel='linear', class_weight='balanced')
-    classifier = linear_model.LogisticRegression(class_weight='balanced')
+    classifier = svm.SVC(kernel='linear', class_weight='balanced')
+    # classifier = linear_model.LogisticRegression(class_weight='balanced')
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
     for i, (train, test) in enumerate(cv):
@@ -119,26 +119,32 @@ def roc_plot_feature(datafile):
     # X = X[:, :-1]
     # X[:, -1][~np.isfinite(X[:, -1])] = 0
 
-    min_max_scaler = preprocessing.MinMaxScaler()
-    X = min_max_scaler.fit_transform(X)
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # X = min_max_scaler.fit_transform(X)
 
-    # X = preprocessing.scale(X)
+    X = preprocessing.scale(X)
 
     print X.shape, y.shape
     Z = np.append(X, y.reshape((len(y), 1)), axis=1)
     df = pd.DataFrame(Z, columns=select_f + ['label'])
-
     affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
     print(affair_mod.summary())
-
     df.to_csv('scaling-clsuter-feature.csv', index=False)
 
     print X.shape
     plu.plot_config()
     ax = plt.gca()
     ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
+
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:12], y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 12:22], y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Lin. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+
     mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='AUC = %0.2f' % mean_auc, lw=3, ms=10)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
     ax.set_xlabel('False Positive Rate')

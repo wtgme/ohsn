@@ -22,8 +22,9 @@ hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
 # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
 ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 
-# java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input tweets.txt scale annotateCol 3 overwrite
-# java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input retweet.txt scale annotateCol 3 overwrite
+# java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input all-tweet.txt scale annotateCol 4 overwrite
+# java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input retweet.txt scale annotateCol 4 overwrite
+# java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input net-tweet.txt scale annotateCol 6 overwrite
 def rate_sentiment(sentiString):
     # Return positive negative neutral tuple
     MYDIR = os.path.dirname(__file__)
