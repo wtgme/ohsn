@@ -951,8 +951,8 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
     # g1.write_graphml('ped_net.graphml')
     # g2.write_graphml('prec_net.graphml')
 
-    g1cen = g1.pagerank(weights='weight')
-    g2cen = g2.pagerank(weights='weight')
+    g1cen = np.array(g1.pagerank(weights='weight'))*100
+    g2cen = np.array(g2.pagerank(weights='weight'))*100
 
     g1.vs['centrality'] = g1cen
     g2.vs['centrality'] = g2cen
@@ -1048,60 +1048,60 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
 
 
     # ---------------------------LIWC features
-    # fields = iot.read_fields()
-    # trim_files = [f.split('.')[-1] for f in fields]
-    # select_f = [
-    #     'i', 'we', 'swear', 'negate', 'body', 'health',
-    #     'ingest', 'social', 'posemo', 'negemo']
-    #
-    # for i, f in enumerate(trim_files):
-    #     if f in select_f:
-    #         # print '------------------------', f
-    #
-    #         g1 = gt.add_attribute(g1, 'foi', 'fed', 'com', fields[i])
-    #         g2 = gt.add_attribute(g2, 'foi', 'fed', 'com', fields[i])
-    #         g1c = g1.vs.select(foi_ge=-1)
-    #         g2c = g2.vs.select(foi_ge=-1)
-    #         # print len(g1c), len(g2c)
-    #         g1s = g1.subgraph(g1c)
-    #         g2s = g2.subgraph(g2c)
-    #
-    #         k1, p1 = statu.stats.kendalltau(g1s.vs['centrality'], g1s.vs['foi'])
-    #         k2, p2 = statu.stats.kendalltau(g2s.vs['centrality'], g2s.vs['foi'])
-    #         print '%s, %.2f, %.3f, %.2f, %.3f' %(f, k1, p1, k2, p2)
-    #
-    #         # g1data = []
-    #         # for v in g1s.vs:
-    #         #     for core in range(1, v['coreness'] + 1):
-    #         #         g1data.append([v['foi'], core, 'Pro-ED'])
-    #         # g2data = []
-    #         # for v in g2s.vs:
-    #         #     for core in range(1, v['coreness'] + 1):
-    #         #         g2data.append([v['foi'], core, 'Pro-Rec.'])
-    #         #
-    #         # df = pd.DataFrame(g1data+g2data, columns=['LIWC', 'Coreness', 'Group'])
-    #         #
-    #         # means = df[df.Group=='Pro-ED'].groupby(['Coreness'])['LIWC'].mean()
-    #         # # print means
-    #         # ks = range(1, max(g1s.vs['coreness'])+1)
-    #         # # print ks
-    #         # t1, p1 = statu.stats.kendalltau(means, ks)
-    #         #
-    #         # means = df[df.Group=='Pro-Rec.'].groupby(['Coreness'])['LIWC'].mean()
-    #         # # print means
-    #         # ks = range(1, max(g2.vs['coreness'])+1)
-    #         # # print ks
-    #         # t2, p2 = statu.stats.kendalltau(means, ks)
-    #         # if p1<0.5 and p2<0.5:
-    #         #     print '%.2f, %.2f, %.2f, %.2f' %(t1, p1, t2, p2)
-    #         #     # sns.factorplot(x='Coreness', y='LIWC', hue="Group", data=df,
-    #         #     #                size=10, palette={"Pro-ED": "r",
-    #         #     #                                  "Pro-Rec.": "g"
-    #         #     #                                  }, legend=False, markers=['o', '^'])
-    #         #     # plt.legend(loc='best')
-    #         #     # plt.xlabel(r'$k$')
-    #         #     # plt.ylabel(f.upper() + r' of $k$-core Users')
-    #         #     # plt.show()
+    fields = iot.read_fields()
+    trim_files = [f.split('.')[-1] for f in fields]
+    select_f = [
+        'i', 'we', 'swear', 'negate', 'body', 'health',
+        'ingest', 'social', 'posemo', 'negemo']
+
+    for i, f in enumerate(trim_files):
+        if f in select_f:
+            # print '------------------------', f
+
+            g1 = gt.add_attribute(g1, 'foi', 'fed', 'com', fields[i])
+            g2 = gt.add_attribute(g2, 'foi', 'fed', 'com', fields[i])
+            g1c = g1.vs.select(foi_ge=-1)
+            g2c = g2.vs.select(foi_ge=-1)
+            # print len(g1c), len(g2c)
+            g1s = g1.subgraph(g1c)
+            g2s = g2.subgraph(g2c)
+
+            k1, p1 = statu.stats.kendalltau(g1s.vs['centrality'], g1s.vs['foi'])
+            k2, p2 = statu.stats.kendalltau(g2s.vs['centrality'], g2s.vs['foi'])
+            print '%s, %.2f, %.3f, %.2f, %.3f' %(f, k1, p1, k2, p2)
+
+            # g1data = []
+            # for v in g1s.vs:
+            #     for core in range(1, v['coreness'] + 1):
+            #         g1data.append([v['foi'], core, 'Pro-ED'])
+            # g2data = []
+            # for v in g2s.vs:
+            #     for core in range(1, v['coreness'] + 1):
+            #         g2data.append([v['foi'], core, 'Pro-Rec.'])
+            #
+            # df = pd.DataFrame(g1data+g2data, columns=['LIWC', 'Coreness', 'Group'])
+            #
+            # means = df[df.Group=='Pro-ED'].groupby(['Coreness'])['LIWC'].mean()
+            # # print means
+            # ks = range(1, max(g1s.vs['coreness'])+1)
+            # # print ks
+            # t1, p1 = statu.stats.kendalltau(means, ks)
+            #
+            # means = df[df.Group=='Pro-Rec.'].groupby(['Coreness'])['LIWC'].mean()
+            # # print means
+            # ks = range(1, max(g2.vs['coreness'])+1)
+            # # print ks
+            # t2, p2 = statu.stats.kendalltau(means, ks)
+            # if p1<0.5 and p2<0.5:
+            #     print '%.2f, %.2f, %.2f, %.2f' %(t1, p1, t2, p2)
+            #     # sns.factorplot(x='Coreness', y='LIWC', hue="Group", data=df,
+            #     #                size=10, palette={"Pro-ED": "r",
+            #     #                                  "Pro-Rec.": "g"
+            #     #                                  }, legend=False, markers=['o', '^'])
+            #     # plt.legend(loc='best')
+            #     # plt.xlabel(r'$k$')
+            #     # plt.ylabel(f.upper() + r' of $k$-core Users')
+            #     # plt.show()
 
 
 def sentiment_injection(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
