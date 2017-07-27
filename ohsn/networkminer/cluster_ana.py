@@ -958,6 +958,8 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
     g2.vs['centrality'] = g2cen
     g1.vs['coreness'] = g1.coreness()
     g2.vs['coreness'] = g2.coreness()
+    g1_outs = dict(zip(g1.vs['name'], g1.strength(mode='OUT', weights='weight')))
+    g2_outs = dict(zip(g2.vs['name'], g2.strength(mode='OUT', weights='weight')))
 
     plu.plot_config()
     ###--------------------Plot coreness and ratio of users
@@ -990,8 +992,8 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
                 sents = user_prec.get(uid, [])
                 sents.append(sentiment)
                 user_prec[uid] = sents
-    user_ped_mean = [np.mean(user_ped[uid]) for uid in user_ped.keys()]
-    user_prec_mean = [np.mean(user_prec[uid]) for uid in user_prec.keys()]
+    user_ped_mean = [np.sum(user_ped[uid])/g1_outs[uid] for uid in user_ped.keys()]
+    user_prec_mean = [np.sum(user_prec[uid])/g2_outs[uid] for uid in user_prec.keys()]
     user_ped_mean_dic = dict(zip(user_ped.keys(), user_ped_mean))
     user_prec_mean_dic = dict(zip(user_prec.keys(), user_prec_mean))
 
