@@ -28,6 +28,8 @@ import ohsn.sentiment.senstrength as sentre
 import re
 import statsmodels.stats.api as sms
 import powerlaw
+import scipy
+import scikits.bootstrap as bootstrap
 
 rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
 mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
@@ -298,23 +300,23 @@ def analysis_sentiments(file='tweets.txt'):
     BDc = len(df[(df.Cluster=='B') & (df.Topic==3)])
     dat.append(['B', 3, float(BDc)/B])
     print BAc, BBc, BCc, BDc
-    #
-    #
-    # pro = pd.DataFrame(dat, columns=['Cluster', 'Topic', 'Proportion'])
-    # pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
-    # plu.plot_config()
-    # g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
-    # g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
-    # g.set_ylabels('Tweet Proportion')
-    # annots = [AAc,ABc,ACc,ADc, BAc, BBc, BCc, BDc]
-    # ax=g.ax #annotate axis = seaborn axis
-    # for i, p in enumerate(ax.patches):
-    #      ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-    #          textcoords='offset points')
-    #
-    # plt.legend(loc='best')
-    # plt.show()
+
+
+    pro = pd.DataFrame(dat, columns=['Cluster', 'Topic', 'Proportion'])
+    pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
+    plu.plot_config()
+    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
+    g.set_ylabels('Tweet Proportion')
+    annots = [AAc,ABc,ACc,ADc, BAc, BBc, BCc, BDc]
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
+    plt.legend(loc='best')
+    plt.show()
 
 
     '''User proportion'''
@@ -348,19 +350,19 @@ def analysis_sentiments(file='tweets.txt'):
     pro = pd.DataFrame(dat, columns=['Cluster', 'Topic', 'Proportion'])
     pro['Cluster'] = pro['Cluster'].map({'A': 'Pro-ED Clust.', 'B': 'Pro-Rec. Clust.'})
 
-    # plu.plot_config()
-    # g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
-    # g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
-    # g.set_ylabels('User Proportion')
-    # annots = clist
-    # ax=g.ax #annotate axis = seaborn axis
-    # for i, p in enumerate(ax.patches):
-    #      ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-    #          textcoords='offset points')
-    #
-    # plt.legend(loc='right')
-    # plt.show()
+    plu.plot_config()
+    g = sns.factorplot(x="Topic", y="Proportion", hue="Cluster", legend=False, kind="bar", data=pro, palette={"Pro-ED Clust.": "r", "Pro-Rec. Clust.": "g"})
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
+    g.set_ylabels('User Proportion')
+    annots = clist
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
+    plt.legend(loc='right')
+    plt.show()
 
 
 
@@ -934,6 +936,15 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     plt.legend(loc="best")
     plt.show()
 
+def mark_pvalue(pval):
+    mark = ''
+    if pval < 0.05:
+        mark = '*'
+    if pval < 0.01:
+        mark = '**'
+    if pval < 0.001:
+        mark = '***'
+    return mark
 
 def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     g = gt.Graph.Read_GraphML(netfilename)
@@ -948,18 +959,28 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
     gt.net_stat(g1)
     gt.net_stat(g2)
 
+    com = dbt.db_connect_col('fed', 'com')
+    timecount = {}
+    uids = [int(uid) for uid in g.vs['name']]
+    for user in com.find({'id': {'$in': uids}}, ['id', 'timeline_count']):
+        timecount[str(user['id'])] = user['timeline_count']
+
     # g1.write_graphml('ped_net.graphml')
     # g2.write_graphml('prec_net.graphml')
 
-    g1cen = np.array(g1.pagerank(weights='weight'))*100
-    g2cen = np.array(g2.pagerank(weights='weight'))*100
+    # g1cen = np.array(g1.strength(mode='ALL',weights='weight'))
+    # g2cen = np.array(g2.strength(mode='ALL',weights='weight'))
+    g1cen = np.array(g1.pagerank(weights='weight'))
+    g2cen = np.array(g2.pagerank(weights='weight'))
 
     g1.vs['centrality'] = g1cen
     g2.vs['centrality'] = g2cen
     g1.vs['coreness'] = g1.coreness()
     g2.vs['coreness'] = g2.coreness()
-    g1_outs = dict(zip(g1.vs['name'], g1.strength(mode='OUT', weights='weight')))
-    g2_outs = dict(zip(g2.vs['name'], g2.strength(mode='OUT', weights='weight')))
+    g1_core = dict(zip(g1.vs['name'], g1.vs['centrality']))
+    g2_core = dict(zip(g2.vs['name'], g2.vs['centrality']))
+    g1_outs = dict(zip(g1.vs['name'], g1.strength(mode='IN', weights='weight')))
+    g2_outs = dict(zip(g2.vs['name'], g2.strength(mode='IN', weights='weight')))
 
     plu.plot_config()
     ###--------------------Plot coreness and ratio of users
@@ -976,12 +997,17 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
     # plt.show()
 
     # ------------------------Read sentiments
-    user_ped, user_prec = {}, {}
+    user_ped, user_prec, user_tweet, user_sentiment = {}, {}, {}, {}
     with open('all-tweet.txt', 'r') as fo:
         for line in fo.readlines():
             tokens = line.strip().split('\t')
             uid = tokens[1]
-            sentiment = int(tokens[-1])
+            count = user_tweet.get(uid, 0)
+            user_tweet[uid] = count + 1
+            sentiment = float(tokens[-1])
+            sents = user_sentiment.get(uid, [])
+            sents.append(sentiment)
+            user_sentiment[uid] = sents
             ped = tokens[4]
             prec = tokens[5]
             if len(ped)>3:
@@ -992,13 +1018,29 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
                 sents = user_prec.get(uid, [])
                 sents.append(sentiment)
                 user_prec[uid] = sents
-    user_ped_mean = [np.sum(user_ped[uid])/g1_outs[uid] for uid in user_ped.keys()]
-    user_prec_mean = [np.sum(user_prec[uid])/g2_outs[uid] for uid in user_prec.keys()]
+
+    # user_ped_zscore, user_prec_zscore = {}, {}
+    # for uid in user_ped.keys():
+    #     umean, ustd = np.mean(user_sentiment[uid]), np.std(user_sentiment[uid])
+    #     if ustd:
+    #         user_ped_zscore[uid] = [(v-umean)/ustd for v in user_ped[uid]]
+    #     # else:
+    #     #     print user_sentiment[uid]
+    # for uid in user_prec.keys():
+    #     umean, ustd = np.mean(user_sentiment[uid]), np.std(user_sentiment[uid])
+    #     if ustd:
+    #         user_prec_zscore[uid] = [(v-umean)/ustd for v in user_prec[uid]]
+    #     # else:
+    #     #     print user_sentiment[uid]
+
+
+    user_ped_mean = [np.sum(user_ped[uid])/timecount[uid] for uid in user_ped.keys()]
+    user_prec_mean = [np.sum(user_prec[uid])/timecount[uid] for uid in user_prec.keys()]
+
     user_ped_mean_dic = dict(zip(user_ped.keys(), user_ped_mean))
     user_prec_mean_dic = dict(zip(user_prec.keys(), user_prec_mean))
 
-    g1_core = dict(zip(g1.vs['name'], g1.vs['centrality']))
-    g2_core = dict(zip(g2.vs['name'], g2.vs['centrality']))
+
 
     def kental(d1, d2):
         keys1, keys2 = set(d1.keys()), set(d2.keys())
@@ -1009,7 +1051,13 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
         return statu.stats.kendalltau(val1, val2)
     k1, p1 = kental(user_ped_mean_dic, g1_core)
     k2, p2 = kental(user_prec_mean_dic, g2_core)
-    print ', %.2f, %.3f, %.2f, %.3f' %(k1, p1, k2, p2)
+
+    print ', %.2f%s, %.3f, %.2f%s, %.3f' %(k1, mark_pvalue(p1), p1, k2, mark_pvalue(p2), p2)
+
+    k1, p1 = kental(user_ped_mean_dic, g1_outs)
+    k2, p2 = kental(user_prec_mean_dic, g2_outs)
+
+    print ', %.2f%s, %.3f, %.2f%s, %.3f' %(k1, mark_pvalue(p1), p1, k2, mark_pvalue(p2), p2)
 
     #-----plot
     # print max(g1.vs['coreness']), max(g2.vs['coreness'])
@@ -1050,60 +1098,60 @@ def core_analysis(netfilename='data/communication-only-fed-filter-hashtag-cluste
 
 
     # ---------------------------LIWC features
-    fields = iot.read_fields()
-    trim_files = [f.split('.')[-1] for f in fields]
-    select_f = [
-        'i', 'we', 'swear', 'negate', 'body', 'health',
-        'ingest', 'social', 'posemo', 'negemo']
-
-    for i, f in enumerate(trim_files):
-        if f in select_f:
-            # print '------------------------', f
-
-            g1 = gt.add_attribute(g1, 'foi', 'fed', 'com', fields[i])
-            g2 = gt.add_attribute(g2, 'foi', 'fed', 'com', fields[i])
-            g1c = g1.vs.select(foi_ge=-1)
-            g2c = g2.vs.select(foi_ge=-1)
-            # print len(g1c), len(g2c)
-            g1s = g1.subgraph(g1c)
-            g2s = g2.subgraph(g2c)
-
-            k1, p1 = statu.stats.kendalltau(g1s.vs['centrality'], g1s.vs['foi'])
-            k2, p2 = statu.stats.kendalltau(g2s.vs['centrality'], g2s.vs['foi'])
-            print '%s, %.2f, %.3f, %.2f, %.3f' %(f, k1, p1, k2, p2)
-
-            # g1data = []
-            # for v in g1s.vs:
-            #     for core in range(1, v['coreness'] + 1):
-            #         g1data.append([v['foi'], core, 'Pro-ED'])
-            # g2data = []
-            # for v in g2s.vs:
-            #     for core in range(1, v['coreness'] + 1):
-            #         g2data.append([v['foi'], core, 'Pro-Rec.'])
-            #
-            # df = pd.DataFrame(g1data+g2data, columns=['LIWC', 'Coreness', 'Group'])
-            #
-            # means = df[df.Group=='Pro-ED'].groupby(['Coreness'])['LIWC'].mean()
-            # # print means
-            # ks = range(1, max(g1s.vs['coreness'])+1)
-            # # print ks
-            # t1, p1 = statu.stats.kendalltau(means, ks)
-            #
-            # means = df[df.Group=='Pro-Rec.'].groupby(['Coreness'])['LIWC'].mean()
-            # # print means
-            # ks = range(1, max(g2.vs['coreness'])+1)
-            # # print ks
-            # t2, p2 = statu.stats.kendalltau(means, ks)
-            # if p1<0.5 and p2<0.5:
-            #     print '%.2f, %.2f, %.2f, %.2f' %(t1, p1, t2, p2)
-            #     # sns.factorplot(x='Coreness', y='LIWC', hue="Group", data=df,
-            #     #                size=10, palette={"Pro-ED": "r",
-            #     #                                  "Pro-Rec.": "g"
-            #     #                                  }, legend=False, markers=['o', '^'])
-            #     # plt.legend(loc='best')
-            #     # plt.xlabel(r'$k$')
-            #     # plt.ylabel(f.upper() + r' of $k$-core Users')
-            #     # plt.show()
+    # fields = iot.read_fields()
+    # trim_files = [f.split('.')[-1] for f in fields]
+    # select_f = [
+    #     'i', 'we', 'swear', 'negate', 'body', 'health',
+    #     'ingest', 'social', 'posemo', 'negemo']
+    #
+    # for i, f in enumerate(trim_files):
+    #     if f in select_f:
+    #         # print '------------------------', f
+    #
+    #         g1 = gt.add_attribute(g1, 'foi', 'fed', 'com', fields[i])
+    #         g2 = gt.add_attribute(g2, 'foi', 'fed', 'com', fields[i])
+    #         g1c = g1.vs.select(foi_ge=-1)
+    #         g2c = g2.vs.select(foi_ge=-1)
+    #         # print len(g1c), len(g2c)
+    #         g1s = g1.subgraph(g1c)
+    #         g2s = g2.subgraph(g2c)
+    #
+    #         k1, p1 = statu.stats.kendalltau(g1s.vs['centrality'], g1s.vs['foi'])
+    #         k2, p2 = statu.stats.kendalltau(g2s.vs['centrality'], g2s.vs['foi'])
+    #         print '%s, %.2f%s, %.3f, %.2f%s, %.3f' %(f, k1, mark_pvalue(p1), p1, k2, mark_pvalue(p2), p2)
+    #
+    #         # g1data = []
+    #         # for v in g1s.vs:
+    #         #     for core in range(1, v['coreness'] + 1):
+    #         #         g1data.append([v['foi'], core, 'Pro-ED'])
+    #         # g2data = []
+    #         # for v in g2s.vs:
+    #         #     for core in range(1, v['coreness'] + 1):
+    #         #         g2data.append([v['foi'], core, 'Pro-Rec.'])
+    #         #
+    #         # df = pd.DataFrame(g1data+g2data, columns=['LIWC', 'Coreness', 'Group'])
+    #         #
+    #         # means = df[df.Group=='Pro-ED'].groupby(['Coreness'])['LIWC'].mean()
+    #         # # print means
+    #         # ks = range(1, max(g1s.vs['coreness'])+1)
+    #         # # print ks
+    #         # t1, p1 = statu.stats.kendalltau(means, ks)
+    #         #
+    #         # means = df[df.Group=='Pro-Rec.'].groupby(['Coreness'])['LIWC'].mean()
+    #         # # print means
+    #         # ks = range(1, max(g2.vs['coreness'])+1)
+    #         # # print ks
+    #         # t2, p2 = statu.stats.kendalltau(means, ks)
+    #         # if p1<0.5 and p2<0.5:
+    #         #     print '%.2f, %.2f, %.2f, %.2f' %(t1, p1, t2, p2)
+    #         #     # sns.factorplot(x='Coreness', y='LIWC', hue="Group", data=df,
+    #         #     #                size=10, palette={"Pro-ED": "r",
+    #         #     #                                  "Pro-Rec.": "g"
+    #         #     #                                  }, legend=False, markers=['o', '^'])
+    #         #     # plt.legend(loc='best')
+    #         #     # plt.xlabel(r'$k$')
+    #         #     # plt.ylabel(f.upper() + r' of $k$-core Users')
+    #         #     # plt.show()
 
 
 def sentiment_injection(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
@@ -1119,20 +1167,33 @@ def sentiment_injection(netfilename='data/communication-only-fed-filter-hashtag-
     gt.net_stat(g1)
     gt.net_stat(g2)
 
+    ped = set(iot.read_ed_pro_hashtags())
+    pre = set(iot.read_ed_recovery_hashtags())
+
     edgesi = g.es.select(_between = (g.vs.select(name_in=g1.vs['name']), g.vs.select(name_in=g2.vs['name'])))
     print len(edgesi)
 
     user1 = set([int(uid) for uid in g1.vs['name']])
     user2 = set([int(uid) for uid in g2.vs['name']])
-    print len(user1), len(user2)
+    allset = user1.union(user2)
+    print len(user1), len(user2), len(allset)
 
     netdb = dbt.db_connect_col('fed', 'bnet_ed_tag')
     timedb = dbt.db_connect_col('fed', 'ed_tag')
     for link in netdb.find({'type': {'$in': [2, 3]}}):
-        if (link['id0'] in user1) or (link['id0'] in user2) :
+        if (link['id0'] in allset) and (link['id1'] in allset) :
             id0 = link['id0']
             id1 = link['id1']
             tweet = timedb.find_one({'id': link['statusid']})
+
+            hashtags = tweet['entities']['hashtags']
+            hash_set = set()
+            for hash in hashtags:
+                hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            pred_sub = hash_set.intersection(ped)
+            prec_sub = hash_set.intersection(pre)
+            remain = hash_set - pred_sub - prec_sub
+
             text = tweet['text'].encode('utf8')
             text = rtgrex.sub('', text)
             text = mgrex.sub('', text)
@@ -1144,8 +1205,17 @@ def sentiment_injection(netfilename='data/communication-only-fed-filter-hashtag-
                 u1l = 0
             if id1 in user1:
                 u2l = 0
+            elif id1 in user2:
+                u2l = 1
+            else:
+                u2l = 2
             if len(words) > 0:
-                print '%d \t %d \t %d \t %d \t %d \t %s' % (link['statusid'], id0, u1l, id1, u2l, ' '.join(words))
+                print '%d \t %d \t %d \t %d \t %d \t %s \t -1:%s \t 1:%s \t 0:%s' % (link['statusid'],
+                                                                                     id0, u1l, id1, u2l, ' '.join(words),
+                                                                                     ' '.join(list(pred_sub)),
+                                                                                     ' '.join(list(prec_sub)),
+                                                                                     ' '.join(list(remain)))
+
 
 def analysis_net_sentiments(file='net-tweet.txt'):
     '''Plot sentiment distribution'''
@@ -1158,15 +1228,22 @@ def analysis_net_sentiments(file='net-tweet.txt'):
             sentiment = int(tokens[-1])
             source = int(tokens[2])
             target = int(tokens[4])
-            data.append([source, target, sentiment])
+            ped = tokens[6]
+            prec = tokens[7]
+            # if len(ped)>3:
+            #     c += 1
+            # if len(prec)>2:
+            #     c += 1
+            if target < 2:
+                data.append([source, target, sentiment])
             data.append([source, 2, sentiment])
     df = pd.DataFrame(data, columns=['Source', 'Target', 'Sentiment'])
-    print df
+    # print df
     def mean_std(list):
         return [np.mean(list), np.std(list)]
     amean, astd = mean_std(df[(df.Source==0) & (df.Target==2)]['Sentiment'])
     bmean, bstd = mean_std(df[(df.Source==1) & (df.Target==2)]['Sentiment'])
-    print amean, astd, bmean, bstd
+    print 'Means of all clusters ', amean, astd, bmean, bstd
     # Change abosulate value to z-sore.
     data2 = []
     for index, row in df.iterrows():
@@ -1175,12 +1252,66 @@ def analysis_net_sentiments(file='net-tweet.txt'):
         else:
             m, st = bmean, bstd
         if row.Target != 2:
-            data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
+            # data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
+            data2.append([row['Source'], row['Target'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Source', 'Target', 'Sentiment'])
     #---------------------------------
+
+    # def mean_std_ci(list):
+    #     cis = bootstrap.ci(data=list, statfunction=scipy.mean, n_samples=1000)
+    #     return [np.mean(list), np.std(list), cis[0], cis[1]]
+    #
+    # m00, sd00, ci100, ci200 = mean_std_ci(df[(df.Source==0) & (df.Target==0)]['Sentiment'])
+    # m01, sd01, ci101, ci201 = mean_std_ci(df[(df.Source==0) & (df.Target==1)]['Sentiment'])
+    # m10, sd10, ci110, ci210 = mean_std_ci(df[(df.Source==1) & (df.Target==0)]['Sentiment'])
+    # m11, sd11, ci111, ci211 = mean_std_ci(df[(df.Source==1) & (df.Target==1)]['Sentiment'])
+    # print m00, sd00, ci100, ci200
+    # print m01, sd01, ci101, ci201
+    # print m10, sd10, ci110, ci210
+    # print m11, sd11, ci111, ci211
+    # g = gt.Graph([(0,0), (0,1), (1,0), (1,1)], directed=True)
+    # g.vs["name"] = ["Pro-ED", "Pro-Rec."]
+    # g.vs["baseline"] = [amean, astd]
+    # g.es["senti"] = [str(round(m00, 3)), str(round(m01, 3)), str(round(m10, 3)), str(round(m11, 3))]
+    # g.es["weight"] = [(round(m00, 3))+1, (round(m01, 3))+1, (round(m10, 3))+1, (round(m11, 3))+1]
+    # gt.summary(g)
+    # g.write_graphml('inter-sen.graphml')
+
+    dat = []
+    sa = len(df[(df.Source==0)])
+    sb = len(df[(df.Source==1)])
+    aa = len(df[(df.Source==0) & (df.Target==0)])
+    ab = len(df[(df.Source==0) & (df.Target==1)])
+    ba = len(df[(df.Source==1) & (df.Target==0)])
+    bb = len(df[(df.Source==1) & (df.Target==1)])
+    print statu.utest(df[(df.Source==0) & (df.Target==0)]['Sentiment'], df[(df.Source==0) & (df.Target==1)]['Sentiment'])
+    print statu.utest(df[(df.Source==1) & (df.Target==1)]['Sentiment'], df[(df.Source==1) & (df.Target==0)]['Sentiment'])
+
+    print sa, sb, aa, ab, ba, bb
+    dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
+    dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
+    dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
+    dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
+    pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
+    plu.plot_config()
+    g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
+                       kind="bar", legend=False,
+                       palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"})
+    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    g.set_ylabels('Interaction Proportion')
+    g.set_xlabels('')
+    annots = [aa, ba, ab, bb]
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
+    plt.legend(loc='best')
+    plt.show()
+
     df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
     df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
-    print df
 
     plu.plot_config()
     g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
@@ -1189,10 +1320,12 @@ def analysis_net_sentiments(file='net-tweet.txt'):
                        )
 
     g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Relative Sentiment')
+    g.set_ylabels('Sentiment')
     g.set_xlabels('')
     plt.legend(loc='best')
     plt.show()
+
+
 
 
 if __name__ == '__main__':
@@ -1209,6 +1342,6 @@ if __name__ == '__main__':
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
-    core_analysis()
-    # sentiment_injection()
+    # core_analysis()
+    sentiment_injection() #net-tweet.txt
     # analysis_net_sentiments()
