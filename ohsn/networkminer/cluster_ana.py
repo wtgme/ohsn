@@ -1162,10 +1162,10 @@ def sentiment_injection(netfilename='data/communication-only-fed-filter-hashtag-
     g2 = g.subgraph(cl2)
     gt.net_stat(g1)
     gt.net_stat(g2)
-    g1 = gt.giant_component(g1)
-    g2 = gt.giant_component(g2)
-    gt.net_stat(g1)
-    gt.net_stat(g2)
+    # g1 = gt.giant_component(g1)
+    # g2 = gt.giant_component(g2)
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
 
     ped = set(iot.read_ed_pro_hashtags())
     pre = set(iot.read_ed_recovery_hashtags())
@@ -1288,42 +1288,42 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     print statu.utest(df[(df.Source==1) & (df.Target==1)]['Sentiment'], df[(df.Source==1) & (df.Target==0)]['Sentiment'])
 
     print sa, sb, aa, ab, ba, bb
-    dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
-    dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
-    dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
-    dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
-    pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
-    plu.plot_config()
-    g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
-                       kind="bar", legend=False,
-                       palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"})
-    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Interaction Proportion')
-    g.set_xlabels('')
-    annots = [aa, ba, ab, bb]
-    ax=g.ax #annotate axis = seaborn axis
-    for i, p in enumerate(ax.patches):
-         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
-
-    plt.legend(loc='best')
-    plt.show()
-
-    df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
-    df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
-
-    plu.plot_config()
-    g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
-                       kind="bar", legend=False,
-                       palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"}
-                       )
-
-    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Sentiment')
-    g.set_xlabels('')
-    plt.legend(loc='best')
-    plt.show()
+    # dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
+    # dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
+    # dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
+    # dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
+    # pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
+    # plu.plot_config()
+    # g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
+    #                    kind="bar", legend=False,
+    #                    palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"})
+    # g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    # g.set_ylabels('Interaction Proportion')
+    # g.set_xlabels('')
+    # annots = [aa, ba, ab, bb]
+    # ax=g.ax #annotate axis = seaborn axis
+    # for i, p in enumerate(ax.patches):
+    #      ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+    #          textcoords='offset points')
+    #
+    # plt.legend(loc='best')
+    # plt.show()
+    #
+    # df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
+    # df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
+    #
+    # plu.plot_config()
+    # g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
+    #                    kind="bar", legend=False,
+    #                    palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"}
+    #                    )
+    #
+    # g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    # g.set_ylabels('Sentiment')
+    # g.set_xlabels('')
+    # plt.legend(loc='best')
+    # plt.show()
 
 
 
