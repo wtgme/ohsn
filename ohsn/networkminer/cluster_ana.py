@@ -29,7 +29,7 @@ import re
 import statsmodels.stats.api as sms
 import powerlaw
 import scipy
-import scikits.bootstrap as bootstrap
+# import scikits.bootstrap as bootstrap
 
 rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
 mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
@@ -1252,8 +1252,8 @@ def analysis_net_sentiments(file='net-tweet.txt'):
         else:
             m, st = bmean, bstd
         if row.Target != 2:
-            # data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
-            data2.append([row['Source'], row['Target'], row['Sentiment']])
+            data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
+            # data2.append([row['Source'], row['Target'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Source', 'Target', 'Sentiment'])
     #---------------------------------
 
@@ -1288,42 +1288,42 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     print statu.utest(df[(df.Source==1) & (df.Target==1)]['Sentiment'], df[(df.Source==1) & (df.Target==0)]['Sentiment'])
 
     print sa, sb, aa, ab, ba, bb
-    # dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
-    # dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
-    # dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
-    # dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
-    # pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
-    # plu.plot_config()
-    # g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
-    #                    kind="bar", legend=False,
-    #                    palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"})
-    # g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    # g.set_ylabels('Interaction Proportion')
-    # g.set_xlabels('')
-    # annots = [aa, ba, ab, bb]
-    # ax=g.ax #annotate axis = seaborn axis
-    # for i, p in enumerate(ax.patches):
-    #      ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-    #          textcoords='offset points')
-    #
-    # plt.legend(loc='best')
-    # plt.show()
-    #
-    # df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
-    # df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
-    #
-    # plu.plot_config()
-    # g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
-    #                    kind="bar", legend=False,
-    #                    palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"}
-    #                    )
-    #
-    # g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    # g.set_ylabels('Sentiment')
-    # g.set_xlabels('')
-    # plt.legend(loc='best')
-    # plt.show()
+    dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
+    dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
+    dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
+    dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
+    pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
+    plu.plot_config()
+    g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
+                       kind="bar", legend=False,
+                       palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"})
+    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    g.set_ylabels('Interaction Proportion')
+    g.set_xlabels('')
+    annots = [aa, ba, ab, bb]
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+             ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
+    plt.legend(loc='best')
+    plt.show()
+
+    df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
+    df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
+
+    plu.plot_config()
+    g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
+                       kind="bar", legend=False,
+                       palette={"Target: Pro-ED": "r", "Target: Pro-Rec.": "g"}
+                       )
+
+    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    g.set_ylabels('Sentiment')
+    g.set_xlabels('')
+    plt.legend(loc='best')
+    plt.show()
 
 
 
@@ -1343,5 +1343,5 @@ if __name__ == '__main__':
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
     # core_analysis()
-    sentiment_injection() #net-tweet.txt
-    # analysis_net_sentiments()
+    # sentiment_injection() #net-tweet.txt
+    analysis_net_sentiments()
