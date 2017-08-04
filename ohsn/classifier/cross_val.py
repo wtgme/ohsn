@@ -13,13 +13,16 @@ from scipy import interp
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from sklearn import metrics
 from sklearn import svm, linear_model
 from sklearn.metrics import roc_curve, auc
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.datasets import load_svmlight_file
 from sklearn import preprocessing
+from sklearn.model_selection import cross_val_predict
 import ohsn.util.plot_util as plu
 import ohsn.util.io_util as iot
+from sklearn import cross_validation
 import pickle
 import seaborn as sns
 from statsmodels.formula.api import logit
@@ -91,6 +94,31 @@ def cross_val_roc_plot(X, y):
     plt.legend(loc="lower right")
     plt.show()
 
+def svm_cv(X, y, kernel='linear'):
+    # Cross validation with SVM
+    clf = svm.SVC(kernel=kernel, class_weight='balanced')
+    #When the cv argument is an integer, cross_val_score
+    # uses the KFold or StratifiedKFold strategies by default,
+    # the latter being used if the estimator derives from ClassifierMixin.
+    predicts = cross_val_predict(clf, X, y, cv=5, n_jobs=5)
+
+    acc = metrics.accuracy_score(y, predicts)
+    pre = metrics.precision_score(y, predicts, average='weighted')
+    rec = metrics.recall_score(y, predicts, average='weighted')
+    f1 = metrics.f1_score(y, predicts, average='weighted')
+
+    # scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=5)
+    # print("Accuracy: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    #
+    # scores = cross_validation.cross_val_score(clf, X, y, scoring='precision_weighted', cv=5, n_jobs=5)
+    # print("Precision: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    #
+    # scores = cross_validation.cross_val_score(clf, X, y, scoring='recall_weighted', cv=5, n_jobs=5)
+    # print("Recall: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    #
+    # scores = cross_validation.cross_val_score(clf, X, y, scoring='f1_weighted', cv=5, n_jobs=5)
+    # print("F1: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    return [acc, pre, rec, f1]
 
 def roc_plot_feature(datafile):
     X, y = load_scale_data(datafile)
@@ -125,33 +153,67 @@ def roc_plot_feature(datafile):
     X = preprocessing.scale(X)
 
     print X.shape, y.shape
-    Z = np.append(X, y.reshape((len(y), 1)), axis=1)
-    df = pd.DataFrame(Z, columns=select_f + ['label'])
-    affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
-    print(affair_mod.summary())
-    df.to_csv('scaling-clsuter-feature.csv', index=False)
+    # Z = np.append(X, y.reshape((len(y), 1)), axis=1)
+    # df = pd.DataFrame(Z, columns=select_f + ['label'])
+    # affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
+    # print(affair_mod.summary())
+    # df.to_csv('scaling-clsuter-feature.csv', index=False)
 
     print X.shape
     plu.plot_config()
-    ax = plt.gca()
-    ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
+    # ax = plt.gca()
+    # ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:12], y)
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:12], y)
+    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 12:22], y)
+    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Lin. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    #
+    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
+    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    # ax.set_xlim([0, 1])
+    # ax.set_ylim([0, 1])
+    # ax.set_xlabel('False Positive Rate')
+    # ax.set_ylabel('True Positive Rate')
+    # ax.legend(loc="lower right")
+    # ax.grid(True)
+    # plt.show()
 
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 12:22], y)
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Lin. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    data = []
+    result = svm_cv(X[:, 0:12], y)
+    for i, v in enumerate(result):
+        data.append(['Social Activities', i, v])
+    result = svm_cv(X[:, 12:22], y)
+    for i, v in enumerate(result):
+        data.append(['Linguistic Constructs', i, v])
+    result = svm_cv(X, y)
+    for i, v in enumerate(result):
+        data.append(['All', i, v])
+    df = pd.DataFrame(data, columns=['Feature', 'Metric', 'Value'])
+    plu.plot_config()
+    g = sns.factorplot(x="Metric", y="Value", hue="Feature", data=df,
+                       kind="bar", legend=False,
+                       palette={"Social Activities": "#e9a3c9", "Linguistic Constructs": "#ffffbf", 'All': '#a1d76a'})
+    g.set_xticklabels(["Accuracy", "Precision", 'Recall', 'F1'])
+    g.set_ylabels('Performance')
+    g.set_xlabels('Metric')
+    annots = df['Value']
+    print annots
+    hatches = ['/','/','/','/', '', '','','','\\','\\', '\\','\\']
 
-    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
-
-    ax.set_xlim([0, 1])
-    ax.set_ylim([0, 1])
-    ax.set_xlabel('False Positive Rate')
-    ax.set_ylabel('True Positive Rate')
-    ax.legend(loc="lower right")
-    ax.grid(True)
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+        ax.annotate("%.2f" %(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+        p.set_hatch(hatches[i])
+    plt.legend(bbox_to_anchor=(1, 1.2), ncol=6)
+    plt.ylim(0.5, 1)
     plt.show()
+
+
+
+
 
 
 def roc_plot(datafile, savename, pca_num=10):
