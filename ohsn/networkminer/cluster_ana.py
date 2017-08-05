@@ -332,7 +332,7 @@ def analysis_sentiments(file='tweets.txt'):
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
          p.set_hatch(hatches[i])
-    # plt.legend(loc='best')
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -1521,9 +1521,9 @@ def robust_regression(filepa='centrality-features.csv'):
         rece = rec_results.params[0]
         pedci = ped_results.conf_int()
         recci = rec_results.conf_int()
-        res.append(['ed', pede, pedci[0][0], pedci[1][0], name, ped_results.bse[0]])
-        res.append(['rec', rece, recci[0][0], recci[1][0], name, rec_results.bse[0]])
-    df = pd.DataFrame(res, columns=['group', 'coef', 'low', 'high', 'name', 'ste'])
+        res.append(['ed', pede, pedci[0][0], pedci[1][0], name, ped_results.bse[0], ped_results.pvalues[0]])
+        res.append(['rec', rece, recci[0][0], recci[1][0], name, rec_results.bse[0], rec_results.pvalues[0]])
+    df = pd.DataFrame(res, columns=['group', 'coef', 'low', 'high', 'name', 'ste', 'p'])
     print df
 
 
@@ -1535,11 +1535,22 @@ def robust_regression(filepa='centrality-features.csv'):
     print d
     # Two subplots, the axes array is 1-d
     f, axarr = plt.subplots(2, sharex=True)
-    axarr[0].errorbar(range(len(d.name)), d.coef, yerr=[d.ste*1.96, d.ste*1.96],
+    (plotlines, caps, _) = axarr[0].errorbar(range(len(d.name)), d.coef, yerr=[d.ste*1.96, d.ste*1.96],
                      fmt='o',  markersize='15',elinewidth=5, mfc='#e9a3c9', ecolor='#e9a3c9', label="Pro-ED Users")
     axarr[0].axhline(0, color='black', linestyle='--')
     axarr[0].set_yticks(np.arange(-0.0004, 0.0009, 0.0004))
     axarr[0].yaxis.label.set_position((0, -0.12))
+
+    ps = d.p.tolist()
+    his = d.high.tolist()
+    los = d.low.tolist()
+    cofs = d.coef.tolist()
+    for i in (range(len(d.name))):
+        if (ps[i]) < 0.05:
+            axarr[0].annotate("*", xy=(i, his[i]+0.0001 if cofs[i]>0 else los[i]-0.0001),
+             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
     axarr[0].set_ylabel('Coefficient')
     axarr[0].grid(False)
     handles, labels = axarr[0].get_legend_handles_labels()
@@ -1549,7 +1560,7 @@ def robust_regression(filepa='centrality-features.csv'):
     ## pro-recovery users
     d = df[df.group=='rec']
     print d
-    axarr[1].errorbar(range(len(d.name)), d.coef, yerr=[d.ste*1.96, d.ste*1.96],
+    (plotlines, caps, _) = axarr[1].errorbar(range(len(d.name)), d.coef, yerr=[d.ste*1.96, d.ste*1.96],
                      fmt='s', markersize='15',elinewidth=5, mfc='#a1d76a', ecolor='#a1d76a', label="Pro-Rec. Users")
     axarr[1].axhline(0, color='black', linestyle='--')
     axarr[1].set_yticks(np.arange(-0.06, 0.06, 0.03))
@@ -1559,10 +1570,16 @@ def robust_regression(filepa='centrality-features.csv'):
     axarr[1].legend(handles, labels, loc='lower right', numpoints=1, frameon=True)
     axarr[1].set_xlim(-1, len(names))
     axarr[1].grid(False)
-    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-    majorLocator = MultipleLocator(1)
-    axarr[1].xaxis.set_major_locator(majorLocator)
-    # f.text(0.04, 0.5, 'Coefficient', va='center', rotation='vertical')
+    ps = d.p.tolist()
+    his = d.high.tolist()
+    los = d.low.tolist()
+    cofs = d.coef.tolist()
+    for i in (range(len(d.name))):
+        if (ps[i]) < 0.05:
+            axarr[1].annotate("*", xy=(i, his[i]+0.006 if cofs[i]>0 else los[i]-0.015),
+             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+             textcoords='offset points')
+
     plt.xticks(range(len(names)), [name.title() for name in names], rotation=30)
     # plt.tight_layout()
     sns.despine()
