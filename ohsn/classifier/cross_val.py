@@ -103,22 +103,26 @@ def svm_cv(X, y, kernel='linear'):
     predicts = cross_val_predict(clf, X, y, cv=5, n_jobs=5)
 
     acc = metrics.accuracy_score(y, predicts)
-    pre = metrics.precision_score(y, predicts, average='weighted')
-    rec = metrics.recall_score(y, predicts, average='weighted')
-    f1 = metrics.f1_score(y, predicts, average='weighted')
+    micropre = metrics.precision_score(y, predicts, average='micro')
+    microrec = metrics.recall_score(y, predicts, average='micro')
+    macropre = metrics.precision_score(y, predicts, average='macro')
+    macrorec = metrics.recall_score(y, predicts, average='macro')
+    microf1 = metrics.f1_score(y, predicts, average='micro')
+    macrof1 = metrics.f1_score(y, predicts, average='macro')
 
-    # scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=5)
-    # print("Accuracy: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='accuracy', cv=5, n_jobs=5)
+    print("Accuracy: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
     #
-    # scores = cross_validation.cross_val_score(clf, X, y, scoring='precision_weighted', cv=5, n_jobs=5)
-    # print("Precision: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='precision_micro', cv=5, n_jobs=5)
+    print("Precision: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
     #
-    # scores = cross_validation.cross_val_score(clf, X, y, scoring='recall_weighted', cv=5, n_jobs=5)
-    # print("Recall: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='recall_micro', cv=5, n_jobs=5)
+    print("Recall: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
     #
-    # scores = cross_validation.cross_val_score(clf, X, y, scoring='f1_weighted', cv=5, n_jobs=5)
-    # print("F1: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
-    return [acc, pre, rec, f1]
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='f1_micro', cv=5, n_jobs=5)
+    print("F1: %0.3f (+/- %0.3f)" % (scores.mean(), scores.std()))
+    print '%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f' %(acc, micropre, macropre, microrec, macrorec, microf1, macrof1)
+    return [acc, microf1, macrof1]
 
 def roc_plot_feature(datafile):
     X, y = load_scale_data(datafile)
@@ -194,12 +198,12 @@ def roc_plot_feature(datafile):
     g = sns.factorplot(x="Metric", y="Value", hue="Feature", data=df,
                        kind="bar", legend=False,
                        palette={"Social Activities": "#e9a3c9", "Linguistic Constructs": "#ffffbf", 'All': '#a1d76a'})
-    g.set_xticklabels(["Accuracy", "Precision", 'Recall', 'F1'])
+    g.set_xticklabels(["Accuracy", "Micro-F1", 'Macro-F1'])
     g.set_ylabels('Performance')
     g.set_xlabels('Metric')
     annots = df['Value']
     print annots
-    hatches = ['/','/','/','/', '', '','','','\\','\\', '\\','\\']
+    hatches = ['/','/','/', '','','','\\', '\\','\\']
 
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):

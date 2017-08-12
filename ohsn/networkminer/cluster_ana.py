@@ -223,7 +223,7 @@ def analysis_sentiments(file='tweets.txt'):
     print statu.utest(df[(df.Strata=='A') & (df.Topic==1)]['Sentiment'], df[(df.Strata=='B') & (df.Topic==1)]['Sentiment'])
     print statu.utest(df[(df.Strata=='A') & (df.Topic==2)]['Sentiment'], df[(df.Strata=='B') & (df.Topic==2)]['Sentiment'])
     print statu.utest(df[(df.Strata=='A') & (df.Topic==3)]['Sentiment'], df[(df.Strata=='B') & (df.Topic==3)]['Sentiment'])
-    print statu.ttest(df[(df.Strata=='A') & (df.Topic==4)]['Sentiment'], df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
+    print statu.utest(df[(df.Strata=='A') & (df.Topic==4)]['Sentiment'], df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
 
 
     def mean_std(list):
@@ -241,8 +241,9 @@ def analysis_sentiments(file='tweets.txt'):
             m, st = amean, astd
         else:
             m, st = bmean, bstd
-        if row.Topic!=4:
-            data2.append([row['Strata'], row['Topic'], (row['Sentiment']-m)/st])
+        # if row.Topic!=4:
+            # data2.append([row['Strata'], row['Topic'], (row['Sentiment']-m)/st])
+        data2.append([row['Strata'], row['Topic'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Strata', 'Topic', 'Sentiment'])
     #---------------------------------
 
@@ -250,21 +251,18 @@ def analysis_sentiments(file='tweets.txt'):
               mean_std(df[(df.Strata=='A') & (df.Topic==1)]['Sentiment']),
               mean_std(df[(df.Strata=='A') & (df.Topic==2)]['Sentiment']),
               mean_std(df[(df.Strata=='A') & (df.Topic==3)]['Sentiment']),
+              mean_std(df[(df.Strata=='A') & (df.Topic==4)]['Sentiment']),
           mean_std(df[(df.Strata=='B') & (df.Topic==0)]['Sentiment']),
-
           mean_std(df[(df.Strata=='B') & (df.Topic==1)]['Sentiment']),
-
           mean_std(df[(df.Strata=='B') & (df.Topic==2)]['Sentiment']),
-
-          # mean_std(df[(df.Strata=='A') & (df.Topic==4)]['Sentiment']),
           mean_std(df[(df.Strata=='B') & (df.Topic==3)]['Sentiment']),
-          # mean_std(df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
+          mean_std(df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
           ]
 
     df['Strata'] = df['Strata'].map({'A': 'Pro-ED Users', 'B': 'Pro-Rec. Users'})
 
     plu.plot_config()
-    hatches = ['/', '/','/','/','\\','\\','\\','\\']
+    hatches = ['/', '/','/','/','/','\\','\\','\\','\\','\\']
     g = sns.factorplot(x="Topic", y="Sentiment", hue="Strata", data=df,
                        kind="bar", legend=False, palette={"Pro-ED Users": "#e9a3c9", "Pro-Rec. Users": "#a1d76a"})
     ax=g.ax #annotate axis = seaborn axis
@@ -273,18 +271,9 @@ def analysis_sentiments(file='tweets.txt'):
         ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
-    g.set_ylabels('Relative Sentiment')
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified", 'All'])
+    g.set_ylabels('Sentiment')
     g.set_xlabels('Theme')
-
-    # ax=g.ax #annotate axis = seaborn axis True if fruit == 'Apple' else False
-    # for i, p in enumerate(ax.patches):
-    #     print p.get_width()
-    #     ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
-    #          ha='center', va='center', fontsize=20, color='gray', rotation=0, xytext=(0, 20),
-    #          textcoords='offset points')
-    # plt.legend(loc='best')
-    # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()
 
 
@@ -1282,9 +1271,9 @@ def analysis_net_sentiments(file='net-tweet.txt'):
             m, st = amean, astd
         else:
             m, st = bmean, bstd
-        if row.Target != 2:
-            data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
-            # data2.append([row['Source'], row['Target'], row['Sentiment']])
+        # if row.Target != 2:
+        #     data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
+        data2.append([row['Source'], row['Target'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Source', 'Target', 'Sentiment'])
     #---------------------------------
 
@@ -1316,7 +1305,8 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     ba = len(df[(df.Source==1) & (df.Target==0)])
     bb = len(df[(df.Source==1) & (df.Target==1)])
     print statu.utest(df[(df.Source==0) & (df.Target==0)]['Sentiment'], df[(df.Source==0) & (df.Target==1)]['Sentiment'])
-    print statu.utest(df[(df.Source==1) & (df.Target==1)]['Sentiment'], df[(df.Source==1) & (df.Target==0)]['Sentiment'])
+    print statu.utest(df[(df.Source==1) & (df.Target==0)]['Sentiment'], df[(df.Source==1) & (df.Target==1)]['Sentiment'])
+    print statu.utest(df[(df.Source==0) & (df.Target==2)]['Sentiment'], df[(df.Source==1) & (df.Target==2)]['Sentiment'])
 
     print sa, sb, aa, ab, ba, bb
     dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
@@ -1369,7 +1359,7 @@ def analysis_net_sentiments(file='net-tweet.txt'):
              textcoords='offset points')
         p.set_hatch(hatches[i])
     g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Relative Sentiment')
+    g.set_ylabels('Sentiment')
     g.set_xlabels('')
     # plt.legend(loc='best')
     plt.show()
@@ -1506,10 +1496,10 @@ def robust_reg(ped, name):
 
 def robust_regression(filepa='centrality-features.csv'):
     data = pd.read_csv(filepa)
-    data['prostrr'] = data['prostr'] / data['timeline_count']
+    data['prostr'] = data['prostr'] / data['timeline_count']
     ped = data[data.cluster==0]
     rec = data[data.cluster==1]
-    names = ['body', 'ingest', 'health', 'i', 'we', 'swear', 'negate', 'social', 'posemo', 'negemo', 'prostrr']
+    names = ['body', 'ingest', 'health', 'i', 'we', 'swear', 'negate', 'social', 'posemo', 'negemo', 'prostr']
     # ped['pagerank'] *= 100
     res = []
     for name in names:
@@ -1529,7 +1519,6 @@ def robust_regression(filepa='centrality-features.csv'):
 
     plu.plot_config()
     sns.set_style("ticks")
-    sns.despine()
     ###pro-ED users
     d = df[df.group=='ed']
     print d
@@ -1538,8 +1527,8 @@ def robust_regression(filepa='centrality-features.csv'):
     (plotlines, caps, _) = axarr[0].errorbar(range(len(d.name)), d.coef, yerr=[d.ste*1.96, d.ste*1.96],
                      fmt='o',  markersize='15',elinewidth=5, mfc='#e9a3c9', ecolor='#e9a3c9', label="Pro-ED Users")
     axarr[0].axhline(0, color='black', linestyle='--')
-    axarr[0].set_yticks(np.arange(-0.0004, 0.0009, 0.0004))
-    axarr[0].yaxis.label.set_position((0, -0.12))
+    axarr[0].set_yticks(np.arange(-0.0006, 0.0009, 0.0006))
+
 
     ps = d.p.tolist()
     his = d.high.tolist()
@@ -1547,15 +1536,17 @@ def robust_regression(filepa='centrality-features.csv'):
     cofs = d.coef.tolist()
     for i in (range(len(d.name))):
         if (ps[i]) < 0.05:
-            axarr[0].annotate("*", xy=(i, his[i]+0.0001 if cofs[i]>0 else los[i]-0.0001),
+            axarr[0].annotate("*", xy=(i, his[i]-0.0001 if cofs[i]>0 else los[i]-0.0003),
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
 
-    axarr[0].set_ylabel('Coefficient')
+    axarr[0].set_ylabel('Pro-ED')
+    # axarr[0].yaxis.label.set_position((0, -0.12))
     axarr[0].grid(False)
-    handles, labels = axarr[0].get_legend_handles_labels()
-    handles = [h[0] for h in handles]
-    axarr[0].legend(handles, labels, loc='upper right',numpoints=1, frameon=True)
+    # axarr[0].spines['bottom'].set_visible(False)
+    # handles, labels = axarr[0].get_legend_handles_labels()
+    # handles = [h[0] for h in handles]
+    # axarr[0].legend(handles, labels, loc='upper right',numpoints=1, frameon=True)
 
     ## pro-recovery users
     d = df[df.group=='rec']
@@ -1564,10 +1555,10 @@ def robust_regression(filepa='centrality-features.csv'):
                      fmt='s', markersize='15',elinewidth=5, mfc='#a1d76a', ecolor='#a1d76a', label="Pro-Rec. Users")
     axarr[1].axhline(0, color='black', linestyle='--')
     axarr[1].set_yticks(np.arange(-0.06, 0.06, 0.03))
-    # axarr[1].set_ylabel('Coefficient')
-    handles, labels = axarr[1].get_legend_handles_labels()
-    handles = [h[0] for h in handles]
-    axarr[1].legend(handles, labels, loc='lower right', numpoints=1, frameon=True)
+    axarr[1].set_ylabel('Pro-Rec.')
+    # handles, labels = axarr[1].get_legend_handles_labels()
+    # handles = [h[0] for h in handles]
+    # axarr[1].legend(handles, labels, loc='lower right', numpoints=1, frameon=True)
     axarr[1].set_xlim(-1, len(names))
     axarr[1].grid(False)
     ps = d.p.tolist()
@@ -1576,11 +1567,12 @@ def robust_regression(filepa='centrality-features.csv'):
     cofs = d.coef.tolist()
     for i in (range(len(d.name))):
         if (ps[i]) < 0.05:
-            axarr[1].annotate("*", xy=(i, his[i]+0.006 if cofs[i]>0 else los[i]-0.015),
+            axarr[1].annotate("*", xy=(i, his[i]-0.005 if cofs[i]>0 else los[i]-0.02),
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
 
     plt.xticks(range(len(names)), [name.title() for name in names], rotation=30)
+    # axarr[1].spines['bottom'].set_visible(False)
     # plt.tight_layout()
     sns.despine()
     plt.show()
@@ -1624,6 +1616,50 @@ def robust_regression(filepa='centrality-features.csv'):
     # plt.show()
 
 
+def data_validataion(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    # import random
+    # g = gt.Graph.Read_GraphML(netfilename)
+    # cl1 = g.vs.select(cluster=0)
+    # cl2 = g.vs.select(cluster=1)
+    # cl1names = cl1['name']
+    # cl2names = cl2['name']
+    # print len(cl2names)
+    # com = dbt.db_connect_col('fed', 'com')
+    # # for uid in cl1names[:50]:
+    # #     print uid
+    # # print '-------------------------------------'
+    # random.shuffle(cl2names)
+    # for uid in cl2names[:50]:
+    #     user = com.find_one({'id': int(uid)})
+    #     print user['screen_name']
+
+    trues, preds = [], []
+    c = 0
+    with open('annotation/labels.txt', 'r') as fo:
+        for i, line in enumerate(fo.readlines()):
+            tokens = line.strip().split('\t')
+            if i < 50:
+                t = 0
+            else:
+                t = 1
+            if tokens[-1] == 'ED':
+                p = 0
+                trues.append(t)
+                preds.append(p)
+            elif tokens[-1] == 'REC':
+                p = 1
+                trues.append(t)
+                preds.append(p)
+            else:
+                if i < 50:
+                    c += 1
+    from sklearn import metrics
+    print len(trues)
+    print len(preds)
+    print c
+    print metrics.cohen_kappa_score(trues, preds)
+
+
 if __name__ == '__main__':
     # net_attr()
     # regression()
@@ -1640,6 +1676,7 @@ if __name__ == '__main__':
     # split_in_out_degree()
     # core_analysis()
     # sentiment_injection() #net-tweet.txt
-    # analysis_net_sentiments()
+    analysis_net_sentiments()
     # centrality_regresion()
-    robust_regression()
+    # robust_regression()
+    # data_validataion()
