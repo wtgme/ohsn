@@ -161,6 +161,6 @@ if __name__ == '__main__':
     # label_positive()
 
     # data_stat()
-    # network_analysis()
+    network_analysis()
     network_assort()
     # liwc_feature()
