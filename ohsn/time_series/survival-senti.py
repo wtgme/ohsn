@@ -101,6 +101,44 @@ def friends_active_days(user, f1_time):
     return [days]
 
 
+def user_active():
+    # obtain the active duration of users in two observation
+    groups = [
+         ('ED', 'fed', 'com', 'fed', 'com_survival', {
+                                                        'liwc_anal.result.WC': {'$exists': True},
+                                                        'level': 1,
+                                                        'senti.result.whole.N': {'$gt': 10}}),
+         ('RD', 'random', 'scom', 'random', 'com_survival', {
+                                                        'liwc_anal.result.WC': {'$exists': True},
+                                                        'senti.result.whole.N': {'$gt': 10}}),
+         ('YG', 'younger', 'scom', 'younger', 'com_survival', {
+                                                            'liwc_anal.result.WC': {'$exists': True},
+                                                            'senti.result.whole.N': {'$gt': 10}})
+    ]
+    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
+        com = dbt.db_connect_col(dbname, comname)
+        com2 = dbt.db_connect_col(dbname2, comname2)
+
+        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all.graphml')
+        network1.vs['alive'] = 0
+        network1.vs['duration'] = 0
+        for v in network1.vs:
+            uid = int(v['name'])
+            u1 = com.find_one({'id': uid})
+            u2 = com2.find_one({'id': uid})
+            if u1:
+                f1_time = u1['_id'].generation_time.replace(tzinfo=None)
+                if u2:
+                    f2_time = u2['_id'].generation_time.replace(tzinfo=None)
+                    if 'status' in u2:
+                        fsecond_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                        if f1_time < fsecond_last_post < f2_time:
+                            v['alive'] = 1
+                            v['duration'] = friends_active_days(u2, f1_time)
+        network1.write_graphml(tag.lower()+'-net-all-active.graphml')
+
+
+
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
     fields = [
@@ -512,7 +550,8 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    read_user_time_iv('user-durations-iv-following-senti.csv')
+    user_active()
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
