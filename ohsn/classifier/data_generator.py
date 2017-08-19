@@ -88,7 +88,7 @@ def feature_output(field_names, file_name, dbname, colname, label=None, outids=F
 
     for x in poi.find({
                        # 'text_anal.edword_count.value': {'$gt': 0},
-                       'id_str': {'$in': userset},
+                       'id': {'$in': userset},
                        'liwc_anal.result.WC': {'$exists': True},
                         # 'text_anal.gbmi': {'$exists': True},
                        # 'timeline_count': {'$gt': 100},
@@ -172,10 +172,13 @@ if __name__ == '__main__':
     # fields = io.read_fields()
     # feature_output(fields, 'data/gbmi', 'fed', '0', True)
 
-    import ohsn.networkminer.recovery as rec
-    users = rec.network_users('communication-only-fed-filter.graphml')
-    print len(users)
-    feature_output(fields, 'data/ed-communication', 'fed', 'com', None, False, users)
+    # import ohsn.networkminer.recovery as rec
+    # users = rec.network_users('communication-only-fed-filter.graphml')
+    # print len(users)
+    # feature_output(fields, 'data/ed-communication', 'fed', 'com', None, False, users)
 
+    users = io.get_values_one_field('depression', 'users1', 'id')
+    print len(users)
+    feature_output(fields, 'data/depression', 'depression', 'users1', None, False, users)
 
 

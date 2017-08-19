@@ -26,7 +26,7 @@ from threading import Thread
 def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newdb = dbt.db_connect_no_auth(newdbname)
     newcom = newdb[newcomname]
-    newnet = newdb['net']
+    # newnet = newdb['net']
     newcom.create_index("id", unique=True)
     newcom.create_index([('level', pymongo.ASCENDING),
                          ('following_prelevel_node', pymongo.ASCENDING)],
@@ -34,9 +34,9 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newcom.create_index([('level', pymongo.ASCENDING),
                          ('follower_prelevel_node', pymongo.ASCENDING)],
                         unique=False)
-    newnet.create_index([("user", pymongo.ASCENDING),
-                         ("follower", pymongo.ASCENDING)],
-                        unique=True)
+    # newnet.create_index([("user", pymongo.ASCENDING),
+    #                      ("follower", pymongo.ASCENDING)],
+    #                     unique=True)
 
     # oldcom = dbt.db_connect_col(olddbname, oldcomname)
     # '''Reteive ED core users'''
@@ -125,7 +125,7 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('younger', 'scom', 'younger_sur', 'com') # random2 fed
-    re_snowball_friends('random', 'scom', 'random_sur', 'com') # random2 fed
-    re_snowball_friends('fed', 'com', 'fed_sur', 'com') # random2 fed
+    re_snowball_friends('younger', 'com', 'younger', 'com_survival') # random2 fed
+    re_snowball_friends('random', 'com', 'random', 'com_survival') # random2 fed
+    re_snowball_friends('fed', 'com', 'fed', 'com_survival') # random2 fed
 

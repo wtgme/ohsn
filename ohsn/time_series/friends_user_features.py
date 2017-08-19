@@ -645,8 +645,10 @@ def label_dropout_network(g_file, db1n, com1n, db2n, com2n):
 
 if __name__ == '__main__':
     # friend_user_change('fed', 'fed2', 'com', 'com')
-    # network1 = gt.load_network('fed', 'snet')
-    # network1.write_graphml('coreed-net.graphml')
+    network1 = gt.load_network('random', 'net')
+    network1.write_graphml('rd-net-all.graphml')
+    network1 = gt.load_network('younger', 'net')
+    network1.write_graphml('yg-net-all.graphml')
     # g = gt.load_network('fed', 'net')
     # g.write_graphml('fed-net.graphml')
     # label_dropout_network('coreed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
@@ -659,7 +661,7 @@ if __name__ == '__main__':
     # states_change('fed', 'fed2', 'com', 'com')
     # emotion_dropout_IV_split('fed', 'fed2', 'com', 'com')
     # load_net()
-    emotion_dropout_IV_following('data-attr-followings.csv')
+    # emotion_dropout_IV_following('data-attr-followings.csv')
     # emotion_recovery_IV_following('fed', 'fed2', 'com', 'com')
 
     # users_with_collected_friends('random', 'scom', 'net')

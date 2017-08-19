@@ -151,7 +151,62 @@ def network_assort():
                     print output
                     continue
 
+def user_cluster(filepath='data/depression.data'):
+    from sklearn.datasets import load_svmlight_file
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+    import pandas as pd
+    import ohsn.util.plot_util as plu
+    from sklearn import preprocessing
+    import seaborn as sns
+    import matplotlib.pyplot as plt
 
+
+    X, y = load_svmlight_file(filepath, multilabel=False)
+    X = X.toarray()
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X = min_max_scaler.fit_transform(X)
+    # X = preprocessing.scale(X)
+    print X.shape
+    #
+    # range_n_clusters = range(2, 21)
+    # data = []
+    # for n_clusters in range_n_clusters:
+    #     for i in range(10):
+    #         clusterer = KMeans(n_clusters=n_clusters, n_jobs=8)
+    #         cluster_labels = clusterer.fit_predict(X)
+    #         silhouette_avg = silhouette_score(X, cluster_labels)
+    #         print("For n_clusters =", n_clusters, "The average silhouette_score is :", silhouette_avg)
+    #         data.append([n_clusters, silhouette_avg])
+    # df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
+    # df.to_csv('depress-user-kmeans.csv')
+
+    # df = pd.read_csv('depress-user-kmeans.csv', index_col=0)
+    #
+    # plu.plot_config()
+    # sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="#af8dc3")
+    # sns.despine(offset=10, trim=True)
+    # plt.xlabel('K')
+    # plt.ylabel('Average Silhouette')
+    # # plu.ylim(0.38, 0.81)
+    # plt.show()
+
+
+
+    clusterer = KMeans(n_clusters=2, n_jobs=8)
+    cluster_labels = clusterer.fit_predict(X)
+    ids = []
+    with open(filepath, 'r') as fo:
+        for line in fo.readlines():
+            tokens = line.split(' ')
+            ids.append(tokens[0])
+    dictionary = dict(zip(ids, cluster_labels))
+    gs = ['follow', 'retweet', 'communication']
+    for gf in gs:
+        g = gt.Graph.Read_GraphML('data/'+gf+'_net.graphml')
+        for v in g.vs:
+            v['cluster'] = dictionary.get(v['name'], -1)
+        g.write_graphml('data/'+gf+'_net_cluster.graphml')
 
 
 
@@ -161,6 +216,7 @@ if __name__ == '__main__':
     # label_positive()
 
     # data_stat()
-    network_analysis()
-    network_assort()
+    # network_analysis()
+    # network_assort()
     # liwc_feature()
+    user_cluster()

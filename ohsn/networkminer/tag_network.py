@@ -749,7 +749,7 @@ def tags_user_cluster(graph_file_path, filename):
     vs = g.vs(weight_gt=3, user_gt=3)
     g = g.subgraph(vs)
     gt.summary(g)
-    g.write_graphml(filename+'_edtag_undir_cluster0.graphml')
+    g.write_graphml(filename+'tag_undir_cluster0.graphml')
 
     print 'cluster size;', len(cluster1)
     g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', list(cluster1))
@@ -758,7 +758,7 @@ def tags_user_cluster(graph_file_path, filename):
     vs = g.vs(weight_gt=3, user_gt=3)
     g = g.subgraph(vs)
     gt.summary(g)
-    g.write_graphml(filename+'_edtag_undir_cluster1.graphml')
+    g.write_graphml(filename+'tag_undir_cluster1.graphml')
 
     # print 'cluster size;', len(cluster2)
     # g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline', list(cluster2))
@@ -998,7 +998,7 @@ if __name__ == '__main__':
 
     #-------------------------------------------------------------------------
     '''hashtags network of differnet clusters'''
-    # tags_user_cluster('communication-only-fed-filter-hashtag-cluster.graphml', 'communication-only-fed-filter-cluster')
+    tags_user_cluster('data/communication-only-fed-filter-hashtag-cluster.graphml', '')
 
 
     #-------------------------------------------------------------------------
@@ -1077,7 +1077,7 @@ if __name__ == '__main__':
     # user_cluster_hashtag()
     # test_user_cluster_assign_stable()
     # test_user_cluster_stable()
-    plot_boxplot()
+    # plot_boxplot()
 
     # ---------------user z-score to reweight link weights
     # z_scores('alled_tag_undir_filter')

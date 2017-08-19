@@ -88,6 +88,18 @@ def active_days(user):
            friends_day, statuses_day, followers_day,
            days]
 
+def friends_active_days(user, f1_time):
+    # print user['id']
+    # ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    ts = f1_time
+    try:
+        tts = datetime.strptime(user['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+    except KeyError:
+        tts = ts
+    delta = tts.date() - ts.date()
+    days = delta.days+1
+    return [days]
+
 
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
@@ -118,20 +130,23 @@ def read_user_time_iv(filename):
     trimed_fields = ['-'.join(field.split('.')[-2:]) for field in fields]
     print trimed_fields
     groups = [
-         ('ED', 'fed', 'com', 'fed_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
-                                                                              'level': 1,
-                                                                              'senti.result.whole.N': {'$gt': 10}}),
-         ('RD', 'random', 'scom', 'random_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
-                                                                                       'senti.result.whole.N': {'$gt': 10}}),
-         ('YG', 'younger', 'scom', 'younger_sur', 'com', '2017-06-21 14:57:39+00:00', {'liwc_anal.result.WC': {'$exists': True},
-                                                                                       'senti.result.whole.N': {'$gt': 10}})
+         ('ED', 'fed', 'com', 'fed', 'com_survival', {
+                                                        'liwc_anal.result.WC': {'$exists': True},
+                                                        'level': 1,
+                                                        'senti.result.whole.N': {'$gt': 10}}),
+         ('RD', 'random', 'scom', 'random', 'com_survival', {
+                                                        'liwc_anal.result.WC': {'$exists': True},
+                                                        'senti.result.whole.N': {'$gt': 10}}),
+         ('YG', 'younger', 'scom', 'younger', 'com_survival', {
+                                                            'liwc_anal.result.WC': {'$exists': True},
+                                                            'senti.result.whole.N': {'$gt': 10}})
     ]
 
     data = []
-    for tag, dbname, comname, dbname2, comname2, second_time, filter_values in groups:
+    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
-        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
+        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all.graphml')
         gt.summary(network1)
         network1_gc = gt.giant_component(network1)
         gt.summary(network1_gc)
@@ -150,6 +165,7 @@ def read_user_time_iv(filename):
         # print 'load liwc 2 batches: ' + tag.lower()+'-liwc2stage.csv'
         # liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
 
+        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net.graphml')
         for user in com.find(filter_values, no_cursor_timeout=True):
             first_scraped_at = user['_id'].generation_time.replace(tzinfo=None)
             if 'status' in user:
@@ -228,14 +244,14 @@ def read_user_time_iv(filename):
                                 # if eigen_map.get(fu['id'], 0) > 0.0001:
                                 if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
-                                    factive = active_days(fu)
+                                    factive = [0]
                                     if fu2:
                                         f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
                                         if 'status' in fu2:
                                             fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                                             if f1_time < fsecond_last_post < f2_time:
                                                 alive += 1
-                                                factive = active_days(fu2)
+                                                factive = friends_active_days(fu2, f1_time)
 
                                     fatt.extend(factive)
                                     fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
@@ -266,7 +282,7 @@ def read_user_time_iv(filename):
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields] +
-                                    ['f_'+field for field in prof_names] +
+                                    ['f_days'] +
                                     ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive'])
     df.to_csv(filename)
 
@@ -496,7 +512,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
@@ -510,4 +526,4 @@ if __name__ == '__main__':
     # tag_similarity_group()
     # tfidf_stat_dropout()
     # tag_similarity_group_dropout_emotion()
-    tag_similarity_group_conflit_all()
+    # tag_similarity_group_conflit_all()

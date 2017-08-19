@@ -199,7 +199,7 @@ def roc_plot_feature(datafile):
                        kind="bar", legend=False,
                        palette={"Social Activities": "#e9a3c9", "Linguistic Constructs": "#ffffbf", 'All': '#a1d76a'})
     g.set_xticklabels(["Accuracy", "Micro-F1", 'Macro-F1'])
-    g.set_ylabels('Performance')
+    g.set_ylabels('Index')
     g.set_xlabels('Metric')
     annots = df['Value']
     print annots

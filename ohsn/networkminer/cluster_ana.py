@@ -1271,9 +1271,9 @@ def analysis_net_sentiments(file='net-tweet.txt'):
             m, st = amean, astd
         else:
             m, st = bmean, bstd
-        # if row.Target != 2:
-        #     data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
-        data2.append([row['Source'], row['Target'], row['Sentiment']])
+        if row.Target != 2:
+            data2.append([row['Source'], row['Target'], (float(row['Sentiment']-m))/st])
+        # data2.append([row['Source'], row['Target'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Source', 'Target', 'Sentiment'])
     #---------------------------------
 
@@ -1321,7 +1321,7 @@ def analysis_net_sentiments(file='net-tweet.txt'):
                        kind="bar", legend=False,
                        palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"})
     g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Interaction Proportion')
+    g.set_ylabels('Link Proportion')
     g.set_xlabels('')
     annots = [aa, ba, ab, bb]
     hatches = ['/','/','\\','\\']
@@ -1333,7 +1333,7 @@ def analysis_net_sentiments(file='net-tweet.txt'):
              textcoords='offset points')
         p.set_hatch(hatches[i])
 
-    plt.legend(loc='best')
+    # plt.legend(loc='best')
     plt.show()
 
     'sentiment '
@@ -1359,7 +1359,7 @@ def analysis_net_sentiments(file='net-tweet.txt'):
              textcoords='offset points')
         p.set_hatch(hatches[i])
     g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Sentiment')
+    g.set_ylabels('Relative Sentiment')
     g.set_xlabels('')
     # plt.legend(loc='best')
     plt.show()
