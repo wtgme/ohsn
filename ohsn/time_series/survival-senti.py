@@ -134,7 +134,7 @@ def user_active():
                         fsecond_last_post = datetime.strptime(u2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                         if f1_time < fsecond_last_post < f2_time:
                             v['alive'] = 1
-                            v['duration'] = friends_active_days(u2, f1_time)
+                            v['duration'] = friends_active_days(u2, f1_time)[0]
         network1.write_graphml(tag.lower()+'-net-all-active.graphml')
 
 
@@ -562,7 +562,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    # user_active()
+    user_active()
     read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
