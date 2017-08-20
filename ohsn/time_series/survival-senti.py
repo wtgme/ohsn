@@ -184,7 +184,7 @@ def read_user_time_iv(filename):
     for tag, dbname, comname, dbname2, comname2, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
-        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all.graphml')
+        network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all-active.graphml')
         gt.summary(network1)
         network1_gc = gt.giant_component(network1)
         gt.summary(network1_gc)
@@ -199,6 +199,17 @@ def read_user_time_iv(filename):
         pagerank_map = dict(zip(nodes, pageranks))
         indegree_map = dict(zip(nodes, indegree))
         outdegree_map = dict(zip(nodes, outdegree))
+
+        frialive, friduration = {}, {}
+        for v in network1.vs:
+            friends = set(network1.successors(str(v['name'])))
+            if len(friends) > 0:
+                falive, fduration = [], []
+                for vi in friends:
+                    falive.append(network1.vs[vi]['alive'])
+                    fduration.append(network1.vs[vi]['duration'])
+                frialive[int(v['name'])] = np.mean(falive)
+                friduration[int(v['name'])] = np.mean(fduration)
 
         # print 'load liwc 2 batches: ' + tag.lower()+'-liwc2stage.csv'
         # liwc_df = pd.read_pickle(tag.lower()+'-liwc2stage.csv'+'.pick')
@@ -278,20 +289,20 @@ def read_user_time_iv(filename):
                             fu2 = com2.find_one({'id': fid})
 
                             if fu:
-                                f1_time = fu['_id'].generation_time.replace(tzinfo=None)
+                                # f1_time = fu['_id'].generation_time.replace(tzinfo=None)
                                 # if eigen_map.get(fu['id'], 0) > 0.0001:
                                 if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
-                                    factive = [0]
-                                    if fu2:
-                                        f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
-                                        if 'status' in fu2:
-                                            fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                                            if f1_time < fsecond_last_post < f2_time:
-                                                alive += 1
-                                                factive = friends_active_days(fu2, f1_time)
+                                    # factive = [0]
+                                    # if fu2:
+                                    #     f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
+                                    #     if 'status' in fu2:
+                                    #         fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                                    #         if f1_time < fsecond_last_post < f2_time:
+                                    #             alive += 1
+                                    #             factive = friends_active_days(fu2, f1_time)
 
-                                    fatt.extend(factive)
+                                    # fatt.extend(factive)
                                     fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
                                                  indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
                                     fatts.append(fatt)
@@ -303,12 +314,14 @@ def read_user_time_iv(filename):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
                             values.extend(fmatts)
-                            paliv = float(alive)/len(fatts)
+                            # paliv = float(alive)/len(fatts)
+                            paliv = frialive.get(uid)
+                            fdays = friduration.get(uid)
                             data.append([user['id_str'], level, drop, created_at, first_last_post, second_last_post, last_post,
                                          first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
-                                        values + [len(fatts), paliv])
+                                        values + [len(fatts), paliv, fdays])
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
@@ -320,8 +333,7 @@ def read_user_time_iv(filename):
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields] +
-                                    ['f_days'] +
-                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive'])
+                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'])
     df.to_csv(filename)
 
 
@@ -550,8 +562,8 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    user_active()
-    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    # user_active()
+    read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
