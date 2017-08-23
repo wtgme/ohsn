@@ -440,7 +440,7 @@ def compare_dropouts_withemotions(filepath= 'user-durations-iv-following-senti-T
     dropouts = datasub[(datasub.group=='ED') & (datasub.dropout==0)][['u_whole_scalem', 'u_changes', 'uid', 'u_eigenvector']]
     print len(dropouts)
 
-    dropouts = dropouts.sort('u_eigenvector', ascending='True')
+    dropouts = dropouts.sort('u_eigenvector', ascending='True') ## small to large
 
     print dropouts
 
@@ -517,7 +517,7 @@ def tag_similarity_group_dropout_emotion():
     # from sklearn.metrics.pairwise import cosine_similarity
 
     ds = []
-    for i in ['tfidfnondropout-tag.graphml', 'tfidfdropout-tag.graphml']:
+    for i in ['data/tfidfnondropout-tag.graphml', 'data/tfidfdropout-tag.graphml']:
         g = gt.Graph.Read_GraphML(i)
         nodes = g.vs.select(weight_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
@@ -530,7 +530,7 @@ def tag_similarity_group_dropout_emotion():
 
     gs = []
     for i in xrange(2):
-        g = gt.Graph.Read_GraphML(str(i) + 'dropout-tag-centrality2-rank-tfidf.graphml')
+        g = gt.Graph.Read_GraphML('data/' + str(i) + 'dropout-tag-centrality2-rank-tfidf.graphml')
         nodes = g.vs.select(weight_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
@@ -562,19 +562,18 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('random', 'timeline', 'scom')
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
-    user_active()
-    read_user_time_iv('user-durations-iv-following-senti.csv')
+    # user_active()
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
-    # network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
-    # gt.summary(network1)
+    network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
+    gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)
 
     # compare_dropouts_withemotions()
     # tfidf_stat()
-    # tag_similarity_group()
     # tfidf_stat_dropout()
     # tag_similarity_group_dropout_emotion()
     # tag_similarity_group_conflit_all()
