@@ -121,5 +121,7 @@ def retrive_tweet(filename):
     fw.close()
     fo.close()
 
+
+
 if __name__ == '__main__':
     retrive_tweet('corpus.csv')

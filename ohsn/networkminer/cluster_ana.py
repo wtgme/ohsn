@@ -30,6 +30,7 @@ import re
 import statsmodels.stats.api as sms
 import powerlaw
 import scipy
+from statsmodels.formula.api import logit
 # import scikits.bootstrap as bootstrap
 
 rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
@@ -229,8 +230,6 @@ def analysis_sentiments(file='tweets.txt'):
     def mean_std(list):
         return [np.mean(list), np.std(list)]
 
-
-
     amean, astd = mean_std(df[(df.Strata=='A') & (df.Topic==4)]['Sentiment'])
     bmean, bstd = mean_std(df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
 
@@ -241,9 +240,9 @@ def analysis_sentiments(file='tweets.txt'):
             m, st = amean, astd
         else:
             m, st = bmean, bstd
-        # if row.Topic!=4:
-            # data2.append([row['Strata'], row['Topic'], (row['Sentiment']-m)/st])
-        data2.append([row['Strata'], row['Topic'], row['Sentiment']])
+        if row.Topic!=4:
+            data2.append([row['Strata'], row['Topic'], (row['Sentiment']-m)/st])
+        # data2.append([row['Strata'], row['Topic'], row['Sentiment']])
     df = pd.DataFrame(data2, columns=['Strata', 'Topic', 'Sentiment'])
     #---------------------------------
 
@@ -268,12 +267,14 @@ def analysis_sentiments(file='tweets.txt'):
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
         p.set_hatch(hatches[i])
-        ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
-             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
-    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified", 'All'])
-    g.set_ylabels('Sentiment')
+        # ax.annotate("%.2f" %(annots[i][0]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.2-p.get_height()),
+        #      ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+        #      textcoords='offset points')
+    g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
+    g.set_ylabels('Relative Sentiment')
     g.set_xlabels('Theme')
+    # plt.legend(loc='best')
+    plt.legend(bbox_to_anchor=(1, 1.2), ncol=6)
     plt.show()
 
 
@@ -317,11 +318,11 @@ def analysis_sentiments(file='tweets.txt'):
     annots = [AAc,ABc,ACc,ADc, BAc, BBc, BCc, BDc]
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
-         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
+         # ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+         #     ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+         #     textcoords='offset points')
          p.set_hatch(hatches[i])
-    plt.legend(loc='best')
+    # plt.legend(loc='best')
     plt.show()
 
 
@@ -365,12 +366,12 @@ def analysis_sentiments(file='tweets.txt'):
     annots = clist
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
-         ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
-             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
+         # ax.annotate("{:,}".format(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height()),
+         #     ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+         #     textcoords='offset points')
          p.set_hatch(hatches[i])
 
-    plt.legend(loc='best')
+    # plt.legend(loc='best')
     plt.show()
 
 
@@ -897,6 +898,8 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     print X.shape, y.shape
     Z = np.append(X, y.reshape((len(y), 1)), axis=1)
     df = pd.DataFrame(Z, columns=select_f + ['label'])
+    affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
+    print(affair_mod.summary())
 
     df.rename(columns={'friend_count': '#Fr',
                        'status_count': '#T',
@@ -930,20 +933,20 @@ def compare_liwc(filepath='data/cluster-feature.data'):
         print "%s & %.2f $\pm$ %.2f & %.2f $\pm$ %.2f & %.2f & %.3f & %s \\\\" %(col, m1, std1, m2, std2, z, p, mark)
 
 
-    data = pd.melt(df, id_vars=['label'])
-    data['label'] = data['label'].map({0.0: 'A', 1.0: 'B'})
-    data.columns = ['Cluster', 'Measure', 'Value']
-    data['Cluster'] = data['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
-
-
-    plu.plot_config()
-    sns.violinplot(x="Measure", y="Value", hue="Cluster", data=data, split=True,
-               inner="quart", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
-    # sns.boxplot(x="Measure", y="Value", hue="Cluster", data=data,
-    #             palette={"A": "r", "B": "g"})
-    sns.despine(left=True)
-    plt.legend(loc="best")
-    plt.show()
+    # data = pd.melt(df, id_vars=['label'])
+    # data['label'] = data['label'].map({0.0: 'A', 1.0: 'B'})
+    # data.columns = ['Cluster', 'Measure', 'Value']
+    # data['Cluster'] = data['Cluster'].map({'A': 'Pro-ED', 'B': 'Pro-Rec.'})
+    #
+    #
+    # plu.plot_config()
+    # sns.violinplot(x="Measure", y="Value", hue="Cluster", data=data, split=True,
+    #            inner="quart", palette={"Pro-ED": "r", "Pro-Rec.": "g"})
+    # # sns.boxplot(x="Measure", y="Value", hue="Cluster", data=data,
+    # #             palette={"A": "r", "B": "g"})
+    # sns.despine(left=True)
+    # plt.legend(loc="best")
+    # plt.show()
 
 def mark_pvalue(pval):
     mark = ''
@@ -1297,7 +1300,7 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     # gt.summary(g)
     # g.write_graphml('inter-sen.graphml')
 
-    dat = []
+
     sa = len(df[(df.Source==0)])
     sb = len(df[(df.Source==1)])
     aa = len(df[(df.Source==0) & (df.Target==0)])
@@ -1309,22 +1312,33 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     print statu.utest(df[(df.Source==0) & (df.Target==2)]['Sentiment'], df[(df.Source==1) & (df.Target==2)]['Sentiment'])
 
     print sa, sb, aa, ab, ba, bb
-    dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
-    dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
-    dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
-    dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
+    # dat.append(['Source: Pro-ED', 'Target: Pro-ED', float(aa)/sa])
+    # dat.append(['Source: Pro-ED', 'Target: Pro-Rec.', float(ab)/sa])
+    # dat.append(['Source: Pro-Rec.', 'Target: Pro-Rec.', float(bb)/sb])
+    # dat.append(['Source: Pro-Rec.', 'Target: Pro-ED', float(ba)/sb])
+
+    dat = []
+    dat.append(['Source: Pro-ED', 'common', float(aa)/sa])
+    dat.append(['Source: Pro-ED', 'inter', float(ab)/sa])
+    dat.append(['Source: Pro-Rec.', 'common', float(bb)/sb])
+    dat.append(['Source: Pro-Rec.', 'inter', float(ba)/sb])
+
     pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
 
     # fig, axs = plt.subplots(ncols=2)
     plu.plot_config()
     g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
                        kind="bar", legend=False,
-                       palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"})
-    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+                       # palette={"common": "#e9a3c9", "inter": "#a1d76a"}
+                       )
+    # g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+    g.set_xticklabels([r'$L^{ED}_\circlearrowright \quad L^{ED}_\curvearrowright$',
+                       r'$L^{Rec}_\circlearrowright \quad L^{Rec}_\curvearrowright$'])
     g.set_ylabels('Link Proportion')
     g.set_xlabels('')
-    annots = [aa, ba, ab, bb]
+    annots = [aa, bb, ab, ba]
     hatches = ['/','/','\\','\\']
+    colors = ["#e9a3c9","#a1d76a","#e9a3c9","#a1d76a"]
 
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
@@ -1332,38 +1346,10 @@ def analysis_net_sentiments(file='net-tweet.txt'):
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
         p.set_hatch(hatches[i])
+        p.set_fc(colors[i])
 
     # plt.legend(loc='best')
     plt.show()
-
-    'sentiment '
-
-    annots = [np.mean(df[(df.Source==0) & (df.Target==0)]['Sentiment']),
-                np.mean(df[(df.Source==1) & (df.Target==0)]['Sentiment']),
-                np.mean(df[(df.Source==0) & (df.Target==1)]['Sentiment']),
-              np.mean(df[(df.Source==1) & (df.Target==1)]['Sentiment'])
-              ]
-    print annots
-
-    df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
-    df['Target'] = df['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
-
-    # plu.plot_config()
-    g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
-                       kind="bar", legend=False,
-                       palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"})
-    ax=g.ax #annotate axis = seaborn axis
-    for i, p in enumerate(ax.patches):
-        ax.annotate("%.3f" %(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.1-p.get_height()),
-             ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
-             textcoords='offset points')
-        p.set_hatch(hatches[i])
-    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
-    g.set_ylabels('Relative Sentiment')
-    g.set_xlabels('')
-    # plt.legend(loc='best')
-    plt.show()
-
 
     'User proportation'
     user_net = gt.Graph.Read_GraphML('data/communication-only-fed-filter-hashtag-cluster.graphml')
@@ -1374,27 +1360,30 @@ def analysis_net_sentiments(file='net-tweet.txt'):
     cluster2_usize = len(cluster2.vs)
     print cluster1_usize, cluster2_usize
     clist = [len(set(users[(0,0)])),
-             len(set(users[(1,0)])),
-             len(set(users[(0,1)])),
              len(set(users[(1,1)])),
+             len(set(users[(0,1)])),
+             len(set(users[(1,0)])),
              ]
     print clist
-    dat = [[0,0,float(clist[0])/cluster1_usize],
-           [0,1,float(clist[1])/cluster1_usize],
-           [1,0,float(clist[2])/cluster2_usize],
-           [1,1,float(clist[3])/cluster2_usize]]
+    dat = [[0, 0,float(len(set(users[(0,0)])))/cluster1_usize],
+           [0, 1,float(len(set(users[(0,1)])))/cluster1_usize],
+           [1, 1,float(len(set(users[(1,0)])))/cluster2_usize],
+           [1, 0,float(len(set(users[(1,1)])))/cluster2_usize]]
     pro = pd.DataFrame(dat, columns=['Source', 'Target', 'Proportion'])
 
     pro['Source'] = pro['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
-    pro['Target'] = pro['Target'].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
+    pro['Target'] = pro['Target'].map({0: 'common', 1: 'inter'})
 
     g = sns.factorplot(x="Source", y="Proportion", hue="Target", data=pro,
                        kind="bar", legend=False,
-                       palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"})
-    g.set_xticklabels(["Source: Pro-ED", "Source: Pro-Rec."])
+                       # palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"}
+                       )
+    g.set_xticklabels([r'$U^{ED}_\circlearrowright \quad U^{ED}_\curvearrowright$',
+                       r'$U^{Rec}_\circlearrowright \quad U^{Rec}_\curvearrowright$'])
     g.set_ylabels('User Proportion')
     g.set_xlabels('')
     annots = clist
+    colors = ["#e9a3c9","#a1d76a","#e9a3c9","#a1d76a"]
 
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
@@ -1402,9 +1391,46 @@ def analysis_net_sentiments(file='net-tweet.txt'):
              ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
              textcoords='offset points')
         p.set_hatch(hatches[i])
+        p.set_fc(colors[i])
 
     # plt.legend(loc='best')
     plt.show()
+
+
+    'sentiment '
+
+    annots = [np.mean(df[(df.Source==0) & (df.Target==0)]['Sentiment']),
+                np.mean(df[(df.Source==1) & (df.Target==0)]['Sentiment']),
+                np.mean(df[(df.Source==0) & (df.Target==1)]['Sentiment']),
+              np.mean(df[(df.Source==1) & (df.Target==1)]['Sentiment'])
+              ]
+    print annots
+
+    df['Target'] = np.where((df['Source']==df['Target']), 0, 1)
+    df['Source'] = df['Source'].map({0: 'Source: Pro-ED', 1: 'Source: Pro-Rec.'})
+
+    # df['Target'] = df['Target'][].map({0: 'Target: Pro-ED', 1: 'Target: Pro-Rec.'})
+
+    # plu.plot_config()
+    g = sns.factorplot(x="Source", y="Sentiment", hue="Target", data=df,
+                       kind="bar", legend=False,
+                       # palette={"Target: Pro-ED": "#e9a3c9", "Target: Pro-Rec.": "#a1d76a"}
+                       )
+    ax=g.ax #annotate axis = seaborn axis
+    for i, p in enumerate(ax.patches):
+        # ax.annotate("%.3f" %(annots[i]), (p.get_x() + p.get_width() / 2., p.get_height() if p.get_y()>=0 else -0.1-p.get_height()),
+        #      ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
+        #      textcoords='offset points')
+        p.set_hatch(hatches[i])
+        p.set_fc(colors[i])
+    g.set_xticklabels([r'$\langle S^{ED}_\circlearrowright \rangle$ $\quad$ $\langle S^{ED}_\curvearrowright \rangle$',
+                       r'$\langle S^{Rec}_\circlearrowright \rangle$ $\quad$ $\langle S^{Rec}_\curvearrowright \rangle$'])
+    g.set_ylabels('Relative Sentiment')
+    g.set_xlabels('')
+    # plt.legend(loc='best')
+    plt.show()
+
+
 
 def load_scale_data(file_path, multilabeltf=False):
     X, y = load_svmlight_file(file_path, multilabel=multilabeltf)
@@ -1496,10 +1522,11 @@ def robust_reg(ped, name):
 
 def robust_regression(filepa='centrality-features.csv'):
     data = pd.read_csv(filepa)
+    # Normalized by the total number of tweets
     data['prostr'] = data['prostr'] / data['timeline_count']
     ped = data[data.cluster==0]
     rec = data[data.cluster==1]
-    names = ['body', 'ingest', 'health', 'i', 'we', 'swear', 'negate', 'social', 'posemo', 'negemo', 'prostr']
+    names = ['body', 'ingest', 'health', 'i', 'we', 'social', 'swear', 'negate', 'posemo', 'negemo', 'prostr']
     # ped['pagerank'] *= 100
     res = []
     for name in names:
@@ -1676,7 +1703,7 @@ if __name__ == '__main__':
     # split_in_out_degree()
     # core_analysis()
     # sentiment_injection() #net-tweet.txt
-    analysis_net_sentiments()
-    # centrality_regresion()
+    # analysis_net_sentiments()
+    centrality_regresion()
     # robust_regression()
     # data_validataion()

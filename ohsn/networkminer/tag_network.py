@@ -340,7 +340,7 @@ def tag_jaccard(dbname, hash_time, gfilename):
     g.write_graphml(gfilename+'_tag_undir_jarccard.graphml')
 
 
-def user_hashtag_profile(tag_net, users):
+def user_hashtag_profile(tag_net, users, runindex):
     '''
     Map the hashtags that a user has used to communities of hashtag network
     Get the <commnity: proportion> vector for users' hashtag profiles
@@ -399,6 +399,9 @@ def user_hashtag_profile(tag_net, users):
             user_hash_profile[uid] = np.array(vector)/sum(vector)
 
     pickle.dump(user_hash_profile, open('data/user-hash-profile.pick', 'w'))
+    #####To be run by R scripte
+    # df = pd.DataFrame(data=user_hash_profile.values(), columns=range(com_length))
+    # df.to_csv('data/user-hash-profile' + str(runindex)+'.csv')
 
 
 def user_hashtag_vector(dbname, timename, users):
@@ -578,18 +581,21 @@ def test_user_cluster_stable():
     # user_hashtag_vector('fed', 'ed_tag', users)
     data = []
     for i in xrange(100):
-        user_hashtag_profile(core, users)
+        user_hashtag_profile(core, users, i)
+        ###### Run by python
         data += user_cluster_hashtag()
     df = pd.DataFrame(data, columns=['cluster', 'silhouette_avg'])
     df.to_csv('user-kmeans-hashtag.csv')
+
 
 
 def plot_boxplot(filename='user-kmeans-hashtag.csv'):
     import ohsn.util.plot_util as plu
     plu.plot_config()
     df = pd.read_csv(filename, index_col=0)
-    sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="lightblue")
+    ax = sns.boxplot(x="cluster", y="silhouette_avg", data=df, color="lightblue")
     # sns.pointplot(x="cluster", y="silhouette_avg", data=df, errcolor='red')
+    # ax.set_xticklabels([t.get_text() if int(t.get_text())/2==0 else '' for t in ax.get_xticklabels()])
     sns.despine(offset=10, trim=True)
     plt.xlabel('K')
     plt.ylabel('Average Silhouette')
@@ -597,7 +603,7 @@ def plot_boxplot(filename='user-kmeans-hashtag.csv'):
     plt.show()
 
 def test_user_cluster_assign_stable():
-    # Test stable how final user clustering assignments
+    # Test stable how final user clustering assignments (k=2)
     core = gt.Graph.Read_GraphML('alled_tag_undir_filter.graphml')
     communication = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     gt.summary(communication)
@@ -998,7 +1004,7 @@ if __name__ == '__main__':
 
     #-------------------------------------------------------------------------
     '''hashtags network of differnet clusters'''
-    tags_user_cluster('data/communication-only-fed-filter-hashtag-cluster.graphml', '')
+    # tags_user_cluster('data/communication-only-fed-filter-hashtag-cluster.graphml', '')
 
 
     #-------------------------------------------------------------------------
@@ -1076,7 +1082,7 @@ if __name__ == '__main__':
     # ------------------------------test cluster stable
     # user_cluster_hashtag()
     # test_user_cluster_assign_stable()
-    # test_user_cluster_stable()
+    test_user_cluster_stable()
     # plot_boxplot()
 
     # ---------------user z-score to reweight link weights

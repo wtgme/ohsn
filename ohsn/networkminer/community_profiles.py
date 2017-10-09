@@ -27,16 +27,16 @@ import RAKE
 from nltk.tokenize import RegexpTokenizer
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
-from gensim.models.doc2vec import Doc2Vec
+# from gensim.models.doc2vec import Doc2Vec
 import multiprocessing
-from gensim.models.doc2vec import TaggedDocument
-from gensim.test.test_doc2vec import ConcatenatedDoc2Vec
+# from gensim.models.doc2vec import TaggedDocument
+# from gensim.test.test_doc2vec import ConcatenatedDoc2Vec
 from sklearn import linear_model, metrics
 from ohsn.edrelated import edrelatedcom
 from igraph import *
 import collections
 import re
-from pattern.en import sentiment
+# from pattern.en import sentiment
 import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -999,7 +999,7 @@ if __name__ == '__main__':
     # pro_tag_user()
     # remove_noise_tags()
 
-    network_pro_hashtags()
+    # network_pro_hashtags()
 
     # remove_spam('retweet')
     # remove_spam('communication')
@@ -1010,9 +1010,9 @@ if __name__ == '__main__':
     # hashtag_users_label_proed()
 
 
-    # g = gt.load_network('fed', 'snet')
-    # gt.summary(g)
-    # g.write_graphml('core-ed-follow'+'.graphml')
+    g = gt.load_network('fed', 'snet')
+    gt.summary(g)
+    g.write_graphml('core-ed-follow'+'.graphml')
 
     # fed-communication.graphml is the communitication network for all fed users, including core and friends
     # fedusers = iot.get_values_one_field('fed', 'com', 'id')

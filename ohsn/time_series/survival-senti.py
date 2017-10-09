@@ -567,8 +567,9 @@ if __name__ == '__main__':
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
-    network1 = gt.Graph.Read_GraphML('coreed-net.graphml')
-    gt.summary(network1)
+    network1 = gt.Graph.Read_GraphML('ed-net-all.graphml')
+    gt.net_stat(network1)
+    # gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)
 

@@ -16,7 +16,9 @@ Filter tweets with location, but few tweets have location information
 Identify the location of users that post the crawled tweets, only store the users in UK
 """
 
-
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 from twython import TwythonStreamer
 import urllib
 import imghdr
@@ -36,7 +38,7 @@ OAUTH_TOKEN_SECRET = config.get('credentials2', 'oath_token_secret')
 print('loaded configuation')
 
 # spin up database
-DBNAME = 'random'
+DBNAME = 'public'
 COLLECTION = 'stream'
 db = dbutil.db_connect_no_auth(DBNAME)
 tweets = db[COLLECTION]

@@ -165,23 +165,23 @@ def roc_plot_feature(datafile):
 
     print X.shape
     plu.plot_config()
-    # ax = plt.gca()
-    # ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
+    ax = plt.gca()
+    ax.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
 
-    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:12], y)
-    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
-    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 12:22], y)
-    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Lin. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
-    #
-    # mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
-    # ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
-    # ax.set_xlim([0, 1])
-    # ax.set_ylim([0, 1])
-    # ax.set_xlabel('False Positive Rate')
-    # ax.set_ylabel('True Positive Rate')
-    # ax.legend(loc="lower right")
-    # ax.grid(True)
-    # plt.show()
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 0:12], y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'r--^', label='Soc. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X[:, 12:22], y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'g--d', label='Lin. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+
+    mean_fpr, mean_tpr, mean_auc = cross_val_roc(X, y)
+    ax.plot(mean_fpr[0:100:5], mean_tpr[0:100:5], 'b--o', label='All. (AUC = %0.2f)' % mean_auc, lw=3, ms=10)
+    ax.set_xlim([0, 1])
+    ax.set_ylim([0, 1])
+    ax.set_xlabel('False Positive Rate')
+    ax.set_ylabel('True Positive Rate')
+    ax.legend(loc="lower right")
+    ax.grid(True)
+    plt.show()
 
     data = []
     result = svm_cv(X[:, 0:12], y)
@@ -197,7 +197,7 @@ def roc_plot_feature(datafile):
     plu.plot_config()
     g = sns.factorplot(x="Metric", y="Value", hue="Feature", data=df,
                        kind="bar", legend=False,
-                       palette={"Social Activities": "#e9a3c9", "Linguistic Constructs": "#ffffbf", 'All': '#a1d76a'})
+                       palette={"Social Activities": "#e9a3c9", "Linguistic Constructs": "#91bfdb", 'All': '#a1d76a'})
     g.set_xticklabels(["Accuracy", "Micro-F1", 'Macro-F1'])
     g.set_ylabels('Index')
     g.set_xlabels('Metric')

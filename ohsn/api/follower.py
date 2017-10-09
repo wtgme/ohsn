@@ -113,7 +113,6 @@ def get_followers(params):
 
 def snowball_follower(poi_db, net_db, level, check='N'):
     #Processing max 200 users each time.
-    # Max 10000 followers are retrieve
     start_level = level
     while True:
         count = poi_db.find_one({'level': start_level,

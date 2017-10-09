@@ -13,8 +13,8 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import datetime
 import pymongo
-# from ohsn.api import follower
-# from ohsn.api import following
+from ohsn.api import follower
+from ohsn.api import following
 from ohsn.api import lookup
 # from ohsn.api import profiles_check
 from ohsn.util import db_util as dbt
@@ -26,7 +26,7 @@ from threading import Thread
 def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newdb = dbt.db_connect_no_auth(newdbname)
     newcom = newdb[newcomname]
-    # newnet = newdb['net']
+    newnet = newdb['net']
     newcom.create_index("id", unique=True)
     newcom.create_index([('level', pymongo.ASCENDING),
                          ('following_prelevel_node', pymongo.ASCENDING)],
@@ -34,25 +34,11 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
     newcom.create_index([('level', pymongo.ASCENDING),
                          ('follower_prelevel_node', pymongo.ASCENDING)],
                         unique=False)
-    # newnet.create_index([("user", pymongo.ASCENDING),
-    #                      ("follower", pymongo.ASCENDING)],
-    #                     unique=True)
+    newnet.create_index([("user", pymongo.ASCENDING),
+                         ("follower", pymongo.ASCENDING)],
+                        unique=True)
 
-    # oldcom = dbt.db_connect_col(olddbname, oldcomname)
-    # '''Reteive ED core users'''
-    # cursor = oldcom.find({}, ['id'], no_cursor_timeout=True).batch_size(100)
-    # print 'pass'
-    # idlist = []
-    # while(cursor.alive):
-    #     users = cursor.next()
-    #     print len(users)
-    #     for user in users:
-    #         print user
-    #         idlist.append(str(user['id']))
-    #     lookup.lookup_user_list(idlist, newcom, 1, 'N')
-    #     idlist = []
-
-
+    '''Reteive ED core users'''
     ed_users = iot.get_values_one_field(olddbname, oldcomname, 'id')
     list_size = len(ed_users)
     print '%d users to process' %list_size
@@ -64,16 +50,16 @@ def re_snowball_friends(olddbname, oldcomname, newdbname, newcomname):
 
 
     '''Snowball sampling round'''
-    # level = 1
-    # while level < 2:
-    #     # Each call of snowball_following and snowball_follower only process up to 200 users
-    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
-    #     following_flag = following.snowball_following(newcom, newnet, level, 'N')
-    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
-    #     follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
-    #     if following_flag == False and follower_flag == False:
-    #         level += 1
-    #     continue
+    level = 1
+    while level < 2:
+        # Each call of snowball_following and snowball_follower only process up to 200 users
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+        following_flag = following.snowball_following(newcom, newnet, level, 'N')
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+        follower_flag = follower.snowball_follower(newcom, newnet, level, 'N')
+        if following_flag == False and follower_flag == False:
+            level += 1
+        continue
 
     # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'START: Snowball friends of seeds for sample db', level
     # t1 = Thread(target=following.snowball_following, args=[newcom, newnet, level, 'N'])
@@ -125,7 +111,8 @@ def snowball_friends():
 
 if __name__ == '__main__':
     # snowball_friends()
-    re_snowball_friends('younger', 'com', 'younger', 'com_survival') # random2 fed
-    re_snowball_friends('random', 'com', 'random', 'com_survival') # random2 fed
-    re_snowball_friends('fed', 'com', 'fed', 'com_survival') # random2 fed
+    # re_snowball_friends('younger', 'com', 'younger', 'com_survival') # random2 fed
+    # re_snowball_friends('random', 'com', 'random', 'com_survival') # random2 fed
+    '''Always start from CORE ED users and collect their friends, to see network changes'''
+    re_snowball_friends('fed', 'scom', 'fed4', 'com') # random2 fed
 

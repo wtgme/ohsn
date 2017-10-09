@@ -59,7 +59,6 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
                 pass
 
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
-    # stream_timeline(sample_user, sample_time, 1, 2)
     timelines.stream_timeline(newcom, newtime, 1, 3)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
 
@@ -72,6 +71,6 @@ def update_timeline(olddbname, oldtimename, newdbname, newcomname, newtimename):
 
 
 if __name__ == '__main__':
-    retrieve_timeline('depression', 'com', 'timeline')
+    # retrieve_timeline('depression', 'com', 'timeline')
 
-    # update_timeline('fed2', 'timeline', 'fed3', 'com', 'timeline')
+    update_timeline('fed3', 'timeline', 'fed4', 'com', 'timeline')
