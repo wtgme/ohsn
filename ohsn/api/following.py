@@ -165,7 +165,7 @@ def snowball_following(poi_db, net_db, level, check='N'):
                         break
                 poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"following_scrape_flag": True
                                                     }}, upsert=False)
-            return True
+            continue
 
 
 def snowball_following_proportion(poi_db, net_db, level, check='N', proportation=0.1):

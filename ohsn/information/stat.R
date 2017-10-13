@@ -1,4 +1,6 @@
-install.packages("latex2exp")
+install.packages("netdiffuseR")
+
+
 
 library(ggplot2)
 library(reshape)
@@ -6,6 +8,7 @@ library(stargazer)
 library(sm)
 library(poweRlaw)
 library(latex2exp)
+library(netdiffuseR)
 
 # Reference http://shinyapps.org/apps/RGraphCompendium/index.php
 # Font: https://cran.r-project.org/web/packages/svglite/vignettes/fonts.html 
@@ -110,17 +113,16 @@ legend("topright", c('RT','Like'),
        col=c(4,2), lwd=c(3,3), cex=2, bty = "n") # gives the legend lines the correct color and width
 
 
-
+######### users aggregated stats==============
 a = aggregate(dif ~ uid, ed, mean)
 b = aggregate(dif ~ uid, yg, mean)
-
 hist(yg$dif, main = "", xlab = TeX('$c_{like} - c_{RT}$') , ylab = TeX('N_t'), cex.lab=3.5, cex.axis = 2)
 hist(b$dif, main = "", xlab = TeX('$\\bar{c_{like} - c_{RT}}$') , ylab = TeX('N_u'), cex.lab=3.5, cex.axis = 2)
 
 plot(density(a$dif))
 plot(density(b$dif))
 
-#--------------test power law
+#--------------test power law---------------------------
 data("moby", package="poweRlaw")
 m_pl = displ$new(moby)
 est = estimate_xmin(m_pl)
@@ -133,3 +135,45 @@ dates <- as.Date(yg$date)
 hist(dates, "months", format = "%b %y", freq=TRUE)
 
 
+
+#-----------------information diffusion------------------------------
+
+set.seed(1234)
+n <- 100
+nper <- 20
+graph <- rgraph_er(n, nper, .5)
+toa <- sample(c(1:(1+nper-1), NA), n, TRUE)
+head(toa)
+diffnet <- as_diffnet(graph, toa)
+diffnet
+summary(diffnet)
+out <- plot_infectsuscep(diffnet, bins = 20,K=5, logscale = FALSE, h=.01)
+
+out <- plot_infectsuscep(diffnet, bins = 20,K=5, logscale = TRUE,
+                         exclude.zeros = TRUE, h=1,
+                         color.palette = colorRampPalette(c("lightblue", "yellow", "red")))
+
+
+set.seed(123)
+diffnet <- rdiffnet(500, 20,
+                    seed.nodes = "random",
+                    rgraph.args = list(m=3),
+                    threshold.dist = function(x) runif(1, .3, .7))
+diffnet
+plot_threshold(diffnet, vertex.size = .4)
+
+data("medInnovationsDiffNet")
+size <- sqrt(1 + dgr(medInnovationsDiffNet)[,1])
+set.seed(131)
+plot_threshold(
+  medInnovationsDiffNet,
+  vertex.color     = c("tomato", "steelblue", "black", "gray")[medInnovationsDiffNet[["city"]]],
+  vertex.label.cex = size/4,
+  vertex.sides     = medInnovationsDiffNet[["city"]] + 2,
+  sub = "Note: Vertices' sizes and shapes given by degree and city respectively",
+  jitter.factor = c(1,1), jitter.amount = c(.25,.025)
+)
+
+plot_diffnet(medInnovationsDiffNet, slices=c(1,2,3,4,5,6,7,8,9,10,11,12))
+diffnet.toa(brfarmersDiffNet)[brfarmersDiffNet$toa >= 1965] <- NA
+plot_diffnet2(brfarmersDiffNet, vertex.size = "indegree")

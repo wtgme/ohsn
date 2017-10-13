@@ -21,8 +21,17 @@ import ohsn.util.io_util as iot
 import ohsn.util.plot_util as pt
 import seaborn as sns
 import ohsn.api.tweet_lookup as tlup
+from ohsn.api import follower
+from ohsn.api import following
 import numpy as np
 import pymongo
+import re, string
+
+rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
+mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
+hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
+# hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
+ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 
 
 def tweet_stat(dbname, comname, timename):
@@ -78,11 +87,6 @@ def tweet_difference(dbname='fed', comname='scom', timename='timeline'):
     com = dbt.db_connect_col(dbname, comname)
     times = dbt.db_connect_col(dbname, timename)
     '''Process the timelines of users in POI'''
-    rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
-    mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
-    hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
-    # hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
-    ugrex = re.compile(r'(https?://[^\s]+)')  # for url
     liwc = Liwc()
 
     for user in com.find():
@@ -139,19 +143,20 @@ def plot_distribution(dbname='fed', comname='scom'):
         plt.clf()
 
 
-
 def recollect_ed(dbname='ed', colname='stream', newcol='restream'):
     # Recollect the stream data, to get the favorite and retweet counts
     stream = dbt.db_connect_col(dbname, colname)
     newstream = dbt.db_connect_col(dbname, newcol)
+    newstream.create_index("id", unique=True)
     i = 0
     ids = []
-    for tweet in stream.find({}, ['id'], no_cursor_timeout=True):
+    for tweet in stream.find({'recollected': {'$exists': False},}, no_cursor_timeout=True):
         if i < 100:
+            stream.update_one({'id': tweet['id']}, {'$set': {'recollected': True}}, upsert=False)
             ids.append(tweet['id'])
             i += 1
         else:
-            print len(ids)
+            print datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + str(len(ids))
             tweets = tlup.get_tweets_info(ids)
             for t in tweets:
                 try:
@@ -160,6 +165,78 @@ def recollect_ed(dbname='ed', colname='stream', newcol='restream'):
                     pass
             i = 0
             ids = []
+
+
+def extract_user(dbname='ed', stream='restream', user='com'):
+    # extract users from tweet stream, including author and retweeters.
+    stream = dbt.db_connect_col(dbname, stream)
+    com = dbt.db_connect_col(dbname, user)
+    com.create_index("id", unique=True)
+    for tweet in stream.find({'userextract': {'$exists': False},}, no_cursor_timeout=True):
+        author = tweet['user']
+        author['level'] = 1
+        try:
+            com.insert(author)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+        if 'retweeted_status' in tweet:
+            retweetee = tweet['retweeted_status']['user']
+            retweetee['level'] = 1
+            try:
+                com.insert(retweetee)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+        stream.update_one({'id': tweet['id']}, {'$set': {'userextract': True}}, upsert=False)
+
+
+def follow_net(dbname='ed', username='com', netname='net'):
+    # Collect follow network among users
+    com = dbt.db_connect_col(dbname, username)
+    net = dbt.db_connect_col(dbname, netname)
+    net.create_index([("user", pymongo.ASCENDING),
+                         ("follower", pymongo.ASCENDING)],
+                        unique=True)
+    level = 1
+    while level < 2:
+        # Each call of snowball_following and snowball_follower only process up to 200 users
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followings of seeds for sample db', level
+        following_flag = following.snowball_following(com, net, level, 'N')
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'Snowball followees of seeds for sample db', level
+        follower_flag = follower.snowball_follower(com, net, level, 'N')
+        if following_flag == False and follower_flag == False:
+            level += 1
+        continue
+
+
+def unique_tweet(dbname, streamname, timename):
+    # get unique tweets in the stream
+    stream = dbt.db_connect_col(dbname, streamname)
+    time = dbt.db_connect_col(dbname, timename)
+    time.create_index("id", unique=True)
+    for tweet in stream.find({}, no_cursor_timeout=True):
+        if 'retweeted_status' in tweet:
+            text = tweet['retweeted_status']['text']
+        else:
+            text = tweet['text']
+        try:
+            time.insert({'id': tweet['id'], 'text': text})
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
+def out_tweet_for_cluster(dbname, colname):
+    # Output tweets for embedding and clustering
+    time = dbt.db_connect_col(dbname, colname)
+    replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
+    for tweet in time.find({}, no_cursor_timeout=True):
+        text = tweet['text'].encode('utf-8')
+        text = rtgrex.sub('', text) # retweet
+        text = mgrex.sub('', text) # mention
+        # text = hgrex.sub('', text) #hashtag
+        text = ugrex.sub('', text) #url
+        text = text.strip().lower()
+        text = text.translate(replace_punctuation)
+        print ' '.join(text.split())
+
 
 
 
@@ -171,4 +248,7 @@ if __name__ == '__main__':
     # tweet_difference('younger')
     # plot_distribution(dbname='younger', comname='scom')
     recollect_ed()
-
+    # extract_user()
+    # follow_net()
+    # unique_tweet('ed', 'stream', 'tweet')
+    # out_tweet_for_cluster('ed', 'tweet')

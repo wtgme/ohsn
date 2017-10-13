@@ -163,4 +163,4 @@ def snowball_follower(poi_db, net_db, level, check='N'):
                         break
                 poi_db.update_one({'id': int(user['id_str'])}, {'$set':{"follower_scrape_flag": True
                                                     }}, upsert=False)
-            return True
+            continue

@@ -81,7 +81,7 @@ def get_tweets_info(stream_tweet_list):
             # print 'lookup input', stream_user_list
             if lookup_remain_tweet < 1:
                 lookup_remain_tweet = handle_lookup_tweet_rate_limiting()
-            infos = twitter_look_tweet.lookup_status(id=stream_tweet_list, trim_user=True)
+            infos = twitter_look_tweet.lookup_status(id=stream_tweet_list, trim_user=False)
             lookup_remain_tweet -= 1
             lookup_lock_tweet = 1
             # print 'lookup output', infos
