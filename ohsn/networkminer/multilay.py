@@ -18,6 +18,7 @@ import ohsn.util.io_util as iot
 import pymongo
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
+import pickle
 
 def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     ## Categorize tweets into three classes: 0: no hashtag; -1: ED tag; 1: non-ED tag.
@@ -139,6 +140,16 @@ def networks(dbname):
             fw.write(str(uidlist[k]) + ' N' + k + '\n')
 
 
+def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
+    # get topics of all hashtags posted by fed users
+    g = gt.Graph.Read_GraphML(filepath)
+    gt.summary(g)
+    vs = g.vs(weight_gt=3, user_gt=3)
+    g = g.subgraph(vs)
+    gt.summary(g)
+    com = g.community_infomap(edge_weights='weight', vertex_weights=None)
+    comclus = com.subgraphs()
+    pickle.dump(comclus, open('data/fed_tag_undir.communities'))
 
 
 if __name__ == '__main__':
@@ -147,4 +158,5 @@ if __name__ == '__main__':
     # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
     # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
 
-    networks('fed')
+    # networks('fed')
+    fed_all_tag_topic()
