@@ -84,10 +84,67 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
                 else:  # original mentions
                     timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
 
+def out_graph_edges(g, edgePath, node_attrs = {}):
+    # out edge list and node attribute list
+    with open(edgePath, 'wb') as fw:
+        for e in g.es:
+            source_vertex_id = e.source
+            target_vertex_id = e.target
+            source_vertex = g.vs[source_vertex_id]
+            target_vertex = g.vs[target_vertex_id]
+
+            if source_vertex['name'] not in node_attrs:
+                node_attrs[source_vertex['name']] = len(node_attrs) + 1
+            if target_vertex['name'] not in node_attrs:
+                node_attrs[target_vertex['name']] = len(node_attrs) + 1
+
+            fw.write('%s %s %d\n' %('N'+source_vertex['name'],
+                                     'N'+target_vertex['name'],
+                                     e['weight']))
+
+
+    return node_attrs
+
+
+def networks(dbname):
+    # out networks to multiplex process
+    g1 = gt.load_beh_network(dbname, 'ed_bnet')
+    g2 = gt.load_beh_network(dbname, 'non_ed_bnet')
+    g3 = gt.load_beh_network(dbname, 'non_tag_bnet')
+    gt.net_stat(g1)
+    gt.net_stat(g2)
+    gt.net_stat(g3)
+
+    g1 = gt.giant_component(g1, 'WEAK')
+    g2 = gt.giant_component(g2, 'WEAK')
+    g3 = gt.giant_component(g3, 'WEAK')
+
+    common = set(g1.vs['name']).intersection(g2.vs['name'])
+    common = set(g3.vs['name']).intersection(common)
+    g1 = g1.subgraph(g1.vs.select(name_in=common))
+    g2 = g2.subgraph(g2.vs.select(name_in=common))
+    g3 = g3.subgraph(g3.vs.select(name_in=common))
+    gt.net_stat(g1)
+    gt.net_stat(g2)
+    gt.net_stat(g3)
+
+    uidlist = out_graph_edges(g1, 'data/ed_commu.edge')
+    uidlist = out_graph_edges(g2, 'data/non_ed_commu.edge', uidlist)
+    uidlist = out_graph_edges(g3, 'data/non_tag_commu.edge', uidlist)
+
+
+    with open('data/ed_commu.node', 'wb') as fw:
+        fw.write('nodeID nodeLabel\n')
+        for k in list(sorted(uidlist, key=uidlist.get)):
+            fw.write(str(uidlist[k]) + ' N' + k + '\n')
+
+
 
 
 if __name__ == '__main__':
     # constrcut_data()
-    extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
-    extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
-    extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
+    # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
+    # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
+    # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
+
+    networks('fed')
