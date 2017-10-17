@@ -244,6 +244,7 @@ def read_user_time_iv(filename):
                 u_timeline_count = user['timeline_count']
 
                 values = iot.get_fields_one_doc(user, fields)
+                values.append(values[-1] - values[-2])
                 level = user['level']
 
                 # set users liwc changes
@@ -293,6 +294,7 @@ def read_user_time_iv(filename):
                                 # if eigen_map.get(fu['id'], 0) > 0.0001:
                                 if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
+                                    fatt.append(fatt[-1] - fatt[-2])
                                     # factive = [0]
                                     # if fu2:
                                     #     f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
@@ -331,8 +333,8 @@ def read_user_time_iv(filename):
                                     # ['u_prior_'+field for field in trimed_fields] +
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
-                                    ['u_'+field for field in prof_names] +
-                                    ['f_'+tf for tf in trimed_fields] +
+                                    ['u_'+field for field in prof_names] + ['u_emotion_change'] +
+                                    ['f_'+tf for tf in trimed_fields] + ['f_emotion_change'] +
                                     ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'])
     df.to_csv(filename)
 
@@ -563,12 +565,12 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
-    network1 = gt.Graph.Read_GraphML('ed-net-all.graphml')
-    gt.net_stat(network1)
+    # network1 = gt.Graph.Read_GraphML('ed-net-all.graphml')
+    # gt.net_stat(network1)
     # gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)
