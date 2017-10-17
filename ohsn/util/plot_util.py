@@ -15,6 +15,7 @@ import matplotlib as mpl
 import pylab
 import powerlaw_fit
 import seaborn as sns
+sns.reset_orig()
 import scipy.stats as stats
 from scipy import optimize
 
@@ -436,11 +437,11 @@ def correlation(x, y, xlabel, ylabel, savefile):
 
 
 def plot_config():
-    sns.set(style="whitegrid", palette="pastel", color_codes=True)
     plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['xtick.labelsize'] = 25
-    plt.rcParams['ytick.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 30
+    plt.rcParams['xtick.labelsize'] = 15
+    plt.rcParams['ytick.labelsize'] = 15
+    plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['font.family'] = 'serif'
     # plt.rcParams['axes.formatter.useoffset'] = False
     # plt.rcParams['lines.markersize'] = 4
     # plt.rcParams['lines.linewidth'] = 2
@@ -502,6 +503,22 @@ def power_law_fit(a):
     plt.show()
 
 
+def binning(x, y):
+    xmin = min(np.min(x), np.min(y))
+    xmax = max(np.max(x), np.max(y))
+    bins = [xmin]
+    cur_value = bins[0]
+    multiplier = 2.0
+    while cur_value < xmax:
+        cur_value = cur_value * multiplier
+        bins.append(cur_value)
+    bins = np.array(bins)
+    return bins
+
+def log_bin(x, bins):
+    bin_widths = (bins[1:] + bins[0:-1])/2.0
+    pdf, _ = np.histogram(x, bins=bins, normed=True)
+    return bin_widths, pdf
 
 
 if __name__ == '__main__':
@@ -511,5 +528,8 @@ if __name__ == '__main__':
     # g = (sns.jointplot("total_bill", "tip", data=tips, stat_func=stats.kendalltau, kind="reg",
     #               xlim=(0, 60), ylim=(0, 12), color="b", size=7))
     # plt.show()
-    test2()
-    plt.show()
+    # test2()
+    # plt.show()
+    rands = np.random.rand(10000)
+    one_per_rands = 1./rands
+    plot_log_bin(one_per_rands)

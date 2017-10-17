@@ -7,7 +7,9 @@ Created on 20:34, 26/10/15
 import pymongo
 import ConfigParser
 import os
+import sys
 import datetime
+from sshtunnel import SSHTunnelForwarder
 
 def db_connect_auth(DBNAME):
     config = ConfigParser.ConfigParser()
@@ -48,6 +50,29 @@ def db_connect_no_auth(DBNAME):
         exit()
 
 
+class db_connect_no_auth_ian:
+    def __init__(self):
+        self.server = SSHTunnelForwarder(
+        '140.203.155.226',
+        ssh_username='taowan',
+        ssh_password='uXvy5OztX1fAxrEyynPbLmtO',
+        remote_bind_address=('127.0.0.1', 27017)
+        )
+        self.server.start()
+    def connect(self, DBNAME):
+        try:
+            conn = pymongo.MongoClient('127.0.0.1', self.server.local_bind_port)
+            db = conn[DBNAME]
+            # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "Success connected to " + DBNAME
+            return db
+        except Exception as detail:
+            print detail
+            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + "FAILED to connect to " + DBNAME
+            exit()
+    def disconnect(self):
+        self.server.stop()
+
+
 def db_connect_col(dbname, colname):
     db = db_connect_no_auth(dbname)
     return db[colname]
@@ -60,13 +85,12 @@ def db_connect_col(dbname, colname):
 # collection = DBConnectNOAuth('twitter_test', 'streamtrack')
 
 if __name__ == '__main__':
-    db = db_connect_no_auth('fed')
-    net = db['com']
-    print net.count({'net_anal.tnmined': {'$exists': False},'net_anal.tnmined': False})
-    # print net.count({'net_anal.tnmined': {'$exists': False}})
-    # print net.count({'net_anal.tnmined': False})
-    print net.count({'$and': [{'net_anal.tnmined': {'$exists': False}},
-                                            {'net_anal.tnmined': False}]})
+    conn = db_connect_no_auth_ian()
+    db = conn.connect('TwitterProAna')
+    users = db['users']
+    print users.count()
+    conn.disconnect()
+
     # print net.count({'$or': [{'net_anal.tnmined': {'$exists': False}},
     #                                         {'net_anal.tnmined': False}]})
 

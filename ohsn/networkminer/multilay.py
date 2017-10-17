@@ -142,13 +142,17 @@ def networks(dbname):
 
 def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
     # get topics of all hashtags posted by fed users
+    # The results before are obatain using more than 3 tweets and 3 users
+    # Then use the giant component.
     g = gt.Graph.Read_GraphML(filepath)
     gt.summary(g)
-    vs = g.vs(weight_gt=3, user_gt=3)
+    vs = g.vs(weight_gt=10, user_gt=10)
     g = g.subgraph(vs)
     gt.summary(g)
-    com = g.community_infomap(edge_weights='weight', vertex_weights=None)
+    # g = gt.giant_component(g)
+    com = g.community_infomap(edge_weights='weight', vertex_weights='weight')
     comclus = com.subgraphs()
+    print len(comclus)
     pickle.dump(comclus, open('data/fed_tag_undir.communities'))
 
 
