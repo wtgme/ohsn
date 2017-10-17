@@ -15,6 +15,7 @@ import pymongo
 import ohsn.api.profiles_check as pck
 
 def filter_user():
+    # filter ED users from Ian data
     conn = dbt.db_connect_no_auth_ian()
     iandb = conn.connect('TwitterProAna')
     ianusers = iandb['users']
@@ -32,5 +33,17 @@ def filter_user():
                         if text != None and pck.check_ed_profile(text):
                             print u['id']
     conn.disconnect()
+
+def overlap():
+    # overlap between two data
+    core_ed = set(iot.get_values_one_field('fed', 'scom', 'id'))
+    ian_ed = set()
+    with open('uid.txt', 'r') as fo:
+        for line in fo.readline():
+            ian_ed.add(int(line.strip()))
+    print len(core_ed), len(ian_ed), len(core_ed.intersection(ian_ed))
+
+
 if __name__ == '__main__':
-    filter_user()
+    # filter_user()
+    overlap()
