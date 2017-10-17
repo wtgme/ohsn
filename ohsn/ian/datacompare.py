@@ -39,7 +39,7 @@ def overlap():
     core_ed = set(iot.get_values_one_field('fed', 'scom', 'id'))
     ian_ed = set()
     with open('uid.txt', 'r') as fo:
-        for line in fo.readline():
+        for line in fo.readlines():
             ian_ed.add(int(line.strip()))
     print len(core_ed), len(ian_ed), len(core_ed.intersection(ian_ed))
 
