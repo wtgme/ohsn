@@ -561,13 +561,14 @@ def sentiment_bmi(dbname, comname):
     com = dbt.db_connect_col(dbname, comname)
     data = []
     for user in com.find({'text_anal.cbmi.value': {'$exists': True},
+                          'text_anal.gbmi.value': {'$exists': True},
                           'senti.result.whole.scalem': {'$exists': True}},
                          no_cursor_timeout=True):
-        bmi = (user['senti']['result']['whole']['scalem'])
-        sentiment = (user['text_anal']['cbmi']['value'])
-        data.append([user['id'], sentiment, bmi])
+        sentiment = (user['senti']['result']['whole']['scalem'])
+        cbmi = (user['text_anal']['cbmi']['value'])
+        gbmi = (user['text_anal']['gbmi']['value'])
+        data.append([user['id'], sentiment, cbmi, gbmi])
 
-    df = pd.DataFrame(data, columns=['uid', 'sentiment', 'bmi'])
     df.to_csv('sentiment-bmi.csv')
 
 
