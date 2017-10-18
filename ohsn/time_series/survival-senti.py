@@ -569,6 +569,7 @@ def sentiment_bmi(dbname, comname):
         gbmi = (user['text_anal']['gbmi']['value'])
         data.append([user['id'], sentiment, cbmi, gbmi])
 
+    df = pd.DataFrame(data, columns=['uid', 'sentiment', 'cbmi', 'gbmi'])
     df.to_csv('sentiment-bmi.csv')
 
 
