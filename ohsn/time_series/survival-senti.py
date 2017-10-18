@@ -329,11 +329,11 @@ def read_user_time_iv(filename):
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
                                      'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
                                      'u_timeline_count'] +
-                                    ['u_'+field for field in trimed_fields] +
+                                    ['u_'+field for field in trimed_fields] + ['u_emotion_change'] +
                                     # ['u_prior_'+field for field in trimed_fields] +
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
-                                    ['u_'+field for field in prof_names] + ['u_emotion_change'] +
+                                    ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields] + ['f_emotion_change'] +
                                     ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'])
     df.to_csv(filename)

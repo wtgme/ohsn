@@ -44,6 +44,37 @@ def overlap():
     print len(core_ed), len(ian_ed), len(core_ed.intersection(ian_ed))
 
 
+
+def data_transform():
+    # transform data from ian db to local db
+    conn = dbt.db_connect_no_auth_ian()
+    iandb = conn.connect('TwitterProAna')
+    ianusers = iandb['users']
+    users = dbt.db_connect_col('TwitterProAna', 'users')
+    users.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    for u in ianusers.find({}, no_cursor_timeout=True):
+        try:
+            users.insert(u)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
+    ianusers = iandb['tweets']
+    users = dbt.db_connect_col('TwitterProAna', 'tweets')
+    users.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    users.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    for u in ianusers.find({}, no_cursor_timeout=True):
+        try:
+            users.insert(u)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+    conn.disconnect()
+
+
 if __name__ == '__main__':
     # filter_user()
-    overlap()
+    # overlap()
+
+    data_transform()
