@@ -73,12 +73,13 @@ def data_transform():
             pass
     conn.disconnect()
 
+
 def tweet_stat():
     # stats tweeting activity over time
     tweets = dbt.db_connect_col('TwitterProAna', 'tweets')
     print ('%s\t%s\t%s') %('tid', 'uid', 'date')
     for tweet in tweets.find({}, no_cursor_timeout=True):
-        print ('%d\t%d\t%s') %(tweet['id'], tweet['user']['id'], tweet['created_at'])
+        print ('%d\t%d\t%s') %(tweet['id'], tweet['from_user_id'], tweet['created_at'])
 
 
 if __name__ == '__main__':
