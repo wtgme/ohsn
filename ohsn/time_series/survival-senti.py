@@ -556,6 +556,21 @@ def tag_similarity_group_dropout_emotion():
 
 
 
+def sentiment_bmi(dbname, comname):
+    # calculate the correlation between sentiment and BMI
+    com = dbt.db_connect_col(dbname, comname)
+    data = []
+    for user in com.find({'text_anal.cbmi.value': {'$exists': True},
+                          'senti.result.whole.scalem': {'$exists': True}},
+                         no_cursor_timeout=True):
+        bmi = (user['senti']['result']['whole']['scalem'])
+        sentiment = (user['text_anal']['cbmi']['value'])
+        data.append([user['id'], sentiment, bmi])
+
+    df = pd.DataFrame(data, columns=['uid', 'sentiment', 'bmi'])
+    df.to_csv('sentiment-bmi.csv')
+
+
 if __name__ == '__main__':
 
     # print diff_day(datetime(2010, 10,1), datetime(2010,9,1))
@@ -565,7 +580,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    read_user_time_iv('user-durations-iv-following-senti.csv')
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
@@ -580,3 +595,6 @@ if __name__ == '__main__':
     # tfidf_stat_dropout()
     # tag_similarity_group_dropout_emotion()
     # tag_similarity_group_conflit_all()
+
+
+    sentiment_bmi('fed', 'com')

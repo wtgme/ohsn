@@ -13,6 +13,7 @@ import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import pymongo
 import ohsn.api.profiles_check as pck
+from datetime import datetime
 
 def filter_user():
     # filter ED users from Ian data
@@ -72,9 +73,17 @@ def data_transform():
             pass
     conn.disconnect()
 
+def tweet_stat():
+    # stats tweeting activity over time
+    tweets = dbt.db_connect_col('TwitterProAna', 'tweets')
+    print ('%s\t%s\t%s') %('tid', 'uid', 'date')
+    for tweet in tweets.find({}, no_cursor_timeout=True):
+        print ('%d\t%d\t%s') %(tweet['id'], tweet['user']['id'], tweet['created_at'])
+
 
 if __name__ == '__main__':
     # filter_user()
     # overlap()
 
-    data_transform()
+    # data_transform()
+    tweet_stat()
