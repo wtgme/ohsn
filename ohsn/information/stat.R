@@ -1,4 +1,4 @@
-install.packages("netdiffuseR")
+install.packages("magrittr")
 
 
 

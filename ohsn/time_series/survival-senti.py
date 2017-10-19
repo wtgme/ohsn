@@ -24,6 +24,7 @@ from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
 
+
 def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
 
@@ -553,7 +554,6 @@ def tag_similarity_group_dropout_emotion():
             dlist = [d.get(key, 0) for key in allkeys]
             glist = [g.get(key, 0) for key in allkeys]
             print '%.3f' %(1 - spatial.distance.cosine(dlist, glist))
-
 
 
 def sentiment_bmi(dbname, comname):

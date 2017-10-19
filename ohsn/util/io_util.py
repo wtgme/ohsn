@@ -13,6 +13,14 @@ import numpy as np
 import os
 import plot_util as splot
 
+def read_name(type='F'):
+    typeMap = {'F': 3, 'M':1}
+    names = set()
+    with open(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'name.txt')) as fo:
+        for line in fo.readlines():
+            tokens = line.split('\t')
+            names.add(tokens[typeMap[type]].strip().lower())
+    return names
 
 def read_fields(split=False):
     # read feature names in use

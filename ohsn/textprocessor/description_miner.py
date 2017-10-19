@@ -13,6 +13,7 @@ import sys
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 from ohsn.util import db_util as dbutil
+from ohsn.util import io_util as iot
 import re
 import datetime
 from collections import Counter
@@ -78,6 +79,10 @@ KEYWORDS = set(['anorexic',
 
 VERSION = 0.01
 
+
+
+girl_names = iot.read_name(type='F')
+boy_names = iot.read_name(type='M')
 
 def getVersion():
     return VERSION
@@ -163,9 +168,40 @@ def get_age(text):
         return match.group('age')
     return None
 
+def get_gender(text, name=''):
+    # from name
+    name_pat = re.compile('^(?P<first>[A-Z][a-z]+) (?P<second>[A-Z][a-z]+)$')
+    name_match = name_pat.search(name.strip())
+        # age_match = age_pat.search(prof.strip())
+    if name_match:
+        if (name_match.group('first').lower() in girl_names):
+            return 'F'
+        elif (name_match.group('first').lower() in boy_names):
+            return 'M'
+    else:
+        # from profile description
+        pattern = re.compile("female|girl|woman|princess", re.IGNORECASE)
+        match = pattern.search(text)
+        if match is not None:
+            # print 'a'
+            # print match.group('age') +"\t"+ text
+            return 'F'
+        pattern = re.compile("male|boy|man|prince", re.IGNORECASE)
+        match = pattern.search(text)
+        if match is not None:
+            # print 'b'
+            # print match.group('age') +"\t"+ text
+            return 'M'
+        pattern = re.compile("(I(')?m|i( a)?m) (?P<name>[A-Z][a-z]+)", re.IGNORECASE)
+        match = pattern.search(text)
+        if match is not None:
+            s = (match.group('name')).lower()
+            if s in girl_names:
+                return 'F'
+            elif s in boy_names:
+                return 'M'
+        return None
 
-# def get_gender(text):
-#     TODO
 
 def get_bmi(text):
     # print text
@@ -472,7 +508,7 @@ def edword(text):
     return int(sum(cnt.values()))
 
 
-def process_text(text):
+def process_text(text, name=''):
     results = {}
     text = text.encode('utf-8').replace('\n', ' ')
     text = text.lower()
@@ -516,6 +552,10 @@ def process_text(text):
     a = get_age(text)
     if a is not None:
         results['a'] = {'value': float(a)}
+
+    gender = get_gender(text, name)
+    if gender is not None:
+        results['gender'] = {'value': gender}
 
     return results
 
@@ -571,7 +611,7 @@ def process_description(poi):
             if text is None:
                 results = {}
             else:
-                results = process_text(text)
+                results = process_text(text, user['name'])
             results['mined'] = True
             poi.update({"id": user['id']}, {'$set': {'text_anal': results}}, upsert=False)
 
@@ -620,7 +660,7 @@ def process_test_results():
 
 
 if __name__ == '__main__':
-    process_poi('fed2', 'com')
+    process_poi('fed', 'com')
     # inference_stat('fed', 'com')
     # process_poi('sed', 'com')
     # process_poi('srd', 'com')
@@ -634,19 +674,21 @@ if __name__ == '__main__':
 
 
 
-   #  text = '''
-   # Leeshly. 15. Ana with Mia tendencies. Bipolar. Self- harmer. CW: 88 HW:13O LW: 88 GW: 85 UGW: 7O (then lower)'''.lower()
-   #  print get_high_weightKG(text)
+   #  text = '''hi, i'm Katie. i'm here if you wanna talk♥ Self Harmer,. 18.132lbs. 5ft3.  Bisexual. Anorexic. Alone. Self harm. Depressed. A big F*CK you to everyone who made me like this'''
 
-    # 17. uk. 5'4. 114lbs. (bmi: 18.9) bulimic. anorexic. anxiety. paranoia. anemic.  Hands Like Houses
-    # 15, anorexia, CW:106lbs UGW: 90lbs
-    # 17. Anorexic. Bulimic. Bipolar. Insomniac.
-    # 23, 5'4 EDNOS. starve, purge, dying. don't care.
-    # Mi lucha hasta llegar a cincuenta. He bajado de 75kg a 60 actualmente. No soy pro ana o pro mía. Soy pro-dieta estricta
-    # hi, i'm Katie. i'm here if you wanna talk♥ Self Harmer, Depressed, Anorexia. SW:10 stone CW:8stone GW:7 and a half stone.
-    # LW: 40.6 GW: because of my age 45kg Ana/mia for 10 wonderfully turmultuous years. Ana never let's go!!!!
-    # female. 18.132lbs. 5ft3.  Bisexual. Anorexic. Alone. Self harm. Depressed. A big F*CK you to everyone who made me like this
-    # I am a vegan relapser with a bmi of 20.I need to loose 12lbs to be 18.4 -My goal for may I'm not pro ana but my posts are triggering. Anon
+   # # Leeshly. 15. Ana with Mia tendencies. Bipolar. Self- harmer. CW: 88 HW:13O LW: 88 GW: 85 UGW: 7O (then lower)'''.lower()
+   # #  print get_high_weightKG(text)
 
-    # Anon / Self harmer / Depressed / EDNOS / Anxiety / Suicidal / Music / here to talk / cw: 102/46 / gw: 100/45 / ugw: 90/40.5
-    # Esclava de una mente trastornada, morí hacia ya varios aÑos atrás..meta: 40- 37kg bulimia/ anorexia alterna de @princesskatsura estudiante de medicina
+   #  # 17. uk. 5'4. 114lbs. (bmi: 18.9) bulimic. anorexic. anxiety. paranoia. anemic.  Hands Like Houses
+   #  # 15, anorexia, CW:106lbs UGW: 90lbs
+   #  # 17. Anorexic. Bulimic. Bipolar. Insomniac.
+   #  # 23, 5'4 EDNOS. starve, purge, dying. don't care.
+   #  # Mi lucha hasta llegar a cincuenta. He bajado de 75kg a 60 actualmente. No soy pro ana o pro mía. Soy pro-dieta estricta
+   #  # hi, i'm Katie. i'm here if you wanna talk♥ Self Harmer, Depressed, Anorexia. SW:10 stone CW:8stone GW:7 and a half stone.
+   #  # LW: 40.6 GW: because of my age 45kg Ana/mia for 10 wonderfully turmultuous years. Ana never let's go!!!!
+   #  # female. 18.132lbs. 5ft3.  Bisexual. Anorexic. Alone. Self harm. Depressed. A big F*CK you to everyone who made me like this
+   #  # I am a vegan relapser with a bmi of 20.I need to loose 12lbs to be 18.4 -My goal for may I'm not pro ana but my posts are triggering. Anon
+
+   #  # Anon / Self harmer / Depressed / EDNOS / Anxiety / Suicidal / Music / here to talk / cw: 102/46 / gw: 100/45 / ugw: 90/40.5
+   #  # Esclava de una mente trastornada, morí hacia ya varios aÑos atrás..meta: 40- 37kg bulimia/ anorexia alterna de @princesskatsura estudiante de medicina
+   #  print get_gender(text)

@@ -13,6 +13,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 from ohsn.util import db_util as dbutil
 from ohsn.util import plot_util as plot
 from ohsn.util import io_util as iot
+import pandas as pd
 
 
 def bio_statis(dbname, colname):
@@ -120,18 +121,33 @@ def plot_bio(dbname, colname, fields, names):
                            names, linear_bins=True, central=True, fit=False, fitranges=None, savefile='bmi' + '.pdf')
 
 
+def bmi_regreesion(dbname, colname, filename):
+    # regress bmi with features
+    fields = iot.read_fields()
+    trimed_fields = [(field.split('.')[-1]) for field in fields]
+    trimed_fields[-4:] = ['age', 'gender', 'cbmi', 'gbmi']
+    com = dbutil.db_connect_col(dbname, colname)
+    data = []
+    for user in com.find({'$or': [{'text_anal.cbmi.value': {'$exists': True}}, {'text_anal.gbmi.value': {'$exists': True}}], 'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
+        values = iot.get_fields_one_doc(user, fields)
+        data.append(values)
+    df = pd.DataFrame(data, columns=trimed_fields)
+    df.to_csv(filename)
+
 if __name__ == '__main__':
     # ed_bio_sta('fed', 'scom')
-    fields = [
-                  # 'text_anal.gw.value',
-                  # 'text_anal.cw.value',
-                  # 'text_anal.edword_count.value',
-                  # 'text_anal.h.value',
-                  # 'text_anal.a.value',
-                  # 'text_anal.bmi.value',
-                  'text_anal.cbmi.value',
-                  'text_anal.gbmi.value',
-                  # 'text_anal.lw.value',
-                  # 'text_anal.hw.value'
-    ]
-    plot_bio('fed', 'scom', fields, ['CBMI', 'GBMI'])
+    # fields = [
+    #               # 'text_anal.gw.value',
+    #               # 'text_anal.cw.value',
+    #               # 'text_anal.edword_count.value',
+    #               # 'text_anal.h.value',
+    #               # 'text_anal.a.value',
+    #               # 'text_anal.bmi.value',
+    #               'text_anal.cbmi.value',
+    #               'text_anal.gbmi.value',
+    #               # 'text_anal.lw.value',
+    #               # 'text_anal.hw.value'
+    # ]
+    # plot_bio('fed', 'scom', fields, ['CBMI', 'GBMI'])
+
+    bmi_regreesion('fed', 'com', 'data/bmi_reg.csv')
