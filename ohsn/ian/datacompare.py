@@ -11,6 +11,7 @@ sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__))))
 
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
+import ohsn.util.graph_util as gt
 import pymongo
 import ohsn.api.profiles_check as pck
 from datetime import datetime
@@ -35,6 +36,7 @@ def filter_user():
                             print u['id']
     conn.disconnect()
 
+
 def overlap():
     # overlap between two data
     core_ed = set(iot.get_values_one_field('fed', 'scom', 'id'))
@@ -43,7 +45,6 @@ def overlap():
         for line in fo.readlines():
             ian_ed.add(int(line.strip()))
     print len(core_ed), len(ian_ed), len(core_ed.intersection(ian_ed))
-
 
 
 def data_transform():
@@ -82,9 +83,16 @@ def tweet_stat():
         print ('%d\t%d\t%s') %(tweet['id'], tweet['from_user_id'], tweet['created_at'])
 
 
+def follow_net():
+    # recover follow network among users
+    g = gt.load_network_ian('TwitterProAna', 'users')
+    g.write_graphml('follow.graphml')
+
+
 if __name__ == '__main__':
     # filter_user()
     # overlap()
 
     # data_transform()
-    tweet_stat()
+    # tweet_stat()
+    follow_net()
