@@ -23,16 +23,18 @@ def load_network_ian(dbname, collection='None'):
         name_map[ego] = egoid
         if 'followData' in row:
             friends = row['followData']
-            if 'freinds' in friends:
-                for followee in friends['freinds']:
+            # print friends
+            if 'friends' in friends:
+                for followee in friends['friends']:
                     followeeid = name_map.get(followee, len(name_map))
                     name_map[followee] = followeeid
                     edges.add((egoid, followeeid))
-            if 'follwers' in friends:
-                for follower in friends['follwers']:
+            if 'followers' in friends:
+                for follower in friends['followers']:
                     followerid = name_map.get(follower, len(name_map))
                     name_map[follower] = followerid
                     edges.add((followerid, egoid))
+    # print len(name_map), len(edges)
     g = Graph(len(name_map), directed=True)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
     g.add_edges(list(edges))

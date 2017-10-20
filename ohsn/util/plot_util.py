@@ -437,10 +437,11 @@ def correlation(x, y, xlabel, ylabel, savefile):
 
 
 def plot_config():
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['xtick.labelsize'] = 15
-    plt.rcParams['ytick.labelsize'] = 15
-    plt.rcParams['legend.fontsize'] = 20
+    sns.set(style="whitegrid", palette="pastel", color_codes=True)
+    plt.rcParams['axes.labelsize'] = 25
+    plt.rcParams['xtick.labelsize'] = 18
+    plt.rcParams['ytick.labelsize'] = 18
+    plt.rcParams['legend.fontsize'] = 30
     plt.rcParams['font.family'] = 'serif'
     # plt.rcParams['axes.formatter.useoffset'] = False
     # plt.rcParams['lines.markersize'] = 4

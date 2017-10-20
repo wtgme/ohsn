@@ -46,6 +46,11 @@ def overlap():
             ian_ed.add(int(line.strip()))
     print len(core_ed), len(ian_ed), len(core_ed.intersection(ian_ed))
 
+    fed = set(iot.get_values_one_field('fed', 'com', 'id'))
+    ian_all = set(iot.get_values_one_field('TwitterProAna', 'users', 'id'))
+    print len(fed), len(ian_all), len(fed.intersection(ian_all))
+    print len(fed), len(ian_ed), len(fed.intersection(ian_ed))
+
 
 def data_transform():
     # transform data from ian db to local db
