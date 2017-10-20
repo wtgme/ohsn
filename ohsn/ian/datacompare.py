@@ -16,25 +16,25 @@ import pymongo
 import ohsn.api.profiles_check as pck
 from datetime import datetime
 
-def filter_user():
-    # filter ED users from Ian data
-    conn = dbt.db_connect_no_auth_ian()
-    iandb = conn.connect('TwitterProAna')
-    ianusers = iandb['users']
-    for u in ianusers.find({}, no_cursor_timeout=True):
-        if 'description' in u:
-            text = u['description']
-            if text != None and pck.check_ed_profile(text):
-                print u['id']
-        else:
-            if 'history' in u:
-                hists = u['history']
-                for h in hists:
-                    if 'description' in h:
-                        text = h['description']
-                        if text != None and pck.check_ed_profile(text):
-                            print u['id']
-    conn.disconnect()
+# def filter_user():
+#     # filter ED users from Ian data
+#     conn = dbt.db_connect_no_auth_ian()
+#     iandb = conn.connect('TwitterProAna')
+#     ianusers = iandb['users']
+#     for u in ianusers.find({}, no_cursor_timeout=True):
+#         if 'description' in u:
+#             text = u['description']
+#             if text != None and pck.check_ed_profile(text):
+#                 print u['id']
+#         else:
+#             if 'history' in u:
+#                 hists = u['history']
+#                 for h in hists:
+#                     if 'description' in h:
+#                         text = h['description']
+#                         if text != None and pck.check_ed_profile(text):
+#                             print u['id']
+#     conn.disconnect()
 
 
 def overlap():
@@ -52,32 +52,32 @@ def overlap():
     print len(fed), len(ian_ed), len(fed.intersection(ian_ed))
 
 
-def data_transform():
-    # transform data from ian db to local db
-    conn = dbt.db_connect_no_auth_ian()
-    iandb = conn.connect('TwitterProAna')
-    ianusers = iandb['users']
-    users = dbt.db_connect_col('TwitterProAna', 'users')
-    users.create_index([('id', pymongo.ASCENDING)], unique=True)
+# def data_transform():
+#     # transform data from ian db to local db
+#     conn = dbt.db_connect_no_auth_ian()
+#     iandb = conn.connect('TwitterProAna')
+#     ianusers = iandb['users']
+#     users = dbt.db_connect_col('TwitterProAna', 'users')
+#     users.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    for u in ianusers.find({}, no_cursor_timeout=True):
-        try:
-            users.insert(u)
-        except pymongo.errors.DuplicateKeyError:
-            pass
+#     for u in ianusers.find({}, no_cursor_timeout=True):
+#         try:
+#             users.insert(u)
+#         except pymongo.errors.DuplicateKeyError:
+#             pass
 
-    ianusers = iandb['tweets']
-    users = dbt.db_connect_col('TwitterProAna', 'tweets')
-    users.create_index([('user.id', pymongo.ASCENDING),
-                          ('id', pymongo.DESCENDING)])
-    users.create_index([('id', pymongo.ASCENDING)], unique=True)
+#     ianusers = iandb['tweets']
+#     users = dbt.db_connect_col('TwitterProAna', 'tweets')
+#     users.create_index([('user.id', pymongo.ASCENDING),
+#                           ('id', pymongo.DESCENDING)])
+#     users.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    for u in ianusers.find({}, no_cursor_timeout=True):
-        try:
-            users.insert(u)
-        except pymongo.errors.DuplicateKeyError:
-            pass
-    conn.disconnect()
+#     for u in ianusers.find({}, no_cursor_timeout=True):
+#         try:
+#             users.insert(u)
+#         except pymongo.errors.DuplicateKeyError:
+#             pass
+#     conn.disconnect()
 
 
 def tweet_stat():
@@ -96,8 +96,8 @@ def follow_net():
 
 if __name__ == '__main__':
     # filter_user()
-    # overlap()
+    overlap()
 
     # data_transform()
     # tweet_stat()
-    follow_net()
+    # follow_net()
