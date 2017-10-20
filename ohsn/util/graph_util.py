@@ -19,11 +19,11 @@ def load_network_ian(dbname, collection='None'):
     name_map, edges = {}, set()
     for row in com.find({}, no_cursor_timeout=True):
         ego = str(row['id'])
+        print ego
         egoid = name_map.get(ego, len(name_map))
         name_map[ego] = egoid
         if 'followData' in row:
             friends = row['followData']
-            # print friends
             if 'friends' in friends:
                 for followee in friends['friends']:
                     followeeid = name_map.get(followee, len(name_map))

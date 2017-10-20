@@ -96,8 +96,8 @@ def follow_net():
 
 if __name__ == '__main__':
     # filter_user()
-    overlap()
+    # overlap()
 
     # data_transform()
     # tweet_stat()
-    # follow_net()
+    follow_net()
