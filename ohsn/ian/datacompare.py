@@ -92,20 +92,20 @@ def tweet_stat():
 def follow_net(dbname, collection):
     # recover follow network among users
     com = dbt.db_connect_col(dbname, collection)
-    for row in com.find({}, no_cursor_timeout=True):
+    for row in com.find({'screen_name': {'$exists': True}}, no_cursor_timeout=True):
         ego = str(row['id'])
         if 'followData' in row:
             friends = row['followData']
-            if ('friends' in friends) and ('followers' in friends):
-                print ego, len(set(friends['friends']).
-                               intersection(set(friends['followers'])))
+            # if ('friends' in friends) and ('followers' in friends):
+            #     print ego, len(set(friends['friends']).
+            #                    intersection(set(friends['followers'])))
 
-            # if 'friends' in friends:
-            #     for followee in friends['friends']:
-            #         print ego + '\t' + str(followee)
-            # if 'followers' in friends:
-            #     for follower in friends['followers']:
-            #         print str(follower) + '\t' + ego
+            if 'friends' in friends:
+                for followee in friends['friends']:
+                    print ego + '\t' + str(followee)
+            if 'followers' in friends:
+                for follower in friends['followers']:
+                    print str(follower) + '\t' + ego
 
     # name_map, edges = {}, set()
     # with open('net.txt', 'r') as fo:
