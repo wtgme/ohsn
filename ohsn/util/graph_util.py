@@ -19,18 +19,20 @@ def load_network_ian(dbname, collection='None'):
     name_map, edges = {}, set()
     for row in com.find({}, no_cursor_timeout=True):
         ego = str(row['id'])
-        print ego
+        # print ego
         egoid = name_map.get(ego, len(name_map))
         name_map[ego] = egoid
         if 'followData' in row:
             friends = row['followData']
             if 'friends' in friends:
                 for followee in friends['friends']:
+                    followee = str(followee)
                     followeeid = name_map.get(followee, len(name_map))
                     name_map[followee] = followeeid
                     edges.add((egoid, followeeid))
             if 'followers' in friends:
                 for follower in friends['followers']:
+                    follower = str(follower)
                     followerid = name_map.get(follower, len(name_map))
                     name_map[follower] = followerid
                     edges.add((followerid, egoid))
@@ -314,7 +316,8 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
             node_weight[n1id] = w + 1
 
             user_set = tag_user.get(n1id, set())
-            user_set.add(row['user']['id'])
+            # user_set.add(row['user']['id'])  ## for norm data
+            user_set.add(row['from_user_id']) ## for ian data
             tag_user[n1id] = user_set
 
             for j in xrange(i+1, len(hash_list)):
