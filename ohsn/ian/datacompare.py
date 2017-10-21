@@ -96,27 +96,31 @@ def follow_net(dbname, collection):
         ego = str(row['id'])
         if 'followData' in row:
             friends = row['followData']
-            if 'friends' in friends:
-                for followee in friends['friends']:
-                    print ego + '\t' + str(followee)
-            if 'followers' in friends:
-                for follower in friends['followers']:
-                    print str(follower) + '\t' + ego
+            if ('friends' in friends) and ('followers' in friends):
+                print ego, len(set(friends['friends']).
+                               intersection(set(friends['followers'])))
 
-    name_map, edges = {}, set()
-    with open('net.txt', 'r') as fo:
-        for line in fo.readlines():
-            n1, n2 = line.split('\t')
-            n1id = name_map.get(n1, len(name_map))
-            name_map[n1] = n1id
-            n2id = name_map.get(n2, len(name_map))
-            name_map[n2] = n2id
-            edges.add((n1id, n2id))
-    g = gt.Graph(len(name_map), directed=True)
-    g.vs["name"] = list(sorted(name_map, key=name_map.get))
-    g.add_edges(list(edges))
-    g.es["weight"] = 1
-    g.write_graphml('follow.graphml')
+            # if 'friends' in friends:
+            #     for followee in friends['friends']:
+            #         print ego + '\t' + str(followee)
+            # if 'followers' in friends:
+            #     for follower in friends['followers']:
+            #         print str(follower) + '\t' + ego
+
+    # name_map, edges = {}, set()
+    # with open('net.txt', 'r') as fo:
+    #     for line in fo.readlines():
+    #         n1, n2 = line.split('\t')
+    #         n1id = name_map.get(n1, len(name_map))
+    #         name_map[n1] = n1id
+    #         n2id = name_map.get(n2, len(name_map))
+    #         name_map[n2] = n2id
+    #         edges.add((n1id, n2id))
+    # g = gt.Graph(len(name_map), directed=True)
+    # g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    # g.add_edges(list(edges))
+    # g.es["weight"] = 1
+    # g.write_graphml('follow.graphml')
 
 
 def hashtag_net(dbname, colname):
@@ -146,6 +150,6 @@ if __name__ == '__main__':
 
     # data_transform()
     # tweet_stat()
-    # follow_net('TwitterProAna', 'users')
+    follow_net('TwitterProAna', 'users')
     # hashtag_net('TwitterProAna', 'tweets')
-    hot_day('tweets.csv')
+    # hot_day('tweets.csv')
