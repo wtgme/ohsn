@@ -961,8 +961,9 @@ if __name__ == '__main__':
     '''undirected network'''
     # users_net = gt.Graph.Read_GraphML('communication-only-fed-filter.graphml')
     # users = [int(uid) for uid in users_net.vs['name']]
-    # g = gt.load_hashtag_coocurrent_network_undir('fed', 'ed_tag', users)
-    # g.write_graphml('ed_tag_undir.graphml')
+    print 'Read fed timeline excluding all retweets'
+    g = gt.load_hashtag_coocurrent_network_undir('fed', 'timeline')
+    g.write_graphml('fed_tag_undir_nort.graphml')
     # # g = gt.Graph.Read_GraphML('core_ed_tag_undir.graphml')
     # gt.summary(g)
     # nodes = g.vs.select(weight_gt=3)
@@ -1082,7 +1083,7 @@ if __name__ == '__main__':
     # ------------------------------test cluster stable
     # user_cluster_hashtag()
     # test_user_cluster_assign_stable()
-    test_user_cluster_stable()
+    # test_user_cluster_stable()
     # plot_boxplot()
 
     # ---------------user z-score to reweight link weights

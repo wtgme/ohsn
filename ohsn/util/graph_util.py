@@ -298,6 +298,7 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
     if len(uids) > 0:
         filter['user.id'] = {'$in': uids}
     filter['$where'] = 'this.entities.hashtags.length>0'
+    filter['retweeted_status'] = {'$exists': False}
     for row in cols.find(filter, no_cursor_timeout=True):
         # if 'retweeted_status' in row:
         #     continue
@@ -316,8 +317,8 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
             node_weight[n1id] = w + 1
 
             user_set = tag_user.get(n1id, set())
-            # user_set.add(row['user']['id'])  ## for norm data
-            user_set.add(row['from_user_id']) ## for ian data
+            user_set.add(row['user']['id'])  ## for norm data
+            # user_set.add(row['from_user_id']) ## for ian data
             tag_user[n1id] = user_set
 
             for j in xrange(i+1, len(hash_list)):

@@ -30,7 +30,7 @@ def read_name():
 ed_bio_list = set(['bmi', 'cw', 'ugw', 'gw', 'lbs', 'hw', 'lw', 'kg'])
 ed_keywords_list = set(['eating disorder', 'eatingdisorder', 'anorexia', 'bulimia', 'anorexic',
                 'ana', 'bulimic', 'anorexia nervosa', 'mia', 'thinspo',
-                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm',
+                'bulemia', 'purge', 'bulimia nervosa', 'binge',  'selfharm', 'ed-nos',
                 'ednos', 'edprobs', 'edprob', 'proana', 'anamia', 'promia',
                 'askanamia', 'bonespo', 'legspo'])
 

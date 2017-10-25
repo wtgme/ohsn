@@ -252,5 +252,9 @@ liwc_anal.result.AllPct
 senti.result.whole.scalem
 text_anal.a.value
 text_anal.gender.value
+text_anal.h.value
+text_anal.cw.value
+text_anal.gw.value
 text_anal.cbmi.value
 text_anal.gbmi.value
+text_anal.edword_count.value

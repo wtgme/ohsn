@@ -19,11 +19,20 @@ import pymongo
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
+from collections import Counter
+
+
+
 
 def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     ## Categorize tweets into three classes: 0: no hashtag; -1: ED tag; 1: non-ED tag.
-    user_net = gt.Graph.Read_GraphML(filename)
-    uids = [int(uid) for uid in user_net.vs['name']]
+    # user_net = gt.Graph.Read_GraphML(filename)
+    # uids = [int(uid) for uid in user_net.vs['name']]
+
+    # get users who have more than 3 ED-related tweets
+    all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
+    all_uids_count = Counter(all_uids)
+    uids = [key for key in all_uids_count if all_uids_count[key] >= 3]
     print len(uids)
     edtags = set(iot.read_ed_hashtags())
     times = dbt.db_connect_col('fed', 'timeline')
@@ -115,29 +124,34 @@ def networks(dbname):
     gt.net_stat(g1)
     gt.net_stat(g2)
     gt.net_stat(g3)
-
-    g1 = gt.giant_component(g1, 'WEAK')
-    g2 = gt.giant_component(g2, 'WEAK')
-    g3 = gt.giant_component(g3, 'WEAK')
-
-    common = set(g1.vs['name']).intersection(g2.vs['name'])
-    common = set(g3.vs['name']).intersection(common)
-    g1 = g1.subgraph(g1.vs.select(name_in=common))
-    g2 = g2.subgraph(g2.vs.select(name_in=common))
-    g3 = g3.subgraph(g3.vs.select(name_in=common))
-    gt.net_stat(g1)
-    gt.net_stat(g2)
-    gt.net_stat(g3)
-
-    uidlist = out_graph_edges(g1, 'data/ed_commu.edge')
-    uidlist = out_graph_edges(g2, 'data/non_ed_commu.edge', uidlist)
-    uidlist = out_graph_edges(g3, 'data/non_tag_commu.edge', uidlist)
+    g1.write_graphml('ed_bnet'+'.graphml')
+    g2.write_graphml('non_ed_bnet'+'.graphml')
+    g3.write_graphml('non_tag_bnet'+'.graphml')
 
 
-    with open('data/ed_commu.node', 'wb') as fw:
-        fw.write('nodeID nodeLabel\n')
-        for k in list(sorted(uidlist, key=uidlist.get)):
-            fw.write(str(uidlist[k]) + ' N' + k + '\n')
+
+    # g1 = gt.giant_component(g1, 'WEAK')
+    # g2 = gt.giant_component(g2, 'WEAK')
+    # g3 = gt.giant_component(g3, 'WEAK')
+
+    # common = set(g1.vs['name']).intersection(g2.vs['name'])
+    # common = set(g3.vs['name']).intersection(common)
+    # g1 = g1.subgraph(g1.vs.select(name_in=common))
+    # g2 = g2.subgraph(g2.vs.select(name_in=common))
+    # g3 = g3.subgraph(g3.vs.select(name_in=common))
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    # gt.net_stat(g3)
+
+    # uidlist = out_graph_edges(g1, 'data/ed_commu.edge')
+    # uidlist = out_graph_edges(g2, 'data/non_ed_commu.edge', uidlist)
+    # uidlist = out_graph_edges(g3, 'data/non_tag_commu.edge', uidlist)
+
+
+    # with open('data/ed_commu.node', 'wb') as fw:
+    #     fw.write('nodeID nodeLabel\n')
+    #     for k in list(sorted(uidlist, key=uidlist.get)):
+    #         fw.write(str(uidlist[k]) + ' N' + k + '\n')
 
 
 def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
@@ -157,10 +171,11 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
 
 
 if __name__ == '__main__':
-    # constrcut_data()
+    constrcut_data()
     # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
     # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
     # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
 
     # networks('fed')
-    fed_all_tag_topic()
+    # fed_all_tag_topic()
+

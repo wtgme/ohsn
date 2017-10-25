@@ -14,6 +14,9 @@ from ohsn.util import db_util as dbutil
 from ohsn.util import plot_util as plot
 from ohsn.util import io_util as iot
 import pandas as pd
+import numpy as np
+from sklearn.svm import SVR
+import matplotlib.pyplot as plt
 
 
 def bio_statis(dbname, colname):
@@ -125,7 +128,7 @@ def bmi_regreesion(dbname, colname, filename):
     # regress bmi with features
     fields = iot.read_fields()
     trimed_fields = [(field.split('.')[-1]) for field in fields]
-    trimed_fields[-4:] = ['age', 'gender', 'cbmi', 'gbmi']
+    trimed_fields[-9:] = ['sentiment', 'age', 'gender', 'height', 'cw', 'gw', 'cbmi', 'gbmi', 'edword']
     com = dbutil.db_connect_col(dbname, colname)
     data = []
     for user in com.find({'$or': [{'text_anal.cbmi.value': {'$exists': True}}, {'text_anal.gbmi.value': {'$exists': True}}], 'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
@@ -133,6 +136,8 @@ def bmi_regreesion(dbname, colname, filename):
         data.append(values)
     df = pd.DataFrame(data, columns=trimed_fields)
     df.to_csv(filename)
+
+
 
 if __name__ == '__main__':
     # ed_bio_sta('fed', 'scom')
