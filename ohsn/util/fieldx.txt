@@ -1,7 +1,7 @@
 id
     time_index
     name
-    screen_name
+screen_name
     created_at
     timeline_count
     lang
