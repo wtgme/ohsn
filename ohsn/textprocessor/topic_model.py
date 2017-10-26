@@ -256,7 +256,7 @@ if __name__ == '__main__':
     # lda.print_topics(num_topics=20, num_words=100)
 
     '''Word2Vec testing'''
-    # word_vect('fed', 'scom', 'timeline')
+    word_vect('fed', 'scom', 'timeline')
     model = models.word2vec.Word2Vec.load('data/word2vec')
     # for word in model.vocab:
     #     print word
