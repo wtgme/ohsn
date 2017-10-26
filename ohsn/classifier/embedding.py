@@ -7,6 +7,11 @@ Created on 9:45 PM, 10/26/17
 Try to use network and word embeddings to classify users
 """
 
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
+
 import ohsn.util.io_util as iot
 import ohsn.util.graph_util as gt
 import ohsn.util.db_util as dbt
