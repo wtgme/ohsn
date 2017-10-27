@@ -94,6 +94,7 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
                 else:  # original mentions
                     timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
 
+
 def out_graph_edges(g, edgePath, node_attrs = {}):
     # out edge list and node attribute list
     with open(edgePath, 'wb') as fw:
@@ -171,10 +172,10 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
 
 
 if __name__ == '__main__':
-    constrcut_data()
-    # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
-    # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
-    # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
+    # constrcut_data()
+    extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
+    extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
+    extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
 
     # networks('fed')
     # fed_all_tag_topic()
