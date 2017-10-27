@@ -58,8 +58,8 @@ def read_tweets(dbname, colname, timecol):
     db = dbt.db_connect_no_auth(dbname)
     col = db[colname]
     timelines = db[timecol]
-    documents = list()
-    ids = list()
+    # documents = list()
+    # ids = list()
     for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
         uid = user['id']
         for tweet in timelines.find({'user.id': uid, 'retweeted_status': {'$exists': False}}):
@@ -70,13 +70,14 @@ def read_tweets(dbname, colname, timecol):
             words = tokenizer.tokenize(text)
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
             if len(words) > 5:
-                ids.append(uid)
-                documents.append(words)
-    pickle.dump(ids, open('data/sen_ids.pick', 'w'))
-    pickle.dump(documents, open('data/sen.pick', 'w'))
+                print ('\s\t\s\t\s') %(uid, tweet['id'], ' '.join(words))
+    #             ids.append(uid)
+    #             documents.append(words)
+    # pickle.dump(ids, open('data/sen_ids.pick', 'w'))
+    # pickle.dump(documents, open('data/sen.pick', 'w'))
 
 
 if __name__ == '__main__':
-    follow_network('fed', 'net', 'data/fed_follow.txt')
-    behavior_network('fed', 'bnet', 'data/fed_')
+    # follow_network('fed', 'net', 'data/fed_follow.txt')
+    # behavior_network('fed', 'bnet', 'data/fed_')
     read_tweets('fed', 'com', 'timeline')
