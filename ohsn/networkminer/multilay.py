@@ -170,11 +170,38 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
     print len(comclus)
     pickle.dump(comclus, open('data/fed_tag_undir.communities'))
 
+
 def tag_net(dbname, colname, filename):
-    g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    # All tags excluding retweets
+    # g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    # gt.summary(g)
+    # g.write_graphml(filename+'_tag_undir.graphml')
+
+    # Only frequent tags
+    # g = gt.Graph.Read_GraphML('data/pro_tag_undir.graphml')
+    # gt.summary(g)
+    # nodes = g.vs.select(weight_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # nodes = g.vs.select(user_gt=3)
+    # print 'Filtered nodes: %d' %len(nodes)
+    # g = g.subgraph(nodes)
+    # gt.summary(g)
+    # g = gt.giant_component(g)
+    # g.write_graphml('data/'+filename+'_tag_undir_gc.graphml')
+
+
+    g = gt.Graph.Read_GraphML('data/'+filename+'_tag_undir_gc.graphml')
     gt.summary(g)
-    g.write_graphml(filename+'_tag_undir.graphml')
-    return g
+    com = g.community_multilevel(weights='weight', return_levels=False)
+    # informap Community stats: #communities, modularity 2845 0.454023502108
+    # Louvain : Community stats: #communities, modularity 59 0.496836953082
+    comclus = com.subgraphs()
+    print 'Community stats: #communities, modularity', len(comclus), com.modularity
+
+
+
+
 
 
 if __name__ == '__main__':
