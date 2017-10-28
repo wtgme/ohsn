@@ -234,7 +234,7 @@ def tag_net(dbname, colname, filename):
 
 
 if __name__ == '__main__':
-    constrcut_data()
+    # constrcut_data()
     # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
     # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
     # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
