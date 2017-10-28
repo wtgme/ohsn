@@ -56,21 +56,22 @@ def behavior_network(dbname, colname, filepath):
 def read_tweets(dbname, colname, timecol):
     '''Read tweets, excluding retweets'''
     db = dbt.db_connect_no_auth(dbname)
-    col = db[colname]
+    # col = db[colname]
     timelines = db[timecol]
     # documents = list()
     # ids = list()
-    for user in col.find({'timeline_count': {'$gt': 0}}, ['id']):
-        uid = user['id']
-        for tweet in timelines.find({'user.id': uid, 'retweeted_status': {'$exists': False}}):
-            text = tweet['text'].encode('utf8')
-            # replace RT, @, # and Http://
-            text = text.strip().lower()
-            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
-            words = tokenizer.tokenize(text)
-            # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-            if len(words) > 5:
-                print ('%d\t%d\t%s') %(uid, tweet['id'], ' '.join(words))
+    # for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+        # uid = user['id']
+    for tweet in timelines.find({'retweeted_status': {'$exists': False}}, no_cursor_timeout=True):
+        text = tweet['text'].encode('utf8')
+        uid = tweet['user']['id']
+        # replace RT, @, # and Http://
+        text = text.strip().lower()
+        text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+        words = tokenizer.tokenize(text)
+        # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+        if len(words) > 5:
+            print ('%d\t%d\t%s') %(uid, tweet['id'], ' '.join(words))
     #             ids.append(uid)
     #             documents.append(words)
     # pickle.dump(ids, open('data/sen_ids.pick', 'w'))

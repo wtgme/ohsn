@@ -286,6 +286,7 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
     '''
     Hashtag Co-occurrence Network: weighted undirected network
     Edge: Hashtag --------- Hashtag
+    excluding retweets
     '''
     if collection is 'None':
         cols = db_name

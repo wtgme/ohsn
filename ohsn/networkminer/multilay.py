@@ -170,13 +170,20 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
     print len(comclus)
     pickle.dump(comclus, open('data/fed_tag_undir.communities'))
 
+def tag_net(dbname, colname, filename):
+    g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    gt.summary(g)
+    g.write_graphml(filename+'_tag_undir.graphml')
+    return g
+
 
 if __name__ == '__main__':
     # constrcut_data()
-    extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
-    extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
-    extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
+    # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
+    # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
+    # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
 
     # networks('fed')
     # fed_all_tag_topic()
+    tag_net('fed', 'pro_timeline', 'pro')
 
