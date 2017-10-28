@@ -198,6 +198,35 @@ def tag_net(dbname, colname, filename):
     # Louvain : Community stats: #communities, modularity 59 0.496836953082
     comclus = com.subgraphs()
     print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    csize = [comclu.vcount() for comclu in comclus]
+    # csize = [sum(comclu.vs['weight']) for comclu in comclus]
+    potag = []
+    for i in range(4):
+        index = csize.index(max(csize))
+        csize[index] = 0
+        tnet = comclus[index]
+        potag.append(set(tnet.vs['name']))
+
+    times = dbt.db_connect_col(dbname, colname)
+    filter = {'$where': 'this.entities.hashtags.length>0',
+              'retweeted_status': {'$exists': False}}
+    for tweet in times.find(filter, no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        topics = []
+        for i, pot in enumerate(potag):
+            if len(hash_set.intersection(pot)) > 0:
+                topics.append(i)
+        if len(topics) > 0:
+            times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
+
+
+
+
+
+
 
 
 
@@ -205,7 +234,7 @@ def tag_net(dbname, colname, filename):
 
 
 if __name__ == '__main__':
-    # constrcut_data()
+    constrcut_data()
     # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
     # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
     # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
