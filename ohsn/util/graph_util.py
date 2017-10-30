@@ -487,8 +487,8 @@ def net_stat(g):
     # degree_mean = np.mean(g.indegree())
     # degree_std = np.std(g.indegree())
     density = g.density()
-    # avg_path = g.average_path_length(directed=True, unconn=True)
-    avg_path = 0
+    avg_path = g.average_path_length(directed=True, unconn=True)
+    # avg_path = 0
     components = g.clusters(mode=WEAK)
     comp_count = len(components)
     giant_comp = components.giant()

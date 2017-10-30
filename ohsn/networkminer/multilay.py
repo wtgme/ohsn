@@ -62,38 +62,47 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
 
 def extract_network(dbname, timename, bnetname, typename='ED'):
     # Extract different networks from different types of content
-    typemap = {'ED': -1,
-               'Non-ED': 1,
-               'Non-tag': 0}
-    type = typemap[typename]
+    # typemap = {'ED': -1,
+    #            'Non-ED': 1,
+    #            'Non-tag': 0}
+    # type = typemap[typename]
     time = dbt.db_connect_col(dbname, timename)
-    bnet = dbt.db_connect_col(dbname, bnetname)
-    bnet.create_index([("id0", pymongo.ASCENDING),
-                                 ("id1", pymongo.ASCENDING),
-                                 ("type", pymongo.ASCENDING),
-                                 ("statusid", pymongo.ASCENDING)],
-                                unique=True)
-    for tweet in time.find({'type': type}, no_cursor_timeout=True):
-        if len(tweet['entities']['user_mentions']) < 1:
-                continue
-        else:
+    bnets = []
+    for i in range(4):
+        bnet = dbt.db_connect_col(dbname, bnetname+str(i))
+        bnet.create_index([("id0", pymongo.ASCENDING),
+                                     ("id1", pymongo.ASCENDING),
+                                      ("type", pymongo.ASCENDING),
+                                     ("statusid", pymongo.ASCENDING)],
+                                    unique=True)
+        bnets.append(bnet)
+
+    filter = {'$where': 'this.entities.user_mentions.length>0',
+                'topics': {'$exists': True},
+              'retweeted_status': {'$exists': False}}
+    count2 = 0
+    for tweet in time.find(filter, no_cursor_timeout=True):
+        if len(tweet['topics'] )> 1:
+            count2 += 1
+        if len(tweet['topics']) == 1:
+            index = tweet['topics'][0]
             udmention_list = []
             if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
                 for udmention in tweet['retweeted_status']['entities']['user_mentions']:
                     udmention_list.append(udmention['id'])
             for mention in tweet['entities']['user_mentions']:
                 if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
-                    timiner.add_reply_edge(bnet, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+                    timiner.add_reply_edge(bnets[index], tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
 
                 elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
-                    timiner.add_retweet_edge(bnet, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+                    timiner.add_retweet_edge(bnets[index], tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
 
                 elif mention['id'] in udmention_list:  # mentions in Retweet content
-                    timiner.add_undirect_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                    timiner.add_undirect_mentions_edge(bnets[index], tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
 
                 else:  # original mentions
-                    timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
-
+                    timiner.add_direct_mentions_edge(bnets[index], tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+    print count2, 'more than 2 topics'
 
 def out_graph_edges(g, edgePath, node_attrs = {}):
     # out edge list and node attribute list
@@ -119,40 +128,66 @@ def out_graph_edges(g, edgePath, node_attrs = {}):
 
 def networks(dbname):
     # out networks to multiplex process
-    g1 = gt.load_beh_network(dbname, 'ed_bnet')
-    g2 = gt.load_beh_network(dbname, 'non_ed_bnet')
-    g3 = gt.load_beh_network(dbname, 'non_tag_bnet')
+    # all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
+    # all_uids_count = Counter(all_uids)
+    # uids = [key for key in all_uids_count if all_uids_count[key] >= 3]
+    # print len(uids)
+    # g1 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet0', btype='communication')
+    # g2 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet1', btype='communication')
+    # g3 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet2', btype='communication')
+    # g4 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet3', btype='communication')
+    # g1.write_graphml('pro1.graphml')
+    # g2.write_graphml('pro2.graphml')
+    # g3.write_graphml('pro3.graphml')
+    # g4.write_graphml('pro4.graphml')
+
+    g1 = gt.Graph.Read_GraphML('pro1.graphml')
+    g2 = gt.Graph.Read_GraphML('pro2.graphml')
+    g3 = gt.Graph.Read_GraphML('pro3.graphml')
+    g4 = gt.Graph.Read_GraphML('pro4.graphml')
     gt.net_stat(g1)
     gt.net_stat(g2)
     gt.net_stat(g3)
-    g1.write_graphml('ed_bnet'+'.graphml')
-    g2.write_graphml('non_ed_bnet'+'.graphml')
-    g3.write_graphml('non_tag_bnet'+'.graphml')
-
-
+    gt.net_stat(g4)
 
     # g1 = gt.giant_component(g1, 'WEAK')
     # g2 = gt.giant_component(g2, 'WEAK')
     # g3 = gt.giant_component(g3, 'WEAK')
+    # g4 = gt.giant_component(g4, 'WEAK')
 
-    # common = set(g1.vs['name']).intersection(g2.vs['name'])
-    # common = set(g3.vs['name']).intersection(common)
-    # g1 = g1.subgraph(g1.vs.select(name_in=common))
-    # g2 = g2.subgraph(g2.vs.select(name_in=common))
-    # g3 = g3.subgraph(g3.vs.select(name_in=common))
     # gt.net_stat(g1)
     # gt.net_stat(g2)
     # gt.net_stat(g3)
+    # gt.net_stat(g4)
 
-    # uidlist = out_graph_edges(g1, 'data/ed_commu.edge')
-    # uidlist = out_graph_edges(g2, 'data/non_ed_commu.edge', uidlist)
-    # uidlist = out_graph_edges(g3, 'data/non_tag_commu.edge', uidlist)
+    # common = set(g1.vs['name']).intersection(g2.vs['name'])
+    # common = set(g3.vs['name']).intersection(common)
+    # common = set(g4.vs['name']).intersection(common)
+    # print len(common)
+    # g1 = g1.subgraph(g1.vs.select(name_in=common))
+    # g2 = g2.subgraph(g2.vs.select(name_in=common))
+    # g3 = g3.subgraph(g3.vs.select(name_in=common))
+    # g4 = g4.subgraph(g4.vs.select(name_in=common))
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    # gt.net_stat(g3)
+    # gt.net_stat(g4)
+
+    # g1.write_graphml('pro1-comm.graphml')
+    # g2.write_graphml('pro2-comm.graphml')
+    # g3.write_graphml('pro3-comm.graphml')
+    # g4.write_graphml('pro4-comm.graphml')
+
+    uidlist = out_graph_edges(g1, 'data/pro1.edge')
+    uidlist = out_graph_edges(g2, 'data/pro2.edge', uidlist)
+    uidlist = out_graph_edges(g3, 'data/pro3.edge', uidlist)
+    uidlist = out_graph_edges(g4, 'data/pro4.edge', uidlist)
 
 
-    # with open('data/ed_commu.node', 'wb') as fw:
-    #     fw.write('nodeID nodeLabel\n')
-    #     for k in list(sorted(uidlist, key=uidlist.get)):
-    #         fw.write(str(uidlist[k]) + ' N' + k + '\n')
+    with open('data/pro.node', 'wb') as fw:
+        fw.write('nodeID nodeLabel\n')
+        for k in list(sorted(uidlist, key=uidlist.get)):
+            fw.write(str(uidlist[k]) + ' N' + k + '\n')
 
 
 def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
@@ -225,21 +260,11 @@ def tag_net(dbname, colname, filename):
 
 
 
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # constrcut_data()
-    # extract_network('fed', 'pro_timeline', 'ed_bnet', 'ED')
-    # extract_network('fed', 'pro_timeline', 'non_ed_bnet', 'Non-ED')
-    # extract_network('fed', 'pro_timeline', 'non_tag_bnet', 'Non-tag')
+    # extract_network('fed', 'pro_timeline', 'pro_bnet', 'ED')
 
-    # networks('fed')
+    networks('fed')
     # fed_all_tag_topic()
-    tag_net('fed', 'pro_timeline', 'pro')
+    # tag_net('fed', 'pro_timeline', 'pro')
 
