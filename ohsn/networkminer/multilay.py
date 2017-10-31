@@ -24,6 +24,7 @@ from collections import Counter
 
 
 
+
 def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     ## Categorize tweets into three classes: 0: no hashtag; -1: ED tag; 1: non-ED tag.
     # user_net = gt.Graph.Read_GraphML(filename)
@@ -141,24 +142,24 @@ def networks(dbname):
     # g3.write_graphml('pro3.graphml')
     # g4.write_graphml('pro4.graphml')
 
-    g1 = gt.Graph.Read_GraphML('pro1.graphml')
-    g2 = gt.Graph.Read_GraphML('pro2.graphml')
-    g3 = gt.Graph.Read_GraphML('pro3.graphml')
-    g4 = gt.Graph.Read_GraphML('pro4.graphml')
+    g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
+    g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
+    g3 = gt.Graph.Read_GraphML('data/pro3.graphml')
+    g4 = gt.Graph.Read_GraphML('data/pro4.graphml')
     gt.net_stat(g1)
     gt.net_stat(g2)
     gt.net_stat(g3)
     gt.net_stat(g4)
 
-    # g1 = gt.giant_component(g1, 'WEAK')
-    # g2 = gt.giant_component(g2, 'WEAK')
-    # g3 = gt.giant_component(g3, 'WEAK')
-    # g4 = gt.giant_component(g4, 'WEAK')
+    g1 = gt.giant_component(g1, 'WEAK')
+    g2 = gt.giant_component(g2, 'WEAK')
+    g3 = gt.giant_component(g3, 'WEAK')
+    g4 = gt.giant_component(g4, 'WEAK')
 
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
-    # gt.net_stat(g3)
-    # gt.net_stat(g4)
+    gt.net_stat(g1)
+    gt.net_stat(g2)
+    gt.net_stat(g3)
+    gt.net_stat(g4)
 
     # common = set(g1.vs['name']).intersection(g2.vs['name'])
     # common = set(g3.vs['name']).intersection(common)
@@ -178,13 +179,13 @@ def networks(dbname):
     # g3.write_graphml('pro3-comm.graphml')
     # g4.write_graphml('pro4-comm.graphml')
 
-    uidlist = out_graph_edges(g1, 'data/pro1.edge')
-    uidlist = out_graph_edges(g2, 'data/pro2.edge', uidlist)
-    uidlist = out_graph_edges(g3, 'data/pro3.edge', uidlist)
-    uidlist = out_graph_edges(g4, 'data/pro4.edge', uidlist)
+    uidlist = out_graph_edges(g1, 'data/mu/pro1.edge')
+    uidlist = out_graph_edges(g2, 'data/mu/pro2.edge', uidlist)
+    uidlist = out_graph_edges(g3, 'data/mu/pro3.edge', uidlist)
+    uidlist = out_graph_edges(g4, 'data/mu/pro4.edge', uidlist)
 
 
-    with open('data/pro.node', 'wb') as fw:
+    with open('data/mu/pro.node', 'wb') as fw:
         fw.write('nodeID nodeLabel\n')
         for k in list(sorted(uidlist, key=uidlist.get)):
             fw.write(str(uidlist[k]) + ' N' + k + '\n')
