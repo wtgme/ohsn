@@ -38,9 +38,11 @@ def follow_network(dbname, colname, filepath):
 
 def behavior_network(dbname, colname, filepath):
     '''out retweet and communication network'''
+    uids = iot.get_values_one_field(dbname, 'com', 'id')
+    print len(uids)
     for beh in ['retweet', 'communication']:
         print beh
-        g = gt.load_beh_network(dbname, colname, beh)
+        g = gt.load_beh_network_subset(uids, dbname, colname, beh)
         with open(filepath+beh+'.txt', 'wb') as fw:
             for e in g.es:
                 source_vertex_id = e.source
@@ -80,5 +82,5 @@ def read_tweets(dbname, colname, timecol):
 
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
-    # behavior_network('fed', 'bnet', 'data/fed_')
-    read_tweets('fed', 'com', 'timeline')
+    behavior_network('fed', 'bnet', 'data/fed_')
+    # read_tweets('fed', 'com', 'timeline')
