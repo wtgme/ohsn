@@ -220,9 +220,9 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
 
 def tag_net(dbname, colname, filename):
     # All tags excluding retweets
-    # g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
-    # gt.summary(g)
-    # g.write_graphml(filename+'_tag_undir.graphml')
+    g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    gt.summary(g)
+    g.write_graphml(filename+'_tag_undir.graphml')
 
     # Only frequent tags
     # g = gt.Graph.Read_GraphML('data/pro_tag_undir.graphml')
@@ -238,45 +238,45 @@ def tag_net(dbname, colname, filename):
     # g.write_graphml('data/'+filename+'_tag_undir_gc.graphml')
 
 
-    g = gt.Graph.Read_GraphML('data/'+filename+'_tag_undir_gc.graphml')
-    gt.summary(g)
-    com = g.community_multilevel(weights='weight', return_levels=False)
-    # informap Community stats: #communities, modularity 2845 0.454023502108
-    # Louvain : Community stats: #communities, modularity 59 0.496836953082
-    comclus = com.subgraphs()
-    print 'Community stats: #communities, modularity', len(comclus), com.modularity
-    csize = [comclu.vcount() for comclu in comclus]
-    # csize = [sum(comclu.vs['weight']) for comclu in comclus]
-    potag = []
-    for i in range(4):
-        index = csize.index(max(csize))
-        csize[index] = 0
-        tnet = comclus[index]
-        potag.append(set(tnet.vs['name']))
-
-    times = dbt.db_connect_col(dbname, colname)
-    filter = {'$where': 'this.entities.hashtags.length>0',
-              'retweeted_status': {'$exists': False}}
-    for tweet in times.find(filter, no_cursor_timeout=True):
-        hashtags = tweet['entities']['hashtags']
-        hash_set = set()
-        for hash in hashtags:
-            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-        topics = []
-        for i, pot in enumerate(potag):
-            if len(hash_set.intersection(pot)) > 0:
-                topics.append(i)
-        if len(topics) > 0:
-            times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
+    # g = gt.Graph.Read_GraphML('data/'+filename+'_tag_undir_gc.graphml')
+    # gt.summary(g)
+    # com = g.community_multilevel(weights='weight', return_levels=False)
+    # # informap Community stats: #communities, modularity 2845 0.454023502108
+    # # Louvain : Community stats: #communities, modularity 59 0.496836953082
+    # comclus = com.subgraphs()
+    # print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    # csize = [comclu.vcount() for comclu in comclus]
+    # # csize = [sum(comclu.vs['weight']) for comclu in comclus]
+    # potag = []
+    # for i in range(4):
+    #     index = csize.index(max(csize))
+    #     csize[index] = 0
+    #     tnet = comclus[index]
+    #     potag.append(set(tnet.vs['name']))
+    #
+    # times = dbt.db_connect_col(dbname, colname)
+    # filter = {'$where': 'this.entities.hashtags.length>0',
+    #           'retweeted_status': {'$exists': False}}
+    # for tweet in times.find(filter, no_cursor_timeout=True):
+    #     hashtags = tweet['entities']['hashtags']
+    #     hash_set = set()
+    #     for hash in hashtags:
+    #         hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+    #     topics = []
+    #     for i, pot in enumerate(potag):
+    #         if len(hash_set.intersection(pot)) > 0:
+    #             topics.append(i)
+    #     if len(topics) > 0:
+    #         times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
 
 
 
 if __name__ == '__main__':
-    constrcut_data()
-    # extract_network('fed', 'pro_timeline', 'pro_bnet', 'ED')
+    # constrcut_data()
+    # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
     # networks('fed')
     # fed_all_tag_topic()
-    # tag_net('fed', 'pro_timeline', 'pro')
+    tag_net('fed', 'pro_timeline', 'allpro')
     # data_transf('data/pro4.graphml')
 
