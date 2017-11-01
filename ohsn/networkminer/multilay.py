@@ -33,9 +33,9 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
     # get users who have more than 3 ED-related tweets
     all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
     all_uids_count = Counter(all_uids)
-    uids = [key for key in all_uids_count if all_uids_count[key] >= 3]
+    uids = [key for key in all_uids_count if all_uids_count[key] < 3]
     print len(uids)
-    edtags = set(iot.read_ed_hashtags())
+    # edtags = set(iot.read_ed_hashtags())
     times = dbt.db_connect_col('fed', 'timeline')
     poi_time = dbt.db_connect_col('fed', 'pro_timeline')
     poi_time.create_index([('user.id', pymongo.ASCENDING),
@@ -44,18 +44,18 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
     poi_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 
     for tweet in times.find({'user.id': {'$in': uids}}, no_cursor_timeout=True):
-        hashtags = tweet['entities']['hashtags']
-        tagset = set()
-        for hash in hashtags:
-            tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
-            tagset.add(tag)
-        if len(tagset) == 0:
-            tweet['type'] = 0
-        else:
-            if len(tagset.intersection(edtags)) > 0:
-                tweet['type'] = -1
-            else:
-                tweet['type'] = 1
+        # hashtags = tweet['entities']['hashtags']
+        # tagset = set()
+        # for hash in hashtags:
+        #     tag = hash['text'].encode('utf-8').lower().replace('_', '').replace('-', '')
+        #     tagset.add(tag)
+        # if len(tagset) == 0:
+        #     tweet['type'] = 0
+        # else:
+        #     if len(tagset.intersection(edtags)) > 0:
+        #         tweet['type'] = -1
+        #     else:
+        #         tweet['type'] = 1
         try:
             poi_time.insert(tweet)
         except pymongo.errors.DuplicateKeyError:
@@ -151,15 +151,15 @@ def networks(dbname):
     gt.net_stat(g3)
     gt.net_stat(g4)
 
-    g1 = gt.giant_component(g1, 'WEAK')
-    g2 = gt.giant_component(g2, 'WEAK')
-    g3 = gt.giant_component(g3, 'WEAK')
-    g4 = gt.giant_component(g4, 'WEAK')
-
-    gt.net_stat(g1)
-    gt.net_stat(g2)
-    gt.net_stat(g3)
-    gt.net_stat(g4)
+    # g1 = gt.giant_component(g1, 'WEAK')
+    # g2 = gt.giant_component(g2, 'WEAK')
+    # g3 = gt.giant_component(g3, 'WEAK')
+    # g4 = gt.giant_component(g4, 'WEAK')
+    #
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    # gt.net_stat(g3)
+    # gt.net_stat(g4)
 
     # common = set(g1.vs['name']).intersection(g2.vs['name'])
     # common = set(g3.vs['name']).intersection(common)
@@ -189,6 +189,17 @@ def networks(dbname):
         fw.write('nodeID nodeLabel\n')
         for k in list(sorted(uidlist, key=uidlist.get)):
             fw.write(str(uidlist[k]) + ' N' + k + '\n')
+
+
+def data_transf(sourcefile):
+    # data to mammult packages
+    g = gt.Graph.Read_GraphML(sourcefile)
+    for e in g.es:
+        source_vertex_id = e.source
+        target_vertex_id = e.target
+        source_vertex = g.vs[source_vertex_id]
+        target_vertex = g.vs[target_vertex_id]
+        print source_vertex['name'] + ' ' + target_vertex['name']
 
 
 def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
@@ -260,12 +271,12 @@ def tag_net(dbname, colname, filename):
 
 
 
-
 if __name__ == '__main__':
-    # constrcut_data()
+    constrcut_data()
     # extract_network('fed', 'pro_timeline', 'pro_bnet', 'ED')
 
-    networks('fed')
+    # networks('fed')
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'pro')
+    # data_transf('data/pro4.graphml')
 

@@ -83,3 +83,5 @@ ohsn/.Rhistory
 
 *.swp
 *.xml
+*.node
+*.edge
