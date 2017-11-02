@@ -20,6 +20,7 @@ import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
 from collections import Counter
+import datetime
 
 
 
@@ -272,17 +273,24 @@ def tag_net(dbname, colname, filename):
 
 
 def tag_activity(dbname, colname):
+    # recording the activity of tag
     time = dbt.db_connect_col(dbname, colname)
     filter = {}
+    tag_time = {}
     filter['$where'] = 'this.entities.hashtags.length>0'
     for tweet in time.find(filter, no_cursor_timeout=True):
         # if 'retweeted_status' in row:
         #     continue
+        created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         hashtags = tweet['entities']['hashtags']
-        hash_set = set()
         for hash in hashtags:
             # need no .encode('utf-8')
-            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            datelist = tag_time.get(tag, [])
+            datelist.append(created_at)
+            tag_time[tag] = datelist
+    pickle.dump(tag_time, open('tag_activity.pick', 'w'))
+
 
 
 if __name__ == '__main__':
@@ -293,4 +301,5 @@ if __name__ == '__main__':
     # fed_all_tag_topic()
     tag_net('fed', 'pro_timeline', 'allpro')
     # data_transf('data/pro4.graphml')
+    tag_activity('fed', 'pro_timeline')
 
