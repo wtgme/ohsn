@@ -20,7 +20,7 @@ import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
 from collections import Counter
-import datetime
+from datetime import datetime
 
 
 
