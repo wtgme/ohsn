@@ -1,7 +1,7 @@
-id
+    id
     time_index
     name
-screen_name
+    screen_name
     created_at
     timeline_count
     lang
@@ -258,3 +258,4 @@ text_anal.gw.value
 text_anal.cbmi.value
 text_anal.gbmi.value
 text_anal.edword_count.value
+level

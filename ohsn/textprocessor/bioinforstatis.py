@@ -128,10 +128,14 @@ def bmi_regreesion(dbname, colname, filename):
     # regress bmi with features
     fields = iot.read_fields()
     trimed_fields = [(field.split('.')[-1]) for field in fields]
-    trimed_fields[-9:] = ['sentiment', 'age', 'gender', 'height', 'cw', 'gw', 'cbmi', 'gbmi', 'edword']
+    trimed_fields[-10:] = ['sentiment', 'age', 'gender', 'height', 'cw',
+                          'gw', 'cbmi', 'gbmi', 'edword', 'level']
     com = dbutil.db_connect_col(dbname, colname)
     data = []
-    for user in com.find({'$or': [{'text_anal.cbmi.value': {'$exists': True}}, {'text_anal.gbmi.value': {'$exists': True}}], 'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
+    # for user in com.find({'$or': [{'text_anal.cbmi.value': {'$exists': True}},
+    #                               {'text_anal.gbmi.value': {'$exists': True}}],
+    #                       'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
+    for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         values = iot.get_fields_one_doc(user, fields)
         data.append(values)
     df = pd.DataFrame(data, columns=trimed_fields)
