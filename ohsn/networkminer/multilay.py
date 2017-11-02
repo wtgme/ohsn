@@ -274,10 +274,20 @@ def tag_net(dbname, colname, filename):
 
 def tag_activity(dbname, colname):
     # recording the activity of tag
+
+    g = gt.Graph.Read_GraphML('allpro_tag_undir.graphml')
+    vs = g.vs(weight_gt=3, user_gt=3)
+    sg = g.subgraph(vs)
+    gc = gt.giant_component(sg)
+    tag_time = {}
+    for v in gc.vs:
+        tag_time[v['name']] = []
+
+
     time = dbt.db_connect_col(dbname, colname)
     filter = {}
-    tag_time = {}
     filter['$where'] = 'this.entities.hashtags.length>0'
+    filter['retweeted_status'] = {'$exists': False}
     for tweet in time.find(filter, no_cursor_timeout=True):
         # if 'retweeted_status' in row:
         #     continue
@@ -286,9 +296,10 @@ def tag_activity(dbname, colname):
         for hash in hashtags:
             # need no .encode('utf-8')
             tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-            datelist = tag_time.get(tag, [])
-            datelist.append(created_at)
-            tag_time[tag] = datelist
+            if tag in tag_time:
+                datelist = tag_time.get(tag, [])
+                datelist.append(created_at)
+                tag_time[tag] = datelist
     pickle.dump(tag_time, open('tag_activity.pick', 'w'))
 
 
@@ -299,7 +310,7 @@ if __name__ == '__main__':
 
     # networks('fed')
     # fed_all_tag_topic()
-    tag_net('fed', 'pro_timeline', 'allpro')
+    # tag_net('fed', 'pro_timeline', 'allpro')
     # data_transf('data/pro4.graphml')
-    # tag_activity('fed', 'pro_timeline')
+    tag_activity('fed', 'pro_timeline')
 

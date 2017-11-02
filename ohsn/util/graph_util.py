@@ -299,7 +299,7 @@ def load_hashtag_coocurrent_network_undir(db_name, collection='None', uids=[]):
     if len(uids) > 0:
         filter['user.id'] = {'$in': uids}
     filter['$where'] = 'this.entities.hashtags.length>0'
-    # filter['retweeted_status'] = {'$exists': False}
+    filter['retweeted_status'] = {'$exists': False}
     for row in cols.find(filter, no_cursor_timeout=True):
         # if 'retweeted_status' in row:
         #     continue
