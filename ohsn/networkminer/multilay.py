@@ -69,15 +69,13 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
     #            'Non-tag': 0}
     # type = typemap[typename]
     time = dbt.db_connect_col(dbname, timename)
-    bnets = []
-    for i in range(4):
-        bnet = dbt.db_connect_col(dbname, bnetname+str(i))
-        bnet.create_index([("id0", pymongo.ASCENDING),
-                                     ("id1", pymongo.ASCENDING),
-                                      ("type", pymongo.ASCENDING),
-                                     ("statusid", pymongo.ASCENDING)],
-                                    unique=True)
-        bnets.append(bnet)
+    bnet = dbt.db_connect_col(dbname, bnetname)
+    bnet.create_index([("id0", pymongo.ASCENDING),
+                       ("id1", pymongo.ASCENDING),
+                       ("type", pymongo.ASCENDING),
+                       ("tags", pymongo.ASCENDING),
+                        ("statusid", pymongo.ASCENDING)],
+                                unique=True)
 
     filter = {'$where': 'this.entities.user_mentions.length>0',
                 'topics': {'$exists': True},
@@ -94,16 +92,16 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
                     udmention_list.append(udmention['id'])
             for mention in tweet['entities']['user_mentions']:
                 if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
-                    timiner.add_reply_edge(bnets[index], tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+                    timiner.add_reply_edge(bnet, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'], index)
 
                 elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
-                    timiner.add_retweet_edge(bnets[index], tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+                    timiner.add_retweet_edge(bnet, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'], index)
 
                 elif mention['id'] in udmention_list:  # mentions in Retweet content
-                    timiner.add_undirect_mentions_edge(bnets[index], tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                    timiner.add_undirect_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], index)
 
                 else:  # original mentions
-                    timiner.add_direct_mentions_edge(bnets[index], tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                    timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], index)
     print count2, 'more than 2 topics'
 
 def out_graph_edges(g, edgePath, node_attrs = {}):
@@ -221,54 +219,52 @@ def fed_all_tag_topic(filepath='data/fed_tag_undir.graphml'):
 
 def tag_net(dbname, colname, filename):
     # All tags excluding retweets
-    g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
-    gt.summary(g)
-    g.write_graphml(filename+'_tag_undir_rt.graphml')
+    # g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
+    # gt.summary(g)
+    # g.write_graphml(filename+'_tag_undir.graphml')
 
     # Only frequent tags
-    # g = gt.Graph.Read_GraphML('data/pro_tag_undir.graphml')
-    # gt.summary(g)
-    # nodes = g.vs.select(weight_gt=3)
-    # print 'Filtered nodes: %d' %len(nodes)
-    # g = g.subgraph(nodes)
-    # nodes = g.vs.select(user_gt=3)
-    # print 'Filtered nodes: %d' %len(nodes)
-    # g = g.subgraph(nodes)
-    # gt.summary(g)
-    # g = gt.giant_component(g)
+    g = gt.Graph.Read_GraphML(filename+'_tag_undir.graphml')
+    gt.summary(g)
+    nodes = g.vs.select(weight_gt=3)
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    nodes = g.vs.select(user_gt=3)
+    print 'Filtered nodes: %d' %len(nodes)
+    g = g.subgraph(nodes)
+    gt.summary(g)
+    g = gt.giant_component(g)
     # g.write_graphml('data/'+filename+'_tag_undir_gc.graphml')
 
 
     # g = gt.Graph.Read_GraphML('data/'+filename+'_tag_undir_gc.graphml')
-    # gt.summary(g)
-    # com = g.community_multilevel(weights='weight', return_levels=False)
-    # # informap Community stats: #communities, modularity 2845 0.454023502108
-    # # Louvain : Community stats: #communities, modularity 59 0.496836953082
-    # comclus = com.subgraphs()
-    # print 'Community stats: #communities, modularity', len(comclus), com.modularity
+    gt.summary(g)
+    com = g.community_multilevel(weights='weight', return_levels=False)
+    # informap Community stats: #communities, modularity 2845 0.454023502108
+    # Louvain : Community stats: #communities, modularity 59 0.496836953082
+    comclus = com.subgraphs()
+    print 'Community stats: #communities, modularity', len(comclus), com.modularity
     # csize = [comclu.vcount() for comclu in comclus]
-    # # csize = [sum(comclu.vs['weight']) for comclu in comclus]
-    # potag = []
-    # for i in range(4):
-    #     index = csize.index(max(csize))
-    #     csize[index] = 0
-    #     tnet = comclus[index]
-    #     potag.append(set(tnet.vs['name']))
-    #
-    # times = dbt.db_connect_col(dbname, colname)
-    # filter = {'$where': 'this.entities.hashtags.length>0',
-    #           'retweeted_status': {'$exists': False}}
-    # for tweet in times.find(filter, no_cursor_timeout=True):
-    #     hashtags = tweet['entities']['hashtags']
-    #     hash_set = set()
-    #     for hash in hashtags:
-    #         hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-    #     topics = []
-    #     for i, pot in enumerate(potag):
-    #         if len(hash_set.intersection(pot)) > 0:
-    #             topics.append(i)
-    #     if len(topics) > 0:
-    #         times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
+    # csize = [sum(comclu.vs['weight']) for comclu in comclus]
+    potag = []
+    for i in range(len(comclus)):
+        tnet = comclus[i]
+        potag.append(set(tnet.vs['name']))
+
+    times = dbt.db_connect_col(dbname, colname)
+    filter = {'$where': 'this.entities.hashtags.length>0',
+              'retweeted_status': {'$exists': False}}
+    for tweet in times.find(filter, no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+        topics = []
+        for i, pot in enumerate(potag):
+            if len(hash_set.intersection(pot)) > 0:
+                topics.append(i)
+        if len(topics) > 0:
+            times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
 
 
 
@@ -306,11 +302,11 @@ def tag_activity(dbname, colname):
 
 if __name__ == '__main__':
     # constrcut_data()
+    # fed_all_tag_topic()
+    tag_net('fed', 'pro_timeline', 'allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
     # networks('fed')
-    # fed_all_tag_topic()
-    # tag_net('fed', 'pro_timeline', 'allpro')
     # data_transf('data/pro4.graphml')
-    tag_activity('fed', 'pro_timeline')
+    # tag_activity('fed', 'pro_timeline')
 
