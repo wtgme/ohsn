@@ -67,9 +67,9 @@ def read_tweets(dbname, colname, timecol):
     for tweet in timelines.find({'retweeted_status': {'$exists': False}}, no_cursor_timeout=True):
         text = tweet['text'].encode('utf8')
         uid = tweet['user']['id']
-        # replace RT, @, # and Http://
+        # replace RT, @, and Http://
         text = text.strip().lower()
-        text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http://
+        text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
         words = tokenizer.tokenize(text)
         # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
         if len(words) > 5:
@@ -82,5 +82,11 @@ def read_tweets(dbname, colname, timecol):
 
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
-    behavior_network('fed', 'bnet', 'data/fed_')
-    # read_tweets('fed', 'com', 'timeline')
+    # behavior_network('fed', 'bnet', 'data/fed_')
+    read_tweets('fed', 'com', 'timeline')
+
+    # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
+    # text = text.strip().lower()
+    # text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
+    # words = tokenizer.tokenize(text)
+    # print words

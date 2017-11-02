@@ -20,7 +20,7 @@ import logging
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pymongo
-import RAKE
+# import RAKE
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 stopwds = stopwords.words('english')

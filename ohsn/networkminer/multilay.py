@@ -222,7 +222,7 @@ def tag_net(dbname, colname, filename):
     # All tags excluding retweets
     g = gt.load_hashtag_coocurrent_network_undir(dbname, colname)
     gt.summary(g)
-    g.write_graphml(filename+'_tag_undir.graphml')
+    g.write_graphml(filename+'_tag_undir_rt.graphml')
 
     # Only frequent tags
     # g = gt.Graph.Read_GraphML('data/pro_tag_undir.graphml')
@@ -269,6 +269,20 @@ def tag_net(dbname, colname, filename):
     #     if len(topics) > 0:
     #         times.update_one({'id': tweet['id']}, {'$set': {'topics': topics}}, upsert=False)
 
+
+
+def tag_activity(dbname, colname):
+    time = dbt.db_connect_col(dbname, colname)
+    filter = {}
+    filter['$where'] = 'this.entities.hashtags.length>0'
+    for tweet in time.find(filter, no_cursor_timeout=True):
+        # if 'retweeted_status' in row:
+        #     continue
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            # need no .encode('utf-8')
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
 
 
 if __name__ == '__main__':
