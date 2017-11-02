@@ -301,5 +301,5 @@ if __name__ == '__main__':
     # fed_all_tag_topic()
     tag_net('fed', 'pro_timeline', 'allpro')
     # data_transf('data/pro4.graphml')
-    tag_activity('fed', 'pro_timeline')
+    # tag_activity('fed', 'pro_timeline')
 
