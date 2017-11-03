@@ -143,15 +143,15 @@ def user_active():
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
     fields = [
-            'senti_50.result.whole.posm',
-            'senti_50.result.whole.posstd',
-            'senti_50.result.whole.negm',
-            'senti_50.result.whole.negstd',
-            'senti_50.result.whole.scalem',
-            'senti_50.result.whole.scalestd',
-            'senti_50.result.whole.N',
-            'senti_50.result.prior.scalem',
-            'senti_50.result.post.scalem',
+            'senti_100.result.whole.posm',
+            'senti_100.result.whole.posstd',
+            'senti_100.result.whole.negm',
+            'senti_100.result.whole.negstd',
+            'senti_100.result.whole.scalem',
+            'senti_100.result.whole.scalestd',
+            'senti_100.result.whole.N',
+            'senti_100.result.prior.scalem',
+            'senti_100.result.post.scalem',
         # 'liwc_anal.result.posemo',
         #       'liwc_anal.result.negemo',
         #       'liwc_anal.result.ingest',
@@ -172,7 +172,7 @@ def read_user_time_iv(filename):
          ('ED', 'fed', 'com', 'fed', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
                                                         'level': 1,
-                                                        'senti_50.result.whole.N': {'$gt': 10}}),
+                                                        'senti_100.result.whole.N': {'$gt': 10}}),
          ('RD', 'random', 'scom', 'random', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
                                                         'senti.result.whole.N': {'$gt': 10}}),
@@ -287,7 +287,7 @@ def read_user_time_iv(filename):
                         alive = 0
                         for fid in friend_ids:
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True},
-                                               'senti_50.result.whole.N': {'$gt': 10}})
+                                               'senti_100.result.whole.N': {'$gt': 10}})
                             fu2 = com2.find_one({'id': fid})
 
                             if fu:
@@ -582,7 +582,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    read_user_time_iv('user-durations-iv-following-senti-50.csv')
+    read_user_time_iv('user-durations-iv-following-senti-100.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
