@@ -99,7 +99,7 @@ def load_network_subset(db_name, collection='None', filter={}):
     return g
 
 
-def load_beh_network_subset(userlist, db_name, collection='None', btype='communication'):
+def load_beh_network_subset(userlist, db_name, collection='None', btype='communication', tag=None):
     '''
     only interaction among poi
     behavior network: directed weighted network
@@ -122,10 +122,14 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
         db = dbt.db_connect_no_auth(db_name)
         cols = db[collection]
     name_map, edges = {}, {}
+    filter = {}
+    filter['type'] = {'$in': btype_dic[btype]}
+    filter['id0'] = {'$in': userlist}
+    filter['id1'] = {'$in': userlist}
+    if tag:
+        filter['tags'] = tag
     # for row in cols.find({}):
-    for row in cols.find({'$and': [{'type': {'$in': btype_dic[btype]}}, {'id0': {'$in': userlist}}
-        , {'id1': {'$in': userlist}}
-                                   ]}, no_cursor_timeout=True):
+    for row in cols.find(filter, no_cursor_timeout=True):
         n1 = str(row['id0'])
         n2 = str(row['id1'])
         if n1 != n2:

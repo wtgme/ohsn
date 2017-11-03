@@ -129,27 +129,23 @@ def out_graph_edges(g, edgePath, node_attrs = {}):
 
 def networks(dbname):
     # out networks to multiplex process
-    # all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
-    # all_uids_count = Counter(all_uids)
-    # uids = [key for key in all_uids_count if all_uids_count[key] >= 3]
-    # print len(uids)
-    # g1 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet0', btype='communication')
-    # g2 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet1', btype='communication')
-    # g3 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet2', btype='communication')
-    # g4 = gt.load_beh_network_subset(uids, dbname, 'pro_bnet3', btype='communication')
-    # g1.write_graphml('pro1.graphml')
-    # g2.write_graphml('pro2.graphml')
-    # g3.write_graphml('pro3.graphml')
-    # g4.write_graphml('pro4.graphml')
+    all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
+    all_uids_count = Counter(all_uids)
+    uids = [key for key in all_uids_count]
+    topics = [35, 3, 2, 14, 25]
+    print len(uids)
+    for i, tag in enumerate(topics):
+        g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=tag)
+        g.write_graphml('all_pro'+str(i)+'.graphml')
 
-    g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
-    g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
-    g3 = gt.Graph.Read_GraphML('data/pro3.graphml')
-    g4 = gt.Graph.Read_GraphML('data/pro4.graphml')
-    gt.net_stat(g1)
-    gt.net_stat(g2)
-    gt.net_stat(g3)
-    gt.net_stat(g4)
+    # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
+    # g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
+    # g3 = gt.Graph.Read_GraphML('data/pro3.graphml')
+    # g4 = gt.Graph.Read_GraphML('data/pro4.graphml')
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
+    # gt.net_stat(g3)
+    # gt.net_stat(g4)
 
     # g1 = gt.giant_component(g1, 'WEAK')
     # g2 = gt.giant_component(g2, 'WEAK')
@@ -179,16 +175,16 @@ def networks(dbname):
     # g3.write_graphml('pro3-comm.graphml')
     # g4.write_graphml('pro4-comm.graphml')
 
-    uidlist = out_graph_edges(g1, 'data/mu/pro1.edge')
-    uidlist = out_graph_edges(g2, 'data/mu/pro2.edge', uidlist)
-    uidlist = out_graph_edges(g3, 'data/mu/pro3.edge', uidlist)
-    uidlist = out_graph_edges(g4, 'data/mu/pro4.edge', uidlist)
+    # uidlist = out_graph_edges(g1, 'data/mu/pro1.edge')
+    # uidlist = out_graph_edges(g2, 'data/mu/pro2.edge', uidlist)
+    # uidlist = out_graph_edges(g3, 'data/mu/pro3.edge', uidlist)
+    # uidlist = out_graph_edges(g4, 'data/mu/pro4.edge', uidlist)
 
 
-    with open('data/mu/pro.node', 'wb') as fw:
-        fw.write('nodeID nodeLabel\n')
-        for k in list(sorted(uidlist, key=uidlist.get)):
-            fw.write(str(uidlist[k]) + ' N' + k + '\n')
+    # with open('data/mu/pro.node', 'wb') as fw:
+    #     fw.write('nodeID nodeLabel\n')
+    #     for k in list(sorted(uidlist, key=uidlist.get)):
+    #         fw.write(str(uidlist[k]) + ' N' + k + '\n')
 
 
 def data_transf(sourcefile):
@@ -305,9 +301,9 @@ if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
-    extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
+    # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
-    # networks('fed')
+    networks('fed')
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
