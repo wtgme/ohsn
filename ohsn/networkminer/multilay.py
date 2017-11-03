@@ -62,6 +62,7 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
         except pymongo.errors.DuplicateKeyError:
             pass
 
+
 def extract_network(dbname, timename, bnetname, typename='ED'):
     # Extract different networks from different types of content
     # typemap = {'ED': -1,
@@ -82,10 +83,11 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
               'retweeted_status': {'$exists': False}}
     count2 = 0
     for tweet in time.find(filter, no_cursor_timeout=True):
-        if len(tweet['topics'] )> 1:
-            count2 += 1
-        if len(tweet['topics']) == 1:
-            index = tweet['topics'][0]
+        # if len(tweet['topics'] )> 1:
+        #     count2 += 1
+        # if len(tweet['topics']) == 1:
+        for index in tweet['topics']:
+            # index = tweet['topics'][0]
             if index in [35, 3, 2, 14, 25]:
                 udmention_list = []
                 if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
@@ -301,9 +303,9 @@ if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
-    # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
+    extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
-    networks('fed')
+    # networks('fed')
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
