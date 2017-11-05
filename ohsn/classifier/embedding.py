@@ -99,11 +99,13 @@ def word2vec_tweets(dbname, colname, timecol):
             text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
             words = tokenizer.tokenize(text)
             # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-            if len(words) > 5:
-                for word in words:
-                    if word in model:
-                        user_vec.append(model[word])
-        col.update_one({'id': uid}, {'$set': {'w2v.mined': True, 'w2v.result': np.array(user_vec).mean(axis=0)}}, upsert=False)
+            # if len(words) > 5:
+            for word in words:
+                if word in model:
+                    user_vec.append(model[word])
+        if len(user_vec) > 0:
+            vector = np.array(user_vec).mean(axis=0)
+            col.update_one({'id': uid}, {'$set': {'w2v.mined': True, 'w2v.result': vector.tolist()}}, upsert=False)
 
 
 
