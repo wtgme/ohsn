@@ -174,12 +174,13 @@ def plot_pclassification(pclares):
 
 
 def predict_verify(dbname, comname, testname, lables):
-    ids = pickle.load(open(testname+'_ids.data', 'r'))
+    # read test data user id from testname, and get predicted labels from lables
+    ids = pickle.load(open(testname, 'r'))
     print len(ids), len(lables)
     db = dbt.db_connect_no_auth(dbname)
     com = db[comname]
     pred_users = []
-    # +1 for ED and -1 for non-ED
+    # +1 for ED and 0 for non-ED
     for i in xrange(len(ids)):
         if lables[i] == 1:
             pred_users.append(ids[i])
@@ -187,8 +188,8 @@ def predict_verify(dbname, comname, testname, lables):
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
         if user['level'] != 1:
-            print user['screen_name'].encode('utf-8')
-        # print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
+            # print user['screen_name'].encode('utf-8')
+            print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
 
 def compare_round(dbname, comname, testname, lables1, labels2):
@@ -258,11 +259,11 @@ def out_predicted_users_ids(results, test_file):
         i = 0
         for line in fo.readlines():
             id = line.strip().split()[0]
-            if results[i] == 1:
-                ids.append(id)
+            # if results[i] == 1:
+            ids.append(id)
             i += 1
     print len(ids)
-    pickle.dump(ids, open('data/positive.pick', 'w'))
+    pickle.dump(ids, open('data/testids.pick', 'w'))
 
 
 if __name__ == '__main__':
@@ -272,7 +273,7 @@ if __name__ == '__main__':
     results = pickle.load(open('data/fed.pick', 'r'))
     # plot_classification(results)
     out_predicted_users_ids(results, 'data/fed.data')
-    # predict_verify('fed', 'com', 'data/fed', results)
+    predict_verify('fed', 'com', 'data/testids.pick', results)
 
 
     # """Refine results with subset of features"""

@@ -18,6 +18,9 @@ import ohsn.util.db_util as dbt
 import re
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+import gensim, logging
+import numpy as np
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 import pickle
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -80,10 +83,35 @@ def read_tweets(dbname, colname, timecol):
     # pickle.dump(documents, open('data/sen.pick', 'w'))
 
 
+def word2vec_tweets(dbname, colname, timecol):
+    # load word2vec of tweets and represent each users as the vector of word2vec
+    model = gensim.models.Word2Vec.load('word2vec/fed_w2v.model')
+    db = dbt.db_connect_no_auth(dbname)
+    col = db[colname]
+    timelines = db[timecol]
+    for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
+        uid = user['id']
+        user_vec = []
+        for tweet in timelines.find({'user.id': uid}, no_cursor_timeout=True):
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, and Http://
+            text = text.strip().lower()
+            text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
+            words = tokenizer.tokenize(text)
+            # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+            if len(words) > 5:
+                for word in words:
+                    if word in model:
+                        user_vec.append(model[word])
+        col.update_one({'id': uid}, {'$set': {'w2v.mined': True, 'w2v.result': np.array(user_vec).mean(axis=0)}}, upsert=False)
+
+
+
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
     # behavior_network('fed', 'bnet', 'data/fed_')
-    read_tweets('fed', 'com', 'timeline')
+    # read_tweets('fed', 'com', 'timeline')
+    word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
     # text = text.strip().lower()
