@@ -138,7 +138,7 @@ def networks(dbname):
     print len(uids)
     for i, tag in enumerate(topics):
         g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=tag)
-        g.write_graphml('all_pro'+str(i)+'.graphml')
+        g.write_graphml('all_pro'+str(i+1)+'.graphml')
 
     # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
     # g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
@@ -303,9 +303,9 @@ if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
-    extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
+    # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
-    # networks('fed')
+    networks('fed')
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
