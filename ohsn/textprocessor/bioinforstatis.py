@@ -153,10 +153,9 @@ def bmi_regreesion(dbname, colname, filename):
         else:
             values.extend([0]*len(poi_fields))
         data.append(values)
-    df = pd.DataFrame(data, columns=trimed_fields + [(field.split('.')[-1] + '_p2') for field in poi_fields] +
-                      [(field.split('.')[-1] + '_p3') for field in poi_fields])
+    df = pd.DataFrame(data, columns=trimed_fields + [(field.split('.')[-2] + '_p2') for field in poi_fields] +
+                      [(field.split('.')[-2] + '_p3') for field in poi_fields])
     df.to_csv(filename)
-
 
 
 if __name__ == '__main__':
@@ -175,4 +174,16 @@ if __name__ == '__main__':
     # ]
     # plot_bio('fed', 'scom', fields, ['CBMI', 'GBMI'])
 
-    bmi_regreesion('fed', 'com', 'data/bmi_reg.csv')
+    # bmi_regreesion('fed', 'com', 'data/bmi_reg.csv')
+
+    fields = iot.read_fields()
+    poi_fields = fields[-9:-1]
+    print poi_fields
+    trimed_fields = [(field.split('.')[-1]) for field in fields]
+    trimed_fields[-10:] = ['sentiment', 'age', 'gender', 'height', 'cw',
+                          'gw', 'cbmi', 'gbmi', 'edword', 'level']
+    df = pd.read_csv('data/bmi_reg.csv')
+    df.columns = trimed_fields + [(field.split('.')[-2] + '_p2') for field in poi_fields] + [(field.split('.')[-2] + '_p3') for field in poi_fields]
+    df.to_csv('data/bmi_reg.csv')
+
+

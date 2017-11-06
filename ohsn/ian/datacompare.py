@@ -15,6 +15,7 @@ import ohsn.util.graph_util as gt
 import pymongo
 import ohsn.api.profiles_check as pck
 from datetime import datetime
+import ohsn.textprocessor.description_miner as dm
 import pandas as pd
 
 # def filter_user():
@@ -143,6 +144,15 @@ def hot_day(filename, dbname='TwitterProAna', colname='tweets'):
     # print tids
     for tweet in tweets.find({'id': {'$in': tids}}):
         print str(tweet['id']), tweet['text'].encode('utf-8')
+
+
+def bio_information(filename, dbname='TwitterProAna', colname='users'):
+    com = dbt.db_connect_col(dbname, colname)
+    for row in com.find({'screen_name': {'$exists': True}}, no_cursor_timeout=True):
+        name = row['name']
+        text = row['description']
+
+
 
 if __name__ == '__main__':
     # filter_user()

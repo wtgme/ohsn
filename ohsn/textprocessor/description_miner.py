@@ -514,6 +514,7 @@ def edword(text):
 
 
 def process_text(text, name=''):
+    # extract demongraphic features from user profile and user name
     results = {}
     text = text.encode('utf-8').replace('\n', ' ')
     text = text.lower()
@@ -641,7 +642,7 @@ def process_poi(dbname, colname):
     db = dbutil.db_connect_no_auth(dbname)
     sample_poi = db[colname]
     process_description(sample_poi)
-    inference_stat(dbname, colname)
+    # inference_stat(dbname, colname)
 
 
 def process_test_results():
