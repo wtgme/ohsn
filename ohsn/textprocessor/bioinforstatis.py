@@ -182,7 +182,7 @@ if __name__ == '__main__':
     trimed_fields = [(field.split('.')[-1]) for field in fields]
     trimed_fields[-10:] = ['sentiment', 'age', 'gender', 'height', 'cw',
                           'gw', 'cbmi', 'gbmi', 'edword', 'level']
-    df = pd.read_csv('data/bmi_reg.csv')
+    df = pd.read_csv('data/bmi_reg.csv', index_col=0)
     df.columns = trimed_fields + [(field.split('.')[-2] + '_p2') for field in poi_fields] + [(field.split('.')[-2] + '_p3') for field in poi_fields]
     df.to_csv('data/bmi_reg.csv')
 
