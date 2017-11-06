@@ -143,9 +143,15 @@ def bmi_regreesion(dbname, colname, filename):
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         values = iot.get_fields_one_doc(user, fields)
         user2 = com2.find_one({'id': user['id']})
+        if user2:
+            values.extend(iot.get_fields_one_doc(user2, poi_fields))
+        else:
+            values.extend([0]*len(poi_fields))
         user3 = com3.find_one({'id': user['id']})
-        values.extend(iot.get_fields_one_doc(user2, poi_fields))
-        values.extend(iot.get_fields_one_doc(user3, poi_fields))
+        if user3:
+            values.extend(iot.get_fields_one_doc(user3, poi_fields))
+        else:
+            values.extend([0]*len(poi_fields))
         data.append(values)
     df = pd.DataFrame(data, columns=trimed_fields + [(field.split('.')[-1] + '_p2') for field in poi_fields] +
                       [(field.split('.')[-1] + '_p3') for field in poi_fields])
