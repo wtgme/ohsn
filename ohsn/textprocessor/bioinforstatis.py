@@ -127,18 +127,28 @@ def plot_bio(dbname, colname, fields, names):
 def bmi_regreesion(dbname, colname, filename):
     # regress bmi with features
     fields = iot.read_fields()
+    poi_fields = fields[-9:-1]
+    print poi_fields
     trimed_fields = [(field.split('.')[-1]) for field in fields]
     trimed_fields[-10:] = ['sentiment', 'age', 'gender', 'height', 'cw',
                           'gw', 'cbmi', 'gbmi', 'edword', 'level']
+
     com = dbutil.db_connect_col(dbname, colname)
     data = []
     # for user in com.find({'$or': [{'text_anal.cbmi.value': {'$exists': True}},
     #                               {'text_anal.gbmi.value': {'$exists': True}}],
     #                       'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
+    com2 = dbutil.db_connect_col('fed2', colname)
+    com3 = dbutil.db_connect_col('fed3', colname)
     for user in com.find({'liwc_anal.result.WC': {'$exists': True}}, no_cursor_timeout=True):
         values = iot.get_fields_one_doc(user, fields)
+        user2 = com2.find_one({'id': user['id']})
+        user3 = com3.find_one({'id': user['id']})
+        values.extend(iot.get_fields_one_doc(user2, poi_fields))
+        values.extend(iot.get_fields_one_doc(user3, poi_fields))
         data.append(values)
-    df = pd.DataFrame(data, columns=trimed_fields)
+    df = pd.DataFrame(data, columns=trimed_fields + [(field.split('.')[-1] + '_p2') for field in poi_fields] +
+                      [(field.split('.')[-1] + '_p3') for field in poi_fields])
     df.to_csv(filename)
 
 
