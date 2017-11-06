@@ -665,7 +665,7 @@ def process_test_results():
 
 
 if __name__ == '__main__':
-    process_poi('fed', 'com')
+    process_poi('fed3', 'com')
     # inference_stat('fed', 'com')
     # process_poi('sed', 'com')
     # process_poi('srd', 'com')
