@@ -148,10 +148,21 @@ def hot_day(filename, dbname='TwitterProAna', colname='tweets'):
 
 def bio_information(filename, dbname='TwitterProAna', colname='users'):
     com = dbt.db_connect_col(dbname, colname)
+    results  = []
     for row in com.find({'screen_name': {'$exists': True}}, no_cursor_timeout=True):
-        name = row['name']
-        text = row['description']
+        for hist in row['history']:
+            name, text = row['name'], row['description']
+            if 'name' in hist:
+                name = hist['name']
+            if 'description' in hist:
+                text = hist['description']
 
+            name = row['name']
+            text = row['description']
+            if text and name:
+                stats = dm.process_text(text, name)
+                if stats:
+                    results
 
 
 if __name__ == '__main__':
@@ -160,6 +171,7 @@ if __name__ == '__main__':
 
     # data_transform()
     # tweet_stat()
-    follow_net('TwitterProAna', 'users')
+    # follow_net('TwitterProAna', 'users')
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
+    bio_information('bio-inform.csv')
