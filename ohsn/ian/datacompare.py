@@ -146,23 +146,40 @@ def hot_day(filename, dbname='TwitterProAna', colname='tweets'):
         print str(tweet['id']), tweet['text'].encode('utf-8')
 
 
-def bio_information(filename, dbname='TwitterProAna', colname='users'):
+def bio_information(dbname='TwitterProAna', colname='users'):
     com = dbt.db_connect_col(dbname, colname)
-    results  = []
+    bio_hist = dbt.db_connect_col(dbname, 'bio')
+    bio_hist.create_index([('id', pymongo.ASCENDING)])
+
+
     for row in com.find({'screen_name': {'$exists': True}}, no_cursor_timeout=True):
-        for hist in row['history']:
-            name, text = row['name'], row['description']
+        name, text = row['name'], row['description']
+        date = row['lastPolledFull']
+        if text and name:
+            stats = dm.process_text(text, name)
+        elif text:
+            stats = dm.process_text(text)
+        if stats:
+            stats['date'] = date
+            stats['id'] = row['id']
+            try:
+                bio_hist.insert(stats)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+        for hist in reversed(row['history']):
             if 'name' in hist:
                 name = hist['name']
             if 'description' in hist:
                 text = hist['description']
-
-            name = row['name']
-            text = row['description']
-            if text and name:
-                stats = dm.process_text(text, name)
-                if stats:
-                    results
+                if text:
+                    stats = dm.process_text(text, name)
+                    if stats:
+                        stats['date'] = hist['lastPolledFull']
+                        stats['id'] = row['id']
+                        try:
+                            bio_hist.insert(stats)
+                        except pymongo.errors.DuplicateKeyError:
+                            pass
 
 
 if __name__ == '__main__':
@@ -174,4 +191,4 @@ if __name__ == '__main__':
     # follow_net('TwitterProAna', 'users')
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
-    bio_information('bio-inform.csv')
+    bio_information()
