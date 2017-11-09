@@ -111,7 +111,7 @@ def word2vec_tweets(dbname, colname, timecol):
 def out_word2vec(dbname, colname):
     db = dbt.db_connect_col(dbname, colname)
     for user in db.find({'w2v': {'$exists': True}}, no_cursor_timeout=True):
-        print str(user['id']) + '\t' + ' '.join(user['w2v']['result'])
+        print str(user['id']) + '\t' + ' '.join([str(i) for i in user['w2v']['result']])
 
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
