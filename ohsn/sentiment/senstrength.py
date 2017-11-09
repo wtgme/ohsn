@@ -141,7 +141,6 @@ def process_chunks_db(dbname, timename, comname, n=100):
         fr.close()
 
 
-
 def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
     ''' measure sentistrength for each user
     reduce IO
@@ -151,7 +150,8 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
     MYDIR = os.path.dirname(__file__)
 
     ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True},
-                                                                                         'level':1})
+                                                                               'level':1})
+    user_series = {}
     print 'Total users:', len(ids)
     for idlist in list(chunks(ids, n)):
     # for idlist in [[557442390, 2155187931, 2881928495]]: #test
@@ -195,7 +195,7 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
         fr = open('tem.txt', 'r')
         lines = fr.readlines()
         index = 0
-        user_series = {}
+
         for uid, i in id_count:
             pos1, neg1, scale1, usentis = [], [], [], []
             uindex = 0
@@ -215,7 +215,7 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
             user_series[uid] = usentis
             index += i
         fr.close()
-        pickle.dump(user_series, open('data/core-ed-series.pick', 'w'))
+    pickle.dump(user_series, open('data/core-ed-series.pick', 'w'))
 
 
 def process_db(dbname, timename, comname):
