@@ -108,15 +108,21 @@ def word2vec_tweets(dbname, colname, timecol):
             col.update_one({'id': uid}, {'$set': {'w2v.mined': True, 'w2v.result': vector.tolist()}}, upsert=False)
 
 
+def out_word2vec(dbname, colname):
+    db = dbt.db_connect_col(dbname, colname)
+    for user in db.find({'w2v': {'$gt': 0}}, no_cursor_timeout=True):
+        print str(user['id']) + '\t' + ' '.join(user['w2v']['result'])
 
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
     # behavior_network('fed', 'bnet', 'data/fed_')
     # read_tweets('fed', 'com', 'timeline')
-    word2vec_tweets('fed', 'com', 'timeline')
+    # word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
     # text = text.strip().lower()
     # text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
     # words = tokenizer.tokenize(text)
     # print words
+
+    out_word2vec('fed', 'com')
