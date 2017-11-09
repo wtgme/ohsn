@@ -187,7 +187,7 @@ def predict_verify(dbname, comname, testname, lables):
 
     for uid in pred_users:
         user = com.find_one({'id': int(uid)})
-        if user['level'] != 1:
+        if user['level'] == 1:
             # print user['screen_name'].encode('utf-8')
             print uid, user['screen_name'].encode('utf-8'), ' '.join(user['description'].split()).encode('utf-8')
 
