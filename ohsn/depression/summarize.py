@@ -10,7 +10,7 @@ def out_tweet(dbname, colname):
     tweets = dbt.db_connect_col(dbname, colname)
     for tweet in tweets.find({}, no_cursor_timeout=True):
         text = tweet['text'].encode('utf8')
-        print text
+        print tweet['id_str'] +'\t' + text
 
 
 if __name__ == '__main__':
