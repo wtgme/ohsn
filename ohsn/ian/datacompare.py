@@ -181,6 +181,14 @@ def bio_information(dbname='TwitterProAna', colname='users'):
                         except pymongo.errors.DuplicateKeyError:
                             pass
 
+def bio_change(dbname='TwitterProAna', colname='bio'):
+    data = []
+    bio = dbt.db_connect_col(dbname, colname)
+    for entry in bio.find({'a':{'$exists':True}}):
+        data.append([entry['id'], entry['date'], entry['a']['value']])
+    df = pd.DataFrame(data=data, columns=['uid', 'date', 'cbmi'])
+    df.to_csv('ian-cbmi.csv')
+
 
 if __name__ == '__main__':
     # filter_user()
@@ -191,4 +199,5 @@ if __name__ == '__main__':
     # follow_net('TwitterProAna', 'users')
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
-    bio_information()
+    # bio_information()
+    bio_change()

@@ -16,6 +16,7 @@ import ohsn.util.io_util as iot
 import re
 import numpy as np
 import datetime
+import pickle
 rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
 mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
 hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
@@ -141,6 +142,81 @@ def process_chunks_db(dbname, timename, comname, n=100):
 
 
 
+def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
+    ''' measure sentistrength for each user
+    reduce IO
+    '''
+    time = dbt.db_connect_col(dbname, timename)
+    com = dbt.db_connect_col(dbname, comname)
+    MYDIR = os.path.dirname(__file__)
+
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True},
+                                                                                         'level':1})
+    print 'Total users:', len(ids)
+    for idlist in list(chunks(ids, n)):
+    # for idlist in [[557442390, 2155187931, 2881928495]]: #test
+        # read buntch of user tweets
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),'users no:', len(idlist)
+        f = open('tem.txt', 'w')
+        id_count = []
+        for uid in idlist:
+            i = 0
+            for tweet in time.find({'user.id': uid}).sort([("id", 1)]): # time from before to now
+                if 'retweeted_status' in tweet:
+                    continue
+                elif 'quoted_status' in tweet:
+                    continue
+                else:
+                    text = tweet['text'].encode('utf8')
+                    # replace RT, @, # and Http://
+                    text = rtgrex.sub('', text)
+                    text = mgrex.sub('', text)
+                    text = hgrex.sub('', text)
+                    text = ugrex.sub('', text)
+                    words = text.strip().split()
+                    if len(words) > 0:
+                        # print tweet['created_at']
+                        print >> f, str(tweet['id']) + '\t'+ str(uid)+'\t' + ' '.join(words)
+                        i += 1
+            if i > 0:
+                id_count.append((uid, i))
+        f.close()
+
+        '''Sentiment process'''
+        # java -jar SentiStrengthCom.jar sentidata SentiStrength_DataEnglishFeb2017/ input tweets.txt scale annotateCol 3 overwrite
+        #open a subprocess using shlex to get the command line string into the correct args list format
+        p = subprocess.Popen(shlex.split('java -jar '+os.path.join(MYDIR,'SentiStrengthCom.jar') +' sentidata '
+                                     + os.path.join(MYDIR, 'SentiStrength_DataEnglishFeb2017/')
+                                         + ' input tem.txt annotateCol 3 overwrite'),
+                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p.communicate()
+
+        '''processs results'''
+        fr = open('tem.txt', 'r')
+        lines = fr.readlines()
+        index = 0
+        user_series = {}
+        for uid, i in id_count:
+            pos1, neg1, scale1, usentis = [], [], [], []
+            uindex = 0
+            for j, line in enumerate(lines[index: index+i]):
+                tokens = line.strip().split('\t')
+                pos = int(tokens[-2])
+                neg = int(tokens[-1])
+                scale = pos + neg
+                if uindex < 100:
+                    pos1.append(pos)
+                    neg1.append(neg)
+                    scale1.append(scale)
+                    uindex += 1
+                else:
+                    usentis.append(np.mean(scale1))
+                    uindex = 0
+            user_series[uid] = usentis
+            index += i
+        fr.close()
+        pickle.dump(user_series, open('data/core-ed-series.pick', 'w'))
+
 
 def process_db(dbname, timename, comname):
     ''' measure sentistrength for each user
@@ -232,6 +308,7 @@ if __name__ == '__main__':
     # print rate_sentiment('Everynight I hope i wake up thinner, at my UGW. One day it will happen.')
     # print rate_sentiment('I talk to YOU')
 
-    process_chunks_db(dbname='fed', timename='timeline', comname='com')
+    process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='scom')
+    # process_chunks_db(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')

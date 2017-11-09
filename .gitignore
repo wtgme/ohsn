@@ -85,3 +85,4 @@ ohsn/.Rhistory
 *.xml
 *.node
 *.edge
+*.csv
