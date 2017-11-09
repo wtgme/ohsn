@@ -109,9 +109,22 @@ def word2vec_tweets(dbname, colname, timecol):
 
 
 def out_word2vec(dbname, colname):
+    # out word2vec for tweets
     db = dbt.db_connect_col(dbname, colname)
     for user in db.find({'w2v': {'$exists': True}}, no_cursor_timeout=True):
         print str(user['id']) + '\t' + ' '.join([str(i) for i in user['w2v']['result']])
+
+def out_core_ed_id(dbname, colname):
+    # get user ids for core ED users as positive users
+    # uids = iot.get_values_one_field(dbname, colname, 'id_str')
+    # names = iot.get_values_one_field(dbname, colname, 'screen_name')
+
+    db = dbt.db_connect_col(dbname, colname)
+    users = {}
+    for user in db.find({}, ['id', 'screen_name'], no_cursor_timeout=True):
+        users[user['id']] = user['screen_name']
+    print len(users)
+    pickle.dump(users, open('fed_users.pick', 'w'))
 
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
@@ -125,4 +138,5 @@ if __name__ == '__main__':
     # words = tokenizer.tokenize(text)
     # print words
 
-    out_word2vec('fed', 'com')
+    # out_word2vec('fed', 'com')
+    out_core_ed_id('fed', 'com')
