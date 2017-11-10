@@ -139,7 +139,7 @@ def networks(dbname):
     g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=topics)
     g.write_graphml('all_pro'+'.graphml')
     for i, tag in enumerate(topics):
-        g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=tag)
+        g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=[tag])
         g.write_graphml('all_pro'+str(i+1)+'.graphml')
 
     # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
