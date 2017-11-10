@@ -136,6 +136,8 @@ def networks(dbname):
     uids = [key for key in all_uids_count]
     topics = [35, 3, 2, 14, 25]
     print len(uids)
+    g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=topics)
+    g.write_graphml('all_pro'+'.graphml')
     for i, tag in enumerate(topics):
         g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=tag)
         g.write_graphml('all_pro'+str(i+1)+'.graphml')

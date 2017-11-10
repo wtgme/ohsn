@@ -127,7 +127,7 @@ def load_beh_network_subset(userlist, db_name, collection='None', btype='communi
     filter['id0'] = {'$in': userlist}
     filter['id1'] = {'$in': userlist}
     if tag:
-        filter['tags'] = tag
+        filter['tags'] = {'$in': tag}
     # for row in cols.find({}):
     for row in cols.find(filter, no_cursor_timeout=True):
         n1 = str(row['id0'])
