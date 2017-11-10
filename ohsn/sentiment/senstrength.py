@@ -204,7 +204,7 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
                 pos = int(tokens[-2])
                 neg = int(tokens[-1])
                 scale = pos + neg
-                if uindex < 100:
+                if uindex < 50:
                     pos1.append(pos)
                     neg1.append(neg)
                     scale1.append(scale)
@@ -215,7 +215,7 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
             user_series[uid] = usentis
             index += i
         fr.close()
-    pickle.dump(user_series, open('data/core-ed-series.pick', 'w'))
+    pickle.dump(user_series, open('data/core-ed-series-50.pick', 'w'))
 
 
 def process_db(dbname, timename, comname):
