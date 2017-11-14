@@ -99,6 +99,51 @@ def load_network_subset(db_name, collection='None', filter={}):
     return g
 
 
+def load_beh_network_filter(db_name, collection, btype, filter={}):
+    '''
+    only interaction among poi
+    behavior network: directed weighted network
+    Tweet: 0
+    Retweet: 1;
+    Reply: 2;
+    Direct Mention: 3;
+    undirect mention: 4
+    Reply and mention Edge: u0 -----------> u1
+    Retweet Edge: u1 ----------> u0
+    '''
+    btype_dic = {'retweet': [1],
+                 'reply': [2],
+                 'mention': [3],
+                 'communication': [2, 3],
+                 'all': [1, 2, 3]}
+    if collection is 'None':
+        cols = db_name
+    else:
+        db = dbt.db_connect_no_auth(db_name)
+        cols = db[collection]
+    name_map, edges = {}, {}
+    filter['type'] = {'$in': btype_dic[btype]}
+    for row in cols.find(filter, no_cursor_timeout=True):
+        n1 = str(row['id0'])
+        n2 = str(row['id1'])
+        # print n1, n2
+        if n1 != n2:
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            wt = edges.get((n1id, n2id), 0)
+            edges[(n1id, n2id)] = wt + 1
+    g = Graph(len(name_map), directed=True)
+    g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    # If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with no intervening modifications to the dictionary, the lists will directly correspond.
+    # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
+    g.add_edges(edges.keys())
+    g.es["weight"] = edges.values()
+    return g
+
+
+
 def load_beh_network_subset(userlist, db_name, collection='None', btype='communication', tag=None):
     '''
     only interaction among poi

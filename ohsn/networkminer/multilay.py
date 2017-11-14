@@ -300,6 +300,44 @@ def tag_activity(dbname, colname):
     pickle.dump(tag_time, open('tag_activity.pick', 'w'))
 
 
+def core_ed_mention(dbname, colname):
+    # all_fed = iot.get_values_one_field('fed', 'com', 'id')
+    # core_ed_net = gt.load_beh_network(dbname, colname, btype='communication')
+    # gt.net_stat(core_ed_net)
+    # print len(set(all_fed).intersection(set([int(uid) for uid in core_ed_net.vs['name']])))
+    # 46842, 123340, 0.000, 5.276, 63, 0.995, 0.008, 0.021, -0.106
+    # 22874
+
+    core = iot.get_values_one_field('fed', 'scom', 'id')
+    print len(core)
+    myfilter = {'$or': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
+
+    # g = gt.load_beh_network_filter(dbname, colname, 'communication', myfilter)
+    # gt.net_stat(g)
+    # g.write_graphml('core-ed-in.graphml')
+
+    btype_dic = {'retweet': [1],
+                 'reply': [2],
+                 'mention': [3],
+                 'communication': [2, 3],
+                 'all': [1, 2, 3]}
+    myfilter['type'] = {'$in': btype_dic['communication']}
+
+    timeids = iot.get_values_one_field(dbname, colname, 'statusid', myfilter)
+    poi_time = dbt.db_connect_col('fed', 'core_mention_timeline')
+    poi_time.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    poi_time.create_index([('type', pymongo.ASCENDING)])
+    poi_time.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    times = dbt.db_connect_col('fed', 'timeline')
+    timeids = list(set(timeids))
+    for tweet in times.find({'id': {'$in': timeids}}, no_cursor_timeout=True):
+        try:
+            poi_time.insert(tweet)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
 
 if __name__ == '__main__':
     # constrcut_data()
@@ -307,7 +345,9 @@ if __name__ == '__main__':
     # tag_net('fed', 'pro_timeline', 'allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
-    networks('fed')
+    # networks('fed')
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
+
+    core_ed_mention('fed', 'bnet')
 
