@@ -58,7 +58,7 @@ def behavior_network(dbname, colname, filepath):
                                          e['weight']))
 
 
-def read_tweets(dbname, colname, timecol):
+def read_tweets(dbname, timecol):
     '''Read tweets, excluding retweets'''
     db = dbt.db_connect_no_auth(dbname)
     # col = db[colname]
@@ -75,7 +75,7 @@ def read_tweets(dbname, colname, timecol):
         text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
         words = tokenizer.tokenize(text)
         # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-        if len(words) > 5:
+        if len(words) > 0:
             print ('%d\t%d\t%s') %(uid, tweet['id'], ' '.join(words))
     #             ids.append(uid)
     #             documents.append(words)
@@ -129,7 +129,8 @@ def out_core_ed_id(dbname, colname):
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
     # behavior_network('fed', 'bnet', 'data/fed_')
-    # read_tweets('fed', 'com', 'timeline')
+    # read_tweets('fed', 'timeline')
+    read_tweets('fed', 'core_mention_timeline')
     # word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
@@ -139,4 +140,4 @@ if __name__ == '__main__':
     # print words
 
     # out_word2vec('fed', 'com')
-    out_core_ed_id('fed', 'com')
+    # out_core_ed_id('fed', 'com')
