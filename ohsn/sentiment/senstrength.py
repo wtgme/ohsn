@@ -160,7 +160,7 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
         id_count = []
         for uid in idlist:
             i = 0
-            for tweet in time.find({'user.id': uid}).sort([("id", 1)]): # time from before to now
+            for tweet in time.find({'user.id': uid}).sort([("id", -1)]): # time from now to before
                 if 'retweeted_status' in tweet:
                     continue
                 elif 'quoted_status' in tweet:
@@ -211,10 +211,10 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
                 else:
                     usentis.append(np.mean(scale1))
                     uindex = 0
-            user_series[uid] = usentis
+            com.update_one({'id': uid}, {'$set': {'senti_series.mined': True, 'senti_series.result': usentis}}, upsert=False)
             index += i
         fr.close()
-    pickle.dump(user_series, open('data/core-ed-series-50.pick', 'w'))
+    # pickle.dump(user_series, open('data/core-ed-series-50.pick', 'w'))
 
 
 def process_db(dbname, timename, comname):

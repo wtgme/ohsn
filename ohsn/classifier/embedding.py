@@ -75,7 +75,7 @@ def read_tweets(dbname, timecol):
         text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
         words = tokenizer.tokenize(text)
         # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-        if len(words) > 5:
+        if len(words) > 3:
             print ('%d\t%d\t%s') %(uid, tweet['id'], ' '.join(words))
     #             ids.append(uid)
     #             documents.append(words)
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # behavior_network('fed', 'bnet', 'data/fed_')
     # read_tweets('fed', 'timeline')
     read_tweets('fed', 'core_mention_timeline')
-    word2vec_tweets('fed', 'com', 'timeline')
+    # word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
     # text = text.strip().lower()
