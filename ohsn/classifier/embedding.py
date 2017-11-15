@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # behavior_network('fed', 'bnet', 'data/fed_')
     # read_tweets('fed', 'timeline')
     read_tweets('fed', 'core_mention_timeline')
-    # word2vec_tweets('fed', 'com', 'timeline')
+    word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
     # text = text.strip().lower()
