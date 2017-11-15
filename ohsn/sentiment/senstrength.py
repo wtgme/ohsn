@@ -149,14 +149,13 @@ def process_chunks_db_multiperiod(dbname, timename, comname, n=100):
     com = dbt.db_connect_col(dbname, comname)
     MYDIR = os.path.dirname(__file__)
 
-    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True},
-                                                                               'level':1})
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True}})
     user_series = {}
     print 'Total users:', len(ids)
     for idlist in list(chunks(ids, n)):
     # for idlist in [[557442390, 2155187931, 2881928495]]: #test
         # read buntch of user tweets
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),'users no:', len(idlist)
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'users no:', len(idlist)
         f = open('tem.txt', 'w')
         id_count = []
         for uid in idlist:
@@ -308,7 +307,7 @@ if __name__ == '__main__':
     # print rate_sentiment('Everynight I hope i wake up thinner, at my UGW. One day it will happen.')
     # print rate_sentiment('I talk to YOU')
 
-    process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='scom')
+    process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')
