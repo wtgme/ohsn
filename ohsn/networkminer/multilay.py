@@ -370,6 +370,7 @@ def rebuild_converstation(dbname, timename, converstation_graph):
     # re-build converstation for the mention connections
     g = gt.Graph.Read_GraphML(converstation_graph)
     tids = (iot.get_values_one_field(dbname, timename, 'id_str'))
+    print len(tids)
     coms = g.clusters(mode=WEAK)
     tweetids = g.vs['name']
     members = coms.membership
