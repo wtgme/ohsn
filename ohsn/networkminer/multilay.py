@@ -339,6 +339,31 @@ def core_ed_mention(dbname, colname):
             pass
 
 
+def conversation(dbname, timename, alltimename):
+    # Build mention and reply converstation in the data
+    userlist = iot.get_values_one_field(dbname, timename, 'user.id')
+    userlist = list(set(userlist))
+    alltime = dbt.db_connect_col(dbname, alltimename)
+    name_map, edges = {}, {}
+    for tweet in alltime({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
+        n1 = str(tweet['id'])
+        n1id = name_map.get(n1, len(name_map))
+        name_map[n1] = n1id
+        n2 = tweet['in_reply_to_status_id']
+        if n2:
+            n2 = str(n2)
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            wt = edges.get((n1id, n2id), 0)
+            edges[(n1id, n2id)] = wt + 1
+    g = gt.Graph(len(name_map), directed=True)
+    g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    # If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with no intervening modifications to the dictionary, the lists will directly correspond.
+    # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
+    g.add_edges(edges.keys())
+    g.es["weight"] = edges.values()
+    g.write_graphml('core_mention_user_converstation.graphml')
+
 if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
@@ -350,5 +375,6 @@ if __name__ == '__main__':
     # tag_activity('fed', 'pro_timeline')
 
     # core_ed_mention('fed', 'bnet')
-    tag_net('fed', 'core_mention_timeline', 'core_mention')
+    # tag_net('fed', 'core_mention_timeline', 'core_mention')
+    conversation('fed', 'core_mention_timeline', 'timeline')
 
