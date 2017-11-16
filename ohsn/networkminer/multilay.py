@@ -343,6 +343,7 @@ def conversation(dbname, timename, alltimename):
     # Build mention and reply converstation in the data
     userlist = iot.get_values_one_field(dbname, timename, 'user.id')
     userlist = list(set(userlist))
+    print len(userlist)
     alltime = dbt.db_connect_col(dbname, alltimename)
     name_map, edges = {}, {}
     for tweet in alltime({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
@@ -377,4 +378,5 @@ if __name__ == '__main__':
     # core_ed_mention('fed', 'bnet')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
     conversation('fed', 'core_mention_timeline', 'timeline')
+
 
