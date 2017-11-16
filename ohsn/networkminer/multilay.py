@@ -365,6 +365,30 @@ def conversation(dbname, timename, alltimename):
     g.es["weight"] = edges.values()
     g.write_graphml('core_mention_user_converstation.graphml')
 
+
+def rebuild_converstation(dbname, timename, converstation_graph):
+    # re-build converstation for the mention connections
+    g = gt.Graph.Read_GraphML(converstation_graph)
+    tids = (iot.get_values_one_field(dbname, timename, 'id_str'))
+    coms = g.clusters(mode=WEAK)
+    tweetids = g.vs['name']
+    members = coms.membership
+    tid_mem = dict(zip(tweetids, members))
+    maps = {}
+    for i, key in enumerate(tweetids):
+        tidlist = maps.get(members[i], [])
+        tidlist.append(key)
+        maps[members[i]] = tidlist
+    dumplicated = set()
+    for tid in tids:
+        if tid not in dumplicated:
+            mem = tid_mem[tid]
+            others = maps[mem]
+            print ' '.join(others)
+            for other in others:
+                dumplicated.add(other)
+
+
 if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
@@ -377,6 +401,7 @@ if __name__ == '__main__':
 
     # core_ed_mention('fed', 'bnet')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
-    conversation('fed', 'core_mention_timeline', 'timeline')
-
+    # conversation('fed', 'core_mention_timeline', 'timeline')
+    rebuild_converstation('fed', 'core_mention_timeline',
+                          'core_mention_user_converstation.graphml')
 
