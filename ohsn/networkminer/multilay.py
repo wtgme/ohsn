@@ -22,7 +22,9 @@ import pickle
 from collections import Counter
 from datetime import datetime
 from igraph import *
-
+import re
+from nltk.tokenize import RegexpTokenizer
+tokenizer = RegexpTokenizer(r'\w+')
 
 
 
@@ -366,29 +368,60 @@ def conversation(dbname, timename, alltimename):
     g.write_graphml('core_mention_user_converstation.graphml')
 
 
+def read_tweet(tweet):
+    text = tweet['text'].encode('utf8')
+    # replace RT, @, and Http://
+    text = text.strip().lower()
+    text = re.sub(r"(?:(rt\ ?@)|@|https?://)\S+", "", text) # replace RT @, @ and http:// keep hashtag but remove
+    words = tokenizer.tokenize(text)
+    return ' '.join(words)
+
+
 def rebuild_converstation(dbname, timename, converstation_graph):
-    # re-build converstation for the mention connections
-    # g = gt.Graph.Read_GraphML(converstation_graph)
+    # # re-build converstation for the mention connections
+    # # g = gt.Graph.Read_GraphML(converstation_graph)
     tids = (iot.get_values_one_field(dbname, timename, 'id_str'))
-    pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
-    # print len(tids)
-    # coms = g.clusters(mode=WEAK)
-    # tweetids = g.vs['name']
-    # members = coms.membership
-    # tid_mem = dict(zip(tweetids, members))
-    # maps = {}
-    # for i, key in enumerate(tweetids):
-    #     tidlist = maps.get(members[i], [])
-    #     tidlist.append(key)
-    #     maps[members[i]] = tidlist
-    # dumplicated = set()
-    # for tid in tids:
-    #     if tid not in dumplicated:
-    #         mem = tid_mem[tid]
-    #         others = maps[mem]
-    #         print ' '.join(others)
-    #         for other in others:
-    #             dumplicated.add(other)
+    # pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
+    # # print len(tids)
+    # # coms = g.clusters(mode=WEAK)
+    # # tweetids = g.vs['name']
+    # # members = coms.membership
+    # # tid_mem = dict(zip(tweetids, members))
+    # # maps = {}
+    # # for i, key in enumerate(tweetids):
+    # #     tidlist = maps.get(members[i], [])
+    # #     tidlist.append(key)
+    # #     maps[members[i]] = tidlist
+    # # dumplicated = set()
+    # # for tid in tids:
+    # #     if tid not in dumplicated:
+    # #         mem = tid_mem[tid]
+    # #         others = maps[mem]
+    # #         print ' '.join(others)
+    # #         for other in others:
+    # #             dumplicated.add(other)
+
+    fr = open('conversation.txt', 'r')
+    fw = open('converstation-tweets.txt', 'w')
+    miss, all = 0, 0
+    times = dbt.db_connect_col('fed', 'timeline')
+    for line in fr.readlines():
+        tids = line.strip().split()
+        tids = [int(tid) for tid in tids]
+        tids.sort()
+        s = ''
+        for tid in tids:
+            all += 1
+            tweets = times.find_one({'id': tid})
+            if tweets:
+                text = read_tweet(tweets)
+                s += text + ' '
+            else:
+                miss += 1
+        fw.write(s+'\n')
+    print miss, all, miss*1.0/all
+    fw.close()
+    fr.close()
 
 
 if __name__ == '__main__':
