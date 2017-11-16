@@ -346,7 +346,7 @@ def conversation(dbname, timename, alltimename):
     print len(userlist)
     alltime = dbt.db_connect_col(dbname, alltimename)
     name_map, edges = {}, {}
-    for tweet in alltime({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
+    for tweet in alltime.find({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
         n1 = str(tweet['id'])
         n1id = name_map.get(n1, len(name_map))
         name_map[n1] = n1id
