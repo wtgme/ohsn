@@ -21,7 +21,7 @@ import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
 from collections import Counter
 from datetime import datetime
-
+from igraph import *
 
 
 
