@@ -97,6 +97,9 @@ def get_tweets_info(stream_tweet_list):
                 lookup_lock_tweet = 1
 
 
+def retrive_tweets(ids):
+    return get_tweets_info(ids)
+
 def retrive_tweet(filename):
     fo = open(filename, 'r')
     fw = open('tweet.txt', 'w')
