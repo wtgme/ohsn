@@ -132,9 +132,9 @@ if __name__ == '__main__':
     # process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline', 'liwc_anal')
     # process_db('younger', 'com', 'timeline', 'liwc_anal')
-    process_db('fed2', 'com', 'timeline', 'liwc_anal')
-    process_db('fed3', 'com', 'timeline', 'liwc_anal')
-    process_db('fed4', 'com', 'timeline', 'liwc_anal')
+    # process_db('fed2', 'com', 'timeline', 'liwc_anal')
+    # process_db('fed3', 'com', 'timeline', 'liwc_anal')
+    # process_db('fed4', 'com', 'timeline', 'liwc_anal')
     # print sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     # process_db(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     # process_db('random', 'com', 'timeline')
@@ -162,30 +162,30 @@ if __name__ == '__main__':
     # print test.split()
 
 
-    # '''test one user'''
-    # timelines = dbutil.db_connect_col('fed', 'timeline')   # depression data include retweets
-    # textmass = ''
-    # for tweet in timelines.find({'user.id': 623616970}):
-    #     if 'retweeted_status' in tweet:
-    #         continue
-    #     elif 'quoted_status' in tweet:
-    #         continue
-    #     else:
-    #         text = tweet['text'].encode('utf8')
-    #         # replace RT, @, # and Http://
-    #         text = rtgrex.sub('', text)
-    #         text = mgrex.sub('', text)
-    #         text = hgrex.sub('', text)
-    #         text = ugrex.sub('', text)
-    #         text = text.strip()
-    #         if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-    #             text += '.'
-    #         textmass += " " + text.lower()
-    # words = textmass.split()
-    # # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-    # if len(words) > 50:
-    #     liwc_result = liwc.summarize_document(' '.join(words))
-    #     print liwc_result
+    '''test one user'''
+    timelines = dbutil.db_connect_col('fed2', 'timeline')   # depression data include retweets
+    textmass = ''
+    for tweet in timelines.find({'user.id': 998346414}):
+        if 'retweeted_status' in tweet:
+            continue
+        elif 'quoted_status' in tweet:
+            continue
+        else:
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = rtgrex.sub('', text)
+            text = mgrex.sub('', text)
+            text = hgrex.sub('', text)
+            text = ugrex.sub('', text)
+            text = text.strip()
+            if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                text += '.'
+            textmass += " " + text.lower()
+    words = textmass.split()
+    # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+    if len(words) > 50:
+        liwc_result = liwc.summarize_document(' '.join(words))
+        print liwc_result
 
 
 
