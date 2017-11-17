@@ -428,7 +428,7 @@ def rebuild_converstation(dbname, timename, converstation_graph):
 
 
     fr = open('conversation.txt', 'r')
-    fw = open('converstation-tweets.txt', 'w')
+    fw = open('conversation-tweets.txt', 'w')
     miss, all = 0, 0
     times = dbt.db_connect_col('fed', 'core_mention_timeline')
     for line in fr.readlines():
