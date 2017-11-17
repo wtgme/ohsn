@@ -301,4 +301,4 @@ if __name__ == '__main__':
 
 
     """User life time"""
-    lifetime('fed', 'scom', 'stimeline')
+    # lifetime('fed', 'scom', 'stimeline')
