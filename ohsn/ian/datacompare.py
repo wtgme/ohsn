@@ -185,7 +185,7 @@ def bio_change(dbname='TwitterProAna', colname='bio'):
     data = []
     bio = dbt.db_connect_col(dbname, colname)
     for entry in bio.find({'a':{'$exists':True}}):
-        data.append([entry['id'], entry['date'], entry['a']['value']])
+        data.append([entry['id'], entry['date'], entry['cbmi']['value']])
     df = pd.DataFrame(data=data, columns=['uid', 'date', 'cbmi'])
     df.to_csv('ian-cbmi.csv')
 
