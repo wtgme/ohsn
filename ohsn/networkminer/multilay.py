@@ -412,7 +412,6 @@ def rebuild_converstation(dbname, timename, converstation_graph):
         tids = line.strip().split()
         tids = [int(tid) for tid in tids]
         for tid in tids:
-            all += 1
             tweets = times.find_one({'id': tid})
             if tweets:
                 core_time.insert(tweets)
