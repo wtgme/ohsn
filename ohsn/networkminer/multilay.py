@@ -381,7 +381,7 @@ def read_tweet(tweet):
 def rebuild_converstation(dbname, timename, converstation_graph):
     # # re-build converstation for the mention connections
     # # g = gt.Graph.Read_GraphML(converstation_graph)
-    # tids = set(iot.get_values_one_field(dbname, timename, 'id'))
+    tids = set(iot.get_values_one_field(dbname, timename, 'id'))
     # pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
     # # print len(tids)
     # # coms = g.clusters(mode=WEAK)
@@ -404,26 +404,26 @@ def rebuild_converstation(dbname, timename, converstation_graph):
 
 
     # retrive tweets into core-mention-timeline
-    # fr = open('conversation.txt', 'r')
-    # times = dbt.db_connect_col('fed', 'timeline')
-    # core_time = dbt.db_connect_col('fed', 'core_mention_timeline')
-    # miss = []
-    # for line in fr.readlines():
-    #     ids = line.strip().split()
-    #     ids = [int(tid) for tid in ids]
-    #     for tid in ids:
-    #         if tid not in tids:
-    #             tweets = times.find_one({'id': tid})
-    #             if tweets:
-    #                 core_time.insert(tweets)
-    #             else:
-    #                 miss.append(tid)
-    #                 if len(miss) == 100:
-    #                     twes = tweetlook.retrive_tweets(miss)
-    #                     for twe in twes:
-    #                         core_time.insert(twe)
-    #                     miss = []
-    # fr.close()
+    fr = open('conversation.txt', 'r')
+    times = dbt.db_connect_col('fed', 'timeline')
+    core_time = dbt.db_connect_col('fed', 'core_mention_timeline')
+    miss = []
+    for line in fr.readlines():
+        ids = line.strip().split()
+        ids = [int(tid) for tid in ids]
+        for tid in ids:
+            if tid not in tids:
+                tweets = times.find_one({'id': tid})
+                if tweets:
+                    core_time.insert(tweets)
+                else:
+                    miss.append(tid)
+                    if len(miss) == 100:
+                        twes = tweetlook.retrive_tweets(miss)
+                        for twe in twes:
+                            core_time.insert(twe)
+                        miss = []
+    fr.close()
 
 
 
@@ -461,8 +461,8 @@ if __name__ == '__main__':
     # tag_activity('fed', 'pro_timeline')
 
     # core_ed_mention('fed', 'bnet')
-    # rebuild_converstation('fed', 'core_mention_timeline',
-    #                       'core_mention_user_converstation.graphml')
+    rebuild_converstation('fed', 'core_mention_timeline',
+                          'core_mention_user_converstation.graphml')
     tag_net('fed', 'core_mention_timeline', 'core_mention')
     # conversation('fed', 'core_mention_timeline', 'timeline')
 
