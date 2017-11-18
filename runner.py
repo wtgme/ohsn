@@ -19,10 +19,10 @@ comname = 'com'
 timename = 'timeline'
 
 for dbname in ['fed', 'fed2', 'fed3', 'fed4']:
-    # liwcp.process_db(dbname, comname, timename, 'liwc_anal')
-    # netp.process_db(dbname, comname, timename, 'bnet', 10000)
-    # textp.process_poi(dbname, comname)
+    liwcp.process_db(dbname, comname, timename, 'liwc_anal')
+    netp.process_db(dbname, comname, timename, 'bnet', 10000)
+    textp.process_poi(dbname, comname)
     engagement.gagement(dbname, comname)
-    # bpro.beh_pro(dbname, comname, timename)
-    # bent.inter_entropy(dbname, comname, timename)
+    bpro.beh_pro(dbname, comname, timename)
+    bent.inter_entropy(dbname, comname, timename)
 

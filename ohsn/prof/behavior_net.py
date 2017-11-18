@@ -202,7 +202,7 @@ def inter_entropy(dbname, comname, timename):
     tag_entroy(dbname, comname, timename)
     behaviors = ['retweet', 'reply', 'mention', 'communication', 'all', 'hashtag']
     for behavior in behaviors[:4]:
-        ed = diversity_db(dbname, comname, behavior)
+        ed = diversity_db(dbname, comname, behavior, 'bnet')
 
 
 if __name__ == '__main__':
