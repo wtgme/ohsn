@@ -461,8 +461,9 @@ if __name__ == '__main__':
     # tag_activity('fed', 'pro_timeline')
 
     # core_ed_mention('fed', 'bnet')
-    # tag_net('fed', 'core_mention_timeline', 'core_mention')
+    # rebuild_converstation('fed', 'core_mention_timeline',
+    #                       'core_mention_user_converstation.graphml')
+    tag_net('fed', 'core_mention_timeline', 'core_mention')
     # conversation('fed', 'core_mention_timeline', 'timeline')
-    rebuild_converstation('fed', 'core_mention_timeline',
-                          'core_mention_user_converstation.graphml')
+
 
