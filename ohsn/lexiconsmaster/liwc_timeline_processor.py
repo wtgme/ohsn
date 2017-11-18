@@ -163,9 +163,9 @@ if __name__ == '__main__':
 
 
     '''test one user'''
-    timelines = dbutil.db_connect_col('fed2', 'timeline')   # depression data include retweets
+    timelines = dbutil.db_connect_col('random', 'timeline')   # depression data include retweets
     textmass = ''
-    for tweet in timelines.find({'user.id': 998346414}):
+    for tweet in timelines.find({'user.id': 2289045631}):
         if 'retweeted_status' in tweet:
             continue
         elif 'quoted_status' in tweet:
@@ -193,3 +193,4 @@ if __name__ == '__main__':
 # Fed2 data excluded retweets
 # Fed3 data excluded retweets
 # Fed4 data excluded retweets
+# Random date excluded retweets
