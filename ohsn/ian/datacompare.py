@@ -196,8 +196,11 @@ def geo_infor(dbname='TwitterProAna', colname='tweets'):
     tweets = dbt.db_connect_col(dbname, colname)
     for tweet in tweets.find({'geo':{'$ne':None}}, no_cursor_timeout=True):
         lat, long = tweet['geo']['coordinates']
-        data.append([tweet['id'], lat, long])
-    df = pd.DataFrame(data=data, columns=['tid', 'lat', 'long'])
+        tid = str(tweet['id'])
+        uid = str(tweet['from_user_id'])
+        date = tweet['created_at']
+        data.append([tid, uid, lat, long, date])
+    df = pd.DataFrame(data=data, columns=['tid', 'uid', 'lat', 'long', 'date'])
     df.to_csv('ian-geo.csv')
 
 if __name__ == '__main__':
