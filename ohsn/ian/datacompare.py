@@ -190,6 +190,16 @@ def bio_change(dbname='TwitterProAna', colname='bio'):
     df.to_csv('ian-cbmi.csv')
 
 
+def geo_infor(dbname='TwitterProAna', colname='tweets'):
+    # Twitter represents it as a latitude then a longitude: "geo": { "type":"Point", "coordinates":[37.78217, -122.40062] }
+    data = []
+    tweets = dbt.db_connect_col(dbname, colname)
+    for tweet in tweets.find({'geo':{'$ne':None}}, no_cursor_timeout=True):
+        lat, long = tweet['geo']['coordinates']
+        data.append([tweet['id'], lat, long])
+    df = pd.DataFrame(data=data, columns=['tid', 'lat', 'long'])
+    df.to_csv('ian-geo.csv')
+
 if __name__ == '__main__':
     # filter_user()
     # overlap()
@@ -200,4 +210,5 @@ if __name__ == '__main__':
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
     # bio_information()
-    bio_change()
+    # bio_change()
+    geo_infor()
