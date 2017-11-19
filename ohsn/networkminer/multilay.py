@@ -346,12 +346,14 @@ def core_ed_mention(dbname, colname):
 
 def conversation(dbname, timename, alltimename, filename):
     # Build mention and reply converstation in the data
-    userlist = iot.get_values_one_field(dbname, timename, 'user.id')
-    userlist = list(set(userlist))
-    print len(userlist)
-    alltime = dbt.db_connect_col(dbname, alltimename)
+    # userlist = iot.get_values_one_field(dbname, timename, 'user.id')
+    # userlist = list(set(userlist))
+    # print len(userlist)
+    # alltime = dbt.db_connect_col(dbname, alltimename)
+    alltime = dbt.db_connect_col(dbname, timename)
     name_map, edges = {}, {}
-    for tweet in alltime.find({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
+    # for tweet in alltime.find({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
+    for tweet in alltime.find({}, no_cursor_timeout=True):
         n1 = str(tweet['id'])
         n1id = name_map.get(n1, len(name_map))
         name_map[n1] = n1id
