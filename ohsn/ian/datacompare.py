@@ -210,7 +210,7 @@ def data_split(dbname='TwitterProAna', colname='tweets'):
     tweets.create_index([('date_ym', pymongo.ASCENDING)])
     for tweet in tweets.find({}, no_cursor_timeout=True):
         creat = tweet['created_at']
-        datestr=str(creat.year) + str(creat.month)
+        datestr = str(creat.year) + '-' + str(creat.month)
         tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
 
 
