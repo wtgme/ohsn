@@ -203,6 +203,19 @@ def geo_infor(dbname='TwitterProAna', colname='tweets'):
     df = pd.DataFrame(data=data, columns=['tid', 'uid', 'lat', 'long', 'date'])
     df.to_csv('ian-geo.csv')
 
+
+def data_split(dbname='TwitterProAna', colname='tweets'):
+    # https://stackoverflow.com/questions/8136652/query-mongodb-on-month-day-year-of-a-datetime
+    tweets = dbt.db_connect_col(dbname, colname)
+    tweets.create_index([('date_ym', pymongo.ASCENDING)])
+    for tweet in tweets.find({}, no_cursor_timeout=True):
+        creat = tweet['created_at']
+        datestr=str(creat.year) + str(creat.month)
+        tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
+
+
+
+
 if __name__ == '__main__':
     # filter_user()
     # overlap()
@@ -214,4 +227,5 @@ if __name__ == '__main__':
     # hot_day('tweets.csv')
     # bio_information()
     # bio_change()
-    geo_infor()
+    # geo_infor()
+    data_split()
