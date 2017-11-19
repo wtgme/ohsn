@@ -36,8 +36,9 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
 
     # get users who have more than 3 ED-related tweets
     all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
-    all_uids_count = Counter(all_uids)
-    uids = [key for key in all_uids_count if all_uids_count[key] < 3]
+    # all_uids_count = Counter(all_uids)
+    # uids = [key for key in all_uids_count if all_uids_count[key] < 3]
+    uids = list(set(all_uids))
     print len(uids)
     # edtags = set(iot.read_ed_hashtags())
     times = dbt.db_connect_col('fed', 'timeline')
@@ -342,7 +343,7 @@ def core_ed_mention(dbname, colname):
             pass
 
 
-def conversation(dbname, timename, alltimename):
+def conversation(dbname, timename, alltimename, filename):
     # Build mention and reply converstation in the data
     userlist = iot.get_values_one_field(dbname, timename, 'user.id')
     userlist = list(set(userlist))
@@ -366,7 +367,7 @@ def conversation(dbname, timename, alltimename):
     # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
-    g.write_graphml('core_mention_user_converstation.graphml')
+    g.write_graphml(filename)
 
 
 def read_tweet(tweet):
@@ -457,7 +458,7 @@ def rebuild_converstation(dbname, timename, converstation_graph):
 
 
 if __name__ == '__main__':
-    # constrcut_data()
+    constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
@@ -467,9 +468,10 @@ if __name__ == '__main__':
     # tag_activity('fed', 'pro_timeline')
 
     # core_ed_mention('fed', 'bnet')
-    rebuild_converstation('fed', 'core_mention_timeline',
-                          'core_mention_user_converstation.graphml')
+    # rebuild_converstation('fed', 'core_mention_timeline',
+    #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
-    # conversation('fed', 'core_mention_timeline', 'timeline')
+    # conversation('fed', 'core_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
+    conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
 
 
