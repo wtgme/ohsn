@@ -237,7 +237,7 @@ def data_split(dbname='TwitterProAna', colname='tweets'):
         tlist = date_index.get(date, [])
         tlist.append(tid)
         date_index[date] = tlist
-    pickle.dump(date_index, 'date_tid_list.pick')
+    pickle.dump(date_index, open('date_tid_list.pick', 'w'))
 
 
     timeseries = dbt.db_connect_col(dbname, 'timeseries')
