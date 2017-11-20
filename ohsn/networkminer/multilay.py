@@ -390,8 +390,9 @@ def read_tweet(tweet):
     return ' '.join(words)
 
 
-def rebuild_converstation(dbname, timename, converstation_graph):
+def rebuild_converstation(dbname, timename, converstation_graph, converstationfile):
     # # re-build converstation for the mention connections
+    # Too large, run on super computer
     # # g = gt.Graph.Read_GraphML(converstation_graph)
     # tids = set(iot.get_values_one_field(dbname, timename, 'id'))
     # pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
@@ -416,33 +417,34 @@ def rebuild_converstation(dbname, timename, converstation_graph):
 
 
     # retrive tweets into core-mention-timeline
-    # fr = open('conversation.txt', 'r')
-    # times = dbt.db_connect_col('fed', 'timeline')
-    # core_time = dbt.db_connect_col('fed', 'core_mention_timeline')
-    # miss = []
-    # for line in fr.readlines():
-    #     ids = line.strip().split()
-    #     ids = [int(tid) for tid in ids]
-    #     for tid in ids:
-    #         if tid not in tids:
-    #             tweets = times.find_one({'id': tid})
-    #             if tweets:
-    #                 core_time.insert(tweets)
-    #             else:
-    #                 miss.append(tid)
-    #                 if len(miss) == 100:
-    #                     twes = tweetlook.retrive_tweets(miss)
-    #                     for twe in twes:
-    #                         core_time.insert(twe)
-    #                     miss = []
-    # fr.close()
+    fr = open(converstationfile, 'r')
+    # times = dbt.db_connect_col(dbname, timename)
+    core_time = dbt.db_connect_col(dbname, timename)
+    miss = []
+    tids = set(iot.get_values_one_field(dbname, timename, 'id'))
+    for line in fr.readlines():
+        ids = line.strip().split()
+        ids = [int(tid) for tid in ids]
+        for tid in ids:
+            if tid not in tids:
+                # tweets = times.find_one({'id': tid})
+                # if tweets:
+                #     core_time.insert(tweets)
+                # else:
+                miss.append(tid)
+                if len(miss) == 100:
+                    twes = tweetlook.retrive_tweets(miss)
+                    for twe in twes:
+                        core_time.insert(twe)
+                    miss = []
+    fr.close()
 
 
 
-    fr = open('conversation.txt', 'r')
-    fw = open('conversation-tweets.txt', 'w')
+    fr = open(converstationfile, 'r')
+    fw = open('tweets'+converstationfile, 'w')
     miss, all = 0, 0
-    times = dbt.db_connect_col('fed', 'core_mention_timeline')
+    times = dbt.db_connect_col(dbname, timename)
     for line in fr.readlines():
         tids = line.strip().split()
         tids = [int(tid) for tid in tids]
@@ -483,6 +485,8 @@ if __name__ == '__main__':
     #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
     # conversation('fed', 'core_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
-    conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
+    # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
+    rebuild_converstation('fed', 'pro_timeline',
+                          'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
 
 
