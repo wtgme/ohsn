@@ -372,7 +372,7 @@ def conversation(dbname, timename, alltimename, filename):
     # g.es["weight"] = edges.values()
     # g.write_graphml(filename)
     alltime = dbt.db_connect_col(dbname, timename)
-    for tweet in alltime.find({}, no_cursor_timeout=True):
+    for tweet in alltime.find({'retweeted_status': {'$exists': False}}, no_cursor_timeout=True):
         s = str(tweet['id'])
         n2 = tweet['in_reply_to_status_id']
         if n2:
@@ -454,7 +454,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
         for tid in tids:
             all += 1
             tweets = times.find_one({'id': tid})
-            if tweets:
+            if tweets and ('retweeted_status' not in tweets):
                 text = read_tweet(tweets)
                 s += text + ' '
                 hashtags = tweets['entities']['hashtags']
