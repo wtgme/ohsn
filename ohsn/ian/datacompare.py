@@ -241,44 +241,47 @@ def data_split(dbname='TwitterProAna', colname='tweets'):
     #     date_index[date] = tlist
     # pickle.dump(date_index, open('date_tid_list.pick', 'w'))
     #
-    # # Bunch with tweets in give dates to produce LIWC results
-    # timeseries = dbt.db_connect_col(dbname, 'timeseries')
-    # for key in date_index.keys():
-    #     tlist = date_index[key]
-    #     textmass = ''
-    #     for tid in tlist:
-    #         tweet = tweets.find_one({'id': tid})
-    #         text = tweet['text'].encode('utf8')
-    #         # replace RT, @, # and Http://
-    #         text = rtgrex.sub('', text)
-    #         text = mgrex.sub('', text)
-    #         text = hgrex.sub('', text)
-    #         text = ugrex.sub('', text)
-    #         text = text.strip()
-    #         if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-    #             text += '.'
-    #         textmass += " " + text.lower()
-    #     words = textmass.split()
-    #     # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-    #     if len(words) > 50:
-    #         liwc_result = liwc.summarize_document(' '.join(words))
-    #         timeseries.insert({'date': key, 'liwc':liwc_result})
-
+    # Bunch with tweets in give dates to produce LIWC results
+    tweets = dbt.db_connect_col(dbname, colname)
+    date_index = pickle.load(open('date_tid_list.pick', 'r'))
     timeseries = dbt.db_connect_col(dbname, 'timeseries')
-    fields = iot.read_fields()
-    fields_trim = [f.replace('liwc_anal.result.', '') for f in fields]
-    fields = [f.replace('_anal.result', '') for f in fields]
+    for key in date_index.keys():
+        tlist = date_index[key]
+        textmass = ''
+        for tid in tlist:
+            tweet = tweets.find_one({'id': tid})
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            match = rtgrex.search(text)
+            if match is None:
+                text = mgrex.sub('', text)
+                text = hgrex.sub('', text)
+                text = ugrex.sub('', text)
+                text = text.strip()
+                if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                    text += '.'
+                textmass += " " + text.lower()
+        words = textmass.split()
+        # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+        if len(words) > 50:
+            liwc_result = liwc.summarize_document(' '.join(words))
+            timeseries.insert({'date': key, 'liwc':liwc_result})
 
-    print len(fields)
-    data = []
-    for entry in timeseries.find():
-        time = entry['date']
-        date = datetime.strptime(time, '%Y-%m')
-        # date = datetime.date(year=int(time[0]), month=int(time[1]))
-        features = iot.get_fields_one_doc(entry, fields)
-        data.append([date] + features)
-    df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
-    df.to_csv('ian-liwc.csv')
+    # timeseries = dbt.db_connect_col(dbname, 'timeseries')
+    # fields = iot.read_fields()
+    # fields_trim = [f.replace('liwc_anal.result.', '') for f in fields]
+    # fields = [f.replace('_anal.result', '') for f in fields]
+    #
+    # print len(fields)
+    # data = []
+    # for entry in timeseries.find():
+    #     time = entry['date']
+    #     date = datetime.strptime(time, '%Y-%m')
+    #     # date = datetime.date(year=int(time[0]), month=int(time[1]))
+    #     features = iot.get_fields_one_doc(entry, fields)
+    #     data.append([date] + features)
+    # df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
+    # df.to_csv('ian-liwc.csv')
 
 
 

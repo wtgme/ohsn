@@ -377,7 +377,7 @@ def conversation(dbname, timename, alltimename, filename):
         n2 = tweet['in_reply_to_status_id']
         if n2:
             s += '\t' + str(n2)
-        print s 
+        print s
 
 
 
