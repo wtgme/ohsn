@@ -17,6 +17,24 @@ import ohsn.api.profiles_check as pck
 from datetime import datetime
 import ohsn.textprocessor.description_miner as dm
 import pandas as pd
+import re
+import sys
+from ohsn.lexiconsmaster.lexicons.liwc import Liwc
+import pymongo
+import pickle
+
+
+# set every poi to have not been analysed.
+# sample_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
+# track_poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
+
+'''Process the timelines of users in POI'''
+rtgrex = re.compile(r'RT (?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+):')  # for Retweet
+mgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))@([A-Za-z0-9_]+)')  # for mention
+hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9]))#([A-Za-z0-9_]+)')  # for hashtags
+# hgrex = re.compile(r'(?<=^|(?<=[^a-zA-Z0-9-\.]))#([A-Za-z0-9_]+)')  # for hashtags
+ugrex = re.compile(r'(https?://[^\s]+)')  # for url
+liwc = Liwc()
 
 # def filter_user():
 #     # filter ED users from Ian data
@@ -207,13 +225,42 @@ def geo_infor(dbname='TwitterProAna', colname='tweets'):
 def data_split(dbname='TwitterProAna', colname='tweets'):
     # https://stackoverflow.com/questions/8136652/query-mongodb-on-month-day-year-of-a-datetime
     tweets = dbt.db_connect_col(dbname, colname)
-    tweets.create_index([('date_ym', pymongo.ASCENDING)])
-    for tweet in tweets.find({}, no_cursor_timeout=True):
-        creat = tweet['created_at']
-        datestr = str(creat.year) + '-' + str(creat.month)
-        tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
+    # tweets.create_index([('date_ym', pymongo.ASCENDING)])
+    # for tweet in tweets.find({}, no_cursor_timeout=True):
+    #     creat = tweet['created_at']
+    #     datestr = str(creat.year) + '-' + str(creat.month)
+    #     tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
+
+    date_index = {}
+    for tweet in tweets.find({}, ['id', 'date_ym'], no_cursor_timeout=True):
+        tid, date = tweet['id'], tweet['date_ym']
+        tlist = date_index.get(date, [])
+        tlist.append(tid)
+        date_index[date] = tlist
+    pickle.dump(date_index, 'date_tid_list.pick')
 
 
+    timeseries = dbt.db_connect_col(dbname, 'timeseries')
+    for key in date_index.keys():
+        tlist = date_index[key]
+        textmass = ''
+        for tid in tlist:
+            tweet = tweets.find_one({'id': tid})
+            text = tweet['text'].encode('utf8')
+            # replace RT, @, # and Http://
+            text = rtgrex.sub('', text)
+            text = mgrex.sub('', text)
+            text = hgrex.sub('', text)
+            text = ugrex.sub('', text)
+            text = text.strip()
+            if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+                text += '.'
+            textmass += " " + text.lower()
+        words = textmass.split()
+        # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+        if len(words) > 50:
+            liwc_result = liwc.summarize_document(' '.join(words))
+            timeseries.insert({'date': key, 'liwc':liwc_result})
 
 
 if __name__ == '__main__':
