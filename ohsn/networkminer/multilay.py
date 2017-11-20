@@ -485,8 +485,8 @@ if __name__ == '__main__':
     #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
     # conversation('fed', 'core_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
-    # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
-    rebuild_converstation('fed', 'pro_timeline',
-                          'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
+    conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
+    # rebuild_converstation('fed', 'pro_timeline',
+    #                       'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
 
 
