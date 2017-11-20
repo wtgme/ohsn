@@ -224,43 +224,62 @@ def geo_infor(dbname='TwitterProAna', colname='tweets'):
 
 def data_split(dbname='TwitterProAna', colname='tweets'):
     # https://stackoverflow.com/questions/8136652/query-mongodb-on-month-day-year-of-a-datetime
-    tweets = dbt.db_connect_col(dbname, colname)
-    # tweets.create_index([('date_ym', pymongo.ASCENDING)])
-    # for tweet in tweets.find({}, no_cursor_timeout=True):
-    #     creat = tweet['created_at']
-    #     datestr = str(creat.year) + '-' + str(creat.month)
-    #     tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
-
-    date_index = {}
-    for tweet in tweets.find({}, ['id', 'date_ym'], no_cursor_timeout=True):
-        tid, date = tweet['id'], tweet['date_ym']
-        tlist = date_index.get(date, [])
-        tlist.append(tid)
-        date_index[date] = tlist
-    pickle.dump(date_index, open('date_tid_list.pick', 'w'))
-
+    # Label tweets with dates
+    # tweets = dbt.db_connect_col(dbname, colname)
+    # # tweets.create_index([('date_ym', pymongo.ASCENDING)])
+    # # for tweet in tweets.find({}, no_cursor_timeout=True):
+    # #     creat = tweet['created_at']
+    # #     datestr = str(creat.year) + '-' + str(creat.month)
+    # #     tweets.update_one({'id': tweet['id']}, {'$set': {"date_ym": datestr}}, upsert=False)
+    #
+    # # Indexing tweets with dates
+    # date_index = {}
+    # for tweet in tweets.find({}, ['id', 'date_ym'], no_cursor_timeout=True):
+    #     tid, date = tweet['id'], tweet['date_ym']
+    #     tlist = date_index.get(date, [])
+    #     tlist.append(tid)
+    #     date_index[date] = tlist
+    # pickle.dump(date_index, open('date_tid_list.pick', 'w'))
+    #
+    # # Bunch with tweets in give dates to produce LIWC results
+    # timeseries = dbt.db_connect_col(dbname, 'timeseries')
+    # for key in date_index.keys():
+    #     tlist = date_index[key]
+    #     textmass = ''
+    #     for tid in tlist:
+    #         tweet = tweets.find_one({'id': tid})
+    #         text = tweet['text'].encode('utf8')
+    #         # replace RT, @, # and Http://
+    #         text = rtgrex.sub('', text)
+    #         text = mgrex.sub('', text)
+    #         text = hgrex.sub('', text)
+    #         text = ugrex.sub('', text)
+    #         text = text.strip()
+    #         if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+    #             text += '.'
+    #         textmass += " " + text.lower()
+    #     words = textmass.split()
+    #     # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+    #     if len(words) > 50:
+    #         liwc_result = liwc.summarize_document(' '.join(words))
+    #         timeseries.insert({'date': key, 'liwc':liwc_result})
 
     timeseries = dbt.db_connect_col(dbname, 'timeseries')
-    for key in date_index.keys():
-        tlist = date_index[key]
-        textmass = ''
-        for tid in tlist:
-            tweet = tweets.find_one({'id': tid})
-            text = tweet['text'].encode('utf8')
-            # replace RT, @, # and Http://
-            text = rtgrex.sub('', text)
-            text = mgrex.sub('', text)
-            text = hgrex.sub('', text)
-            text = ugrex.sub('', text)
-            text = text.strip()
-            if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-                text += '.'
-            textmass += " " + text.lower()
-        words = textmass.split()
-        # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-        if len(words) > 50:
-            liwc_result = liwc.summarize_document(' '.join(words))
-            timeseries.insert({'date': key, 'liwc':liwc_result})
+    fields = iot.read_fields()
+    fields_trim = [f.replace('liwc_anal.result.', '') for f in fields]
+    fields = [f.replace('_anal.result', '') for f in fields]
+
+    print len(fields)
+    data = []
+    for entry in timeseries.find():
+        time = entry['date']
+        date = datetime.strptime(time, '%Y-%m')
+        # date = datetime.date(year=int(time[0]), month=int(time[1]))
+        features = iot.get_fields_one_doc(entry, fields)
+        data.append([date] + features)
+    df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
+    df.to_csv('ian-liwc.csv')
+
 
 
 if __name__ == '__main__':

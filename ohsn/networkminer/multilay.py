@@ -345,32 +345,40 @@ def core_ed_mention(dbname, colname):
 
 
 def conversation(dbname, timename, alltimename, filename):
-    # Build mention and reply converstation in the data
-    # userlist = iot.get_values_one_field(dbname, timename, 'user.id')
-    # userlist = list(set(userlist))
-    # print len(userlist)
-    # alltime = dbt.db_connect_col(dbname, alltimename)
+    # # Build mention and reply converstation in the data
+    # # userlist = iot.get_values_one_field(dbname, timename, 'user.id')
+    # # userlist = list(set(userlist))
+    # # print len(userlist)
+    # # alltime = dbt.db_connect_col(dbname, alltimename)
+    # alltime = dbt.db_connect_col(dbname, timename)
+    # name_map, edges = {}, {}
+    # # for tweet in alltime.find({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
+    # for tweet in alltime.find({}, no_cursor_timeout=True):
+    #     n1 = str(tweet['id'])
+    #     n1id = name_map.get(n1, len(name_map))
+    #     name_map[n1] = n1id
+    #     n2 = tweet['in_reply_to_status_id']
+    #     if n2:
+    #         n2 = str(n2)
+    #         n2id = name_map.get(n2, len(name_map))
+    #         name_map[n2] = n2id
+    #         wt = edges.get((n1id, n2id), 0)
+    #         edges[(n1id, n2id)] = wt + 1
+    # g = gt.Graph(len(name_map), directed=True)
+    # g.vs["name"] = list(sorted(name_map, key=name_map.get))
+    # # If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with no intervening modifications to the dictionary, the lists will directly correspond.
+    # # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
+    # g.add_edges(edges.keys())
+    # g.es["weight"] = edges.values()
+    # g.write_graphml(filename)
     alltime = dbt.db_connect_col(dbname, timename)
-    name_map, edges = {}, {}
-    # for tweet in alltime.find({'user.id': {'$in': userlist}}, no_cursor_timeout=True):
     for tweet in alltime.find({}, no_cursor_timeout=True):
-        n1 = str(tweet['id'])
-        n1id = name_map.get(n1, len(name_map))
-        name_map[n1] = n1id
+        s = str(tweet['id'])
         n2 = tweet['in_reply_to_status_id']
         if n2:
-            n2 = str(n2)
-            n2id = name_map.get(n2, len(name_map))
-            name_map[n2] = n2id
-            wt = edges.get((n1id, n2id), 0)
-            edges[(n1id, n2id)] = wt + 1
-    g = gt.Graph(len(name_map), directed=True)
-    g.vs["name"] = list(sorted(name_map, key=name_map.get))
-    # If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with no intervening modifications to the dictionary, the lists will directly correspond.
-    # http://stackoverflow.com/questions/835092/python-dictionary-are-keys-and-values-always-the-same-order
-    g.add_edges(edges.keys())
-    g.es["weight"] = edges.values()
-    g.write_graphml(filename)
+            s += '\t' + str(n2)
+        print s + '\n'
+
 
 
 def read_tweet(tweet):
@@ -461,7 +469,7 @@ def rebuild_converstation(dbname, timename, converstation_graph):
 
 
 if __name__ == '__main__':
-    constrcut_data()
+    # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
