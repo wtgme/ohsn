@@ -81,7 +81,7 @@ def read_tweets(dbname, timecol):
         words = tokenizer.tokenize(text)
         # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
         if len(words) > 3:
-            print ('%d\t%d\t%s\t%s') %(uid, tweet['id'], ' '.join(words)), ' '.join(list(hash_set))
+            print ('%d\t%d\t%s\t%s') %(uid, tweet['id'], ' '.join(words), ' '.join(list(hash_set)))
     #             ids.append(uid)
     #             documents.append(words)
     # pickle.dump(ids, open('data/sen_ids.pick', 'w'))
