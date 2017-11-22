@@ -14,7 +14,7 @@ import ohsn.util.io_util as iot
 import ohsn.util.graph_util as gt
 import pymongo
 import ohsn.api.profiles_check as pck
-from datetime import datetime
+from datetime import datetime, timedelta
 import ohsn.textprocessor.description_miner as dm
 import pandas as pd
 import re
@@ -223,67 +223,72 @@ def geo_infor(dbname='TwitterProAna', colname='tweets'):
 
 
 def data_split(dbname='TwitterProAna', colname='tweets'):
-    # https://stackoverflow.com/questions/8136652/query-mongodb-on-month-day-year-of-a-datetime
-    # Label tweets with dates
-    tweets = dbt.db_connect_col(dbname, colname)
-    # basedate = datetime(1970, 1, 1)
-    # tweets.create_index([('date_week', pymongo.ASCENDING)])
-    # for tweet in tweets.find({}, no_cursor_timeout=True):
-    #     creat = tweet['created_at']
-    #     detal = creat - basedate
-    #     datestr = detal.days // 7 + 1
-    #     tweets.update_one({'id': tweet['id']}, {'$set': {"date_week": datestr}}, upsert=False)
-
-    # # Indexing tweets with dates
-    date_index = {}
-    for tweet in tweets.find({}, ['id', 'date_week'], no_cursor_timeout=True):
-        tid, date = tweet['id'], tweet['date_week']
-        tlist = date_index.get(date, [])
-        tlist.append(tid)
-        date_index[date] = tlist
-    pickle.dump(date_index, open('date_tid_list_week.pick', 'w'))
-
-    # Bunch with tweets in give dates to produce LIWC results
+    # # https://stackoverflow.com/questions/8136652/query-mongodb-on-month-day-year-of-a-datetime
+    # # Label tweets with dates
     # tweets = dbt.db_connect_col(dbname, colname)
-    # date_index = pickle.load(open('date_tid_list_week.pick', 'r'))
-    timeseries = dbt.db_connect_col(dbname, 'weekseries')
-    for key in date_index.keys():
-        tlist = date_index[key]
-        textmass = ''
-        for tid in tlist:
-            tweet = tweets.find_one({'id': tid})
-            text = tweet['text'].encode('utf8')
-            # replace RT, @, # and Http://
-            match = rtgrex.search(text)
-            if match is None:
-                text = mgrex.sub('', text)
-                text = hgrex.sub('', text)
-                text = ugrex.sub('', text)
-                text = text.strip()
-                if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
-                    text += '.'
-                textmass += " " + text.lower()
-        words = textmass.split()
-        # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
-        if len(words) > 50:
-            liwc_result = liwc.summarize_document(' '.join(words))
-            timeseries.insert({'date': key, 'liwc':liwc_result})
-
-    # timeseries = dbt.db_connect_col(dbname, 'timeseries')
-    # fields = iot.read_fields()
-    # fields_trim = [f.replace('liwc_anal.result.', '') for f in fields]
-    # fields = [f.replace('_anal.result', '') for f in fields]
+    # # basedate = datetime(1970, 1, 1)
+    # # tweets.create_index([('date_week', pymongo.ASCENDING)])
+    # # for tweet in tweets.find({}, no_cursor_timeout=True):
+    # #     creat = tweet['created_at']
+    # #     detal = creat - basedate
+    # #     datestr = detal.days // 7 + 1
+    # #     tweets.update_one({'id': tweet['id']}, {'$set': {"date_week": datestr}}, upsert=False)
     #
-    # print len(fields)
-    # data = []
-    # for entry in timeseries.find():
-    #     time = entry['date']
-    #     date = datetime.strptime(time, '%Y-%m')
-    #     # date = datetime.date(year=int(time[0]), month=int(time[1]))
-    #     features = iot.get_fields_one_doc(entry, fields)
-    #     data.append([date] + features)
-    # df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
-    # df.to_csv('ian-liwc-tweets.csv')
+    # # # Indexing tweets with dates
+    # date_index = {}
+    # for tweet in tweets.find({}, ['id', 'date_week'], no_cursor_timeout=True):
+    #     tid, date = tweet['id'], tweet['date_week']
+    #     tlist = date_index.get(date, [])
+    #     tlist.append(tid)
+    #     date_index[date] = tlist
+    # pickle.dump(date_index, open('date_tid_list_week.pick', 'w'))
+    #
+    # # Bunch with tweets in give dates to produce LIWC results
+    # # tweets = dbt.db_connect_col(dbname, colname)
+    # # date_index = pickle.load(open('date_tid_list_week.pick', 'r'))
+    # timeseries = dbt.db_connect_col(dbname, 'weekseries')
+    # for key in date_index.keys():
+    #     tlist = date_index[key]
+    #     textmass = ''
+    #     for tid in tlist:
+    #         tweet = tweets.find_one({'id': tid})
+    #         text = tweet['text'].encode('utf8')
+    #         # replace RT, @, # and Http://
+    #         match = rtgrex.search(text)
+    #         if match is None:
+    #             text = mgrex.sub('', text)
+    #             text = hgrex.sub('', text)
+    #             text = ugrex.sub('', text)
+    #             text = text.strip()
+    #             if not(text.endswith('.') or text.endswith('?') or text.endswith('!')):
+    #                 text += '.'
+    #             textmass += " " + text.lower()
+    #     words = textmass.split()
+    #     # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
+    #     if len(words) > 50:
+    #         liwc_result = liwc.summarize_document(' '.join(words))
+    #         timeseries.insert({'date': key, 'liwc':liwc_result})
+
+    timeseries = dbt.db_connect_col(dbname, 'weekseries')
+    fields = iot.read_fields()
+    fields_trim = [f.replace('liwc_anal.result.', '') for f in fields]
+    fields = [f.replace('_anal.result', '') for f in fields]
+
+    print len(fields)
+    data = []
+    basedate = datetime(1970, 1, 1)
+    for entry in timeseries.find():
+        time = entry['date']
+        # date = datetime.strptime(time, '%Y-%m')
+        # date = datetime.date(year=int(time[0]), month=int(time[1]))
+        # detal = creat - basedate
+    # #     datestr = detal.days // 7 + 1
+        days = (time -1)*7
+        date = basedate + timedelta(days=days)
+        features = iot.get_fields_one_doc(entry, fields)
+        data.append([date] + features)
+    df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
+    df.to_csv('ian-liwc-tweets-week.csv')
 
 
 

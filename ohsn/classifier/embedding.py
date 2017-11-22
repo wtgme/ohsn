@@ -68,6 +68,11 @@ def read_tweets(dbname, timecol):
     # for user in col.find({'timeline_count': {'$gt': 0}}, ['id'], no_cursor_timeout=True):
         # uid = user['id']
     for tweet in timelines.find({'retweeted_status': {'$exists': False}}, no_cursor_timeout=True):
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+            hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+
         text = tweet['text'].encode('utf8')
         uid = tweet['user']['id']
         # replace RT, @, and Http://
@@ -76,7 +81,7 @@ def read_tweets(dbname, timecol):
         words = tokenizer.tokenize(text)
         # Any text with fewer than 50 words should be looked at with a certain degree of skepticism.
         if len(words) > 3:
-            print ('%d\t%d\t%s') %(uid, tweet['id'], ' '.join(words))
+            print ('%d\t%d\t%s\t%s') %(uid, tweet['id'], ' '.join(words)), ' '.join(list(hash_set))
     #             ids.append(uid)
     #             documents.append(words)
     # pickle.dump(ids, open('data/sen_ids.pick', 'w'))
