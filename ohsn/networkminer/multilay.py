@@ -316,8 +316,9 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     core = iot.get_values_one_field(dbname, comname, 'id')
     bnet = dbt.db_connect_col(dbname, bnetname)
     print len(core)
-
-    myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
+    core = set(core)
+    # myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
+    myfilter = {}
     # g = gt.load_beh_network_filter(dbname, colname, 'communication', myfilter)
     # gt.net_stat(g)
     # g.write_graphml('core-ed-in.graphml')
@@ -337,11 +338,12 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
 
     times = dbt.db_connect_col(dbname, 'timeline')
     for link in bnet.find(myfilter, no_cursor_timeout=True):
-        tweet = times.find_one({'id': link['statusid']})
-        try:
-            poi_time.insert(tweet)
-        except pymongo.errors.DuplicateKeyError:
-            pass
+        if (link['id0'] in core) and (link['id1'] in core):
+            tweet = times.find_one({'id': link['statusid']})
+            try:
+                poi_time.insert(tweet)
+            except pymongo.errors.DuplicateKeyError:
+                pass
 
 
 def conversation(dbname, timename, alltimename, filename):
