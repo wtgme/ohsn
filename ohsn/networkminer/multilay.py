@@ -305,7 +305,7 @@ def tag_activity(dbname, colname):
     pickle.dump(tag_time, open('tag_activity.pick', 'w'))
 
 
-def core_ed_mention(dbname, colname):
+def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     # all_fed = iot.get_values_one_field('fed', 'com', 'id')
     # core_ed_net = gt.load_beh_network(dbname, colname, btype='communication')
     # gt.net_stat(core_ed_net)
@@ -313,9 +313,9 @@ def core_ed_mention(dbname, colname):
     # 46842, 123340, 0.000, 5.276, 63, 0.995, 0.008, 0.021, -0.106
     # 22874
 
-    core = iot.get_values_one_field('fed', 'scom', 'id')
+    core = iot.get_values_one_field(dbname, comname, 'id')
     print len(core)
-    myfilter = {'$or': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
+    myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
 
     # g = gt.load_beh_network_filter(dbname, colname, 'communication', myfilter)
     # gt.net_stat(g)
@@ -328,14 +328,15 @@ def core_ed_mention(dbname, colname):
                  'all': [1, 2, 3]}
     myfilter['type'] = {'$in': btype_dic['communication']}
 
-    timeids = iot.get_values_one_field(dbname, colname, 'statusid', myfilter)
-    poi_time = dbt.db_connect_col('fed', 'core_mention_timeline')
+    timeids = iot.get_values_one_field(dbname, bnetname, 'statusid', myfilter)
+
+    poi_time = dbt.db_connect_col(dbname, mention_tweet_name)
     poi_time.create_index([('user.id', pymongo.ASCENDING),
                           ('id', pymongo.DESCENDING)])
     poi_time.create_index([('type', pymongo.ASCENDING)])
     poi_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    times = dbt.db_connect_col('fed', 'timeline')
+    times = dbt.db_connect_col(dbname, 'timeline')
     timeids = list(set(timeids))
     for tweet in times.find({'id': {'$in': timeids}}, no_cursor_timeout=True):
         try:
@@ -480,13 +481,13 @@ if __name__ == '__main__':
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
-    # core_ed_mention('fed', 'bnet')
+    mention_tweets(dbname='fed', comname='ed_tag', bnetname='bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
     # conversation('fed', 'core_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
-    # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
-    rebuild_converstation('fed', 'pro_timeline',
-                          'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
+    # # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
+    # rebuild_converstation('fed', 'pro_timeline',
+    #                       'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
 
 
