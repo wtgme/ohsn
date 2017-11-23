@@ -315,8 +315,9 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
 
     core = iot.get_values_one_field(dbname, comname, 'user.id')
     bnet = dbt.db_connect_col(dbname, bnetname)
+    core = list(set(core))
     print len(core)
-    # core = set(core)
+
     myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
     # myfilter = {}
     # g = gt.load_beh_network_filter(dbname, colname, 'communication', myfilter)
