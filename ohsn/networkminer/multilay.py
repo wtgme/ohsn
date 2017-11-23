@@ -314,13 +314,13 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     # 22874
 
     core = iot.get_values_one_field(dbname, comname, 'id')
+    bnet = dbt.db_connect_col(dbname, bnetname)
     print len(core)
-    myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
 
+    myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
     # g = gt.load_beh_network_filter(dbname, colname, 'communication', myfilter)
     # gt.net_stat(g)
     # g.write_graphml('core-ed-in.graphml')
-
     btype_dic = {'retweet': [1],
                  'reply': [2],
                  'mention': [3],
@@ -328,7 +328,6 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
                  'all': [1, 2, 3]}
     myfilter['type'] = {'$in': btype_dic['communication']}
 
-    timeids = iot.get_values_one_field(dbname, bnetname, 'statusid', myfilter)
 
     poi_time = dbt.db_connect_col(dbname, mention_tweet_name)
     poi_time.create_index([('user.id', pymongo.ASCENDING),
@@ -337,8 +336,8 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     poi_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 
     times = dbt.db_connect_col(dbname, 'timeline')
-    timeids = list(set(timeids))
-    for tweet in times.find({'id': {'$in': timeids}}, no_cursor_timeout=True):
+    for link in bnet.find(myfilter, no_cursor_timeout=True):
+        tweet = times.find_one({'id': link['statusid']})
         try:
             poi_time.insert(tweet)
         except pymongo.errors.DuplicateKeyError:
