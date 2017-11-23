@@ -187,12 +187,14 @@ def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=T
 def retrieve_timeline(user_collection, timeline_collection, max_id = None):
     # level: the end level
     while True:
-        count = user_collection.find_one({'timeline_scraped_times': {'$exists': False}})
+        count = user_collection.find_one({'timeline_scraped_times': {'$exists': False},
+                                          'screen_name': {'$exists': True}})
         if count == None:
             print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'finished'
             break
         else:
-            for user in user_collection.find({'timeline_scraped_times': {'$exists': False}},
+            for user in user_collection.find({'timeline_scraped_times': {'$exists': False},
+                                              'screen_name': {'$exists': True}},
                                      {'id': 1}).limit(200):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
                 old_count = timeline_collection.count({'user.id': user['id']})
