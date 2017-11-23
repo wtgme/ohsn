@@ -22,6 +22,7 @@ import sys
 from ohsn.lexiconsmaster.lexicons.liwc import Liwc
 import pymongo
 import pickle
+from ohsn.api import timelines
 
 
 # set every poi to have not been analysed.
@@ -290,7 +291,26 @@ def data_split(dbname='TwitterProAna', colname='tweets'):
     df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
     df.to_csv('ian-liwc-tweets-week.csv')
 
+def timeline(dbname, comname, timename, streamname):
+    # return users' timelines from a time to a time
+    stream = dbt.db_connect_col(dbname, streamname)
+    most_recenty = stream.find().sort([('id', -1)]).limit(1)
+    oldest = stream.find().sort([('id', 1)]).limit(1)
+    max_id = most_recenty[0]['id']
+    since_id = oldest[0]['id']
+    print most_recenty[0]
+    print oldest[0]
+    com = dbt.db_connect_col(dbname, comname)
+    timeline = dbt.db_connect_col(dbname, timename)
 
+    com.create_index([('timeline_scraped_times', pymongo.ASCENDING)])
+    timeline.create_index([('user.id', pymongo.ASCENDING),
+                          ('id', pymongo.DESCENDING)])
+    timeline.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
+    timelines.retrieve_timeline(com, timeline, max_id)
+    print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
 
 
 
@@ -306,4 +326,5 @@ if __name__ == '__main__':
     # bio_information()
     # bio_change()
     # geo_infor()
-    data_split()
+    # data_split()
+    timeline('TwitterProAna', 'users', 'timeline', 'tweets')
