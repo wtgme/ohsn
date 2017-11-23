@@ -14,7 +14,7 @@ import ohsn.util.io_util as iot
 import ohsn.util.graph_util as gt
 import pymongo
 import ohsn.api.profiles_check as pck
-from datetime import datetime, timedelta
+import datetime
 import ohsn.textprocessor.description_miner as dm
 import pandas as pd
 import re
@@ -285,7 +285,7 @@ def data_split(dbname='TwitterProAna', colname='tweets'):
         # detal = creat - basedate
     # #     datestr = detal.days // 7 + 1
         days = (time -1)*7
-        date = basedate + timedelta(days=days)
+        date = basedate + datetime.timedelta(days=days)
         features = iot.get_fields_one_doc(entry, fields)
         data.append([date] + features)
     df = pd.DataFrame(data=data, columns=['date'] + fields_trim)
