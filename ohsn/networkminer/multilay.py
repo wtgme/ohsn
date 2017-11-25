@@ -42,6 +42,7 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
     # uids = list(set(all_uids)-set(exist_uids))
     uids = list(set(all_uids))
     print len(uids)
+    pickle.dump(uids, open('ed-user.pick', 'w'))
     # edtags = set(iot.read_ed_hashtags())
     times = dbt.db_connect_col('fed', 'timeline')
     poi_time = dbt.db_connect_col('fed', 'pro_timeline')
@@ -314,10 +315,11 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     # 46842, 123340, 0.000, 5.276, 63, 0.995, 0.008, 0.021, -0.106
     # 22874
 
-    core = iot.get_values_one_field(dbname, comname, 'user.id')
+    # core = iot.get_values_one_field(dbname, comname, 'user.id')
     bnet = dbt.db_connect_col(dbname, bnetname)
-    core = list(set(core))
-    print len(core)
+    # core = list(set(core))
+    # print len(core)
+    core = pickle.load(open('ed-user.pick', 'r'))
 
     myfilter = {'$and': [{'id0': {'$in': core}}, {'id1': {'$in': core}}]}
     # myfilter = {}
