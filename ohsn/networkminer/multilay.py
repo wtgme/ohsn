@@ -36,10 +36,11 @@ def constrcut_data(filename='data/communication-only-fed-filter-hashtag-cluster.
 
     # get users who have more than 3 ED-related tweets
     all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
-    exist_uids = iot.get_values_one_field('fed', 'pro_timeline', 'user.id')
+    # exist_uids = iot.get_values_one_field('fed', 'pro_timeline', 'user.id')
     # all_uids_count = Counter(all_uids)
     # uids = [key for key in all_uids_count if all_uids_count[key] < 3]
-    uids = list(set(all_uids)-set(exist_uids))
+    # uids = list(set(all_uids)-set(exist_uids))
+    uids = list(set(all_uids))
     print len(uids)
     # edtags = set(iot.read_ed_hashtags())
     times = dbt.db_connect_col('fed', 'timeline')
@@ -337,7 +338,7 @@ def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     poi_time.create_index([('type', pymongo.ASCENDING)])
     poi_time.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    times = dbt.db_connect_col(dbname, 'timeline')
+    times = dbt.db_connect_col(dbname, 'pro_timeline')
     for link in bnet.find(myfilter, no_cursor_timeout=True):
         # if (link['id0'] in core) and (link['id1'] in core):
         tweet = times.find_one({'id': link['statusid']})
@@ -474,7 +475,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
 
 
 if __name__ == '__main__':
-    # constrcut_data()
+    constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
     extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
