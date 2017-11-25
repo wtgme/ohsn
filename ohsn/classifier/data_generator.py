@@ -88,7 +88,7 @@ def feature_output(field_names, file_name, dbname, colname, label=None, outids=F
 
     for x in poi.find({
                        # 'text_anal.edword_count.value': {'$gt': 0},
-                       'id': {'$in': userset},
+                       # 'id': {'$in': userset},
                        'liwc_anal.result.WC': {'$exists': True},
                         # 'text_anal.gbmi': {'$exists': True},
                        # 'timeline_count': {'$gt': 100},
@@ -165,7 +165,9 @@ if __name__ == '__main__':
     # print len(ed_users), len(rec_users), len(common)
     # # user_hash_profile = pickle.load(open('data/user-hash-profile.pick', 'r'))
     # feature_output(fields, 'data/pro-ed-rec', 'fed', '1', False, rec_users)
-    # feature_output(fields, 'data/fed', 'fed', 'com', None, False)
+    feature_output(fields, 'data/fed2', 'fed2', 'com', None, False)
+    feature_output(fields, 'data/fed3', 'fed3', 'com', None, False)
+    feature_output(fields, 'data/fed4', 'fed4', 'com', None, False)
 
 
     # """Generate Data for GBMI regression"""
@@ -177,8 +179,8 @@ if __name__ == '__main__':
     # print len(users)
     # feature_output(fields, 'data/ed-communication', 'fed', 'com', None, False, users)
 
-    users = io.get_values_one_field('depression', 'users1', 'id')
-    print len(users)
-    feature_output(fields, 'data/depression', 'depression', 'users1', None, False, users)
+    # users = io.get_values_one_field('depression', 'users1', 'id')
+    # print len(users)
+    # feature_output(fields, 'data/depression', 'depression', 'users1', None, False, users)
 
 
