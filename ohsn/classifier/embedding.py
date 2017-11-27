@@ -138,10 +138,11 @@ def out_bio():
     data = []
     for i, dbname in enumerate(dbnames):
         com = dbt.db_connect_col(dbname, 'com')
-        for user in com.find({'text_anal.cbmi':{'$exists':True}}):
+        for user in com.find({'text_anal.cbmi': {'$exists': True}}):
+            # print user['id']
             data.append([user['id'], user['text_anal']['cbmi']['value'], i])
     df = pd.DataFrame(data, columns=['uid', 'cbmi', 'time'])
-    df.to_csv('data/fed-cbmi.csv')
+    df.to_csv('data/feds-cbmi.csv')
 
 
 if __name__ == '__main__':
