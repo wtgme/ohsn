@@ -19,6 +19,7 @@ import re
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import gensim, logging
+import pandas as pd
 import numpy as np
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 import pickle
@@ -131,12 +132,24 @@ def out_core_ed_id(dbname, colname):
     print len(users)
     pickle.dump(users, open('fed_users.pick', 'w'))
 
+
+def out_bio():
+    dbnames = ['fed', 'fed2', 'fed3', 'fed4']
+    data = []
+    for i, dbname in enumerate(dbnames):
+        com = dbt.db_connect_col(dbname, 'com')
+        for user in com.find({'text_anal.cbmi':{'$exists':True}}):
+            data.append([user['id'], user['text_anal']['cbmi']['value'], i])
+    df = pd.DataFrame(data, columns=['uid', 'cbmi', 'time'])
+    df.to_csv('data/fed-cbmi.csv')
+
+
 if __name__ == '__main__':
     # follow_network('fed', 'net', 'data/fed_follow.txt')
     # behavior_network('fed', 'bnet', 'data/fed_')
     # read_tweets('fed', 'timeline')
     # read_tweets('fed', 'core_mention_timeline')
-    read_tweets('younger', 'timeline')
+    # read_tweets('younger', 'timeline')
     # word2vec_tweets('fed', 'com', 'timeline')
 
     # text = '''The reason why I'm always broke AF. 🙍🎨 #PerksOfBeingaArchiStudent https://t.co/qo2RQMyrgA'''
@@ -147,3 +160,4 @@ if __name__ == '__main__':
 
     # out_word2vec('fed', 'com')
     # out_core_ed_id('fed', 'com')
+    out_bio()

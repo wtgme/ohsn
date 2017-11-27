@@ -13,6 +13,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
 
 
+from datetime import datetime
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import ohsn.api.tweet_lookup as tweetlook
@@ -21,7 +22,7 @@ import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
 from collections import Counter
-from datetime import datetime
+
 from igraph import *
 import re
 from nltk.tokenize import RegexpTokenizer
