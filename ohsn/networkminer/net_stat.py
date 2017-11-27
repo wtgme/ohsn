@@ -193,6 +193,9 @@ def calculate_extenal_user():
 if __name__ == '__main__':
     # network_stats('fed', 'scom', 'snet', 'sbnet')
 
-    calculate_extenal_user()
+    # calculate_extenal_user()
 
     # ED_followee()
+    for dbname in ['fed', 'fed2', 'fed3', 'fed4']:
+        g = gt.load_network(dbname, 'net')
+        g.write_graphml('data/' + dbname+'.graphml')
