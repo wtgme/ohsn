@@ -401,7 +401,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
     # # re-build converstation for the mention connections
     # Too large, run on super computer
     # # g = gt.Graph.Read_GraphML(converstation_graph)
-    tids = set(iot.get_values_one_field(dbname, timename, 'id'))
+    # tids = set(iot.get_values_one_field(dbname, timename, 'id'))
     # pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
     # # print len(tids)
     # # coms = g.clusters(mode=WEAK)
@@ -425,7 +425,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
 
     # retrive tweets into core-mention-timeline
     fr = open(converstationfile, 'r')
-    # times = dbt.db_connect_col(dbname, timename)
+    times = dbt.db_connect_col(dbname, 'timeline')
     core_time = dbt.db_connect_col(dbname, timename)
     miss = []
     tids = set(iot.get_values_one_field(dbname, timename, 'id'))
@@ -436,20 +436,26 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
             if tid not in tids:
                 # tweets = times.find_one({'id': tid})
                 # if tweets:
-                #     core_time.insert(tweets)
+                #     try:
+                #         core_time.insert(tweets)
+                #     except pymongo.errors.DuplicateKeyError:
+                #         pass
                 # else:
                 miss.append(tid)
                 if len(miss) == 100:
                     twes = tweetlook.retrive_tweets(miss)
                     for twe in twes:
-                        core_time.insert(twe)
+                        try:
+                            core_time.insert(twe)
+                        except pymongo.errors.DuplicateKeyError:
+                            pass
                     miss = []
     fr.close()
 
 
 
     fr = open(converstationfile, 'r')
-    fw = open('tweets'+converstationfile, 'w')
+    fw = open('pro-converstation-tweets-tags.txt', 'w')
     miss, all = 0, 0
     times = dbt.db_connect_col(dbname, timename)
     for line in fr.readlines():
@@ -461,7 +467,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
         for tid in tids:
             all += 1
             tweets = times.find_one({'id': tid})
-            if tweets and ('retweeted_status' not in tweets):
+            if tweets:
                 text = read_tweet(tweets)
                 s += text + ' '
                 hashtags = tweets['entities']['hashtags']
@@ -481,6 +487,7 @@ if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
+    tag_net('fed', 'pro_timeline', 'data/allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
     # networks('fed')
@@ -490,10 +497,10 @@ if __name__ == '__main__':
     # mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
-    # tag_net('fed', 'core_mention_timeline', 'core_mention')
-    conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
+    # tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
+    # conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
     # # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
-    # rebuild_converstation('fed', 'pro_timeline',
-    #                       'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
+    # rebuild_converstation('fed', 'pro_mention_timeline',
+    #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
 
 
