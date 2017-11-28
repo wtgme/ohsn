@@ -401,7 +401,7 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
     # # re-build converstation for the mention connections
     # Too large, run on super computer
     # # g = gt.Graph.Read_GraphML(converstation_graph)
-    # tids = set(iot.get_values_one_field(dbname, timename, 'id'))
+    tids = set(iot.get_values_one_field(dbname, timename, 'id'))
     # pickle.dump(tids, open('core_mention_tweets_id.pick', 'w'))
     # # print len(tids)
     # # coms = g.clusters(mode=WEAK)
@@ -478,20 +478,20 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
 
 
 if __name__ == '__main__':
-    constrcut_data()
+    # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
-    extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
+    # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
     # networks('fed')
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
-    mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
+    # mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'core_mention_timeline', 'core_mention')
-    # conversation('fed', 'core_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
+    conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
     # # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
     # rebuild_converstation('fed', 'pro_timeline',
     #                       'pro_timeline_converstation.graphml', 'pro_timeline_converstation.txt')
