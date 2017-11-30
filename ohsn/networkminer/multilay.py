@@ -483,11 +483,17 @@ def rebuild_converstation(dbname, timename, converstation_graph, converstationfi
     fr.close()
 
 
+def out_tid_uid(dbname, timename):
+    times = dbt.db_connect_col(dbname, timename)
+    for tweet in times.find({}, no_cursor_timeout=True):
+        print str(tweet['id']) + '\t' + str(tweet['user']['id'])
+
+
 if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
     # tag_net('fed', 'pro_timeline', 'allpro')
-    tag_net('fed', 'pro_timeline', 'data/allpro')
+    # tag_net('fed', 'pro_timeline', 'data/allpro')
     # extract_network('fed', 'pro_timeline', 'all_pro_bnet', 'ED')
 
     # networks('fed')
@@ -502,5 +508,8 @@ if __name__ == '__main__':
     # # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
     # rebuild_converstation('fed', 'pro_mention_timeline',
     #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
+
+    out_tid_uid('fed', 'pro_mention_timeline')
+
 
 
