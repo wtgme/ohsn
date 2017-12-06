@@ -77,14 +77,15 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
     #            'Non-ED': 1,
     #            'Non-tag': 0}
     # type = typemap[typename]
+    tid_topicid = pickle.load('data/tid_topicid.pick')
     time = dbt.db_connect_col(dbname, timename)
     bnet = dbt.db_connect_col(dbname, bnetname)
     bnet.create_index([("id0", pymongo.ASCENDING),
                        ("id1", pymongo.ASCENDING),
                        ("type", pymongo.ASCENDING),
                        ("tags", pymongo.ASCENDING),
-                        ("statusid", pymongo.ASCENDING)],
-                                unique=True)
+                      ("statusid", pymongo.ASCENDING)],
+                        unique=True)
 
     filter = {'$where': 'this.entities.user_mentions.length>0',
                 # 'topics': {'$exists': True},
@@ -97,22 +98,25 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
         # for index in tweet['topics']:
         #     # index = tweet['topics'][0]
         #     if index in [35, 3, 2, 14, 25]:
-        udmention_list = []
-        if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
-            for udmention in tweet['retweeted_status']['entities']['user_mentions']:
-                udmention_list.append(udmention['id'])
-        for mention in tweet['entities']['user_mentions']:
-            if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
-                timiner.add_reply_edge(bnet, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'])
+        tid = str(tweet['id'])
+        topicid = tid_topicid.get(tid, -1)
+        if topicid > 0:
+            udmention_list = []
+            if ('retweeted_status' in tweet) and len(tweet['retweeted_status']['entities']['user_mentions'])>0:
+                for udmention in tweet['retweeted_status']['entities']['user_mentions']:
+                    udmention_list.append(udmention['id'])
+            for mention in tweet['entities']['user_mentions']:
+                if ('in_reply_to_user_id' in tweet) and (mention['id'] == tweet['in_reply_to_user_id']): # reply
+                    timiner.add_reply_edge(bnet, tweet['user']['id'], tweet['in_reply_to_user_id'], tweet['created_at'], tweet['id'], topicid)
 
-            elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
-                timiner.add_retweet_edge(bnet, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'])
+                elif ('retweeted_status' in tweet) and (mention['id'] == tweet['retweeted_status']['user']['id']): # Retweet
+                    timiner.add_retweet_edge(bnet, tweet['user']['id'], tweet['retweeted_status']['user']['id'], tweet['created_at'], tweet['id'], topicid)
 
-            elif mention['id'] in udmention_list:  # mentions in Retweet content
-                timiner.add_undirect_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                elif mention['id'] in udmention_list:  # mentions in Retweet content
+                    timiner.add_undirect_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], topicid)
 
-            else:  # original mentions
-                timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'])
+                else:  # original mentions
+                    timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], topicid)
     print count2, 'more than 2 topics'
 
 def out_graph_edges(g, edgePath, node_attrs = {}):
@@ -500,16 +504,21 @@ if __name__ == '__main__':
     # data_transf('data/pro4.graphml')
     # tag_activity('fed', 'pro_timeline')
 
+    '''Build conversations from users' mention_timeline, and extract network from these conversations
+    All data extracted fro in_repy_to_ in pro_mention_timeline '''
+
     # mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
     # tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
     # conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
-    # # conversation('fed', 'pro_timeline', 'timeline', 'pro_timeline_converstation.graphml')
     # rebuild_converstation('fed', 'pro_mention_timeline',
     #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
 
-    out_tid_uid('fed', 'pro_mention_timeline')
+    # out_tid_uid('fed', 'pro_mention_timeline')
+    extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
+
+
 
 
 
