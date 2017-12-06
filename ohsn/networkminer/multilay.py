@@ -77,7 +77,7 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
     #            'Non-ED': 1,
     #            'Non-tag': 0}
     # type = typemap[typename]
-    tid_topicid = pickle.load('data/tid_topicid.pick')
+    tid_topicid = pickle.load(open('data/tid_topicid.pick', 'r'))
     time = dbt.db_connect_col(dbname, timename)
     bnet = dbt.db_connect_col(dbname, bnetname)
     bnet.create_index([("id0", pymongo.ASCENDING),
