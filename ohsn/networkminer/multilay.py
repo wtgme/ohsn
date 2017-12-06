@@ -119,6 +119,7 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
                     timiner.add_direct_mentions_edge(bnet, tweet['user']['id'], mention['id'], tweet['created_at'], tweet['id'], topicid)
     print count2, 'more than 2 topics'
 
+
 def out_graph_edges(g, edgePath, node_attrs = {}):
     # out edge list and node attribute list
     with open(edgePath, 'wb') as fw:
@@ -141,18 +142,17 @@ def out_graph_edges(g, edgePath, node_attrs = {}):
     return node_attrs
 
 
-def networks(dbname):
+def networks(dbname, bnet='all_pro_bnet'):
     # out networks to multiplex process
-    all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
-    all_uids_count = Counter(all_uids)
-    uids = [key for key in all_uids_count]
-    topics = [35, 3, 2, 14, 25]
-    print len(uids)
-    g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=topics)
-    g.write_graphml('all_pro'+'.graphml')
+    # all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
+    # all_uids_count = Counter(all_uids)
+    # uids = [key for key in all_uids_count]
+    topics = [35, 3, 2, 14, 25] # [35, 3, 2, 14, 25]
+    g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
+    g.write_graphml('pro_mention'+'.graphml')
     for i, tag in enumerate(topics):
-        g = gt.load_beh_network_subset(uids, dbname, 'all_pro_bnet', btype='communication', tag=[tag])
-        g.write_graphml('all_pro'+str(i+1)+'.graphml')
+        g = gt.load_beh_network_filter(dbname, bnet, btype='communication', filter={'tags': tag})
+        g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
     # g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
@@ -516,7 +516,8 @@ if __name__ == '__main__':
     #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
 
     # out_tid_uid('fed', 'pro_mention_timeline')
-    extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
+    # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
+    networks('fed', 'pro_mention_bnet')
 
 
 

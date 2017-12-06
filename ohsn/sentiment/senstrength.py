@@ -302,12 +302,24 @@ def process_db(dbname, timename, comname):
             com.update_one({'id': uid}, {'$set': {'senti.mined': True, 'senti.result': reslut}}, upsert=False)
             fr.close()
 
+def out_sentiment_times(dbname, comname):
+    com = dbt.db_connect_col(dbname, comname)
+    user_series = {}
+    for user in com.find({'$where': 'this.senti_series.result.length>0',
+                          'level': 1,
+                          'liwc_anal.result.WC': {'$exists': True}
+                          }):
+        uid  = user['id']
+        times = user['senti_series']['result']
+        user_series[uid] = times
+    pickle.dump(user_series, open('core-ed-series-50.pick', 'w'))
 
 if __name__ == '__main__':
     # print rate_sentiment('Everynight I hope i wake up thinner, at my UGW. One day it will happen.')
     # print rate_sentiment('I talk to YOU')
 
-    process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='com')
+    # process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')
+    out_sentiment_times('fed', 'com')
