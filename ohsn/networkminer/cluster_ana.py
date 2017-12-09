@@ -258,12 +258,12 @@ def analysis_sentiments(file='tweets.txt'):
           mean_std(df[(df.Strata=='B') & (df.Topic==4)]['Sentiment'])
           ]
 
-    df['Strata'] = df['Strata'].map({'A': 'Pro-ED Users', 'B': 'Pro-Rec. Users'})
+    df['Strata'] = df['Strata'].map({'A': 'Group A', 'B': 'Group B'})
 
     plu.plot_config()
-    hatches = ['/', '/','/','/','/','\\','\\','\\','\\','\\']
+    hatches = ['/', '/','/','/','\\','\\','\\','\\','\\','\\']
     g = sns.factorplot(x="Topic", y="Sentiment", hue="Strata", data=df,
-                       kind="bar", legend=False, palette={"Pro-ED Users": "#e9a3c9", "Pro-Rec. Users": "#a1d76a"})
+                       kind="bar", legend=False, palette={"Group A": "#e9a3c9", "Group B": "#a1d76a"})
     ax=g.ax #annotate axis = seaborn axis
     for i, p in enumerate(ax.patches):
         p.set_hatch(hatches[i])
@@ -273,14 +273,14 @@ def analysis_sentiments(file='tweets.txt'):
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     g.set_ylabels('Relative Sentiment')
     g.set_xlabels('Theme')
-    # plt.legend(loc='best')
-    plt.legend(bbox_to_anchor=(1, 1.2), ncol=6)
+    plt.legend(loc='upper')
+    # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
 
     '''Proportion of tweets in each type of topic'''
 
-    df['Strata'] = df['Strata'].map({'Pro-ED Users': 'A', 'Pro-Rec. Users': 'B'})
+    df['Strata'] = df['Strata'].map({'Group A': 'A', 'Group B': 'B'})
     dat = []
     A = len(df[(df.Strata=='A') & (df.Topic!=4)])
     B = len(df[(df.Strata=='B') & (df.Topic!=4)])
@@ -308,10 +308,10 @@ def analysis_sentiments(file='tweets.txt'):
 
 
     pro = pd.DataFrame(dat, columns=['Strata', 'Topic', 'Proportion'])
-    pro['Strata'] = pro['Strata'].map({'A': 'Pro-ED Users', 'B': 'Pro-Rec. Users'})
+    pro['Strata'] = pro['Strata'].map({'A': 'Group A', 'B': 'Group B'})
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Proportion", hue="Strata", legend=False, kind="bar", data=pro,
-                       palette={"Pro-ED Users": "#e9a3c9", "Pro-Rec. Users": "#a1d76a"})
+                       palette={"Group A": "#e9a3c9", "Group B": "#a1d76a"})
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     g.set_ylabels('Tweet Proportion')
     g.set_xlabels('Theme')
@@ -322,7 +322,8 @@ def analysis_sentiments(file='tweets.txt'):
          #     ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
          #     textcoords='offset points')
          p.set_hatch(hatches[i])
-    # plt.legend(loc='best')
+    plt.legend(loc='upper right')
+    # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
 
@@ -355,11 +356,11 @@ def analysis_sentiments(file='tweets.txt'):
         else:
             dat.append([c, t, float(ulen)/cluster2_usize])
     pro = pd.DataFrame(dat, columns=['Strata', 'Topic', 'Proportion'])
-    pro['Strata'] = pro['Strata'].map({'A': 'Pro-ED Users', 'B': 'Pro-Rec. Users'})
+    pro['Strata'] = pro['Strata'].map({'A': 'Group A', 'B': 'Group B'})
 
     plu.plot_config()
     g = sns.factorplot(x="Topic", y="Proportion", hue="Strata", legend=False, kind="bar", data=pro,
-                       palette={"Pro-ED Users": "#e9a3c9", "Pro-Rec. Users": "#a1d76a"})
+                       palette={"Group A": "#e9a3c9", "Group B": "#a1d76a"})
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     g.set_ylabels('User Proportion')
     g.set_xlabels('Theme')
@@ -371,7 +372,8 @@ def analysis_sentiments(file='tweets.txt'):
          #     textcoords='offset points')
          p.set_hatch(hatches[i])
 
-    # plt.legend(loc='best')
+    plt.legend(loc='upper right')
+    # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
 
@@ -1697,13 +1699,13 @@ if __name__ == '__main__':
     # compare_liwc()
     # sentiment_quanti()
     # prelevence()
-    # analysis_sentiments('all-tweet.txt')
+    analysis_sentiments('data/all-tweet.txt')
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
     # core_analysis()
     # sentiment_injection() #net-tweet.txt
     # analysis_net_sentiments()
-    centrality_regresion()
+    # centrality_regresion()
     # robust_regression()
     # data_validataion()

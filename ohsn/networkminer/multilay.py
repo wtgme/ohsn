@@ -148,11 +148,27 @@ def networks(dbname, bnet='all_pro_bnet'):
     # all_uids_count = Counter(all_uids)
     # uids = [key for key in all_uids_count]
     topics = [35, 3, 2, 14, 25] # [35, 3, 2, 14, 25]
-    g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
-    g.write_graphml('pro_mention'+'.graphml')
+    # g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
+    # g.write_graphml('pro_mentionall'+'.graphml')
+    # for i, tag in enumerate(topics):
+    #     g = gt.load_beh_network_filter(dbname, bnet, btype='communication', filter={'tags': tag})
+    #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
+
+    gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
+    core = gall.k_core(27)
+    core_name = core.vs['name']
+    gs = []
     for i, tag in enumerate(topics):
-        g = gt.load_beh_network_filter(dbname, bnet, btype='communication', filter={'tags': tag})
-        g.write_graphml('pro_mention'+str(tag)+'.graphml')
+        g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
+        g = g.subgraph(g.vs.select(name_in=core_name))
+        gs.append(g)
+    uidlist = {}
+    for i, g in enumerate(gs):
+        uidlist = out_graph_edges(g, 'pro_mention'+str(topics[i])+'.edge', uidlist)
+    with open('pro_mention.node', 'wb') as fw:
+        fw.write('nodeID nodeLabel\n')
+        for k in list(sorted(uidlist, key=uidlist.get)):
+            fw.write(str(uidlist[k]) + ' N' + k + '\n')
 
     # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
     # g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
