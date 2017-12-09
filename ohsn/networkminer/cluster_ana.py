@@ -273,7 +273,7 @@ def analysis_sentiments(file='tweets.txt'):
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     g.set_ylabels('Relative Sentiment')
     g.set_xlabels('Theme')
-    plt.legend(loc='upper')
+    plt.legend(loc='best')
     # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
@@ -322,7 +322,7 @@ def analysis_sentiments(file='tweets.txt'):
          #     ha='center', va='center', fontsize=25, color='black', rotation=0, xytext=(0, 20),
          #     textcoords='offset points')
          p.set_hatch(hatches[i])
-    plt.legend(loc='upper right')
+    plt.legend(loc='best')
     # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
@@ -372,7 +372,7 @@ def analysis_sentiments(file='tweets.txt'):
          #     textcoords='offset points')
          p.set_hatch(hatches[i])
 
-    plt.legend(loc='upper right')
+    plt.legend(loc='upper center')
     # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 

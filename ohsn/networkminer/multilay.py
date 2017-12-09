@@ -134,11 +134,9 @@ def out_graph_edges(g, edgePath, node_attrs = {}):
             if target_vertex['name'] not in node_attrs:
                 node_attrs[target_vertex['name']] = len(node_attrs) + 1
 
-            fw.write('%s %s %d\n' %('N'+source_vertex['name'],
-                                     'N'+target_vertex['name'],
+            fw.write('%s %s %d\n' %(source_vertex['name'],
+                                     target_vertex['name'],
                                      e['weight']))
-
-
     return node_attrs
 
 
@@ -148,6 +146,8 @@ def networks(dbname, bnet='all_pro_bnet'):
     # all_uids_count = Counter(all_uids)
     # uids = [key for key in all_uids_count]
     topics = [35, 3, 2, 14, 25] # [35, 3, 2, 14, 25]
+    colrs = ["#fc8d62", "#8da0cb", "#e78ac3", '#a6d854', '#ffd92f']
+    names = ['GL', 'MH', 'FWL', 'PED', 'DI']
     # g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
     # g.write_graphml('pro_mentionall'+'.graphml')
     # for i, tag in enumerate(topics):
@@ -155,68 +155,31 @@ def networks(dbname, bnet='all_pro_bnet'):
     #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
-    core = gall.k_core(27)
+    core = gall.k_core(30)
     core_name = core.vs['name']
     gs = []
     for i, tag in enumerate(topics):
         g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
         g = g.subgraph(g.vs.select(name_in=core_name))
+        for v in g.vs():
+            v['name'] = str(1 + core_name.index(v['name']))
         gs.append(g)
     uidlist = {}
     for i, g in enumerate(gs):
         uidlist = out_graph_edges(g, 'pro_mention'+str(topics[i])+'.edge', uidlist)
+
     with open('pro_mention.node', 'wb') as fw:
         fw.write('nodeID nodeLabel\n')
-        for k in list(sorted(uidlist, key=uidlist.get)):
-            fw.write(str(uidlist[k]) + ' N' + k + '\n')
+        for i, name in enumerate(core_name):
+            fw.write(str(i+1) + ' ' + name + '\n')
 
-    # g1 = gt.Graph.Read_GraphML('data/pro1.graphml')
-    # g2 = gt.Graph.Read_GraphML('data/pro2.graphml')
-    # g3 = gt.Graph.Read_GraphML('data/pro3.graphml')
-    # g4 = gt.Graph.Read_GraphML('data/pro4.graphml')
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
-    # gt.net_stat(g3)
-    # gt.net_stat(g4)
-
-    # g1 = gt.giant_component(g1, 'WEAK')
-    # g2 = gt.giant_component(g2, 'WEAK')
-    # g3 = gt.giant_component(g3, 'WEAK')
-    # g4 = gt.giant_component(g4, 'WEAK')
-    #
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
-    # gt.net_stat(g3)
-    # gt.net_stat(g4)
-
-    # common = set(g1.vs['name']).intersection(g2.vs['name'])
-    # common = set(g3.vs['name']).intersection(common)
-    # common = set(g4.vs['name']).intersection(common)
-    # print len(common)
-    # g1 = g1.subgraph(g1.vs.select(name_in=common))
-    # g2 = g2.subgraph(g2.vs.select(name_in=common))
-    # g3 = g3.subgraph(g3.vs.select(name_in=common))
-    # g4 = g4.subgraph(g4.vs.select(name_in=common))
-    # gt.net_stat(g1)
-    # gt.net_stat(g2)
-    # gt.net_stat(g3)
-    # gt.net_stat(g4)
-
-    # g1.write_graphml('pro1-comm.graphml')
-    # g2.write_graphml('pro2-comm.graphml')
-    # g3.write_graphml('pro3-comm.graphml')
-    # g4.write_graphml('pro4-comm.graphml')
-
-    # uidlist = out_graph_edges(g1, 'data/mu/pro1.edge')
-    # uidlist = out_graph_edges(g2, 'data/mu/pro2.edge', uidlist)
-    # uidlist = out_graph_edges(g3, 'data/mu/pro3.edge', uidlist)
-    # uidlist = out_graph_edges(g4, 'data/mu/pro4.edge', uidlist)
-
-
-    # with open('data/mu/pro.node', 'wb') as fw:
-    #     fw.write('nodeID nodeLabel\n')
-    #     for k in list(sorted(uidlist, key=uidlist.get)):
-    #         fw.write(str(uidlist[k]) + ' N' + k + '\n')
+    with open('pro_mention.edge.color', 'wb') as fw:
+        fw.write('nodeID.from layerID.from nodeID.to layerID.to color size\n')
+        for i, top in enumerate(topics):
+            fr = open('pro_mention'+str(top)+'.edge', 'r')
+            for line in fr.readlines():
+                n1, n2, we = line.split()
+                fw.write(n1 + ' ' + str(i+1) + ' ' + n2 + ' ' + str(i+1) + ' "' + colrs[i] + '" 5\n')
 
 
 def data_transf(sourcefile):
