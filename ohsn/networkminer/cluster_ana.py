@@ -273,7 +273,7 @@ def analysis_sentiments(file='tweets.txt'):
     g.set_xticklabels(["Pro-ED", "Pro-Rec.", "Mixed", "Unspecified"])
     g.set_ylabels('Relative Sentiment')
     g.set_xlabels('Theme')
-    plt.legend(loc='upper')
+    plt.legend(loc='upper center')
     # plt.legend(bbox_to_anchor=(1, 1.2))
     plt.show()
 
