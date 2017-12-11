@@ -442,7 +442,7 @@ def plot_config():
     plt.rcParams['xtick.labelsize'] = 18
     plt.rcParams['ytick.labelsize'] = 18
     plt.rcParams['legend.fontsize'] = 25
-    # plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.family'] = 'sans-serif'
     # plt.rcParams['axes.formatter.useoffset'] = False
     # plt.rcParams['lines.markersize'] = 4
     # plt.rcParams['lines.linewidth'] = 2
