@@ -200,13 +200,13 @@ def bio_information(dbname='TwitterProAna', colname='users'):
                         except pymongo.errors.DuplicateKeyError:
                             pass
 
-def bio_change(dbname='TwitterProAna', colname='bio'):
+def bio_change(dbname='TwitterProAna', colname='bio', field='cbmi'):
     data = []
     bio = dbt.db_connect_col(dbname, colname)
-    for entry in bio.find({'cbmi':{'$exists':True}}):
-        data.append([entry['id'], entry['date'], entry['cbmi']['value']])
-    df = pd.DataFrame(data=data, columns=['uid', 'date', 'cbmi'])
-    df.to_csv('ian-cbmi.csv')
+    for entry in bio.find({field:{'$exists':True}}):
+        data.append([entry['id'], entry['date'], entry[field]['value']])
+    df = pd.DataFrame(data=data, columns=['uid', 'date', field])
+    df.to_csv('ian-'+field+'.csv')
 
 
 def geo_infor(dbname='TwitterProAna', colname='tweets'):
@@ -324,7 +324,8 @@ if __name__ == '__main__':
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
     # bio_information()
-    # bio_change()
+    for f in ['cbmi', 'gbmi', 'a', 'gender', 'h', 'cw', 'gw']:
+        bio_change(dbname='TwitterProAna', colname='bio', field=f)
     # geo_infor()
     # data_split()
-    timeline('TwitterProAna', 'users', 'timeline', 'tweets')
+    # timeline('TwitterProAna', 'users', 'timeline', 'tweets')
