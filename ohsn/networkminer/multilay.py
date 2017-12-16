@@ -22,6 +22,8 @@ import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
 from collections import Counter
+from matplotlib import cm
+import matplotlib.colors
 
 from igraph import *
 import re
@@ -145,9 +147,9 @@ def networks(dbname, bnet='all_pro_bnet'):
     # all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
     # all_uids_count = Counter(all_uids)
     # uids = [key for key in all_uids_count]
-    topics = [35, 3, 2, 14, 25] # [35, 3, 2, 14, 25]
-    colrs = ["#fc8d62", "#8da0cb", "#e78ac3", '#a6d854', '#ffd92f']
-    names = ['GL', 'MH', 'FWL', 'PED', 'DI']
+    topics = ['35', '3', '2', '14', '25','all'] # [35, 3, 2, 14, 25]
+    colrs = ["#fc8d62", "#8da0cb", "#e78ac3", '#a6d854', '#ffd92f', '#F2F2F2']
+    names = ['GL', 'MH', 'FWL', 'PED', 'DI', 'AGG.']
     # g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
     # g.write_graphml('pro_mentionall'+'.graphml')
     # for i, tag in enumerate(topics):
@@ -164,14 +166,32 @@ def networks(dbname, bnet='all_pro_bnet'):
         for v in g.vs():
             v['name'] = str(1 + core_name.index(v['name']))
         gs.append(g)
+
     uidlist = {}
+    name_coms = []
     for i, g in enumerate(gs):
-        uidlist = out_graph_edges(g, 'pro_mention'+str(topics[i])+'.edge', uidlist)
+        udirg = g.as_undirected(mode="collapse", combine_edges='sum')
+        # com = g.community_infomap(edge_weights='weight')
+        com = udirg.community_multilevel(weights='weight', return_levels=False)
+        name_com  = dict(zip(udirg.vs['name'], com.membership))
+        print len(set(com.membership))
+        name_coms.append(name_com)
+        uidlist = out_graph_edges(g, 'pro_mention'+(topics[i])+'.edge', uidlist)
 
     with open('pro_mention.node', 'wb') as fw:
         fw.write('nodeID nodeLabel\n')
         for i, name in enumerate(core_name):
             fw.write(str(i+1) + ' ' + name + '\n')
+
+    with open('pro_mention.node.color.txt', 'wb') as fw:
+        fw.write('nodeID layerID color size\n')
+        for i, name_com in enumerate(name_coms):
+            colrset = set(name_com.values())
+            print len(colrset)
+            cmap = cm.get_cmap('seismic', len(colrset))
+            for key, value in name_com.items():
+                rgb = cmap(value)[:3]
+                fw.write(key + ' ' + str(i+1)  + ' "' + matplotlib.colors.rgb2hex(rgb) + '" 5\n')
 
     with open('pro_mention.edge.color.txt', 'wb') as fw:
         fw.write('nodeID.from layerID.from nodeID.to layerID.to color size\n')
