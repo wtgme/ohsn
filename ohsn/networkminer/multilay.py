@@ -155,7 +155,7 @@ def networks(dbname, bnet='all_pro_bnet'):
     #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
-    core = gall.k_core(30)
+    core = gall.k_core(25)
     core_name = core.vs['name']
     gs = []
     for i, tag in enumerate(topics):
@@ -173,7 +173,7 @@ def networks(dbname, bnet='all_pro_bnet'):
         for i, name in enumerate(core_name):
             fw.write(str(i+1) + ' ' + name + '\n')
 
-    with open('pro_mention.edge.color', 'wb') as fw:
+    with open('pro_mention.edge.color.txt', 'wb') as fw:
         fw.write('nodeID.from layerID.from nodeID.to layerID.to color size\n')
         for i, top in enumerate(topics):
             fr = open('pro_mention'+str(top)+'.edge', 'r')

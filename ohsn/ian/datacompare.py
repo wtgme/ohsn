@@ -312,7 +312,17 @@ def timeline(dbname, comname, timename, streamname):
     timelines.retrieve_timeline(com, timeline, max_id)
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
 
-
+def bio_all_in_line(dbname='TwitterProAna', colname='bio'):
+    names = ['cbmi', 'gbmi', 'a', 'gender', 'h', 'cw', 'gw', 'lw', 'hw', 'ugw']
+    fields = ['id','date'] + [name+'.value' for name in names]
+    data = []
+    bio = dbt.db_connect_col(dbname, colname)
+    for entry in bio.find({}):
+        dat = (iot.get_fields_one_doc(entry, fields))
+        if set(dat[3:]) != set([0.0]):
+            data.append(dat)
+    df = pd.DataFrame(data=data, columns=['id','date'] +names)
+    df.to_csv('ian-all'+'.csv')
 
 if __name__ == '__main__':
     # filter_user()
@@ -324,8 +334,9 @@ if __name__ == '__main__':
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
     # bio_information()
-    for f in ['cbmi', 'gbmi', 'a', 'gender', 'h', 'cw', 'gw']:
-        bio_change(dbname='TwitterProAna', colname='bio', field=f)
+    # for f in ['cbmi', 'gbmi', 'a', 'gender', 'h', 'cw', 'gw', 'lw', 'hw', 'ugw']:
+    #     bio_change(dbname='TwitterProAna', colname='bio', field=f)
     # geo_infor()
     # data_split()
     # timeline('TwitterProAna', 'users', 'timeline', 'tweets')
+    bio_all_in_line()

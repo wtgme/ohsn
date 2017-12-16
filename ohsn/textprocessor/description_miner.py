@@ -463,7 +463,10 @@ def get_goal_weight(text):
 
 
 def get_ultimate_goal_weight(text):
-    pattern = re.compile("ugw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    # pattern = re.compile("ugw\w?[:;=\s-]+(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*", re.IGNORECASE)
+    pattern = re.compile(
+        "[(\[{]?(ugw|ultimate goal weight|ultimate)\(?\w?\)?[)\]}]?([\.~:×;=/|\s-]*|(\s(is|was)\s))(?P<mass>\d+\.?\d*)\s*(?P<units>kg|lb|pounds)*",
+        re.IGNORECASE)
     match = pattern.search(text)
     if match is not None:
         mass = float(match.group('mass'))
@@ -473,16 +476,22 @@ def get_ultimate_goal_weight(text):
                 weight_kg = mass * 0.453592
                 unitsguessed = False
                 # bmi = weight_kg/(height_cm^2)
+            elif match.group('units') in ('stone'):
+                weight_kg = mass * 6.35029
+                unitsguessed = False
             else:  # i.e. it matches kilos
                 weight_kg = mass
                 unitsguessed = False
         else:
             # search for units elsewhere in the description
-            pattern = re.compile("(lb|lbs|kg|pounds)", re.IGNORECASE)
+            pattern = re.compile("(stone |lb|lbs|kg|pounds)", re.IGNORECASE)
             match = pattern.search(text)
             if match is not None:
                 if match.group(0) in ("lb", "lbs", "pounds"):
                     weight_kg = mass * 0.453592
+                    unitsguessed = True
+                elif match.group(0) in ('stone '):
+                    weight_kg = mass * 6.35029
                     unitsguessed = True
                 else:  # i.e. it matches kilos
                     weight_kg = mass
@@ -493,6 +502,9 @@ def get_ultimate_goal_weight(text):
                 weight_kg = mass
                 unitsguessed = True
                 # print mass + "kg" + "(Unit Probable)"
+            elif float(mass) < 12:
+                weight_kg = mass * 6.35029
+                unitsguessed = True
             else:  # if in doubt guess lbs?
                 weight_kg = mass * 0.453592
                 unitsguessed = True
@@ -502,7 +514,6 @@ def get_ultimate_goal_weight(text):
         return (weight_kg, unitsguessed)
     else:
         return (None, None)
-
 
 def edword(text):
     cnt = Counter()
@@ -526,6 +537,10 @@ def process_text(text, name=''):
     gw, gw_ug = get_goal_weight(text)
     if gw is not None:
         results['gw'] = {'ug': gw_ug, 'value': float(gw)}
+
+    ugw, ugw_ug = get_ultimate_goal_weight(text)
+    if ugw is not None:
+        results['ugw'] = {'ug': ugw_ug, 'value': float(ugw)}
 
     cw, cw_ug = get_current_weight_KG(text)
     if cw is not None:
