@@ -3,6 +3,20 @@
 Created on 14:33, 20/04/17
 
 @author: wt
+
+
+Here’s depression users’ tweet dataset, https://drive.google.com/open?id=0B2bd0yejz160TE5ORTIzdTA1M1k .
+We combined depressive users extracted from the dataset you sent to us and our own dataset.
+There’re three files in the shared folder:
+—timeline2.json (6,784,273 tweets with 8,031 users, all tweets information)
+—users1.json (7,652 users, user profile information extracted from your dataset — com file)
+—users2.json (379 users, user profile information extracted from our dataset)
+(For discrimination, two parts of users are not combined because some attributes are not the same between the two datasets.)
+These files can be imported directly into MongoDB.
+
+LIWC variables: depression data include retweets
+
+
 """
 
 import json
@@ -19,11 +33,12 @@ import ohsn.util.graph_util as gt
 import numpy as np
 
 
-def store_users_profile():
-    com = dbt.db_connect_col('depression', 'neg_com')
+def store_users_profile(dbname='depression', colname='neg_com', filepath='/home/wt/Code/ohsn/ohsn/depression/data/negative/user_profile/written_users_info_detail_list.txt'):
+    # import with mongodb tool
+    com = dbt.db_connect_col(dbname, colname)
     com.create_index("id", unique=True)
 
-    with open('/home/wt/Code/ohsn/ohsn/depression/data/negative/user_profile/written_users_info_detail_list.txt') as data_file:
+    with open(filepath) as data_file:
         for line in data_file.readlines():
             print line
             parsed_json = ast.literal_eval(line.strip())
@@ -32,13 +47,13 @@ def store_users_profile():
             except pymongo.errors.DuplicateKeyError:
                     pass
 
-def store_tweets():
+def store_tweets(dbname='depression', colname='neg_timeline', mypath='/home/wt/Code/ohsn/ohsn/depression/data/negative/user_tweets'):
     times = dbt.db_connect_col('depression', 'neg_timeline')
     times.create_index([('user.id', pymongo.ASCENDING),
                               ('id', pymongo.DESCENDING)])
     times.create_index([('id', pymongo.ASCENDING)], unique=True)
 
-    mypath = '/home/wt/Code/ohsn/ohsn/depression/data/negative/user_tweets'
+    # mypath = '/home/wt/Code/ohsn/ohsn/depression/data/negative/user_tweets'
     onlyfiles = [mypath+'/'+f for f in listdir(mypath) if isfile(join(mypath, f))]
     for file_path in onlyfiles:
         with open(file_path) as data_file:
@@ -212,6 +227,7 @@ def user_cluster(filepath='data/depression.data'):
 
 if __name__ == '__main__':
     # store_users_profile()
+    store_users_profile('depression', 'therapist', '/home/wt/Code/ohsn/ohsn/depression/data/relabel/users_therapist.json')
     # store_tweets()
     # label_positive()
 
@@ -219,4 +235,4 @@ if __name__ == '__main__':
     # network_analysis()
     # network_assort()
     # liwc_feature()
-    user_cluster()
+    # user_cluster()
