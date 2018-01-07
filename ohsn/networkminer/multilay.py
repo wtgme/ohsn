@@ -157,7 +157,7 @@ def networks(dbname, bnet='all_pro_bnet'):
     #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
-    core = gall.k_core(25)
+    core = gall.k_core(26)
     core_name = core.vs['name']
     gs = []
     for i, tag in enumerate(topics):
@@ -170,10 +170,12 @@ def networks(dbname, bnet='all_pro_bnet'):
     uidlist = {}
     name_coms = []
     for i, g in enumerate(gs):
-        udirg = g.as_undirected(mode="collapse", combine_edges='sum')
-        # com = g.community_infomap(edge_weights='weight')
-        com = udirg.community_multilevel(weights='weight', return_levels=False)
-        name_com  = dict(zip(udirg.vs['name'], com.membership))
+        # udirg = g.as_undirected(mode="collapse", combine_edges='sum')
+        udirg = g.as_undirected()
+        com = g.community_infomap(edge_weights='weight')
+        # com = udirg.community_multilevel(weights='weight', return_levels=False)
+        # com = udirg.community_multilevel(return_levels=False)
+        name_com = dict(zip(g.vs['name'], com.membership))
         print len(set(com.membership))
         name_coms.append(name_com)
         uidlist = out_graph_edges(g, 'pro_mention'+(topics[i])+'.edge', uidlist)
@@ -183,12 +185,13 @@ def networks(dbname, bnet='all_pro_bnet'):
         for i, name in enumerate(core_name):
             fw.write(str(i+1) + ' ' + name + '\n')
 
+    # https://matplotlib.org/examples/color/colormaps_reference.html
     with open('pro_mention.node.color.txt', 'wb') as fw:
         fw.write('nodeID layerID color size\n')
         for i, name_com in enumerate(name_coms):
             colrset = set(name_com.values())
             print len(colrset)
-            cmap = cm.get_cmap('seismic', len(colrset))
+            cmap = cm.get_cmap('gist_rainbow', len(colrset))
             for key, value in name_com.items():
                 rgb = cmap(value)[:3]
                 fw.write(key + ' ' + str(i+1)  + ' "' + matplotlib.colors.rgb2hex(rgb) + '" 5\n')

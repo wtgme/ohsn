@@ -333,7 +333,7 @@ if __name__ == '__main__':
     # follow_net('TwitterProAna', 'users')
     # hashtag_net('TwitterProAna', 'tweets')
     # hot_day('tweets.csv')
-    # bio_information()
+    bio_information()
     # for f in ['cbmi', 'gbmi', 'a', 'gender', 'h', 'cw', 'gw', 'lw', 'hw', 'ugw']:
     #     bio_change(dbname='TwitterProAna', colname='bio', field=f)
     # geo_infor()

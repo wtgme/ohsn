@@ -227,7 +227,7 @@ def user_cluster(filepath='data/depression.data'):
 
 if __name__ == '__main__':
     # store_users_profile()
-    store_users_profile('depression', 'therapist', '/home/wt/Code/ohsn/ohsn/depression/data/relabel/users_therapist.json')
+    # store_users_profile('depression', 'therapist', '/home/wt/Code/ohsn/ohsn/depression/data/relabel/users_therapist.json')
     # store_tweets()
     # label_positive()
 
