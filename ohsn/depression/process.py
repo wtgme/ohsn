@@ -4,7 +4,7 @@ Created on 14:33, 20/04/17
 
 @author: wt
 
-
+Data:
 Here’s depression users’ tweet dataset, https://drive.google.com/open?id=0B2bd0yejz160TE5ORTIzdTA1M1k .
 We combined depressive users extracted from the dataset you sent to us and our own dataset.
 There’re three files in the shared folder:
@@ -14,8 +14,14 @@ There’re three files in the shared folder:
 (For discrimination, two parts of users are not combined because some attributes are not the same between the two datasets.)
 These files can be imported directly into MongoDB.
 
-LIWC variables: depression data include retweets
+Aims:
+hen, you can re-construct the contents similar to the Section 5, Section 6.4, and Section 6.5 of your WSDM paper by using our Depression data set instead of the ED data set.
+That way, hopefully the workload won't be too much to you.
+As there is more space in a journal paper, you may also add more necessary details and descriptions to these Sub-sections.
+Also, since MISQ does not accept Latex, you can simply put all the contents in a MS Word document.
 
+LIWC variables: depression data include retweets
+imported users2 into com and timeline2 into timeline
 
 """
 
@@ -65,6 +71,15 @@ def store_tweets(dbname='depression', colname='neg_timeline', mypath='/home/wt/C
                 except pymongo.errors.DuplicateKeyError:
                     pass
 
+def trandb(dbname, colnam1, colnam2):
+    time1 = dbt.db_connect_col(dbname, colnam1)
+    time2 = dbt.db_connect_col(dbname, colnam2)
+    for t in time2.find():
+        try:
+            time1.insert(t)
+        except pymongo.errors.DuplicateKeyError:
+            pass
+
 def label_positive():
     com = dbt.db_connect_col('depression', 'com')
     with open('/home/wt/Code/ohsn/ohsn/depression/data/positive/positive_users_selections_screennaes.txt') as data_file:
@@ -84,10 +99,11 @@ def data_stat():
 
 def network_analysis():
     # output network among depression users
-    user1 = iot.get_values_one_field('depression', 'users1', 'id')
-    user2 = iot.get_values_one_field('depression', 'users2', 'id')
-    print len(user1), len(user2)
-    alluser = user1 + user2
+    # user1 = iot.get_values_one_field('depression', 'users1', 'id')
+    # user2 = iot.get_values_one_field('depression', 'users2', 'id')
+    # print len(user1), len(user2)
+    # alluser = user1 + user2
+    alluser = iot.get_values_one_field('depression', 'depressive', 'id')
     follow_net = gt.load_network_subset('depression', 'net', {'user': {'$in': alluser},
                                                               'follower': {'$in': alluser}})
     gt.net_stat(follow_net)
@@ -115,12 +131,12 @@ def drop_initials(list_a):
 
 def network_assort():
     # test network assortative
-    gs = ['follow', 'retweet', 'communication']
+    gs = ['edfollow','follow', 'retweet', 'communication']
     fields = iot.read_fields()
     print len(fields)
-    for gf in gs:
+    for gf in gs[1:]:
         g = gt.Graph.Read_GraphML('data/'+gf+'_net.graphml')
-        g = gt.giant_component(g)
+        # g = gt.giant_component(g)
         gt.net_stat(g)
 
         for filed in fields:
@@ -130,17 +146,17 @@ def network_assort():
             if len(values) > 100:
                 output = gf + ',' + filed.split('.')[-1] + ','
                 # maxv, minv = np.percentile(values, 97.5), np.percentile(values, 2.5)
-                # maxv, minv = max(values), min(values)
-                # vs = g.vs.select(foi_ge=minv, foi_le=maxv)
-                # sg = g.subgraph(vs)
-                raw_assort = g.assortativity('foi', 'foi', directed=True)
+                maxv, minv = max(values), min(values)
+                vs = g.vs.select(foi_ge=minv, foi_le=maxv)
+                sg = g.subgraph(vs)
+                raw_assort = sg.assortativity('foi', 'foi', directed=True)
                 ass_list = []
                 for i in xrange(1000):
                     np.random.shuffle(raw_values)
                     g.vs["foi"] = raw_values
-                    # vs = g.vs.select(foi_ge=minv, foi_le=maxv)
-                    # sg = g.subgraph(vs)
-                    ass_list.append(g.assortativity('foi', 'foi', directed=True))
+                    vs = g.vs.select(foi_ge=minv, foi_le=maxv)
+                    sg = g.subgraph(vs)
+                    ass_list.append(sg.assortativity('foi', 'foi', directed=True))
 
                 ass_list = np.array(ass_list)
                 amean, astd = np.mean(ass_list), np.std(ass_list)
@@ -233,6 +249,9 @@ if __name__ == '__main__':
 
     # data_stat()
     # network_analysis()
-    # network_assort()
+    # trandb('depression', 'timeline', 'timeline2')
+    # g = gt.load_network('fed', 'snet')
+    # g.write_graphml('data/' + 'edfollow'+'_net.graphml')
+    network_assort()
     # liwc_feature()
     # user_cluster()
