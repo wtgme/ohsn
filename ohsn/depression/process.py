@@ -34,6 +34,7 @@ import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 from os import listdir
 from os.path import isfile, join
+from collections import Counter
 import ast
 import ohsn.util.graph_util as gt
 import numpy as np
@@ -133,12 +134,12 @@ def network_assort():
     # test network assortative
     gs = ['edfollow','follow', 'retweet', 'communication']
     fields = iot.read_fields()
-    print len(fields)
+    # print len(fields)
     for gf in gs[1:]:
         g = gt.Graph.Read_GraphML('data/'+gf+'_net.graphml')
         # g = gt.giant_component(g)
-        gt.net_stat(g)
-
+        # gt.net_stat(g)
+        sigs = []
         for filed in fields:
             g = gt.add_attribute(g, 'foi', 'depression', 'com', filed)
             raw_values = np.array(g.vs['foi'])
@@ -165,22 +166,33 @@ def network_assort():
                         np.sum(ass_list <= -absobserved))/float(len(ass_list))
                 zscore = (raw_assort-amean)/astd
                 output += format(raw_assort, '.2f') + ',' + format(amean, '.2f') + ',' + \
-                          format(astd, '.2f') + ',' + format(zscore, '.2f') + ',' + format(pval, '.2f')
+                          format(astd, '.2f') + ',' + format(zscore, '.2f') + ',' + format(pval, '.3f') + ','
                 if pval < 0.001:
                     output += '***'
+                    if raw_assort > 0:
+                        sigs.append('***')
                     print output
                     continue
                 if pval < 0.01:
                     output += '**'
+                    if raw_assort > 0:
+                        sigs.append('**')
                     print output
                     continue
                 if pval < 0.05:
                     output += '*'
+                    if raw_assort > 0:
+                        sigs.append('*')
                     print output
                     continue
                 else:
+                    sigs.append('N')
                     print output
                     continue
+        c = Counter(sigs)
+        print c
+        for sig, cou in c.items():
+            print sig, 1.0*cou/len(fields)
 
 def user_cluster(filepath='data/depression.data'):
     from sklearn.datasets import load_svmlight_file
@@ -238,7 +250,6 @@ def user_cluster(filepath='data/depression.data'):
         for v in g.vs:
             v['cluster'] = dictionary.get(v['name'], -1)
         g.write_graphml('data/'+gf+'_net_cluster.graphml')
-
 
 
 if __name__ == '__main__':

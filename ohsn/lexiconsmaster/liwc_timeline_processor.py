@@ -130,7 +130,7 @@ def process_db(dbname, colname, timename, fieldname):
 
 if __name__ == '__main__':
     # process_db('TwitterProAna', 'users', 'timeline', 'liwc_anal')
-    process_db('depression', 'com', 'timeline', 'liwc_anal')
+    process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline', 'liwc_anal')
     # process_db('younger', 'com', 'timeline', 'liwc_anal')
     # process_db('fed2', 'com', 'timeline', 'liwc_anal')
