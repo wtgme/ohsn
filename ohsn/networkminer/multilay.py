@@ -495,19 +495,23 @@ def out_tid_uid(dbname, timename):
     for tweet in times.find({}, no_cursor_timeout=True):
         print str(tweet['id']) + '\t' + str(tweet['user']['id'])
 
-def user_profiles(dbname, comname, userfile='data/actor.uid'):
+def user_profiles(dbname, comname, userfile='data/actor.uid.txt'):
     # get profile infor for regression
     uids = pickle.load(open(userfile))
     print len(uids)
     com = dbt.db_connect_col(dbname, comname)
     data = []
     fields = iot.read_fields()
+    miss_count = 0
+    print fields
     for uid in uids:
-        print uid
         user = com.find_one({'id': int(uid)})
-        x = user[0]
-        row = iot.get_fields_one_doc(x, fields)
-        data.append(row)
+        if user is not None:
+            row = iot.get_fields_one_doc(user, fields)
+            data.append(row)
+        else:
+            miss_count += 1
+    print miss_count, miss_count*1.0/len(uids)
     df = pd.DataFrame(data= data, columns=['uid', 'posemo', 'negemo', 'senti'])
     df.to_csv('data/emotions.csv')
 
