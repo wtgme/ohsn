@@ -503,6 +503,7 @@ def user_profiles(dbname, comname, userfile='data/actor.uid'):
     data = []
     fields = iot.read_fields()
     for uid in uids:
+        print uid
         user = com.find_one({'id': int(uid)})
         x = user[0]
         row = iot.get_fields_one_doc(x, fields)
