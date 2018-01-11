@@ -495,7 +495,7 @@ def out_tid_uid(dbname, timename):
     for tweet in times.find({}, no_cursor_timeout=True):
         print str(tweet['id']) + '\t' + str(tweet['user']['id'])
 
-def user_profiles(dbname, comname, userfile='data/actor.uid.txt'):
+def user_profiles(dbname, comname, userfile='data/actor.uid'):
     # get profile infor for regression
     uids = pickle.load(open(userfile))
     print len(uids)
