@@ -18,6 +18,7 @@ import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import ohsn.api.tweet_lookup as tweetlook
 import pymongo
+import pandas as pd
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
 import pickle
@@ -494,6 +495,19 @@ def out_tid_uid(dbname, timename):
     for tweet in times.find({}, no_cursor_timeout=True):
         print str(tweet['id']) + '\t' + str(tweet['user']['id'])
 
+def user_profiles(dbname, comname, userfile='data/actor.uid'):
+    # get profile infor for regression
+    uids = pickle.load(open(userfile))
+    print len(uids)
+    com = dbt.db_connect_col(dbname, comname)
+    data = []
+    fields = iot.read_fields()
+    for uid in uids:
+        x = com.find_one({'id': int(uid)})
+        row = iot.get_fields_one_doc(x, fields)
+        data.append(row)
+    df = pd.DataFrame(data= data, columns=['uid', 'posemo', 'negemo', 'senti'])
+    df.to_csv('data/emotions.csv')
 
 if __name__ == '__main__':
     # constrcut_data()
@@ -519,9 +533,9 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    networks('fed', 'pro_mention_bnet')
+    # networks('fed', 'pro_mention_bnet')
 
-
+    user_profiles('fed', 'com')
 
 
 

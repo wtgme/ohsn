@@ -319,7 +319,7 @@ if __name__ == '__main__':
     # print rate_sentiment('I talk to YOU')
 
     # process_chunks_db_multiperiod(dbname='fed', timename='timeline', comname='com')
-    # process_chunks_db(dbname='fed', timename='timeline', comname='com')
+    process_chunks_db(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')
     out_sentiment_times('fed', 'com')
