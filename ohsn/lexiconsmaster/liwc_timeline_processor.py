@@ -73,7 +73,7 @@ def process(poi, timelines, fieldname, level):
     while True:
         # How many users whose timelines have not been processed by LIWC
         finded = poi.find_one({
-            # "timeline_count": {'$gt': 0},
+            "timeline_count": {'$gt': 0},
             target: {'$exists': False},
             # 'level': {'$lte': level}
         })
@@ -83,7 +83,7 @@ def process(poi, timelines, fieldname, level):
         #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
 
         for user in poi.find({
-            # "timeline_count": {'$gt': 0},
+            "timeline_count": {'$gt': 0},
             target: {'$exists': False},
                               # 'level': {'$lte': level}
         }, {'id': 1}).limit(250):
@@ -129,8 +129,9 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
+    process_db('fed', 'pro_mention_miss_com', 'pro_mention_miss_timeline', 'liwc_anal')
     # process_db('TwitterProAna', 'users', 'timeline', 'liwc_anal')
-    process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
+    # process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline', 'liwc_anal')
     # process_db('younger', 'com', 'timeline', 'liwc_anal')
     # process_db('fed2', 'com', 'timeline', 'liwc_anal')

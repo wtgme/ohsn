@@ -17,7 +17,10 @@ from datetime import datetime
 import ohsn.util.db_util as dbt
 import ohsn.util.io_util as iot
 import ohsn.api.tweet_lookup as tweetlook
+import ohsn.api.lookup as userlook
+from ohsn.api import timelines
 import pymongo
+import math
 import pandas as pd
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
@@ -496,10 +499,51 @@ def out_tid_uid(dbname, timename):
         print str(tweet['id']) + '\t' + str(tweet['user']['id'])
 
 def user_profiles(dbname, comname, userfile='data/actor.uid'):
-    # get profile infor for regression
+    # # get profile infor for regression
     uids = pickle.load(open(userfile))
     print len(uids)
     com = dbt.db_connect_col(dbname, comname)
+    newcom = dbt.db_connect_col(dbname, 'pro_mention_miss_com')
+
+
+    # newcom.create_index("id", unique=True)
+    # # Collect miss data
+    # missuids, taguids = [], []
+    # for uid in uids:
+    #     user = com.find_one({'id': int(uid)})
+    #     if user is None:
+    #         missuids.append(int(uid))
+    #     else:
+    #         taguids.append(int(uid))
+    # list_size = len(missuids)
+    # print '%d users to process' %list_size
+    # length = int(math.ceil(list_size/100.0))
+    # for index in xrange(length):
+    #     index_begin = index*100
+    #     index_end = min(list_size, index_begin+100)
+    #     userlook.lookup_user_list(missuids[index_begin:index_end], newcom, 1, 'N')
+
+    # # Collect tweets for missing users
+    # converstream = dbt.db_connect_col(dbname, 'pro_mention_timeline')
+    # most_recenty = converstream.find().sort([('id', -1)]).limit(1)
+    # oldest = converstream.find().sort([('id', 1)]).limit(1)
+    # max_id = most_recenty[0]['id']
+    # since_id = oldest[0]['id']
+    # print most_recenty[0]
+    # print oldest[0]
+    # com = dbt.db_connect_col(dbname, 'pro_mention_miss_com')
+    # timeline = dbt.db_connect_col(dbname, 'pro_mention_miss_timeline')
+
+    # com.create_index([('timeline_scraped_times', pymongo.ASCENDING)])
+    # timeline.create_index([('user.id', pymongo.ASCENDING),
+    #                       ('id', pymongo.DESCENDING)])
+    # timeline.create_index([('id', pymongo.ASCENDING)], unique=True)
+
+    # print datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + 'Connect Twitter.com'
+    # timelines.retrieve_timeline(com, timeline, max_id)
+    # print datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), 'finish timeline for sample users'
+
+
     data = []
     fields = iot.read_fields()
     miss_count = 0
@@ -510,7 +554,12 @@ def user_profiles(dbname, comname, userfile='data/actor.uid'):
             row = iot.get_fields_one_doc(user, fields)
             data.append(row)
         else:
-            miss_count += 1
+            user = newcom.find_one({'id': int(uid)})
+            if user is not None:
+                row = iot.get_fields_one_doc(user, fields)
+                data.append(row)
+            else:
+                miss_count += 1
     print miss_count, miss_count*1.0/len(uids)
     df = pd.DataFrame(data= data, columns=['uid', 'posemo', 'negemo', 'senti'])
     df.to_csv('data/emotions.csv')
