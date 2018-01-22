@@ -290,7 +290,7 @@ def tag_net(dbname, colname, filename):
 def tag_activity(dbname, colname):
     # recording the activity of tag
 
-    g = gt.Graph.Read_GraphML('allpro_tag_undir.graphml')
+    g = gt.Graph.Read_GraphML('data/pro_mention_tag_undir.graphml')
     vs = g.vs(weight_gt=3, user_gt=3)
     sg = g.subgraph(vs)
     gc = gt.giant_component(sg)
@@ -575,7 +575,7 @@ if __name__ == '__main__':
 
     # networks('fed')
     # data_transf('data/pro4.graphml')
-    # tag_activity('fed', 'pro_timeline')
+    tag_activity('fed', 'pro_mention_timeline')
 
     '''Build conversations from users' mention_timeline, and extract network from these conversations
     All data extracted fro in_repy_to_ in pro_mention_timeline '''
@@ -583,7 +583,7 @@ if __name__ == '__main__':
     # mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
-    tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
+    # tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
     # conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
     # rebuild_converstation('fed', 'pro_mention_timeline',
     #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
