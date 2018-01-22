@@ -564,6 +564,8 @@ def user_profiles(dbname, comname, userfile='data/actor.uid'):
     df = pd.DataFrame(data= data, columns=['uid', 'posemo', 'negemo', 'senti'])
     df.to_csv('data/emotions.csv')
 
+
+
 if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
@@ -581,7 +583,7 @@ if __name__ == '__main__':
     # mention_tweets(dbname='fed', comname='ed_tag', bnetname='all_pro_bnet', mention_tweet_name='pro_mention_timeline')
     # rebuild_converstation('fed', 'core_mention_timeline',
     #                       'core_mention_user_converstation.graphml')
-    # tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
+    tag_net('fed', 'pro_mention_timeline', 'data/pro_mention')
     # conversation('fed', 'pro_mention_timeline', 'timeline', 'core_mention_user_converstation.graphml')
     # rebuild_converstation('fed', 'pro_mention_timeline',
     #                       'data/pro_converstation.graphml', 'data/pro_converstation_tids.txt')
@@ -590,7 +592,7 @@ if __name__ == '__main__':
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
     # networks('fed', 'pro_mention_bnet')
 
-    user_profiles('fed', 'com')
+    # user_profiles('fed', 'com')
 
 
 
