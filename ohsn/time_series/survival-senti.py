@@ -143,25 +143,33 @@ def user_active():
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
     fields = [
-            'senti_100.result.whole.posm',
-            'senti_100.result.whole.posstd',
-            'senti_100.result.whole.negm',
-            'senti_100.result.whole.negstd',
-            'senti_100.result.whole.scalem',
-            'senti_100.result.whole.scalestd',
-            'senti_100.result.whole.N',
-            'senti_100.result.prior.scalem',
-            'senti_100.result.post.scalem',
-        # 'liwc_anal.result.posemo',
-        #       'liwc_anal.result.negemo',
-        #       'liwc_anal.result.ingest',
-        #       'liwc_anal.result.bio',
-        #       'liwc_anal.result.body',
-        #       'liwc_anal.result.health',
-        #       'liwc_anal.result.death'
-        #       'liwc_anal.result.anx',
-        #       'liwc_anal.result.anger',
-        #       'liwc_anal.result.sad'
+                'liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.death'
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad',
+              'liwc_anal.result.i',
+              'liwc_anal.result.we',
+              'liwc_anal.result.negate',
+              'liwc_anal.result.swear',
+              'liwc_anal.result.social',
+              'liwc_anal.result.family',
+              'liwc_anal.result.friend',
+              'liwc_anal.result.affect',
+            'senti.result.whole.posm',
+            'senti.result.whole.posstd',
+            'senti.result.whole.negm',
+            'senti.result.whole.negstd',
+            'senti.result.whole.scalem',
+            'senti.result.whole.scalestd',
+            'senti.result.whole.N',
+            'senti.result.prior.scalem',
+            'senti.result.post.scalem'
               ]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days']
@@ -172,7 +180,7 @@ def read_user_time_iv(filename):
          ('ED', 'fed', 'com', 'fed', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
                                                         'level': 1,
-                                                        'senti_100.result.whole.N': {'$gt': 10}}),
+                                                        'senti.result.whole.N': {'$gt': 10}}),
          ('RD', 'random', 'scom', 'random', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
                                                         'senti.result.whole.N': {'$gt': 10}}),
@@ -182,7 +190,7 @@ def read_user_time_iv(filename):
     ]
 
     data = []
-    for tag, dbname, comname, dbname2, comname2, filter_values in groups[:1]:
+    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all-active.graphml')
@@ -287,7 +295,7 @@ def read_user_time_iv(filename):
                         alive = 0
                         for fid in friend_ids:
                             fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True},
-                                               'senti_100.result.whole.N': {'$gt': 10}})
+                                               'senti.result.whole.N': {'$gt': 10}})
                             fu2 = com2.find_one({'id': fid})
 
                             if fu:
@@ -582,7 +590,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    read_user_time_iv('user-durations-iv-following-senti-100.csv')
+    read_user_time_iv('user-durations-iv-following-senti-correlations.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
