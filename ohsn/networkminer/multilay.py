@@ -92,9 +92,9 @@ def extract_network(dbname, timename, bnetname, typename='ED'):
                        ("tags", pymongo.ASCENDING),
                       ("statusid", pymongo.ASCENDING)],
                         unique=True)
-
+    topic_tids = [int(uid) for uid in tid_topicid.keys()]
     filter = {'$where': 'this.entities.user_mentions.length>0',
-                # 'topics': {'$exists': True},
+                'id': {'$in': topic_tids},
               'retweeted_status': {'$exists': False}}
     count2 = 0
     for tweet in time.find(filter, no_cursor_timeout=True):
@@ -151,9 +151,9 @@ def networks(dbname, bnet='all_pro_bnet'):
     # all_uids = iot.get_values_one_field('fed', 'ed_tag', 'user.id')
     # all_uids_count = Counter(all_uids)
     # uids = [key for key in all_uids_count]
-    topics = ['35', '3', '2', '14', '25','all'] # [35, 3, 2, 14, 25]
+    topics = [1, 3, 7, 15, 21] # [35, 3, 2, 14, 25]
     colrs = ["#fc8d62", "#8da0cb", "#e78ac3", '#a6d854', '#ffd92f', '#F2F2F2']
-    names = ['GL', 'MH', 'FWL', 'PED', 'DI', 'AGG.']
+    names = ['Mental', 'Social', 'Fitness', 'Body', 'Thinspo', 'AGG.']
     # g = gt.load_beh_network_filter(dbname, bnet, btype='communication')
     # g.write_graphml('pro_mentionall'+'.graphml')
     # for i, tag in enumerate(topics):
@@ -161,7 +161,7 @@ def networks(dbname, bnet='all_pro_bnet'):
     #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
-    core = gall.k_core(26)
+    core = gall.k_core(15)
     core_name = core.vs['name']
     gs = []
     for i, tag in enumerate(topics):
@@ -182,7 +182,7 @@ def networks(dbname, bnet='all_pro_bnet'):
         name_com = dict(zip(g.vs['name'], com.membership))
         print len(set(com.membership))
         name_coms.append(name_com)
-        uidlist = out_graph_edges(g, 'pro_mention'+(topics[i])+'.edge', uidlist)
+        uidlist = out_graph_edges(g, 'pro_mention'+str(topics[i])+'.edge', uidlist)
 
     with open('pro_mention.node', 'wb') as fw:
         fw.write('nodeID nodeLabel\n')
@@ -575,7 +575,7 @@ if __name__ == '__main__':
 
     # networks('fed')
     # data_transf('data/pro4.graphml')
-    tag_activity('fed', 'pro_mention_timeline')
+    # tag_activity('fed', 'pro_mention_timeline')
 
     '''Build conversations from users' mention_timeline, and extract network from these conversations
     All data extracted fro in_repy_to_ in pro_mention_timeline '''
@@ -590,9 +590,8 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    # networks('fed', 'pro_mention_bnet')
+    networks('fed', 'pro_mention_bnet')
 
     # user_profiles('fed', 'com')
-
 
 
