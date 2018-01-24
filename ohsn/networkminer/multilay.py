@@ -565,6 +565,11 @@ def user_profiles(dbname, comname, userfile='data/actor.uid'):
     df.to_csv('data/emotions.csv')
 
 
+def out_network_temp(dbname='fed', bnet='pro_mention_bnet'):
+    bnet = dbt.db_connect_col(dbname, bnet)
+    for link in bnet.find({}, no_cursor_timeout=True):
+        print str(link['id0']) +'\t' + str(link['id1']) + '\t' + str(link['tags']) + '\t' + link['created_at']
+
 
 if __name__ == '__main__':
     # constrcut_data()
@@ -590,8 +595,10 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    networks('fed', 'pro_mention_bnet')
+    # networks('fed', 'pro_mention_bnet')
 
     # user_profiles('fed', 'com')
+
+    out_network_temp()
 
 
