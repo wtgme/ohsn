@@ -568,7 +568,7 @@ def user_profiles(dbname, comname, userfile='data/actor.uid'):
 def out_network_temp(dbname='fed', bnet='pro_mention_bnet'):
     bnet = dbt.db_connect_col(dbname, bnet)
     for link in bnet.find({}, no_cursor_timeout=True):
-        print str(link['id0']) +'\t' + str(link['id1']) + '\t' + str(link['tags']) + '\t' + link['created_at']
+        print str(link['id0']) +'\t' + str(link['id1']) + '\t' + str(link['tags']) + '\t' + link['created_at'] + '\t' + str(link['statusid'])
 
 
 if __name__ == '__main__':
