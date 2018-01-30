@@ -21,6 +21,7 @@ import ohsn.api.lookup as userlook
 from ohsn.api import timelines
 import pymongo
 import math
+import random
 import pandas as pd
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
@@ -165,10 +166,11 @@ def networks(dbname, bnet='all_pro_bnet'):
     # core_name = core.vs['name']
 
     core_name = gall.vs['name']
-    for i, tag in enumerate(topics):
-        g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
-        core_name = set(core_name).intersection(set(g.vs['name']))
-    core_name = list(core_name)[:300]
+    # for i, tag in enumerate(topics):
+    #     g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
+    #     core_name = set(core_name).intersection(set(g.vs['name']))
+    # core_name = list(core_name)[:2000]
+    core_name = random.sample(list(core_name), 2000)
     print '------', len(core_name)
     gs = []
     for i, tag in enumerate(topics):
