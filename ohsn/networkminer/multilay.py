@@ -21,7 +21,7 @@ import ohsn.api.lookup as userlook
 from ohsn.api import timelines
 import pymongo
 import math
-import random
+import numpy as np
 import pandas as pd
 import ohsn.util.graph_util as gt
 import ohsn.networkminer.timeline_network_miner as timiner
@@ -169,8 +169,8 @@ def networks(dbname, bnet='all_pro_bnet'):
     # for i, tag in enumerate(topics):
     #     g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
     #     core_name = set(core_name).intersection(set(g.vs['name']))
-    # core_name = list(core_name)[:2000]
-    core_name = random.sample(list(core_name), 2000)
+    np.random.shuffle(core_name)
+    core_name = list(core_name)[:2000]
     print '------', len(core_name)
     gs = []
     for i, tag in enumerate(topics):
@@ -579,6 +579,24 @@ def out_network_temp(dbname='fed', bnet='pro_mention_bnet'):
     for link in bnet.find({}, no_cursor_timeout=True):
         print str(link['id0']) +'\t' + str(link['id1']) + '\t' + str(link['tags']) + '\t' + link['created_at'] + '\t' + str(link['statusid'])
 
+def calculate_picture_ratios(dbname, timename, bnetname):
+    times = dbt.db_connect_col(dbname, timename)
+    net = dbt.db_connect_col(dbname, bnetname)
+    topics = [1, 3, 7, 15, 21] # [35, 3, 2, 14, 25]
+    all_times, picture = [0.0]*5, [0.0]*5
+    for b in net.find({}, no_cursor_timeout=True):
+        tid = b['statusid']
+        index = topics.index(b['tags'])
+        tweet = times.find_one({'id': tid})
+        if tweet:
+            # print tweet
+            if 'media' in tweet['entities']:
+                picture[index] += 1
+            all_times[index] += 1
+    print all_times
+    print picture
+    print np.array(picture)/np.array(all_times)
+
 
 if __name__ == '__main__':
     # constrcut_data()
@@ -604,10 +622,11 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    networks('fed', 'pro_mention_bnet')
+    # networks('fed', 'pro_mention_bnet')
 
     # user_profiles('fed', 'com')
 
     # out_network_temp()
+    calculate_picture_ratios('fed', 'pro_mention_timeline', 'pro_mention_bnet')
 
 
