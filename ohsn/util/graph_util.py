@@ -530,6 +530,14 @@ def comm_plot(g, clusters, lable, membership=None):
     plot(clusters, lable, **visual_style)
 
 
+def out_edgelist(dbname, netname, filename, ego, alter, filter={}):
+    fo = open(filename, 'w')
+    db = dbt.db_connect_col(dbname, netname)
+    for b in db.find(filter, no_cursor_timeout=True):
+        fo.write(str(b[ego]) + '\t' + str(b[alter]) + '\n')
+    fo.flush()
+    fo.close()
+
 def net_stat(g):
     node_n = g.vcount()
     edge_m = g.ecount()
