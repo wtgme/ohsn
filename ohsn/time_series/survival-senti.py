@@ -142,25 +142,26 @@ def user_active():
 
 def read_user_time_iv(filename):
     # fields = iot.read_fields()
+
     fields = [
-                'liwc_anal.result.posemo',
-              'liwc_anal.result.negemo',
-              'liwc_anal.result.ingest',
-              'liwc_anal.result.bio',
-              'liwc_anal.result.body',
-              'liwc_anal.result.health',
-              'liwc_anal.result.death'
-              'liwc_anal.result.anx',
-              'liwc_anal.result.anger',
-              'liwc_anal.result.sad',
-              'liwc_anal.result.i',
-              'liwc_anal.result.we',
-              'liwc_anal.result.negate',
-              'liwc_anal.result.swear',
-              'liwc_anal.result.social',
-              'liwc_anal.result.family',
-              'liwc_anal.result.friend',
-              'liwc_anal.result.affect',
+              #   'liwc_anal.result.posemo',
+              # 'liwc_anal.result.negemo',
+              # 'liwc_anal.result.ingest',
+              # 'liwc_anal.result.bio',
+              # 'liwc_anal.result.body',
+              # 'liwc_anal.result.health',
+              # 'liwc_anal.result.death'
+              # 'liwc_anal.result.anx',
+              # 'liwc_anal.result.anger',
+              # 'liwc_anal.result.sad',
+              # 'liwc_anal.result.i',
+              # 'liwc_anal.result.we',
+              # 'liwc_anal.result.negate',
+              # 'liwc_anal.result.swear',
+              # 'liwc_anal.result.social',
+              # 'liwc_anal.result.family',
+              # 'liwc_anal.result.friend',
+              # 'liwc_anal.result.affect',
             'senti.result.whole.posm',
             # 'senti.result.whole.posstd',
             'senti.result.whole.negm',
@@ -193,6 +194,11 @@ def read_user_time_iv(filename):
     for tag, dbname, comname, dbname2, comname2, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
+
+        mean_sent = iot.get_values_one_field(dbname, comname, 'senti.result.whole.scalem')
+        mean_sent = np.array(mean_sent)
+        mean_sent = np.mean(mean_sent[mean_sent<50])
+
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all-active.graphml')
         gt.summary(network1)
         network1_gc = gt.giant_component(network1)
@@ -254,6 +260,7 @@ def read_user_time_iv(filename):
 
                 values = iot.get_fields_one_doc(user, fields)
                 values.append(values[-1] - values[-2])
+                values.append(np.square(values[2] - mean_sent))
                 level = user['level']
 
                 # set users liwc changes
@@ -304,6 +311,7 @@ def read_user_time_iv(filename):
                                 if True:
                                     fatt = iot.get_fields_one_doc(fu, fields)
                                     fatt.append(fatt[-1] - fatt[-2])
+                                    fatt.append(np.square(fatt[2] - mean_sent))
                                     # factive = [0]
                                     # if fu2:
                                     #     f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
@@ -338,12 +346,12 @@ def read_user_time_iv(filename):
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
                                      'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
                                      'u_timeline_count'] +
-                                    ['u_'+field for field in trimed_fields] + ['u_emotion_change'] +
+                                    ['u_'+field for field in trimed_fields] + ['u_emotion_change', 'u_emotion_dis'] +
                                     # ['u_prior_'+field for field in trimed_fields] +
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
-                                    ['f_'+tf for tf in trimed_fields] + ['f_emotion_change'] +
+                                    ['f_'+tf for tf in trimed_fields] + ['f_emotion_change', 'f_emotion_dis'] +
                                     ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'])
     df.to_csv(filename)
 
@@ -590,7 +598,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    read_user_time_iv('user-durations-iv-following-senti-correlations.csv')
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
@@ -608,3 +616,18 @@ if __name__ == '__main__':
 
 
     # sentiment_bmi('fed', 'com')
+
+    mean_sent = iot.get_values_one_field('fed', 'com', 'senti.result.whole.scalem')
+    mean_sent = np.array(mean_sent)
+    mean_sent = np.mean(mean_sent[mean_sent<50])
+    print mean_sent
+
+    mean_sent = iot.get_values_one_field('random', 'scom', 'senti.result.whole.scalem')
+    mean_sent = np.array(mean_sent)
+    mean_sent = np.mean(mean_sent[mean_sent<50])
+    print mean_sent
+
+    mean_sent = iot.get_values_one_field('younger', 'scom', 'senti.result.whole.scalem')
+    mean_sent = np.array(mean_sent)
+    mean_sent = np.mean(mean_sent[mean_sent<50])
+    print mean_sent

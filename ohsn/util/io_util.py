@@ -107,7 +107,7 @@ def get_values_one_field(dbname, colname, fieldname, filt={}):
             for level in levels[1:]:
                 t = t.get(level)
                 if t is None:
-                    t = 0.0
+                    t = 100
                     break
 
             values.append(t)
