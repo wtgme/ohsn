@@ -42,6 +42,7 @@ ugrex = re.compile(r'(https?://[^\s]+)')  # for url
 def net_attr(filename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
     '''network statistics'''
     user_net = gt.Graph.Read_GraphML(filename)
+
     cluster1 = user_net.subgraph(user_net.vs(cluster=0))
     cluster2 = user_net.subgraph(user_net.vs(cluster=1))
     gt.summary(user_net)
@@ -1690,7 +1691,7 @@ def data_validataion(netfilename='data/communication-only-fed-filter-hashtag-clu
 
 
 if __name__ == '__main__':
-    # net_attr()
+    net_attr()
     # regression()
     # assortative_test()
     # interaction_ratio()
@@ -1699,7 +1700,7 @@ if __name__ == '__main__':
     # compare_liwc()
     # sentiment_quanti()
     # prelevence()
-    analysis_sentiments('data/all-tweet.txt')
+    # analysis_sentiments('data/all-tweet.txt')
     # compare_in_out_degree()
     # compare_in_out_degree_allconnection()
     # split_in_out_degree()
