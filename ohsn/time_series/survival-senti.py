@@ -598,7 +598,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
@@ -617,17 +617,17 @@ if __name__ == '__main__':
 
     # sentiment_bmi('fed', 'com')
 
-    mean_sent = iot.get_values_one_field('fed', 'com', 'senti.result.whole.scalem')
-    mean_sent = np.array(mean_sent)
-    mean_sent = np.mean(mean_sent[mean_sent<50])
-    print mean_sent
-
-    mean_sent = iot.get_values_one_field('random', 'scom', 'senti.result.whole.scalem')
-    mean_sent = np.array(mean_sent)
-    mean_sent = np.mean(mean_sent[mean_sent<50])
-    print mean_sent
-
-    mean_sent = iot.get_values_one_field('younger', 'scom', 'senti.result.whole.scalem')
-    mean_sent = np.array(mean_sent)
-    mean_sent = np.mean(mean_sent[mean_sent<50])
-    print mean_sent
+    # mean_sent = iot.get_values_one_field('fed', 'com', 'senti.result.whole.scalem')
+    # mean_sent = np.array(mean_sent)
+    # mean_sent = np.mean(mean_sent[mean_sent<50])
+    # print mean_sent
+    #
+    # mean_sent = iot.get_values_one_field('random', 'scom', 'senti.result.whole.scalem')
+    # mean_sent = np.array(mean_sent)
+    # mean_sent = np.mean(mean_sent[mean_sent<50])
+    # print mean_sent
+    #
+    # mean_sent = iot.get_values_one_field('younger', 'scom', 'senti.result.whole.scalem')
+    # mean_sent = np.array(mean_sent)
+    # mean_sent = np.mean(mean_sent[mean_sent<50])
+    # print mean_sent
