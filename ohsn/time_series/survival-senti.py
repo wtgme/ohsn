@@ -19,6 +19,7 @@ from ohsn.util import db_util as dbt
 from datetime import datetime
 import numpy as np
 import pandas as pd
+import pickle
 import ohsn.util.io_util as iot
 from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
@@ -144,33 +145,34 @@ def read_user_time_iv(filename):
     # fields = iot.read_fields()
 
     fields = [
-              #   'liwc_anal.result.posemo',
-              # 'liwc_anal.result.negemo',
-              # 'liwc_anal.result.ingest',
-              # 'liwc_anal.result.bio',
-              # 'liwc_anal.result.body',
-              # 'liwc_anal.result.health',
-              # 'liwc_anal.result.death'
-              # 'liwc_anal.result.anx',
-              # 'liwc_anal.result.anger',
-              # 'liwc_anal.result.sad',
-              # 'liwc_anal.result.i',
-              # 'liwc_anal.result.we',
-              # 'liwc_anal.result.negate',
-              # 'liwc_anal.result.swear',
-              # 'liwc_anal.result.social',
-              # 'liwc_anal.result.family',
-              # 'liwc_anal.result.friend',
-              # 'liwc_anal.result.affect',
-            'senti.result.whole.posm',
-            # 'senti.result.whole.posstd',
-            'senti.result.whole.negm',
-            # 'senti.result.whole.negstd',
-            'senti.result.whole.scalem',
-            # 'senti.result.whole.scalestd',
-            'senti.result.whole.N',
-            'senti.result.prior.scalem',
-            'senti.result.post.scalem'
+            #   #   'liwc_anal.result.posemo',
+            #   # 'liwc_anal.result.negemo',
+            #   # 'liwc_anal.result.ingest',
+            #   # 'liwc_anal.result.bio',
+            #   # 'liwc_anal.result.body',
+            #   # 'liwc_anal.result.health',
+            #   # 'liwc_anal.result.death'
+            #   # 'liwc_anal.result.anx',
+            #   # 'liwc_anal.result.anger',
+            #   # 'liwc_anal.result.sad',
+            #   # 'liwc_anal.result.i',
+            #   # 'liwc_anal.result.we',
+            #   # 'liwc_anal.result.negate',
+            #   # 'liwc_anal.result.swear',
+            #   # 'liwc_anal.result.social',
+            #   # 'liwc_anal.result.family',
+            #   # 'liwc_anal.result.friend',
+            #   # 'liwc_anal.result.affect',
+            # 'senti.result.whole.posm',
+            # # 'senti.result.whole.posstd',
+            # 'senti.result.whole.negm',
+            # # 'senti.result.whole.negstd',
+            # 'senti.result.whole.scalem',
+            # # 'senti.result.whole.scalestd',
+            # 'senti.result.whole.N',
+            # 'senti.result.prior.scalem',
+            # 'senti.result.post.scalem'
+            'senti'
               ]
     prof_names = ['friends_count', 'statuses_count', 'followers_count',
         'friends_day', 'statuses_day', 'followers_day', 'days']
@@ -195,9 +197,8 @@ def read_user_time_iv(filename):
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
 
-        mean_sent = iot.get_values_one_field(dbname, comname, 'senti.result.whole.scalem')
-        mean_sent = np.array(mean_sent)
-        mean_sent = np.mean(mean_sent[mean_sent<50])
+        sentims = (pickle.load(open(tag.lower() + '.sentis', 'r')))
+        print len(sentims)
 
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all-active.graphml')
         gt.summary(network1)
@@ -252,31 +253,15 @@ def read_user_time_iv(filename):
 
 
                 created_at = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                # life_time = diff_day(last_post, created_at)
-                # average_time = float(life_time)/max(1, user['statuses_count'])
 
                 longest_tweet_intervalb = user['longest_tweet_interval']
                 u_timeline_count = user['timeline_count']
 
-                values = iot.get_fields_one_doc(user, fields)
-                values.append(values[-1] - values[-2])
-                values.append(np.square(values[2] - mean_sent))
+                # values = iot.get_fields_one_doc(user, fields)
+                values = [sentims[uid]]
                 level = user['level']
 
-                # set users liwc changes
-                # uvs = liwc_df[liwc_df.user_id == str(uid)].loc[:, trimed_fields]
-                # # print uvs
-                # if len(uvs) == 2:
-                #     changes, priors, posts = [], [], []
-                #     for name in trimed_fields:
-                #         old = uvs.iloc[0][name]
-                #         new = uvs.iloc[1][name]
-                #         priors.append(old)
-                #         posts.append(new)
-                #         changes.append(new - old)
-                #     liwc_changes = priors + posts + changes
-                # else:
-                #     liwc_changes = [None]*(len(trimed_fields)*3)
+
                 u_centrality = eigen_map.get(user['id'], 0)
                 u_pagerank = pagerank_map.get(user['id'], 0)
                 u_indegree = indegree_map.get(user['id'], 0)
@@ -300,38 +285,29 @@ def read_user_time_iv(filename):
                         print len(friend_ids)
                         fatts = []
                         alive = 0
+                        ffatts = []
+
                         for fid in friend_ids:
-                            fu = com.find_one({'id': fid, 'liwc_anal.result.WC':{'$exists':True},
-                                               'senti.result.whole.N': {'$gt': 10}})
-                            fu2 = com2.find_one({'id': fid})
+                            if fid in sentims:
+                                fatt  = [sentims[fid]]
+                                fatt.extend([eigen_map.get(fid, 0), pagerank_map.get(fid, 0),
+                                             indegree_map.get(fid, 0), outdegree_map.get(fid, 0)])
+                                fatts.append(fatt)
 
-                            if fu:
-                                # f1_time = fu['_id'].generation_time.replace(tzinfo=None)
-                                # if eigen_map.get(fu['id'], 0) > 0.0001:
-                                if True:
-                                    fatt = iot.get_fields_one_doc(fu, fields)
-                                    fatt.append(fatt[-1] - fatt[-2])
-                                    fatt.append(np.square(fatt[2] - mean_sent))
-                                    # factive = [0]
-                                    # if fu2:
-                                    #     f2_time = fu2['_id'].generation_time.replace(tzinfo=None)
-                                    #     if 'status' in fu2:
-                                    #         fsecond_last_post = datetime.strptime(fu2['status']['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                                    #         if f1_time < fsecond_last_post < f2_time:
-                                    #             alive += 1
-                                    #             factive = friends_active_days(fu2, f1_time)
-
-                                    # fatt.extend(factive)
-                                    fatt.extend([eigen_map.get(fu['id'], 0), pagerank_map.get(fu['id'], 0),
-                                                 indegree_map.get(fu['id'], 0), outdegree_map.get(fu['id'], 0)])
-                                    fatts.append(fatt)
-
-                        # thredhold = user['friends_count']*0.5
+                                friendfriends = set(network1.successors(str(fid)))
+                                if len(friendfriends) > 0:
+                                    friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
+                                    for ffid in friendfriends_ids:
+                                        if ffid in sentims:
+                                            ffatt = [sentims[ffid]]
+                                            ffatts.append(ffatt)
 
 
-                        if len(fatts) > 0:
+                        if (len(fatts) > 0) and (len(ffatts)>0):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
+                            ffatts = np.array(ffatts)
+                            ffmatts = np.mean(ffatts, axis=0)
                             values.extend(fmatts)
                             # paliv = float(alive)/len(fatts)
                             paliv = frialive.get(uid)
@@ -340,19 +316,19 @@ def read_user_time_iv(filename):
                                          first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
-                                        values + [len(fatts), paliv, fdays])
+                                        values + [len(fatts), paliv, fdays] + ffmatts.tolist())
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
                                      'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
                                      'u_timeline_count'] +
-                                    ['u_'+field for field in trimed_fields] + ['u_emotion_change', 'u_emotion_dis'] +
+                                    ['u_'+field for field in trimed_fields]  +
                                     # ['u_prior_'+field for field in trimed_fields] +
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
-                                    ['f_'+tf for tf in trimed_fields] + ['f_emotion_change', 'f_emotion_dis'] +
-                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'])
+                                    ['f_'+tf for tf in trimed_fields]  +
+                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'] + ['ff_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
 
@@ -616,18 +592,41 @@ if __name__ == '__main__':
 
 
     # sentiment_bmi('fed', 'com')
+    # com = dbt.db_connect_col('fed', 'com')
+    # user_sentiment = {}
+    # for u in com.find({}):
+    #     uid, senti = iot.get_fields_one_doc(u, ['id', 'senti.result.whole.scalem'])
+    #     if senti < 100:
+    #         user_sentiment[uid] = senti
+    # pickle.dump(user_sentiment, open('ed.sentis', 'w'))
+
+    # com = dbt.db_connect_col('random', 'scom')
+    # user_sentiment = {}
+    # for u in com.find({}):
+    #     uid, senti = iot.get_fields_one_doc(u, ['id', 'senti.result.whole.scalem'])
+    #     if senti < 100:
+    #         user_sentiment[uid] = senti
+    # pickle.dump(user_sentiment, open('rd.sentis', 'w'))
+
+    # com = dbt.db_connect_col('younger', 'scom')
+    # user_sentiment = {}
+    # for u in com.find({}):
+    #     uid, senti = iot.get_fields_one_doc(u, ['id', 'senti.result.whole.scalem'])
+    #     if senti < 100:
+    #         user_sentiment[uid] = senti
+    # pickle.dump(user_sentiment, open('yg.sentis', 'w'))
 
     # mean_sent = iot.get_values_one_field('fed', 'com', 'senti.result.whole.scalem')
     # mean_sent = np.array(mean_sent)
-    # mean_sent = np.mean(mean_sent[mean_sent<50])
-    # print mean_sent
-    #
+    # mean_sent = (mean_sent[mean_sent<50])
+    # pickle.dump(mean_sent, open('ed.sentis', 'w'))
+
     # mean_sent = iot.get_values_one_field('random', 'scom', 'senti.result.whole.scalem')
     # mean_sent = np.array(mean_sent)
-    # mean_sent = np.mean(mean_sent[mean_sent<50])
-    # print mean_sent
-    #
+    # mean_sent = (mean_sent[mean_sent<50])
+    # pickle.dump(mean_sent, open('rd.sentis', 'w'))
+
     # mean_sent = iot.get_values_one_field('younger', 'scom', 'senti.result.whole.scalem')
     # mean_sent = np.array(mean_sent)
-    # mean_sent = np.mean(mean_sent[mean_sent<50])
-    # print mean_sent
+    # mean_sent = (mean_sent[mean_sent<50])
+    # pickle.dump(mean_sent, open('yg.sentis', 'w'))
