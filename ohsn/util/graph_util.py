@@ -541,8 +541,8 @@ def out_edgelist(dbname, netname, filename, ego, alter, filter={}):
 def net_stat(g):
     node_n = g.vcount()
     edge_m = g.ecount()
-    # degree_mean = np.mean(g.indegree())
-    # degree_std = np.std(g.indegree())
+    degree_mean = np.mean(g.indegree())
+    degree_std = np.std(g.indegree())
     density = g.density()
     avg_path = g.average_path_length(directed=True, unconn=True)
     # avg_path = 0
@@ -554,8 +554,8 @@ def net_stat(g):
     # cluster_co_avg = g.transitivity_avglocal_undirected()
     recip = g.reciprocity()
     assort = g.assortativity_degree(directed=True)
-    print '#Node, #Edge, #Density, #Path, #Comp, %GCR, Cluster, Recip, Assort'
-    print '%d, %d, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
+    print '#Node, #Edge, <k>, std()k, #Density, #Path, #Comp, %GCR, Cluster, Recip, Assort'
+    print '%d, %d, %.3f, %.3f, %.3f, %.3f, %d, %.3f, %.3f, %.3f, %.3f ' % (node_n, edge_m, degree_mean, degree_std, density, avg_path, comp_count, giant_comp_r, cluster_co_global, recip, assort)
 
 
 def most_pagerank(g, n=10, weight=None):
