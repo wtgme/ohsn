@@ -162,15 +162,15 @@ def networks(dbname, bnet='all_pro_bnet'):
     #     g.write_graphml('pro_mention'+str(tag)+'.graphml')
 
     gall = gt.Graph.Read_GraphML('pro_mentionall'+'.graphml')
-    # core = gall.k_core(24)
-    # core_name = core.vs['name']
+    core = gall.k_core(4)
+    core_name = core.vs['name']
 
-    core_name = gall.vs['name']
+    # core_name = gall.vs['name']
     # for i, tag in enumerate(topics):
     #     g = gt.Graph.Read_GraphML('pro_mention'+str(tag)+'.graphml')
     #     core_name = set(core_name).intersection(set(g.vs['name']))
-    np.random.shuffle(core_name)
-    core_name = list(core_name)[:2000]
+    # np.random.shuffle(core_name)
+    # core_name = list(core_name)[:2000]
     print '------', len(core_name)
     gs = []
     for i, tag in enumerate(topics):
@@ -183,7 +183,7 @@ def networks(dbname, bnet='all_pro_bnet'):
     uidlist = {}
     name_coms = []
     for i, g in enumerate(gs):
-        g = g.as_undirected(mode="collapse", combine_edges='sum')
+        # g = g.as_undirected(mode="collapse", combine_edges='sum')
         # g = g.as_undirected()
         # com = g.community_infomap(edge_weights='weight')
         # com = udirg.community_multilevel(weights='weight', return_levels=False)
@@ -622,11 +622,11 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    # networks('fed', 'pro_mention_bnet')
+    networks('fed', 'pro_mention_bnet')
 
     # user_profiles('fed', 'com')
 
     # out_network_temp()
-    calculate_picture_ratios('fed', 'pro_mention_timeline', 'pro_mention_bnet')
+    # calculate_picture_ratios('fed', 'pro_mention_timeline', 'pro_mention_bnet')
 
 

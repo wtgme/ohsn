@@ -193,7 +193,7 @@ def read_user_time_iv(filename):
     ]
 
     data = []
-    for tag, dbname, comname, dbname2, comname2, filter_values in groups:
+    for tag, dbname, comname, dbname2, comname2, filter_values in groups[:1]:
         com = dbt.db_connect_col(dbname, comname)
         com2 = dbt.db_connect_col(dbname2, comname2)
 
@@ -203,22 +203,35 @@ def read_user_time_iv(filename):
         network1 = gt.Graph.Read_GraphML(tag.lower()+'-net-all-active.graphml')
         gt.summary(network1)
         network1_gc = gt.giant_component(network1)
+
+        # network1_gc.to_undirected()
         gt.summary(network1_gc)
+
         '''Centralities Calculation'''
         eigen = network1_gc.eigenvector_centrality()
-        pageranks = network1_gc.pagerank()
-        indegree = network1_gc.authority_score()
-        outdegree = network1_gc.hub_score()
+        # pageranks = network1_gc.pagerank()
+        # indegree = network1_gc.authority_score()
+        # outdegree = network1_gc.hub_score()
+
+        indegree = network1_gc.coreness(mode='IN')
+        outdegree = network1_gc.coreness(mode='ALL')
 
         nodes = [int(v['name']) for v in network1_gc.vs]
         eigen_map = dict(zip(nodes, eigen))
-        pagerank_map = dict(zip(nodes, pageranks))
+        # pagerank_map = dict(zip(nodes, pageranks))
+
+        # eigen_map = pickle.load(open('data/ed_user_retweets.pick', 'r'))
+        pagerank_map = pickle.load(open('data/ed_user_incloseness.pick', 'r'))
+
         indegree_map = dict(zip(nodes, indegree))
         outdegree_map = dict(zip(nodes, outdegree))
 
         frialive, friduration = {}, {}
         for v in network1.vs:
             friends = set(network1.successors(str(v['name'])))
+            followers = set(network1.predecessors(str(v['name'])))
+            friends = friends - followers
+
             if len(friends) > 0:
                 falive, fduration = [], []
                 for vi in friends:
@@ -279,6 +292,8 @@ def read_user_time_iv(filename):
                 if exist:
                     # friends = set(network1.neighbors(str(uid))) # id or name
                     friends = set(network1.successors(str(uid)))
+                    followers = set(network1.predecessors(str(uid)))
+                    friends = friends - followers
                     if len(friends) > 0:
                         friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
                         print uid in friend_ids
@@ -294,20 +309,24 @@ def read_user_time_iv(filename):
                                              indegree_map.get(fid, 0), outdegree_map.get(fid, 0)])
                                 fatts.append(fatt)
 
-                                friendfriends = set(network1.successors(str(fid)))
-                                if len(friendfriends) > 0:
-                                    friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
-                                    for ffid in friendfriends_ids:
-                                        if ffid in sentims:
-                                            ffatt = [sentims[ffid]]
-                                            ffatts.append(ffatt)
+                                #  friends distance
+                                # friendfriends = set(network1.successors(str(fid)))
+                                # # followerfollowers = set(network1.predecessors(str(fid)))
+                                # # friendfriends = friendfriends - followerfollowers
+                                # if len(friendfriends) > 0:
+                                #     friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
+                                #     for ffid in friendfriends_ids:
+                                #         if ffid in sentims:
+                                #             ffatt = [sentims[ffid]]
+                                #             ffatts.append(ffatt)
 
 
-                        if (len(fatts) > 0) and (len(ffatts)>0):
+                        if (len(fatts) > 0):
+                         # and (len(ffatts)>0):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
-                            ffatts = np.array(ffatts)
-                            ffmatts = np.mean(ffatts, axis=0)
+                            # ffatts = np.array(ffatts)
+                            # ffmatts = np.mean(ffatts, axis=0)
                             values.extend(fmatts)
                             # paliv = float(alive)/len(fatts)
                             paliv = frialive.get(uid)
@@ -316,11 +335,12 @@ def read_user_time_iv(filename):
                                          first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
-                                        values + [len(fatts), paliv, fdays] + ffmatts.tolist())
+                                        values + [len(fatts), paliv, fdays] )
+                                        # + ffmatts.tolist())
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
-                                     'group', 'u_eigenvector', 'u_pagerank', 'u_authority', 'u_hub',
+                                     'group', 'u_eigenvector', 'u_close', 'u_incore', 'u_outcore',
                                      'u_timeline_count'] +
                                     ['u_'+field for field in trimed_fields]  +
                                     # ['u_prior_'+field for field in trimed_fields] +
@@ -328,7 +348,8 @@ def read_user_time_iv(filename):
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields]  +
-                                    ['f_eigenvector', 'f_pagerank', 'f_authority', 'f_hub', 'f_num', 'f_palive', 'f_days'] + ['ff_'+field for field in trimed_fields] )
+                                    ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore', 'f_num', 'f_palive', 'f_days'] )
+                                    # + ['ff_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
 
@@ -510,6 +531,7 @@ def tag_similarity_group_dropout_emotion():
     # computer similarity of tags between whole group and
     from scipy import spatial
     # from sklearn.metrics.pairwise import cosine_similarity
+    print 'start---------------------------------------------'
 
     ds = []
     for i in ['data/tfidfnondropout-tag.graphml', 'data/tfidfdropout-tag.graphml']:
@@ -524,8 +546,8 @@ def tag_similarity_group_dropout_emotion():
         ds.append(gvoc)
 
     gs = []
-    for i in xrange(2):
-        g = gt.Graph.Read_GraphML('data/' + str(i) + 'dropout-tag-centrality2-rank-tfidf.graphml')
+    for i in xrange(3):
+        g = gt.Graph.Read_GraphML('data/' + str(i) + 'dropout-tag-emotion3-rank-tfidf.graphml')
         nodes = g.vs.select(weight_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
@@ -578,8 +600,17 @@ if __name__ == '__main__':
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
-    network1 = gt.Graph.Read_GraphML('ed-net-all.graphml')
+
+
+    network1 = gt.Graph.Read_GraphML('drop-coreed-net.graphml')
+    network2 = gt.Graph.Read_GraphML('ed-net-all.graphml')
+    indegree = network2.coreness(mode='IN')
+    indegree_map = dict(zip(network2.vs['name'], indegree))
+    network1.vs['core'] = 0
+    for v in network1.vs:
+        v['core'] = indegree_map[v['name']]
     gt.net_stat(network1)
+    network1.write_graphml('coreed-net-coreness.graphml')
     # gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)

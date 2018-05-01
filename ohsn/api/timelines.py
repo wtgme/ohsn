@@ -39,7 +39,7 @@ timeline_app_id, timeline_twitter = twutil.twitter_auth()
 timeline_remain, timeline_lock = 0, 1
 
 
-def store_tweets(tweets_to_save, collection):
+def store_tweets(tweets_to_save, collection, tweetTrim=False):
     """
     Simple wrapper to facilitate persisting tweets. Right now, the only
     pre-processing accomplished is coercing date values to datetime.
@@ -47,6 +47,11 @@ def store_tweets(tweets_to_save, collection):
     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Size of Stored Timelines: ' + str(len(tweets_to_save))
     for tweet in tweets_to_save:
         tweet['created_at'] = datetime.datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        if tweetTrim:
+            for k in ['id_str', 'truncated', 'in_reply_to_status_id_str', 'in_reply_to_user_id_str', 'in_reply_to_screen_name',
+            'quoted_status_id_str', 'extended_entities', 'filter_level', 'matching_rules', 'current_user_retweet', 'scopes',
+            'withheld_copyright', 'lang',' withheld_in_countries', 'withheld_scope','place', 'contributors', 'is_quote_status', 'source', 'geo']:
+                tweet.pop(k, 0)
         try:
             collection.insert(tweet)
         except pymongo.errors.DuplicateKeyError:
@@ -140,8 +145,9 @@ def get_timeline(params):
                 continue
 
 
-def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=True, max_id=None):
+def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=True, max_id=None, request_times=10000000, tweetTrim=False):
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
+    request_time = 0
     try:
         # crawl the recent timeline to the last stored timeline
         last_tweet = timeline_collection.find({'user.id':user_id}, {'id':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
@@ -154,37 +160,40 @@ def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=T
         pass
 
     #  loop to get the timelines of user, and update the reset and remaining
-    while True:
-        # newest = None
-        params = {'count': 200, 'trim_user': trim_user, 'include_rts': True, 'id': user_id, 'since_id': latest, 'max_id': max_id}
-        try:
+    # while True:
+    # newest = None
+    params = {'count': 200, 'trim_user': trim_user, 'include_rts': True, 'id': user_id, 'since_id': latest, 'max_id': max_id}
+    try:
+        timelines = get_timeline(params)
+        request_time += 1
+    except TwythonAuthError as detail:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users', str(detail)
+        user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+                               upsert=False)
+        return False
+    except TwythonError as detail:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'timeline TwythonError', str(detail)
+        user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+                               upsert=False)
+        return False
+    if timelines:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
+        store_tweets(timelines, timeline_collection, tweetTrim=tweetTrim)
+        while timelines and (request_time < request_times):
+            params['max_id'] = timelines[-1]['id']-1
             timelines = get_timeline(params)
-        except TwythonAuthError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Fail to access private users', str(detail)
-            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
-                                   upsert=False)
-            return False
-        except TwythonError as detail:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'timeline TwythonError', str(detail)
-            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
-                                   upsert=False)
-            return False
-        if timelines:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to crawl all timelines of this user ' + str(user_id)
-            while timelines:
-                store_tweets(timelines, timeline_collection)
-                params['max_id'] = timelines[-1]['id']-1
-                timelines = get_timeline(params)
-            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
-                                   upsert=False)
-            return True
-        else:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + str(user_id)
-            user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
-                                   upsert=False)
-            return False
+            request_time += 1
+            store_tweets(timelines, timeline_collection, tweetTrim=tweetTrim)
+        user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+                               upsert=False)
+        return True
+    else:
+        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Cannot get timeline of user ' + str(user_id)
+        user_collection.update_one({'id': user_id}, {'$set':{"scrape_timeline_at": datetime.datetime.now()}},
+                               upsert=False)
+        return False
 
-def retrieve_timeline(user_collection, timeline_collection, max_id = None):
+def retrieve_timeline(user_collection, timeline_collection, max_id = None, request_times=10000000, tweetTrim=False):
     # level: the end level
     while True:
         count = user_collection.find_one({'timeline_scraped_times': {'$exists': False},
@@ -197,16 +206,16 @@ def retrieve_timeline(user_collection, timeline_collection, max_id = None):
                                               'screen_name': {'$exists': True}},
                                      {'id': 1}).limit(200):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
-                old_count = timeline_collection.count({'user.id': user['id']})
+                # old_count = timeline_collection.count({'user.id': user['id']})
                 get_user_timeline(user_id=user['id'], user_collection=user_collection, timeline_collection=timeline_collection,
-                                  trim_user=True, max_id=max_id)
+                                  trim_user=True, max_id=max_id, request_times=request_times, tweetTrim=tweetTrim)
                 # count = user_collection.count({"timeline_count": {'$gt': 3000}})
                 # print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'have desired users number: ' + str(count)
 
                 # update timeline_scrapted_times and timeline_count fields
                 count_scraped = timeline_collection.count({'user.id': user['id']})
                 timeline_scraped_times = user.get('timeline_scraped_times', 0) + 1
-                user_collection.update_one({'id': user['id']}, {'$set':{"timeline_count": (count_scraped-old_count),
+                user_collection.update_one({'id': user['id']}, {'$set':{"timeline_count": (count_scraped),
                                                              'timeline_scraped_times': timeline_scraped_times}},
                                    upsert=False)
 
