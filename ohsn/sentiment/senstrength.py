@@ -54,8 +54,9 @@ def process_chunks_db(dbname, timename, comname, n=100):
     com = dbt.db_connect_col(dbname, comname)
     MYDIR = os.path.dirname(__file__)
 
-    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True},
-                                                                                        'senti': {'$exists': False}})
+    # ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'liwc_anal.result.WC': {'$exists': True},
+    #                                                                                     'senti': {'$exists': False}})
+    ids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={"timeline_count": {'$gt': 10}, 'senti': {'$exists': False}})
     print 'Total users:', len(ids)
     for idlist in list(chunks(ids, n)):
     # for idlist in [[557442390, 2155187931, 2881928495]]: #test
@@ -322,5 +323,6 @@ if __name__ == '__main__':
     # process_chunks_db(dbname='fed', timename='timeline', comname='com')
     # process_chunks_db(dbname='younger', timename='timeline', comname='scom')
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')
-    process_chunks_db(dbname='fed', timename='pro_mention_miss_timeline', comname='pro_mention_miss_com')
+    # process_chunks_db(dbname='fed', timename='pro_mention_miss_timeline', comname='pro_mention_miss_com')
     # out_sentiment_times('fed', 'com')
+    process_chunks_db(dbname='www', timename='timeline', comname='com')

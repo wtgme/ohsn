@@ -41,7 +41,7 @@ def profile(dbname, comname):
 
 def timeline(dbname, comname, timename):
     # return users' timelines from a time to a time
-    max_id = '4451234362' # 2009-09-28T20:03:05.000+0000
+    max_id = '4451234362' # Mon Sep 28 20:03:05 +0000 2009
     com = dbt.db_connect_col(dbname, comname)
     timeline = dbt.db_connect_col(dbname, timename)
 
@@ -56,5 +56,5 @@ def timeline(dbname, comname, timename):
 
 
 if __name__ == '__main__':
-    # profile('www', 'com')
-    timeline('www', 'com_test', 'timeline')
+    profile('www', 'com')
+    # timeline('www', 'com', 'timeline')

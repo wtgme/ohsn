@@ -182,7 +182,7 @@ def read_user_time_iv(filename):
     groups = [
          ('ED', 'fed', 'com', 'fed', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
-                                                        'level': 1,
+                                                        # 'level': 1,
                                                         'senti.result.whole.N': {'$gt': 10}}),
          ('RD', 'random', 'scom', 'random', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
@@ -302,6 +302,7 @@ def read_user_time_iv(filename):
                         alive = 0
                         ffatts = []
 
+                        u_f_dis = 0
                         for fid in friend_ids:
                             if fid in sentims:
                                 fatt  = [sentims[fid]]
@@ -309,24 +310,23 @@ def read_user_time_iv(filename):
                                              indegree_map.get(fid, 0), outdegree_map.get(fid, 0)])
                                 fatts.append(fatt)
 
-                                #  friends distance
-                                # friendfriends = set(network1.successors(str(fid)))
-                                # # followerfollowers = set(network1.predecessors(str(fid)))
-                                # # friendfriends = friendfriends - followerfollowers
-                                # if len(friendfriends) > 0:
-                                #     friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
-                                #     for ffid in friendfriends_ids:
-                                #         if ffid in sentims:
-                                #             ffatt = [sentims[ffid]]
-                                #             ffatts.append(ffatt)
+                                 # friends distance
+                                friendfriends = set(network1.successors(str(fid)))
+                                followerfollowers = set(network1.predecessors(str(fid)))
+                                friendfriends = friendfriends - followerfollowers
+                                if len(friendfriends) > 0:
+                                    friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
+                                    for ffid in friendfriends_ids:
+                                        if ffid in sentims:
+                                            ffatt = [sentims[ffid]]
+                                            ffatts.append(ffatt)
 
 
-                        if (len(fatts) > 0):
-                         # and (len(ffatts)>0):
+                        if (len(fatts) > 0) and (len(ffatts)>0):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
-                            # ffatts = np.array(ffatts)
-                            # ffmatts = np.mean(ffatts, axis=0)
+                            ffatts = np.array(ffatts)
+                            ffmatts = np.mean(ffatts, axis=0)
                             values.extend(fmatts)
                             # paliv = float(alive)/len(fatts)
                             paliv = frialive.get(uid)
@@ -335,8 +335,8 @@ def read_user_time_iv(filename):
                                          first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
-                                        values + [len(fatts), paliv, fdays] )
-                                        # + ffmatts.tolist())
+                                        values + [len(fatts), paliv, fdays]
+                                        + ffmatts.tolist())
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
                                      'first_statuses_count', 'second_statuses_count','longest_time_interval',
@@ -348,8 +348,8 @@ def read_user_time_iv(filename):
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields]  +
-                                    ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore', 'f_num', 'f_palive', 'f_days'] )
-                                    # + ['ff_'+field for field in trimed_fields] )
+                                    ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore', 'f_num', 'f_palive', 'f_days']
+                                    + ['ff_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
 
@@ -596,21 +596,21 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    # read_user_time_iv('user-durations-iv-following-senti.csv')
+    read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
 
 
-    network1 = gt.Graph.Read_GraphML('drop-coreed-net.graphml')
-    network2 = gt.Graph.Read_GraphML('ed-net-all.graphml')
-    indegree = network2.coreness(mode='IN')
-    indegree_map = dict(zip(network2.vs['name'], indegree))
-    network1.vs['core'] = 0
-    for v in network1.vs:
-        v['core'] = indegree_map[v['name']]
-    gt.net_stat(network1)
-    network1.write_graphml('coreed-net-coreness.graphml')
+    # network1 = gt.Graph.Read_GraphML('drop-coreed-net.graphml')
+    # network2 = gt.Graph.Read_GraphML('ed-net-all.graphml')
+    # indegree = network2.coreness(mode='IN')
+    # indegree_map = dict(zip(network2.vs['name'], indegree))
+    # network1.vs['core'] = 0
+    # for v in network1.vs:
+    #     v['core'] = indegree_map[v['name']]
+    # gt.net_stat(network1)
+    # network1.write_graphml('coreed-net-coreness.graphml')
     # gt.summary(network1)
     # network1_gc = gt.giant_component(network1)
     # gt.summary(network1_gc)
