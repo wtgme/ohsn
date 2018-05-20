@@ -598,6 +598,30 @@ def calculate_picture_ratios(dbname, timename, bnetname):
     print np.array(picture)/np.array(all_times)
 
 
+def read_new_account():
+    # how many users are new accounts
+    com = dbt.db_connect_col('fed', 'com')
+    misscom = dbt.db_connect_col('fed', 'pro_mention_miss_com')
+
+    newaccounts = set()
+    for db in [com, misscom]:
+        for user in db.find():
+            profile = user['description']
+            if 'new account' in profile.lower():
+                newaccounts.add(user['id'])
+    print len(newaccounts)
+
+    for i in [1,3,7,15,21]:
+        g = gt.Graph.Read_GraphML('pro_mention'+str(i) + '.graphml')
+        allc = len(g.vs)
+        c = 0
+        for v in g.vs['name']:
+            uid = int(v)
+            if uid in newaccounts:
+                c += 1
+        print i, allc, c, c*1.0/allc
+
+
 if __name__ == '__main__':
     # constrcut_data()
     # fed_all_tag_topic()
@@ -622,11 +646,11 @@ if __name__ == '__main__':
 
     # out_tid_uid('fed', 'pro_mention_timeline')
     # extract_network('fed', 'pro_mention_timeline', 'pro_mention_bnet', 'ED')
-    networks('fed', 'pro_mention_bnet')
+    # networks('fed', 'pro_mention_bnet')
 
     # user_profiles('fed', 'com')
 
     # out_network_temp()
     # calculate_picture_ratios('fed', 'pro_mention_timeline', 'pro_mention_bnet')
 
-
+    read_new_account()
