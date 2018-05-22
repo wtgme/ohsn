@@ -61,6 +61,7 @@ def process_tweet(tweets, Trim_rt=True):
 
 
 def process(poi, timelines, fieldname, level):
+    print 'Process LIWC'
     target = fieldname + '.mined'
     result = fieldname + '.result'
     # poi.update({},{'$set':{"liwc_anal.mined": False, "liwc_anal.result": None}}, multi=True)
@@ -76,11 +77,12 @@ def process(poi, timelines, fieldname, level):
             "timeline_count": {'$gt': 0},
             target: {'$exists': False},
             # 'level': {'$lte': level}
-        })
+            })
+        # print finded
         if finded is None:
             break
         # else:
-        #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t" + str(count) + " remaining"
+        #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "\t"+ " remaining"
 
         for user in poi.find({
             "timeline_count": {'$gt': 0},
@@ -129,7 +131,9 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('fed', 'pro_mention_miss_com', 'pro_mention_miss_timeline', 'liwc_anal')
+    process_db('www', ' newcom', 'timeline', 'liwc_anal')
+
+    # process_db('fed', 'pro_mention_miss_com', 'pro_mention_miss_timeline', 'liwc_anal')
     # process_db('TwitterProAna', 'users', 'timeline', 'liwc_anal')
     # process_db('depression', 'neg_com', 'neg_timeline', 'liwc_anal')
     # process_db('random', 'com', 'timeline', 'liwc_anal')

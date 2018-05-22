@@ -292,6 +292,7 @@ def read_user_time_iv(filename):
                 if exist:
                     # friends = set(network1.neighbors(str(uid))) # id or name
                     friends = set(network1.successors(str(uid)))
+                    allfollowees = friends
                     followers = set(network1.predecessors(str(uid)))
                     friends = friends - followers
                     if len(friends) > 0:
@@ -302,13 +303,18 @@ def read_user_time_iv(filename):
                         alive = 0
                         ffatts = []
 
-                        u_f_dis = 0
+
                         for fid in friend_ids:
                             if fid in sentims:
                                 fatt  = [sentims[fid]]
                                 fatt.extend([eigen_map.get(fid, 0), pagerank_map.get(fid, 0),
                                              indegree_map.get(fid, 0), outdegree_map.get(fid, 0)])
                                 fatts.append(fatt)
+
+                        # emotional distance
+                        u_f_dis = 0
+                        friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # return id
+                        for fid in friend_ids:
 
                                  # friends distance
                                 friendfriends = set(network1.successors(str(fid)))
