@@ -290,7 +290,7 @@ def read_user_time_iv(filename):
                 except ValueError:
                     exist = False
                 if exist:
-                    # friends = set(network1.neighbors(str(uid))) # id or name
+                    neighbors = set(network1.neighbors(str(uid))) # id or name
                     friends = set(network1.successors(str(uid)))
                     allfollowees = friends
                     followers = set(network1.predecessors(str(uid)))
@@ -300,40 +300,48 @@ def read_user_time_iv(filename):
                         print uid in friend_ids
                         print len(friend_ids)
                         fatts = []
+                        fatts_dis = []
                         alive = 0
                         ffatts = []
 
-
+                        # Single-way following as IV for ego's emotion
                         for fid in friend_ids:
                             if fid in sentims:
-                                fatt  = [sentims[fid]]
+                                fatt = [sentims[fid]]
                                 fatt.extend([eigen_map.get(fid, 0), pagerank_map.get(fid, 0),
                                              indegree_map.get(fid, 0), outdegree_map.get(fid, 0)])
                                 fatts.append(fatt)
 
                         # emotional distance
-                        u_f_dis = 0
-                        friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # return id
+                        friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # all followings for distance calculation
                         for fid in friend_ids:
+                            if fid in sentims:
+                                fatt_dis = [(sentims[uid] - sentims[fid])*(sentims[uid] - sentims[fid])]
+                                fatts_dis.append(fatt_dis)
 
-                                 # friends distance
-                                friendfriends = set(network1.successors(str(fid)))
-                                followerfollowers = set(network1.predecessors(str(fid)))
-                                friendfriends = friendfriends - followerfollowers
+                                 # friends' friends' distance
+                                friendfriends = set(network1.successors(str(fid))) # all followings' followings as IV for distance
+                                # followerfollowers = set(network1.predecessors(str(fid)))
+                                friendfriends = friendfriends - neighbors
                                 if len(friendfriends) > 0:
                                     friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
                                     for ffid in friendfriends_ids:
                                         if ffid in sentims:
-                                            ffatt = [sentims[ffid]]
+                                            ffatt = [(sentims[uid] - sentims[ffid])*(sentims[uid] - sentims[ffid])]
                                             ffatts.append(ffatt)
 
 
                         if (len(fatts) > 0) and (len(ffatts)>0):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
+
+                            fatts_dis = np.array(fatts_dis)
+                            fmatts_dis = np.mean(fatts_dis, axis=0)
+
                             ffatts = np.array(ffatts)
                             ffmatts = np.mean(ffatts, axis=0)
                             values.extend(fmatts)
+                            values.extend(fmatts_dis)
                             # paliv = float(alive)/len(fatts)
                             paliv = frialive.get(uid)
                             fdays = friduration.get(uid)
@@ -353,9 +361,10 @@ def read_user_time_iv(filename):
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
-                                    ['f_'+tf for tf in trimed_fields]  +
+                                    ['f_dist_'+tf for tf in trimed_fields]  +
+                                    ['f_distance_'+tf for tf in trimed_fields]  +
                                     ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore', 'f_num', 'f_palive', 'f_days']
-                                    + ['ff_'+field for field in trimed_fields] )
+                                    + ['ff_distance_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
 
