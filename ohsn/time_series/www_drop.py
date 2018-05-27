@@ -170,8 +170,8 @@ def read_user_time_iv(filename):
 
         frialive, friduration = {}, {}
         for v in network1.vs:
-            friends = set(network1.successors(str(v['name'])))
-            followers = set(network1.predecessors(str(v['name'])))
+            friends = set(network1.predecessors(str(v['name'])))
+            followers = set(network1.successors(str(v['name'])))
             friends = friends - followers
 
             if len(friends) > 0:
@@ -221,9 +221,10 @@ def read_user_time_iv(filename):
                 except ValueError:
                     exist = False
                 if exist:
-                    # friends = set(network1.neighbors(str(uid))) # id or name
-                    friends = set(network1.successors(str(uid)))
-                    followers = set(network1.predecessors(str(uid)))
+                    neighbors = set(network1.neighbors(str(uid))) # id or name
+                    friends = set(network1.predecessors(str(uid)))
+                    allfollowees = friends
+                    followers = set(network1.successors(str(uid)))
                     friends = friends - followers
                     if len(friends) > 0:
                         friend_ids = [int(network1.vs[vi]['name']) for vi in friends] # return id
@@ -231,6 +232,7 @@ def read_user_time_iv(filename):
                         print len(friend_ids)
                         fatts = []
                         alive = 0
+                        fatts_dis = []
                         ffatts = []
 
                         for fid in friend_ids:
@@ -241,24 +243,39 @@ def read_user_time_iv(filename):
                                              indegree_map.get(fid, 0)])
                                 fatts.append(fatt)
 
-                                 # friends distance
-                                friendfriends = set(network1.successors(str(fid)))
-                                followerfollowers = set(network1.predecessors(str(fid)))
-                                friendfriends = friendfriends - followerfollowers
+                        # emotional distance
+                        # friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # all followings for distance calculation
+                        for fid in friend_ids:
+                            if fid in sentims:
+                                fatt_dis = [sentims[fid]]
+                                # fatt_dis = [(sentims[uid] - sentims[fid])*(sentims[uid] - sentims[fid])]
+                                fatts_dis.append(fatt_dis)
+
+                                # friends' friends' distance
+                                friendfriends = set(network1.predecessors(str(fid))) # all followings' followings as IV for distance
+                                # followerfollowers = set(network1.predecessors(str(fid)))
+                                friendfriends = friendfriends - neighbors
                                 if len(friendfriends) > 0:
                                     friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
                                     for ffid in friendfriends_ids:
                                         if ffid in sentims:
                                             ffatt = [sentims[ffid]]
+                                            # ffatt = [(sentims[uid] - sentims[ffid])*(sentims[uid] - sentims[ffid])]
                                             ffatts.append(ffatt)
 
 
                         if (len(fatts) > 0) and (len(ffatts)>0):
                             fatts = np.array(fatts)
                             fmatts = np.mean(fatts, axis=0)
+
+                            fatts_dis = np.array(fatts_dis)
+                            fmatts_dis = np.mean(fatts_dis, axis=0)
+
                             ffatts = np.array(ffatts)
                             ffmatts = np.mean(ffatts, axis=0)
+
                             values.extend(fmatts)
+                            values.extend(fmatts_dis)
                             # paliv = float(alive)/len(fatts)
                             paliv = frialive.get(uid)
                             fdays = friduration.get(uid)
@@ -277,14 +294,28 @@ def read_user_time_iv(filename):
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
                                     ['f_'+tf for tf in trimed_fields]  +
-                                    ['f_incore', 'f_num', 'f_palive', 'f_days']
-                                    + ['ff_'+field for field in trimed_fields] )
+                                    ['f_incore'] +
+                                    ['f_avg_'+tf for tf in trimed_fields]  +
+                                    ['f_num', 'f_palive', 'f_days']
+                                    + ['ff_avg_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
+def www_in_out_degree():
+    ind, outd = {}, {}
+    with open('/media/data/www_twitter_rv.net', 'r') as infile:
+        for line in infile:
+            ids = line.strip().split()
+            user = int(ids[0])
+            follower = int(ids[1])
+            ind[user] = ind.get(user, 0) + 1
+            outd[follower] = outd.get(follower, 0) + 1
+    pickle.dump(ind, open('data/www-indegree.pick', 'w'))
+    pickle.dump(outd, open('data/www-outdegree.pick', 'w'))
 
 if __name__ == '__main__':
     # readnetwork('www', 'com')
     # get_sentiments('www', 'com')
     # get_profile('www', 'com')
     # user_active()
-    read_user_time_iv('www-user-durations-iv-following-senti.csv')
+    # read_user_time_iv('www-user-durations-iv-following-senti.csv')
+    www_in_out_degree()

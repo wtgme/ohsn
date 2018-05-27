@@ -313,13 +313,14 @@ def read_user_time_iv(filename):
                                 fatts.append(fatt)
 
                         # emotional distance
-                        friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # all followings for distance calculation
+                        # friend_ids = [int(network1.vs[vi]['name']) for vi in allfollowees] # all followings for distance calculation
                         for fid in friend_ids:
                             if fid in sentims:
-                                fatt_dis = [(sentims[uid] - sentims[fid])*(sentims[uid] - sentims[fid])]
+                                fatt_dis = [sentims[fid]]
+                                # fatt_dis = [(sentims[uid] - sentims[fid])*(sentims[uid] - sentims[fid])]
                                 fatts_dis.append(fatt_dis)
 
-                                 # friends' friends' distance
+                             # friends' friends' distance
                                 friendfriends = set(network1.successors(str(fid))) # all followings' followings as IV for distance
                                 # followerfollowers = set(network1.predecessors(str(fid)))
                                 friendfriends = friendfriends - neighbors
@@ -327,7 +328,8 @@ def read_user_time_iv(filename):
                                     friendfriends_ids = [int(network1.vs[vi]['name']) for vi in friendfriends] # return id
                                     for ffid in friendfriends_ids:
                                         if ffid in sentims:
-                                            ffatt = [(sentims[uid] - sentims[ffid])*(sentims[uid] - sentims[ffid])]
+                                            ffatt = [sentims[ffid]]
+                                            # ffatt = [(sentims[uid] - sentims[ffid])*(sentims[uid] - sentims[ffid])]
                                             ffatts.append(ffatt)
 
 
@@ -349,7 +351,7 @@ def read_user_time_iv(filename):
                                          first_scraped_at, second_scraped_at, first_statuses_count, second_statuses_count,
                              longest_tweet_intervalb, tag, u_centrality, u_pagerank,
                                          u_indegree, u_outdegree, u_timeline_count] +
-                                        values + [len(fatts), paliv, fdays]
+                                        values + [len(fatts_dis), paliv, fdays]
                                         + ffmatts.tolist())
 
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'created_at', 'first_last_post', 'second_last_post', 'last_post', 'first_scraped_at', 'second_scraped_at',
@@ -361,10 +363,11 @@ def read_user_time_iv(filename):
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
                                     ['u_'+field for field in prof_names] +
-                                    ['f_dist_'+tf for tf in trimed_fields]  +
-                                    ['f_distance_'+tf for tf in trimed_fields]  +
-                                    ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore', 'f_num', 'f_palive', 'f_days']
-                                    + ['ff_distance_'+field for field in trimed_fields] )
+                                    ['f_'+tf for tf in trimed_fields]  +
+                                    ['f_eigenvector', 'f_close', 'f_incore', 'f_outcore']+
+                                    ['f_avg_'+tf for tf in trimed_fields]  +
+                                    ['f_num', 'f_palive', 'f_days']
+                                    + ['ff_avg_'+field for field in trimed_fields] )
     df.to_csv(filename)
 
 

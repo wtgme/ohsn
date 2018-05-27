@@ -104,8 +104,60 @@ def out_nets():
     gt.out_edgelist(dbname='fed', netname='net2round', filename='fed3net', ego='follower', alter='user', filter={})
     gt.out_edgelist(dbname='fed', netname='bnet', filename='fed2bnet', ego='id0', alter='id1', filter={'type': {'$in': [1, 2, 3]}})
 
+
+def out_data():
+    net2 = gt.Graph.Read_GraphML('ed-net-all-active.graphml')
+    gt.summary(net2)
+
+    com = pd.read_csv('data/fed.com.csv', sep=',')
+    com = com.drop(columns=['retweet_count'])
+    com = com.dropna()
+    data = []
+
+    name = [u'id', u'timeline_count', u'followers_count', u'friends_count',
+           u'statuses_count', u'favourites_count', u'posemo',
+           u'negemo', u'scalem', u'level']
+
+    for index, row in com[com.level==1].iterrows():
+        record = []
+        uid = str(int(row['id']))
+        print uid
+        record += row.tolist()
+        friends = set(net2.successors(uid))
+        if len(friends) > 0:
+            friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
+            f_records = []
+            ff_records = []
+            for fid in friend_ids:
+                frec = com[com.id==fid]
+                if len(frec) == 1:
+                    f_records.append(frec.iloc[0].tolist()[1:])
+                ffs = set(net2.successors(str(fid)))
+                if len(ffs) > 0:
+                    ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
+                    for ffid in ff_ids:
+                        ffrec = com[com.id==ffid]
+                        if len(ffrec) == 1:
+                            ff_records.append(ffrec.iloc[0].tolist()[1:])
+            if (len(f_records) > 0) and (len(ff_records) > 0):
+                f_records = np.array(f_records)
+                ff_records = np.array(ff_records)
+                f_mean = np.mean(f_records, axis=0)
+                f_sum = np.sum(f_records, axis=0)
+                ff_mean = np.mean(ff_records, axis=0)
+                fnum = len(f_records)
+                data.append(record + f_sum.tolist() + f_mean.tolist() + ff_mean.tolist() + [fnum] )
+
+    df = pd.DataFrame(data, columns=name + ['fsum_'+field for field in name[1:]] +
+                     ['favg_'+field for field in name[1:]] +
+                     ['ffavg_'+field for field in name[1:]]+
+                     ['fnum']
+                     )
+    df.to_csv('data/peereff.csv')
+
 if __name__ == '__main__':
     # attribute_corre('user-friends-attributes-followee.csv')
     # out_nets()
-    uid = iot.get_values_one_field('fed', 'scom', 'id_str')
-    pickle.dump(uid, open('eduid.pick', 'w'))
+    # uid = iot.get_values_one_field('fed', 'scom', 'id_str')
+    # pickle.dump(uid, open('eduid.pick', 'w'))
+    out_data()
