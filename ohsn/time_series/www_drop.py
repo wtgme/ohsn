@@ -168,6 +168,9 @@ def read_user_time_iv(filename):
         indegree_map = pickle.load(open('data/www_user_incore.pick', 'r'))
         # outdegree_map = dict(zip(nodes, outdegree))
 
+        ind = pickle.load(open('data/www-indegree.pick', 'r'))
+        outd = pickle.load(open('data/www-outdegree.pick', 'r'))
+
         frialive, friduration = {}, {}
         for v in network1.vs:
             friends = set(network1.predecessors(str(v['name'])))
@@ -202,7 +205,7 @@ def read_user_time_iv(filename):
                 u_timeline_count = user['timeline_count']
 
                 # values = iot.get_fields_one_doc(user, fields)
-                values = [sentims[uid]]
+                values = [sentims[uid], ind[uid], outd[uid]]
                 level = user['level']
 
 
@@ -288,7 +291,8 @@ def read_user_time_iv(filename):
     df = pd.DataFrame(data, columns=['uid', 'level', 'dropout', 'survival', 'created_at', 'last_post', 'first_scraped_at',
                                      'group','u_incore',
                                      'u_timeline_count'] +
-                                    ['u_'+field for field in trimed_fields]  +
+                                    ['u_'+field for field in trimed_fields] +
+                                    ['u_ind', 'u_outd'] +
                                     # ['u_prior_'+field for field in trimed_fields] +
                                     # ['u_post_'+field for field in trimed_fields] +
                                     # ['u_change_'+field for field in trimed_fields] +
@@ -317,5 +321,5 @@ if __name__ == '__main__':
     # get_sentiments('www', 'com')
     # get_profile('www', 'com')
     # user_active()
-    # read_user_time_iv('www-user-durations-iv-following-senti.csv')
-    www_in_out_degree()
+    read_user_time_iv('www-user-durations-iv-following-senti.csv')
+    # www_in_out_degree()
