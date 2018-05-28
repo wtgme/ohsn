@@ -73,7 +73,7 @@ def load_network(db_name, collection='None'):
 def load_network_subset(db_name, collection='None', filter={}):
     '''
     Friendship network: directed network from a user list
-    Edge: user---------> follower
+    Edge: Follower---------> Followee
     '''
     if collection is 'None':
         cols = db_name

@@ -115,13 +115,13 @@ def out_data():
     com = com.set_index(['id'])
     data = []
 
-    name = [u'id', u'timeline_count', u'followers_count', u'friends_count',
+    name = [u'uid', u'timeline_count', u'followers_count', u'friends_count',
            u'statuses_count', u'favourites_count', u'posemo',
            u'negemo', u'scalem', u'level']
 
     for index, row in com[com.level==1].iterrows():
-        record = []
-        uid = str(int(row['id']))
+        record = [index]
+        uid = str(index)
         print uid
         record += row.tolist()
         friends = set(net2.successors(uid))
@@ -130,16 +130,14 @@ def out_data():
             f_records = []
             ff_records = []
             for fid in friend_ids:
-                frec = com[com.id==fid]
-                if len(frec) == 1:
-                    f_records.append(frec.iloc[0].tolist()[1:])
+                if fid in com.index:
+                    f_records.append(com.loc[(fid)].tolist())
                 ffs = set(net2.successors(str(fid)))
                 if len(ffs) > 0:
                     ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
                     for ffid in ff_ids:
-                        ffrec = com[com.id==ffid]
-                        if len(ffrec) == 1:
-                            ff_records.append(ffrec.iloc[0].tolist()[1:])
+                        if ffid in com.index:
+                            ff_records.append(com.loc[(ffid)].tolist())
             if (len(f_records) > 0) and (len(ff_records) > 0):
                 f_records = np.array(f_records)
                 ff_records = np.array(ff_records)
