@@ -112,6 +112,7 @@ def out_data():
     com = pd.read_csv('data/fed.com.csv', sep=',')
     com = com.drop(columns=['retweet_count'])
     com = com.dropna()
+    com = com.set_index(['id'])
     data = []
 
     name = [u'id', u'timeline_count', u'followers_count', u'friends_count',
