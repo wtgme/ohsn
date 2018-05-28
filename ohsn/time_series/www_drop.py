@@ -71,7 +71,7 @@ def user_active():
     for tag, dbname, comname, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
         first_obser = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
-        network1 = gt.Graph.Read_Ncol('www.net', directed=True)
+        network1 = gt.Graph.Read_Ncol('www.net', directed=True) # users ---> followers
         gt.summary(network1)
         network1.vs['alive'] = 0
         network1.vs['duration'] = 0
@@ -317,7 +317,7 @@ def www_in_out_degree():
     pickle.dump(outd, open('data/www-outdegree.pick', 'w'))
 
 if __name__ == '__main__':
-    # readnetwork('www', 'com')
+    readnetwork('www', 'com')
     # get_sentiments('www', 'com')
     # get_profile('www', 'com')
     # user_active()

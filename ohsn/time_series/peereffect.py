@@ -124,28 +124,34 @@ def out_data():
         uid = str(index)
         print uid
         record += row.tolist()
-        friends = set(net2.successors(uid))
-        if len(friends) > 0:
-            friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
-            f_records = []
-            ff_records = []
-            for fid in friend_ids:
-                if fid in com.index:
-                    f_records.append(com.loc[(fid)].tolist())
-                ffs = set(net2.successors(str(fid)))
-                if len(ffs) > 0:
-                    ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
-                    for ffid in ff_ids:
-                        if ffid in com.index:
-                            ff_records.append(com.loc[(ffid)].tolist())
-            if (len(f_records) > 0) and (len(ff_records) > 0):
-                f_records = np.array(f_records)
-                ff_records = np.array(ff_records)
-                f_mean = np.mean(f_records, axis=0)
-                f_sum = np.sum(f_records, axis=0)
-                ff_mean = np.mean(ff_records, axis=0)
-                fnum = len(f_records)
-                data.append(record + f_sum.tolist() + f_mean.tolist() + ff_mean.tolist() + [fnum] )
+        exist = True
+        try:
+            v = net2.vs.find(name=uid)
+        except ValueError:
+            exist = False
+        if exist:
+            friends = set(net2.successors(uid))
+            if len(friends) > 0:
+                friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
+                f_records = []
+                ff_records = []
+                for fid in friend_ids:
+                    if fid in com.index:
+                        f_records.append(com.loc[(fid)].tolist())
+                    ffs = set(net2.successors(str(fid)))
+                    if len(ffs) > 0:
+                        ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
+                        for ffid in ff_ids:
+                            if ffid in com.index:
+                                ff_records.append(com.loc[(ffid)].tolist())
+                if (len(f_records) > 0) and (len(ff_records) > 0):
+                    f_records = np.array(f_records)
+                    ff_records = np.array(ff_records)
+                    f_mean = np.mean(f_records, axis=0)
+                    f_sum = np.sum(f_records, axis=0)
+                    ff_mean = np.mean(ff_records, axis=0)
+                    fnum = len(f_records)
+                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_mean.tolist() + [fnum] )
 
     df = pd.DataFrame(data, columns=name + ['fsum_'+field for field in name[1:]] +
                      ['favg_'+field for field in name[1:]] +
