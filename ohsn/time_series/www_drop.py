@@ -205,7 +205,7 @@ def read_user_time_iv(filename):
                 u_timeline_count = user['timeline_count']
 
                 # values = iot.get_fields_one_doc(user, fields)
-                values = [sentims[uid], ind[uid], outd[uid]]
+                values = [sentims[uid], ind.get(uid, 0), outd.get(uid, 0)]
                 level = user['level']
 
 
