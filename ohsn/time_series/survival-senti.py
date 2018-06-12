@@ -182,7 +182,7 @@ def read_user_time_iv(filename):
     groups = [
          ('ED', 'fed', 'com', 'fed', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},
-                                                        # 'level': 1,
+                                                        'level': 1,
                                                         'senti.result.whole.N': {'$gt': 10}}),
          ('RD', 'random', 'scom', 'random', 'com_survival', {
                                                         'liwc_anal.result.WC': {'$exists': True},

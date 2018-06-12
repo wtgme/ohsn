@@ -89,7 +89,7 @@ def get_fields_one_doc(x, fields):
                 # print level
                 t = t.get(level)
                 if t is None:
-                    t = 100
+                    t = None
                     break
             values.append(t)
         else:

@@ -901,8 +901,8 @@ def compare_liwc(filepath='data/cluster-feature.data'):
     print X.shape, y.shape
     Z = np.append(X, y.reshape((len(y), 1)), axis=1)
     df = pd.DataFrame(Z, columns=select_f + ['label'])
-    affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
-    print(affair_mod.summary())
+    # affair_mod = logit("label ~ " + '+'.join(select_f[:-1]), df).fit()
+    # print(affair_mod.summary())
 
     df.rename(columns={'friend_count': '#Fr',
                        'status_count': '#T',
@@ -1460,18 +1460,19 @@ def centrality_regresion(netfilename='data/communication-only-fed-filter-hashtag
     g2 = g.subgraph(cl2)
     gt.net_stat(g1)
     gt.net_stat(g2)
-    g1 = gt.giant_component(g1)
-    g2 = gt.giant_component(g2)
-    gt.net_stat(g1)
-    gt.net_stat(g2)
+    uidsmap = dict(zip([(uid) for uid in g.vs['name']], range(len(g.vs))))
+    # g1 = gt.giant_component(g1)
+    # g2 = gt.giant_component(g2)
+    # gt.net_stat(g1)
+    # gt.net_stat(g2)
 
-    pagerank = dict(zip(g1.vs['name'] + g2.vs['name'], g1.pagerank(weights='weight') + g2.pagerank(weights='weight')))
-    author = dict(zip(g1.vs['name'] + g2.vs['name'], g1.authority_score(weights='weight') + g2.authority_score(weights='weight')))
-    hub = dict(zip(g1.vs['name'] + g2.vs['name'], g1.hub_score(weights='weight') + g2.hub_score(weights='weight')))
+    # pagerank = dict(zip(g1.vs['name'] + g2.vs['name'], g1.pagerank(weights='weight') + g2.pagerank(weights='weight')))
+    # author = dict(zip(g1.vs['name'] + g2.vs['name'], g1.authority_score(weights='weight') + g2.authority_score(weights='weight')))
+    # hub = dict(zip(g1.vs['name'] + g2.vs['name'], g1.hub_score(weights='weight') + g2.hub_score(weights='weight')))
 
     # ------------------------Read sentiments
     user_ped, user_prec, user_tweet, user_sentiment = {}, {}, {}, {}
-    with open('all-tweet.txt', 'r') as fo:
+    with open('data/all-tweet.txt', 'r') as fo:
         for line in fo.readlines():
             tokens = line.strip().split('\t')
             uid = tokens[1]
@@ -1498,7 +1499,7 @@ def centrality_regresion(netfilename='data/communication-only-fed-filter-hashtag
 
     select_f = ['engage.friend_count', 'engage.status_count', 'engage.follower_count',
         'engage.friends_day', 'engage.statuses_day', 'engage.followers_day',
-        'behavior.retweet_pro', 'behavior.dmention_pro', 'behavior.reply_pro', 'timeline_count',
+        'behavior.retweet_pro', 'behavior.dmention_pro', 'behavior.reply_pro', 'behavior.reply_div', 'behavior.mention_div', 'behavior.retweet_div','timeline_count',
         'liwc_anal.result.i', 'liwc_anal.result.we', 'liwc_anal.result.swear',
         'liwc_anal.result.negate', 'liwc_anal.result.body', 'liwc_anal.result.health',
         'liwc_anal.result.ingest', 'liwc_anal.result.social', 'liwc_anal.result.posemo', 'liwc_anal.result.negemo']
@@ -1507,12 +1508,15 @@ def centrality_regresion(netfilename='data/communication-only-fed-filter-hashtag
     com = dbt.db_connect_col('fed', 'com')
     for i, uids in enumerate([g1.vs['name'], g2.vs['name']]):
         for uid in uids:
-            vector = [i, uid, prostr.get(uid, 0), pagerank[uid], author[uid], hub[uid]]
+            # vector = [i, uidsmap[uid], prostr.get(uid, 0), pagerank[uid], author[uid], hub[uid]]
+            vector = [i, uid, uidsmap[uid], prostr.get(uid, 0)]
             user = com.find_one({'id': int(uid)})
             vector += iot.get_fields_one_doc(user, select_f)
             data.append(vector)
-    df = pd.DataFrame(data, columns=['cluster', 'uid', 'prostr', 'pagerank', 'author', 'hub'] + trim_f)
-    df.to_csv('centrality-features.csv', index=False)
+    # df = pd.DataFrame(data, columns=['cluster', 'uid', 'prostr', 'pagerank', 'author', 'hub'] + trim_f)
+    df = pd.DataFrame(data, columns=['cluster', 'uid', 'uidmap', 'prostr'] + trim_f)
+    # df.to_csv('centrality-features.csv', index=False)
+    df.to_csv('users-features.csv', index=False)
 
 def robust_reg(ped, name):
     # rubost linear regresson
@@ -1690,8 +1694,80 @@ def data_validataion(netfilename='data/communication-only-fed-filter-hashtag-clu
     print metrics.cohen_kappa_score(trues, preds)
 
 
+def out_tweet_ids(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    g = gt.Graph.Read_GraphML(netfilename)
+    gt.summary(g)
+    uids = dict(zip([int(uid) for uid in g.vs['name']], range(len(g.vs))))
+    times = dbt.db_connect_col('fed', 'ed_tag')
+    for tweet in times.find():
+        if tweet['user']['id'] in uids:
+            print uids[tweet['user']['id']], '\t', tweet['id']
+
+    # data = []
+    # uids = dict(zip([int(uid) for uid in g.vs['name']], range(len(g.vs))))
+    # print len(uids)
+    # times = dbt.db_connect_col('fed', 'ed_tag')
+    # tid = 0
+    # for tweet in times.find():
+    #     if tweet['user']['id'] in uids:
+    #         tid = tid + 1
+    #         uid = uids[tweet['user']['id']]
+    #         hashtags = tweet['entities']['hashtags']
+    #         hash_set = set()
+    #         for hash in hashtags:
+    #             hash_set.add(hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+    #         hash_set = ', '.join(list(hash_set))
+    #         retweet = False
+    #         if ('retweeted_status' in tweet):
+    #             retweet = True
+    #         mentions = []
+    #         if retweet == False:
+    #             for mention in tweet['entities']['user_mentions']:
+    #                 if mention['id'] in uids:
+    #                     mentions.append(uids[mention['id']])
+    #         # mentions = ', '.join([str(mid) for mid in set(mentions)])
+    #         # data.append([tid, uid, retweet, hash_set, mentions])
+    #         if len(mentions) > 0:
+    #             for mention in mentions:
+    #                 data.append([uid, mention])
+    #         #     data.append([uid, mentions])
+    #         # ['tweet_id', 'author_id', 'retweet', 'hashtags', 'mentions']
+    # df = pd.DataFrame(data, columns=['tweet_id', 'mentions'])
+    # df.to_csv('data/tweets.csv')
+
+
+def out_graph(netfilename='data/communication-only-fed-filter-hashtag-cluster.graphml'):
+    g = gt.Graph.Read_GraphML(netfilename)
+    gt.summary(g)
+    g.vs['name'] = range(len(g.vs))
+    g.write_graphml('data/newgraph.graphml')
+
+def read_graph(filename='data/linktweets.txt'):
+    name_map, edges = {}, set()
+    with open(filename, 'r') as fo:
+        for line in fo.readlines():
+            ids = line.split(',')
+            n1 = ids[0]
+            n2 = ids[1]
+
+            n1id = name_map.get(n1, len(name_map))
+            name_map[n1] = n1id
+            n2id = name_map.get(n2, len(name_map))
+            name_map[n2] = n2id
+            edges.add((n1id, n2id))
+        g = gt.Graph(len(name_map), directed=True)
+        g.vs["name"] = list(sorted(name_map, key=name_map.get))
+        g.add_edges(list(edges))
+        g.es["weight"] = 1
+        gt.summary(g)
+        g.write_graphml('data/regraph.graphml')
+
+
 if __name__ == '__main__':
-    net_attr()
+    # net_attr()
+    # out_graph()
+    # out_tweet_ids()
+    # read_graph()
     # regression()
     # assortative_test()
     # interaction_ratio()
@@ -1707,6 +1783,6 @@ if __name__ == '__main__':
     # core_analysis()
     # sentiment_injection() #net-tweet.txt
     # analysis_net_sentiments()
-    # centrality_regresion()
+    centrality_regresion()
     # robust_regression()
     # data_validataion()

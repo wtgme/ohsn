@@ -25,14 +25,17 @@ from ohsn.api import lookup
 
 def profile(dbname, comname):
     com = dbt.db_connect_col(dbname, comname)
-    com.create_index([('id', pymongo.ASCENDING)], unique=True)
+    # com.create_index([('id', pymongo.ASCENDING)], unique=True)
+    uids = set(iot.get_values_one_field(dbname, comname, 'id'))
 
     idset = set()
-    with open('/media/data/twitter_rv.net', 'r') as infile:
+    with open('/media/data/www_twitter_rv.net', 'r') as infile:
         for line in infile:
             ids = line.strip().split()
             for idstr in ids:
-                idset.add(int(idstr))
+                uid = int(idstr)
+                if uid not in uids:
+                    idset.add(uid)
             if len(idset) > 90:
                 lookup.lookup_user_list(list(idset), com, 1, 'N')
                 idset = set()

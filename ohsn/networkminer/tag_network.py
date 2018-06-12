@@ -241,7 +241,7 @@ def community_net(rec_g, ped_g):
                 edges[(n1id, n2id)] = similarity
     g = gt.Graph(len(name_map), directed=False)
     g.vs["name"] = list(sorted(name_map, key=name_map.get))
-    g.vs['weight'] = [node_weight[i] for i in xrange(len(node_weight))]
+    g.vs['weight'] = [node_weight[i] for i in xrange(len(nod$e_weight))]
     g.add_edges(edges.keys())
     g.es["weight"] = edges.values()
     for v in g.vs:

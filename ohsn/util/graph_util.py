@@ -580,10 +580,11 @@ if __name__ == '__main__':
     #     print v['name'], v['gbmi']
 
     '''to_undirected (mode="collapse")
-    collapse: only keep one edge of multiple edges One undirected edge
-    will be created for each pair of vertices which are connected with at
+    collapse: only keep one edge of multiple edges. If there is an edge, regardless of one-way or two-way, keep one edge.
+    One undirected edge will be created for each pair of vertices which are connected with at
     least one directed edge, no multiple edges will be created.
-    mutual: ONLY create one edge for nodes if they have multiple edges,
+
+    mutual: ONLY create one edge for nodes if they have multiple edges. If one-way edges, do not keep edges.
     One undirected edge will be created for each pair of mutual edges.
     Non-mutual edges are ignored. This mode might create multiple edges
     if there are more than one mutual edge pairs between the same pair of vertices.
@@ -596,7 +597,7 @@ if __name__ == '__main__':
     # g.vs["gender"] = ["f", "m", "f", "m", "f", "m", "m"]
     # g.es["is_formal"] = [False, False, True, True, True, False, True, False, False]
     # g.es['weight'] = 2.0
-    g = g.as_undirected(mode="mutual") # collapse
+    g = g.as_undirected(mode="mutual") # collapse mutual
     print g.clusters()
     print g.components()
     layout = g.layout("kk")
