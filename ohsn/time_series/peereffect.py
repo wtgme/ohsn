@@ -198,8 +198,9 @@ def out_undirect_data():
     com['group'] = groups
     # com = com.assign(group=groups)
     zscore = lambda x: (x - x.mean())
-    com = com.groupby('group')[name[1:-1]].transform(zscore)
-    # com['id'] = uids
+    levels = com['level']
+    com = com.groupby('group')[name[1:]].transform(zscore)
+    com['level'] = levels
 
     print com.head()
     data = []
