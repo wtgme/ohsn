@@ -110,12 +110,15 @@ def out_data():
     gt.summary(net2)
 
     com = pd.read_csv('data/fed.com.csv', sep='\t')
-    # com = com.drop(columns=['retweet_count'])
+    com = com.drop(columns=['active_day', 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro'])
     com = com.dropna()
     com = com.set_index(['id'])
     data = []
 
-    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count', 'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level']
+    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+    'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level']
+     # 'active_day',
+    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
 
     for index, row in com[com.level==1].iterrows():
         record = [index]
@@ -139,6 +142,7 @@ def out_data():
                     if fid in com.index:
                         f_records.append(com.loc[(fid)].tolist())
                     ffs = set(net2.successors(str(fid)))
+                    ffs = ffs - friends
                     if len(ffs) > 0:
                         ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
                         for ffid in ff_ids:
@@ -150,13 +154,15 @@ def out_data():
                     f_mean = np.mean(f_records, axis=0)
                     f_sum = np.sum(f_records, axis=0)
                     ff_mean = np.mean(ff_records, axis=0)
+                    ff_sum = np.sum(ff_records, axis=0)
                     fnum = len(f_records)
-                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_mean.tolist() + [fnum] )
+                    ffnum = len(ff_records)
+                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
 
     df = pd.DataFrame(data, columns=name  + ['alive', 'duration']+ ['fsum_'+field for field in name[1:]] +
-                     ['favg_'+field for field in name[1:]] +
+                     ['favg_'+field for field in name[1:]] +  ['ffsum_'+field for field in name[1:]] +
                      ['ffavg_'+field for field in name[1:]]+
-                     ['fnum']
+                     ['fnum', 'ffnum']
                      )
     df.to_csv('data/peereff.csv')
 
@@ -167,16 +173,40 @@ def out_undirect_data():
     gt.summary(net2)
 
     components = net2.clusters()
-    net2.vs['group'] = components.membership
-
+    # net2.vs['group'] = components.membership
+    dicts = dict(zip([int(vn) for vn in net2.vs['name']], components.membership))
+    print len(dicts), min(components.membership), max(components.membership)
 
     com = pd.read_csv('data/fed.com.csv', sep='\t')
-    # com = com.drop(columns=['retweet_count'])
+    com = com.drop(columns=['active_day', 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro'])
     com = com.dropna()
+
+    uids = com['id'].tolist()
     com = com.set_index(['id'])
+    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+    'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level']
+    print uids[:10]
+    groups = []
+    maxgroups = max(components.membership)
+    for i in uids:
+        i = int(i)
+        if i in dicts:
+            groups.append(dicts[i])
+        else:
+            maxgroups += 1
+            groups.append(maxgroups)
+    com['group'] = groups
+    # com = com.assign(group=groups)
+    zscore = lambda x: (x - x.mean())
+    com = com.groupby('group')[name[1:-1]].transform(zscore)
+    # com['id'] = uids
+
+    com.head()
     data = []
 
-    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count', 'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level']
+
+     # 'active_day',
+    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
 
     for index, row in com[com.level==1].iterrows():
         record = [index]
@@ -191,7 +221,6 @@ def out_undirect_data():
         if exist:
             record.append(v['alive'])
             record.append(v['duration'])
-            record.append(v['group'])
             friends = set(net2.successors(uid))
             if len(friends) > 0:
                 friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
@@ -201,6 +230,7 @@ def out_undirect_data():
                     if fid in com.index:
                         f_records.append(com.loc[(fid)].tolist())
                     ffs = set(net2.successors(str(fid)))
+                    ffs = ffs - friends
                     if len(ffs) > 0:
                         ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
                         for ffid in ff_ids:
@@ -212,13 +242,15 @@ def out_undirect_data():
                     f_mean = np.mean(f_records, axis=0)
                     f_sum = np.sum(f_records, axis=0)
                     ff_mean = np.mean(ff_records, axis=0)
+                    ff_sum = np.sum(ff_records, axis=0)
                     fnum = len(f_records)
-                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_mean.tolist() + [fnum] )
+                    ffnum = len(ff_records)
+                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
 
-    df = pd.DataFrame(data, columns=name  + ['alive', 'duration', 'group']+ ['fsum_'+field for field in name[1:]] +
-                     ['favg_'+field for field in name[1:]] +
+    df = pd.DataFrame(data, columns=name  + ['alive', 'duration']+ ['fsum_'+field for field in name[1:]] +
+                     ['favg_'+field for field in name[1:]] +  ['ffsum_'+field for field in name[1:]] +
                      ['ffavg_'+field for field in name[1:]]+
-                     ['fnum']
+                     ['fnum', 'ffnum']
                      )
     df.to_csv('data/undir-peereff.csv')
 
