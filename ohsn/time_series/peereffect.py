@@ -201,7 +201,7 @@ def out_undirect_data():
     com = com.groupby('group')[name[1:-1]].transform(zscore)
     # com['id'] = uids
 
-    com.head()
+    print com.head()
     data = []
 
 
