@@ -23,6 +23,7 @@ import pickle
 import ohsn.util.io_util as iot
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
+import sys
 
 
 def readprofile(dbname, colname):
@@ -72,4 +73,4 @@ if __name__ == '__main__':
     # readprofile('fed3', 'com')
     # readprofile('fed4', 'com')
 
-    out_tid_uid_hashtags(0)
+    out_tid_uid_hashtags(dbindex = int(sys.argv[1]))
