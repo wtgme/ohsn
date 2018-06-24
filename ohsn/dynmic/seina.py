@@ -40,28 +40,29 @@ def readprofile(dbname, colname):
     df.to_csv('data/' + dbname+'-com'+'.csv')
 
 
-def out_tid_uid_hashtags(filename='/media/data/feds.tags.txt'):
-    fo = open(filename, 'w')
-    fo.write(str('tid') + '\t' + str('uid') + '\t' + str('created_at') + '\t' + str('retweet')  + '\t' + str('dbindex') + '\t' + 'tags' + '\n')
+def out_tid_uid_hashtags(filename='/media/data/', dbindex = 0):
+    fed = ['fed', 'fed2', 'fed3', 'fed4'][dbindex]
+    fo = open(filename + fed + '.txt', 'w')
+    # fo.write(str('tid') + '\t' + str('uid') + '\t' + str('created_at') + '\t' + str('retweet')  + '\t' + str('dbindex') + '\t' + 'tags' + '\n')
     filter = {}
     filter['$where'] = 'this.entities.hashtags.length>0'
-    for dbindex, dbname in enumerate(['fed', 'fed2', 'fed3', 'fed4']):
-        time = dbt.db_connect_col(dbname, 'timeline')
-        for tweet in time.find(filter, no_cursor_timeout=True):
-            tid = tweet['id']
-            uid = tweet['user']['id']
-            retweet = 0
-            if 'retweeted_status' in tweet:
-                retweet = 1
-            created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-            hashtags = tweet['entities']['hashtags']
-            hash_set = set()
-            for hash in hashtags:
-            # need no .encode('utf-8')
-                tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-                hash_set.add(tag)
-            tags = ' '.join(list(hash_set))
-            fo.write(str(tid) + '\t' + str(uid) + '\t' + str(created_at) + '\t' + str(retweet)  + '\t' + str(dbindex) + '\t' + tags + '\n')
+
+    time = dbt.db_connect_col(fed, 'timeline')
+    for tweet in time.find(filter, no_cursor_timeout=True):
+        tid = tweet['id']
+        uid = tweet['user']['id']
+        retweet = 0
+        if 'retweeted_status' in tweet:
+            retweet = 1
+        created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        hashtags = tweet['entities']['hashtags']
+        hash_set = set()
+        for hash in hashtags:
+        # need no .encode('utf-8')
+            tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+            hash_set.add(tag)
+        tags = ' '.join(list(hash_set))
+        fo.write(str(tid) + '\t' + str(uid) + '\t' + str(created_at) + '\t' + str(retweet) + '\t' + str(dbindex) + '\t' + tags + '\n')
     fo.flush()
     fo.close()
 
@@ -71,4 +72,4 @@ if __name__ == '__main__':
     # readprofile('fed3', 'com')
     # readprofile('fed4', 'com')
 
-    out_tid_uid_hashtags()
+    out_tid_uid_hashtags(0)
