@@ -327,6 +327,34 @@ def tag_activity(dbname, colname):
     pickle.dump(tag_time, open('tag_activity.pick', 'w'))
 
 
+
+def out_tid_uid_hashtags(filename='feds.tags.txt'):
+    fo = open(filename, 'w')
+    fo.write(str('tid') + '\t' + str('uid') + '\t' + str('created_at') + '\t' + str('retweet')  + '\t' + str('dbindex') + '\t' + 'tags' + '\n')
+    filter = {}
+    filter['$where'] = 'this.entities.hashtags.length>0'
+    for dbindex, dbname in enumerate(['fed', 'fed2', 'fed3', 'fed4']):
+        time = dbt.db_connect_col(dbname, 'timeline')
+        for tweet in time.find(filter, no_cursor_timeout=True):
+            tid = tweet['id']
+            uid = tweet['user']['id']
+            retweet = 0
+            if 'retweeted_status' in row:
+                retweet = 1
+            created_at = tweet['created_at']
+            hashtags = tweet['entities']['hashtags']
+            hash_set = set()
+            for hash in hashtags:
+            # need no .encode('utf-8')
+                tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
+                hash_set.add(tag)
+            tags = ' '.join(list(hash_set))
+            fo.write(str(tid) + '\t' + str(uid) + '\t' + str(created_at) + '\t' + str(retweet)  + '\t' + str(dbindex) + '\t' + tags + '\n')
+    fo.flush()
+    fo.close()
+
+
+
 def mention_tweets(dbname, comname, bnetname, mention_tweet_name):
     # all_fed = iot.get_values_one_field('fed', 'com', 'id')
     # core_ed_net = gt.load_beh_network(dbname, colname, btype='communication')

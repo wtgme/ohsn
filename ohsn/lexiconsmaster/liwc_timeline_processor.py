@@ -131,7 +131,7 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('www', ' newcom', 'timeline', 'liwc_anal')
+    process_db('www', 'newcom', 'timeline', 'liwc_anal')
 
     # process_db('fed', 'pro_mention_miss_com', 'pro_mention_miss_timeline', 'liwc_anal')
     # process_db('TwitterProAna', 'users', 'timeline', 'liwc_anal')

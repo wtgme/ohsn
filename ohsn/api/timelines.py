@@ -148,16 +148,16 @@ def get_timeline(params):
 def get_user_timeline(user_id, user_collection, timeline_collection, trim_user=True, max_id=None, request_times=10000000, tweetTrim=False):
     latest = None  # the latest tweet ID scraped to avoid duplicate scraping
     request_time = 0
-    try:
-        # crawl the recent timeline to the last stored timeline
-        last_tweet = timeline_collection.find({'user.id':user_id}, {'id':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
-        if last_tweet:
-            print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
-            latest = last_tweet['id']
-    except IndexError as detail:
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
-              'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
-        pass
+    # try:
+    #     # crawl the recent timeline to the last stored timeline
+    #     last_tweet = timeline_collection.find({'user.id':user_id}, {'id':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
+    #     if last_tweet:
+    #         print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'The latest stored tweet is created at: ' + str(last_tweet['created_at'])
+    #         latest = last_tweet['id']
+    # except IndexError as detail:
+    #     print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + \
+    #           'Get latest stored tweet ERROR, maybe a new user ' + str(detail)
+    #     pass
 
     #  loop to get the timelines of user, and update the reset and remaining
     # while True:

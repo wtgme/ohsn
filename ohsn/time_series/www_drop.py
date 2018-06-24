@@ -19,7 +19,7 @@ import pymongo
 def readnetwork(dbname, comname):
     # Read the subset of the who network
     com = dbt.db_connect_col(dbname, comname)
-    userids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={'senti': {'$exists': True}})
+    userids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={})
     userids = set(userids)
     print 'length of user ids ', len(userids)
     fw = open('www.net', 'w')
@@ -43,8 +43,9 @@ def get_sentiments(dbname, comname):
 
 def get_profile(dbname, comname):
     com = dbt.db_connect_col(dbname, comname)
-    newcom = dbt.db_connect_col(dbname, ' newcom')
-    for u in com.find({'senti': {'$exists': True}}, no_cursor_timeout=True):
+    newcom = dbt.db_connect_col(dbname, 'newcom')
+    newcom.create_index("id", unique=True)
+    for u in com.find({"timeline_count": {'$gt': 10}}, no_cursor_timeout=True):
         # try:
         newcom.insert(u)
         # except pymongo.errors.CursorNotFound:
@@ -66,7 +67,7 @@ def friends_active_days(user, f1_time):
 def user_active():
     # obtain the active duration of users in two observation
     groups = [
-        ('WWW', 'www', 'com', {'level': 1, 'senti': {'$exists': True}})
+        ('WWW', 'www', 'newcom', {})
     ]
     for tag, dbname, comname, filter_values in groups:
         com = dbt.db_connect_col(dbname, comname)
@@ -316,10 +317,33 @@ def www_in_out_degree():
     pickle.dump(ind, open('data/www-indegree.pick', 'w'))
     pickle.dump(outd, open('data/www-outdegree.pick', 'w'))
 
+
+def www_profile():
+    com = dbt.db_connect_col('www', 'com')
+    inds = pickle.load(open('data/www-indegree.pick', 'r'))
+    outds = pickle.load(open('data/www-outdegree.pick', 'r'))
+    first_scraped_at = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
+
+    for user in com.find({}, no_cursor_timeout=True):
+        engage = {}
+        ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        delta = first_scraped_at.date() - ts.date()
+        days = delta.days+1
+        if days > 0:
+            friend_count = float(outds.get(user['id'], 0))
+            follower_count = float(inds.get(user['id'], 0))
+            engage['friends_day'] = friend_count/days
+            engage['followers_day'] = follower_count/days
+            engage['friend_count'] = friend_count
+            engage['follower_count'] = follower_count
+            engage['active_day'] = days
+            com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
+
 if __name__ == '__main__':
-    readnetwork('www', 'com')
-    # get_sentiments('www', 'com')
+    # www_profile()
     # get_profile('www', 'com')
-    # user_active()
-    read_user_time_iv('www-user-durations-iv-following-senti.csv')
+    # readnetwork('www', 'newcom')
+    # get_sentiments('www', 'com')
+    user_active()
+    # read_user_time_iv('www-user-durations-iv-following-senti.csv')
     # www_in_out_degree()

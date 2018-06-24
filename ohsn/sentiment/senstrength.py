@@ -325,4 +325,4 @@ if __name__ == '__main__':
     # process_chunks_db(dbname='random', timename='timeline', comname='scom')
     # process_chunks_db(dbname='fed', timename='pro_mention_miss_timeline', comname='pro_mention_miss_com')
     # out_sentiment_times('fed', 'com')
-    process_chunks_db(dbname='www', timename='timeline', comname='com')
+    process_chunks_db(dbname='www', timename='timeline', comname='newcom')

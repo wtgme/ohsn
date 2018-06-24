@@ -59,5 +59,5 @@ def timeline(dbname, comname, timename):
 
 
 if __name__ == '__main__':
-    profile('www', 'com')
-    # timeline('www', 'com', 'timeline')
+    # profile('www', 'com')
+    timeline('www', 'com', 'timeline')

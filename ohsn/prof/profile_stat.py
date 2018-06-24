@@ -165,10 +165,12 @@ def gagement(dbname, colname):
         # except ZeroDivisionError:
         #     continue
 
+
 if __name__ == '__main__':
     # profile_feature_stat()
     # profile_feature_dependence()
-    gagement('fed', 'com')
+    gagement('www', 'com')
+    # gagement('fed', 'com')
     # gagement('random', 'scom')
     # gagement('younger', 'scom')
 
