@@ -56,7 +56,10 @@ def out_tid_uid_hashtags(filename='/media/data/', dbindex = 0):
         if 'retweeted_status' in tweet:
             retweet = 1
         # created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y') # for fed
-        created_at = tweet['created_at'] # for 'fed2', 'fed3', 'fed4'
+        if 'created_at_date' in tweet:
+            created_at = tweet['created_at_date'] # for 'fed2', 'fed3', 'fed4'
+        else:
+            created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y') # for fed
         hashtags = tweet['entities']['hashtags']
         hash_set = set()
         for hash in hashtags:

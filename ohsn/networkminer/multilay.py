@@ -328,30 +328,7 @@ def tag_activity(dbname, colname):
 
 
 
-def out_tid_uid_hashtags(filename='feds.tags.txt'):
-    fo = open(filename, 'w')
-    fo.write(str('tid') + '\t' + str('uid') + '\t' + str('created_at') + '\t' + str('retweet')  + '\t' + str('dbindex') + '\t' + 'tags' + '\n')
-    filter = {}
-    filter['$where'] = 'this.entities.hashtags.length>0'
-    for dbindex, dbname in enumerate(['fed', 'fed2', 'fed3', 'fed4']):
-        time = dbt.db_connect_col(dbname, 'timeline')
-        for tweet in time.find(filter, no_cursor_timeout=True):
-            tid = tweet['id']
-            uid = tweet['user']['id']
-            retweet = 0
-            if 'retweeted_status' in row:
-                retweet = 1
-            created_at = tweet['created_at']
-            hashtags = tweet['entities']['hashtags']
-            hash_set = set()
-            for hash in hashtags:
-            # need no .encode('utf-8')
-                tag = (hash['text'].encode('utf-8').lower().replace('_', '').replace('-', ''))
-                hash_set.add(tag)
-            tags = ' '.join(list(hash_set))
-            fo.write(str(tid) + '\t' + str(uid) + '\t' + str(created_at) + '\t' + str(retweet)  + '\t' + str(dbindex) + '\t' + tags + '\n')
-    fo.flush()
-    fo.close()
+
 
 
 
@@ -681,4 +658,6 @@ if __name__ == '__main__':
     # out_network_temp()
     # calculate_picture_ratios('fed', 'pro_mention_timeline', 'pro_mention_bnet')
 
-    read_new_account()
+    # read_new_account()
+
+

@@ -14,15 +14,17 @@ from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
 import pymongo
+from joblib import Parallel, delayed
 
 
 def readnetwork(dbname, comname):
     # Read the subset of the who network
-    com = dbt.db_connect_col(dbname, comname)
-    userids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={})
+    # com = dbt.db_connect_col(dbname, comname)
+    # userids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={})
+    userids = pickle.load(open('data/www_crawled_uid.pick', 'r'))
     userids = set(userids)
     print 'length of user ids ', len(userids)
-    fw = open('www.net', 'w')
+    fw = open('data/www1tweet.net', 'w')
     with open('/media/data/www_twitter_rv.net', 'r') as infile:
         for line in infile:
             ids = line.strip().split()
@@ -318,32 +320,57 @@ def www_in_out_degree():
     pickle.dump(outd, open('data/www-outdegree.pick', 'w'))
 
 
-def www_profile():
-    com = dbt.db_connect_col('www', 'com')
-    inds = pickle.load(open('data/www-indegree.pick', 'r'))
-    outds = pickle.load(open('data/www-outdegree.pick', 'r'))
-    first_scraped_at = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
-
-    for user in com.find({}, no_cursor_timeout=True):
-        engage = {}
+def www_profile_sub(uids):
+    # com = dbt.db_connect_col('www', 'newcom')
+    # inds = pickle.load(open('data/www-indegree.pick', 'r'))
+    # outds = pickle.load(open('data/www-outdegree.pick', 'r'))
+    # first_scraped_at = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
+    # times = dbt.db_connect_col('www', 'timeline')
+    # users = iot.get_values_one_field(dbname='www', colname='newcom', fieldname='id',
+    #     filt={'liwc_anal.result.WC': {'$exists': true}, 'engage.post_active_day':{'$exists':false}})
+    # index = 0
+    # for uid in users:
+    com = dbt.db_connect_col('www', 'newcom')
+    times = dbt.db_connect_col('www', 'timeline')
+    for uid in uids:
+        user = com.find_one({'id': uid})
+        # index += 1
+        # if index %100 == 0:
+        #     print 'processed ', index
+        last_tweet = times.find({'user.id': user['id']}, {'id':1, 'created_at':1}).sort([('id', -1)]).limit(1)[0]  # sort: 1 = ascending, -1 = descending
+        first_scraped_at = last_tweet['created_at']
+        # engage = {}
         ts = datetime.strptime(user['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
         delta = first_scraped_at.date() - ts.date()
         days = delta.days+1
         if days > 0:
-            friend_count = float(outds.get(user['id'], 0))
-            follower_count = float(inds.get(user['id'], 0))
-            engage['friends_day'] = friend_count/days
-            engage['followers_day'] = follower_count/days
-            engage['friend_count'] = friend_count
-            engage['follower_count'] = follower_count
-            engage['active_day'] = days
-            com.update_one({'id': user['id']}, {'$set': {'engage': engage}}, upsert=False)
+            # friend_count = float(outds.get(user['id'], 0))
+            # follower_count = float(inds.get(user['id'], 0))
+            # engage['friends_day'] = friend_count/days
+            # engage['followers_day'] = follower_count/days
+            # engage['friend_count'] = friend_count
+            # engage['follower_count'] = follower_count
+            # engage['active_day'] = days
+            com.update_one({'id': uid}, {'$set': {'engage.post_active_day': days}}, upsert=False)
+
+def www_profile():
+
+    users = iot.get_values_one_field(dbname='www', colname='newcom', fieldname='id',
+        filt={'liwc_anal.result.WC': {'$exists': True}, 'engage.post_active_day':{'$exists':False}})
+    # print len(users)
+    # pickle.dump(users, open('data/www_uid_post_active.pick', 'w'))
+    # users = pickle.load(open('data/www_uid_post_active.pick', 'r'))
+    print len(users)
+    if len(users) > 0:
+        # chunk_list = [users[i: i + len(users)/32] for i in xrange(0, len(users), len(users)/32)]
+        chunk_list = [users]
+        Parallel(n_jobs=32)(delayed(www_profile_sub)(i) for i in chunk_list)
 
 if __name__ == '__main__':
-    # www_profile()
+    www_profile()
     # get_profile('www', 'com')
     # readnetwork('www', 'newcom')
     # get_sentiments('www', 'com')
-    user_active()
+    # user_active()
     # read_user_time_iv('www-user-durations-iv-following-senti.csv')
     # www_in_out_degree()
