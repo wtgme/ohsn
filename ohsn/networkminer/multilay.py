@@ -661,3 +661,6 @@ if __name__ == '__main__':
     # read_new_account()
 
 
+    all_uids = iot.get_values_one_field('fed', 'scom', 'id')
+    pickle.dump(all_uids, open('data/core_ed_userid.pick', 'w'))
+
