@@ -560,7 +560,10 @@ def tag_similarity_group_dropout_emotion():
         nodes = g.vs.select(user_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
+        print i, '----------------------------------'
+        print gt.summary(g)
         gvoc = dict(zip(g.vs['name'], g.vs['tfidf']))
+        print g.vs['name']
         ds.append(gvoc)
 
     gs = []
@@ -572,7 +575,10 @@ def tag_similarity_group_dropout_emotion():
         nodes = g.vs.select(user_gt=50)
         print 'Filtered nodes: %d' %len(nodes)
         g = g.subgraph(nodes)
+        print i, '----------------------------------'
+        print gt.summary(g)
         gvoc = dict(zip(g.vs['name'], g.vs['tfidf']))
+        print g.vs['name']
         gs.append(gvoc)
 
     for d in ds:
@@ -585,7 +591,9 @@ def tag_similarity_group_dropout_emotion():
             allkeys = dkeys.union(gkeys)
             dlist = [d.get(key, 0) for key in allkeys]
             glist = [g.get(key, 0) for key in allkeys]
-            print '%.3f' %(1 - spatial.distance.cosine(dlist, glist))
+            print '%.2f' %(1 - spatial.distance.cosine(dlist, glist))
+            print '%.2f %.2f' %(stats.stats.pearsonr(dlist, glist))
+            print '%.2f %.2f' %(stats.stats.spearmanr(dlist, glist))
 
 
 def sentiment_bmi(dbname, comname):
@@ -614,7 +622,7 @@ if __name__ == '__main__':
     # count_longest_tweeting_period('younger', 'timeline', 'scom')
     # read_user_time('user-durations-2.csv')
     # user_active()
-    read_user_time_iv('user-durations-iv-following-senti.csv')
+    # read_user_time_iv('user-durations-iv-following-senti.csv')
     # cluster_hashtag()
 
     # insert_timestamp('fed2', 'com')
@@ -636,7 +644,7 @@ if __name__ == '__main__':
     # compare_dropouts_withemotions()
     # tfidf_stat()
     # tfidf_stat_dropout()
-    # tag_similarity_group_dropout_emotion()
+    tag_similarity_group_dropout_emotion()
     # tag_similarity_group_conflit_all()
 
 
