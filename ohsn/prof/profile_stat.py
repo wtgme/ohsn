@@ -169,10 +169,10 @@ def gagement(dbname, colname):
 if __name__ == '__main__':
     # profile_feature_stat()
     # profile_feature_dependence()
-    gagement('www', 'com')
+    # gagement('www', 'com')
     # gagement('fed', 'com')
-    # gagement('random', 'scom')
-    # gagement('younger', 'scom')
+    gagement('random', 'scom')
+    gagement('younger', 'scom')
 
     # ts = datetime.strptime('Sat Jul 04 06:23:37 +0000 2015', '%a %b %d %H:%M:%S +0000 %Y')
     # tts = datetime.strptime('Sun Mar 13 23:44:56 +0000 2016', '%a %b %d %H:%M:%S +0000 %Y')
