@@ -627,7 +627,7 @@ if __name__ == '__main__':
 
     # insert_timestamp('fed2', 'com')
 
-
+    """ Output graph based on the in-core and dropout states."""
     # network1 = gt.Graph.Read_GraphML('drop-coreed-net.graphml')
     # network2 = gt.Graph.Read_GraphML('ed-net-all.graphml')
     # indegree = network2.coreness(mode='IN')

@@ -23,11 +23,11 @@ def db_connect_auth(DBNAME):
     try:
         conn = pymongo.MongoClient(MONGOAUTH)
         db = conn[DBNAME]
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " connected to " + DBNAME
+        print(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " connected to " + DBNAME)
         return db
     except Exception as detail:
-        print detail
-        print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " FAILED to connect to " + DBNAME
+        print(detail)
+        print(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + MONGOUSER + " FAILED to connect to " + DBNAME)
         exit()
 
 
@@ -50,12 +50,13 @@ def db_connect_no_auth(DBNAME):
         exit()
 
 
-class db_connect_no_auth_ian:
-    def __init__(self):
+class db_connect_no_auth_server():
+    def __init__(self, ip_add, username='taowan', password='uXvy5OztX1fAxrEyynPbLmtO'):
+        # Ian: '140.203.155.226', taowan, uXvy5OztX1fAxrEyynPbLmtO
         self.server = SSHTunnelForwarder(
-        '140.203.155.226',
-        ssh_username='taowan',
-        ssh_password='uXvy5OztX1fAxrEyynPbLmtO',
+        ip_add,
+        ssh_username=username,
+        ssh_password=password,
         remote_bind_address=('127.0.0.1', 27017)
         )
         self.server.start()
@@ -85,11 +86,11 @@ def db_connect_col(dbname, colname):
 # collection = DBConnectNOAuth('twitter_test', 'streamtrack')
 
 if __name__ == '__main__':
-    conn = db_connect_no_auth_ian()
-    db = conn.connect('TwitterProAna')
-    users = db['users']
-    print users.count()
-    conn.disconnect()
+    # conn = db_connect_no_auth_ian()
+    # db = conn.connect('TwitterProAna')
+    # users = db['users']
+    # print users.count()
+    # conn.disconnect()
 
     # print net.count({'$or': [{'net_anal.tnmined': {'$exists': False}},
     #                                         {'net_anal.tnmined': False}]})
@@ -101,3 +102,13 @@ if __name__ == '__main__':
     # print len(ulist)
     # print net.count({'$and': [{'type': {'$in': [1]}}, {'id0': {'$in': ulist}}]})
     # print net.count({'type': {'$in': [1]}, 'id0': {'$in': ulist}})
+
+    db_con = db_connect_no_auth_server('192.168.1.17', 'wt', 'jangju123')
+    db = db_con.connect('fed')
+    com = db['scom']
+    ulist = []
+    for user in com.find({'timeline_count': {'$gt': 0}}):
+        ulist.append(user['id'])
+    print len(ulist)
+
+
