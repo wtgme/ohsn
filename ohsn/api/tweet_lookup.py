@@ -8,6 +8,11 @@ Returns fully-hydrated user objects for up to 100 users per request,
 as specified by comma-separated values passed to the user_id and/or screen_name parameters.
 """
 
+# import sys
+# from os import path
+# sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))))
+
+
 import ohsn.util.twitter_util as twutil
 from twython import TwythonRateLimitError, TwythonAuthError, TwythonError
 import datetime
@@ -127,4 +132,7 @@ def retrive_tweet(filename):
 
 
 if __name__ == '__main__':
-    retrive_tweet('corpus.csv')
+    # retrive_tweet('corpus.csv')
+    df = pd.read_csv('us_geo.csv')
+    tids = df['Twitter_ID']
+    print(tids)
