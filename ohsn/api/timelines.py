@@ -231,7 +231,7 @@ def stream_timeline(user_collection, timeline_collection, scrapt_times, level):
         else:
             for user in user_collection.find({'$or':[{'level': {'$lt': level}, 'timeline_scraped_times': {'$exists': False}},
                                              {'level': {'$lt': level}, 'timeline_scraped_times': {'$lt': scrapt_times}}]},
-                                     {'id': 1}).limit(200):
+                                     {'id': 1}, no_cursor_timeout=True).limit(50):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
                 old_count = timeline_collection.count({'user.id': user['id']})
                 get_user_timeline(user['id'], user_collection, timeline_collection)
@@ -255,8 +255,7 @@ def monitor_timeline(user_collection, timeline_collection, scrapt_times):
             break
         else:
             for user in user_collection.find({'$or':[{'timeline_scraped_times': {'$exists': False}},
-                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]},
-                                     {'id': 1}).limit(200):
+                                             {'timeline_scraped_times': {'$lt': scrapt_times}}]}, {'id': 1}, no_cursor_timeout=True).limit(50):
                 print datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")  + "\t" + 'Start to scrape user ' + str(user['id'])
                 get_user_timeline(user['id'], user_collection, timeline_collection, trim_user=False)
                 # count = user_collection.count({"timeline_count": {'$gt': 3000}})

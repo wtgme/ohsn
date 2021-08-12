@@ -71,6 +71,10 @@ def process(poi, timelines, fieldname, level):
                       # ('level', pymongo.ASCENDING)
     ])
 
+    from_date = datetime.datetime(2020, 1, 1, 0, 0, 0, 0)
+    to_date = datetime.datetime(2021, 1, 1, 0, 0, 0, 0)
+
+
     while True:
         # How many users whose timelines have not been processed by LIWC
         finded = poi.find_one({
@@ -92,7 +96,7 @@ def process(poi, timelines, fieldname, level):
             # print user['id']
             textmass = ""
 
-            for tweet in timelines.find({'user.id': user['id']}):
+            for tweet in timelines.find({'user.id': user['id'], 'created_at': {'$gte': from_date, '$lt': to_date}}):
                 if 'retweeted_status' in tweet:
                     continue
                 elif 'quoted_status' in tweet:
@@ -131,7 +135,9 @@ def process_db(dbname, colname, timename, fieldname):
     process(sample_poi, sample_time, fieldname, 1000)
 
 if __name__ == '__main__':
-    process_db('www', 'newcom', 'timeline', 'liwc_anal')
+    # process_db('www', 'newcom', 'timeline', 'liwc_anal')
+    # process_db('covid', 'geo_user_2020', 'geo_user_2020_timeline', 'liwc_anal')
+    process_db('covid', 'geo_user_2020', 'geo_user_2020_timeline', 'liwc_anal_2020')
 
     # process_db('fed', 'pro_mention_miss_com', 'pro_mention_miss_timeline', 'liwc_anal')
     # process_db('TwitterProAna', 'users', 'timeline', 'liwc_anal')
