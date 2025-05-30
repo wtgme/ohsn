@@ -649,8 +649,10 @@ if __name__ == '__main__':
     network1.write_graphml('rd-net-all.graphml')
     network1 = gt.load_network('younger', 'net')
     network1.write_graphml('yg-net-all.graphml')
-    # g = gt.load_network('fed', 'net')
-    # g.write_graphml('fed-net.graphml')
+
+    g = gt.load_network('fed', 'net')
+    g.write_graphml('ed-net-all.graphml')
+    
     # label_dropout_network('coreed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
     # label_dropout_network('fed-net.graphml', 'fed', 'com', 'fed_sur', 'com')
 

@@ -20,7 +20,7 @@ def attribute_corre(filename):
               'liwc_anal.result.bio',
               'liwc_anal.result.body',
               'liwc_anal.result.health',
-              'liwc_anal.result.death'
+              'liwc_anal.result.death',
               'liwc_anal.result.anx',
               'liwc_anal.result.anger',
               'liwc_anal.result.sad',
@@ -109,31 +109,36 @@ def out_data():
     net2 = gt.Graph.Read_GraphML('ed-net-all-active.graphml')
     gt.summary(net2)
 
-    com = pd.read_csv('data/fed.com.csv', sep='\t')
+    com = pd.read_csv('data/fed.com.csv')
+    print(com.shape)
     com['posemor'] = com['posemo']/com['affect']
     com['negemor'] = com['negemo']/com['affect']
     com['emor'] = (com['posemo'] - com['negemo']) /com['affect']
-    com = com.drop(columns=['followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro'])
-    com = com.dropna()
+    # com = com.drop(columns=['followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro'])
+    # com = com.dropna()
+    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+    'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
+    'posemor', 'negemor', 'emor']
+      # 'active_day',
+    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
+
+    com = com[name]
     com = com.set_index(['id'])
 
     data = []
 
-    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
-    'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
-    'posemor', 'negemor', 'emor']
-     # 'active_day',
-    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
-
+    print(com[com.level==1].shape)
     for index, row in com[com.level==1].iterrows():
         record = [index]
         uid = str(index)
-        print uid
+        print(uid)
         record += row.tolist()
+        
         exist = True
         try:
             v = net2.vs.find(name=uid)
         except ValueError:
+            print(ValueError)
             exist = False
         if exist:
             record.append(v['alive'])
@@ -168,10 +173,10 @@ def out_data():
                     fnum = len(f_records)
                     ffnum = len(ff_records)
                     data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
-
-    df = pd.DataFrame(data, columns=name  + ['alive', 'duration']+ ['fsum_'+field for field in name[1:]] +
-                     ['favg_'+field for field in name[1:]] +  ['ffsum_'+field for field in name[1:]] +
-                     ['ffavg_'+field for field in name[1:]]+
+    data_columns = name[1:]  # exclude 'id' since it's already the first element
+    df = pd.DataFrame(data, columns=name  + ['alive', 'duration']+ ['fsum_'+field for field in data_columns] +
+                     ['favg_'+field for field in data_columns] +  ['ffsum_'+field for field in data_columns] +
+                     ['ffavg_'+field for field in data_columns]+
                      ['fnum', 'ffnum']
                      )
     df.to_csv('data/peereff.csv')
@@ -185,19 +190,26 @@ def out_wwwdata():
 
 
 
-    com = pd.read_csv('data/www.newcom.csv', sep='\t')
+    com = pd.read_csv('data/www.newcom.csv')
     com['created_at'] = pd.to_datetime(com['created_at'], format='%a %b %d %H:%M:%S +0000 %Y', errors='ignore')
 
     com['posemor'] = com['posemo']/com['affect']
     com['negemor'] = com['negemo']/com['affect']
     com['emor'] = (com['posemo'] - com['negemo']) /com['affect']
-    com = com.dropna()
+    # com = com.dropna()
+    name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+    'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
+    'posemor', 'negemor', 'emor']
+      # 'active_day',
+    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
+
+    com = com[name]
+
     com = com.set_index(['id'])
 
     data = []
 
-    name = ['id', 'timeline_count', 'friend_count', 'follower_count', 'active_day', 'affect', 'posemo', 'negemo',
-    'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'created_at', 'posemor', 'negemor', 'emor']
+    
     first_obser = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
 
     for index, row in com.iterrows():
@@ -349,11 +361,100 @@ def out_undirect_data():
                      )
     df.to_csv('data/undir-peereff.csv')
 
+
+def get_nested_field(doc, field_path):
+    """
+    Extract nested field value from document using dot notation.
+    """
+    keys = field_path.split('.')
+    value = doc
+    try:
+        for key in keys:
+            value = value[key]
+        return value
+    except (KeyError, TypeError):
+        return None
+
+def export_mongo_to_csv_chunked(
+    db_name='fed',
+    collection_name='com',
+    fields=None,
+    output_file='data/fed.com.csv',
+    chunk_size=10000
+):
+    """
+    Export selected fields from a MongoDB collection to a CSV file in chunks.
+    """
+    if fields is None:
+        # Example fields, replace with your actual field names
+        fields = ['id', 'level', 'liwc_anal.result.posemo',
+              'liwc_anal.result.negemo',
+              'liwc_anal.result.ingest',
+              'liwc_anal.result.bio',
+              'liwc_anal.result.body',
+              'liwc_anal.result.health',
+              'liwc_anal.result.death',
+              'liwc_anal.result.anx',
+              'liwc_anal.result.anger',
+              'liwc_anal.result.sad',
+              'liwc_anal.result.i',
+              'liwc_anal.result.we',
+              'liwc_anal.result.negate',
+              'liwc_anal.result.swear',
+              'liwc_anal.result.social',
+              'liwc_anal.result.family',
+              'liwc_anal.result.friend',
+              'liwc_anal.result.affect',
+            'senti.result.whole.posm',
+            # 'senti.result.whole.posstd',
+            'senti.result.whole.negm',
+            # 'senti.result.whole.negstd',
+            'senti.result.whole.scalem',
+            # 'senti.result.whole.scalestd',
+            'senti.result.whole.N',
+            # 'senti.result.prior.scalem',
+            # 'senti.result.post.scalem',
+            'engage.timeline_count',
+            'engage.friends_count',
+            'engage.followers_count',
+            'engage.statuses_count',
+            'engage.active_day',
+            'engage.followers_day', 
+            'engage.friends_day', 
+            'engage.statuses_day', 
+
+              ]
+    trimed_fields = [field.split('.')[-1] for field in fields]
+
+
+    col = dbt.db_connect_col(db_name, collection_name)
+    cursor = col.find({'liwc_anal.result.WC': {'$exists': True},
+                        'senti.result.whole.N': {'$gt': 10}}, {field: 1 for field in fields})
+
+    data = []
+    count = 0
+    for doc in cursor:
+        row = [get_nested_field(doc, field) for field in fields]
+        data.append(row)
+        count += 1
+        if count % chunk_size == 0:
+            df = pd.DataFrame(data, columns=trimed_fields)
+            df.to_csv(output_file, mode='a', header=(count == chunk_size), index=False)
+            data = []
+    if data:
+        df = pd.DataFrame(data, columns=trimed_fields)
+        df.to_csv(output_file, mode='a', header=(count <= chunk_size), index=False)
+    print("Exported {0} documents to {1}".format(count, output_file))
+
+
+
 if __name__ == '__main__':
     # attribute_corre('user-friends-attributes-followee.csv')
     # out_nets()
     # uid = iot.get_values_one_field('fed', 'scom', 'id_str')
     # pickle.dump(uid, open('eduid.pick', 'w'))
+    # export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
+    # export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
     # out_data()
     # out_undirect_data()
     out_wwwdata()

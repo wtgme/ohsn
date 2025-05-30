@@ -35,7 +35,8 @@ def db_connect_no_auth(DBNAME):
     config = ConfigParser.ConfigParser()
     config.read(
         os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), 'conf', 'Mongodb.cfg'))
-    MONGOURL = config.get('host', 'url')
+    # MONGOURL = config.get('host', 'url')
+    MONGOURL = '127.0.0.1'
     PORT = '27017'
     MONGOAUTH = 'mongodb://' + MONGOURL + ':' + PORT + '/' + DBNAME
 
