@@ -10,22 +10,26 @@ import pandas as pd
 # import pickle
 import cPickle as pickle
 import ohsn.util.io_util as iot
-from lifelines.utils import datetimes_to_durations
+# from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
 import pymongo
-from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
 
 
 def readnetwork(dbname, comname):
     # Read the subset of the who network
     # com = dbt.db_connect_col(dbname, comname)
     # userids = iot.get_values_one_field(dbname=dbname, colname=comname, fieldname='id', filt={})
-    userids = pickle.load(open('data/www_crawled_uid.pick', 'r'))
-    userids = set(userids)
+    # userids = pickle.load(open('data/www_crawled_uid.pick', 'r'))
+    # userids = set(userids)
+    com = pd.read_csv('data/www.newcom.csv')
+    com['id'] = com['id'].astype(int)
+    userids = set(com['id'])
     print 'length of user ids ', len(userids)
-    fw = open('data/www1tweet.net', 'w')
-    with open('/media/data/www_twitter_rv.net', 'r') as infile:
+    fw = open('data/wwwsub.net', 'w')
+    # with open('/media/data/www_twitter_rv.net', 'r') as infile:
+    with open('data/www.net', 'r') as infile:
         for line in infile:
             ids = line.strip().split()
             if (int(ids[0]) in userids) and (int(ids[1]) in userids):
@@ -367,9 +371,9 @@ def www_profile():
         Parallel(n_jobs=32)(delayed(www_profile_sub)(i) for i in chunk_list)
 
 if __name__ == '__main__':
-    www_profile()
+    # www_profile()
     # get_profile('www', 'com')
-    # readnetwork('www', 'newcom')
+    readnetwork('www', 'newcom')
     # get_sentiments('www', 'com')
     # user_active()
     # read_user_time_iv('www-user-durations-iv-following-senti.csv')

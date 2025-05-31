@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import ohsn.util.io_util as iot
-from lifelines.utils import datetimes_to_durations
+# from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
 
@@ -185,7 +185,7 @@ def out_data():
 def out_wwwdata():
     # out peer effect data for www random users.
     # Note that the network directions are opposite with in ED networks
-    net2 = gt.Graph.Read_Ncol('data/www.net', directed=True) # users ---> followers
+    net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True) # users ---> followers
     net2 = gt.giant_component(net2)
 
 
@@ -422,7 +422,7 @@ def export_mongo_to_csv_chunked(
             'engage.followers_day', 
             'engage.friends_day', 
             'engage.statuses_day', 
-
+            'created_at'
               ]
     trimed_fields = [field.split('.')[-1] for field in fields]
 
