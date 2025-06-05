@@ -188,8 +188,6 @@ def out_wwwdata():
     net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True) # users ---> followers
     net2 = gt.giant_component(net2)
 
-
-
     com = pd.read_csv('data/www.newcom.csv')
     com['created_at'] = pd.to_datetime(com['created_at'], format='%a %b %d %H:%M:%S +0000 %Y', errors='ignore')
 
@@ -200,17 +198,20 @@ def out_wwwdata():
     name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
     'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
     'posemor', 'negemor', 'emor']
-      # 'active_day',
-    # 'followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro']
+    
+    # Define numerical columns for friend calculations (excluding created_at)
+    numerical_cols = ['timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+                      'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
+                      'posemor', 'negemor', 'emor']
 
-    com = com[name]
-
+    com = com[name + ['created_at']]
     com = com.set_index(['id'])
 
     data = []
-
     
     first_obser = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
+    print(com[com.level==1].shape)
+    print(com['level'].nunique())
 
     for index, row in com.iterrows():
         record = [index]
@@ -233,39 +234,53 @@ def out_wwwdata():
             record.append(alive)
             record.append(duration)
             # Ego's followings and neighbors (including followings and followers)
-            friends = set(net2.predecessors(uid))
-            neighbors = set(net2.neighbors(uid))
-            if len(friends) > 0:
-                friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
-                f_records = []
-                ff_records = []
-                for fid in friend_ids:
-                    if fid in com.index:
-                        f_records.append(com.loc[(fid)].tolist())
-                    # second-order followings - second-order follower - first-order neighbors
-                    ffs = set(net2.predecessors(str(fid)))
-                    followers = set(net2.successors(str(fid)))
-                    ffs = ffs - followers
-                    ffs = ffs - neighbors
-                    if len(ffs) > 0:
-                        ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
-                        for ffid in ff_ids:
-                            if ffid in com.index:
-                                ff_records.append(com.loc[(ffid)].tolist())
-                if (len(f_records) > 0) and (len(ff_records) > 0):
-                    f_records = np.array(f_records)
-                    ff_records = np.array(ff_records)
-                    f_mean = np.mean(f_records, axis=0)
-                    f_sum = np.sum(f_records, axis=0)
-                    ff_mean = np.mean(ff_records, axis=0)
-                    ff_sum = np.sum(ff_records, axis=0)
-                    fnum = len(f_records)
-                    ffnum = len(ff_records)
-                    data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
+            friends = set(net2.predecessors(uid)) # followee. 
+            ufollowers = set(net2.successors(uid)) # follower. 
+            friends_count = set([i for i in friends if i in com.index])
+            ufollowers_count = set([i for i in ufollowers if i in com.index])
+            # Fix division by zero error by checking if denominators are not zero
+            friends_ratio = len(friends_count) / len(friends) if len(friends) > 0 else 0
+            ufollowers_ratio = len(ufollowers_count) / len(ufollowers) if len(ufollowers) > 0 else 0
+            
+            if (friends_ratio > 0.45) & (ufollowers_ratio > 0.45):
 
-    df = pd.DataFrame(data, columns=name  + ['alive', 'duration']+ ['fsum_'+field for field in name[1:]] +
-                     ['favg_'+field for field in name[1:]] +  ['ffsum_'+field for field in name[1:]] +
-                     ['ffavg_'+field for field in name[1:]]+
+                neighbors = set(net2.neighbors(uid)) # followees and followers
+                if len(friends) > 0:
+                    friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
+                    f_records = []
+                    ff_records = []
+                    for fid in friend_ids:
+                        if fid in com.index:
+                            # Only use numerical columns for calculations
+                            f_records.append(com.loc[fid][numerical_cols].tolist())
+                        # second-order followings - second-order follower - first-order neighbors
+                        ffs = set(net2.predecessors(str(fid)))
+                        followers = set(net2.successors(str(fid)))
+                        ffs = ffs - followers
+                        ffs = ffs - neighbors
+                        if len(ffs) > 0:
+                            ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
+                            for ffid in ff_ids:
+                                if ffid in com.index:
+                                    # Only use numerical columns for calculations
+                                    ff_records.append(com.loc[ffid][numerical_cols].tolist())
+                    if (len(f_records) > 0) and (len(ff_records) > 0):
+                        f_records = np.array(f_records)
+                        ff_records = np.array(ff_records)
+                        f_mean = np.mean(f_records, axis=0)
+                        f_sum = np.sum(f_records, axis=0)
+                        ff_mean = np.mean(ff_records, axis=0)
+                        ff_sum = np.sum(ff_records, axis=0)
+                        fnum = len(f_records)
+                        ffnum = len(ff_records)
+                        data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
+        
+    # Use numerical_cols for the DataFrame column names instead of name[1:]
+    df = pd.DataFrame(data, columns=name + ['created_at', 'alive', 'duration'] + 
+                     ['fsum_'+field for field in numerical_cols] +
+                     ['favg_'+field for field in numerical_cols] +  
+                     ['ffsum_'+field for field in numerical_cols] +
+                     ['ffavg_'+field for field in numerical_cols] +
                      ['fnum', 'ffnum']
                      )
     df.to_csv('data/wwwpeereff.csv')
