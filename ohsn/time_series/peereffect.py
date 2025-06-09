@@ -443,8 +443,7 @@ def export_mongo_to_csv_chunked(
 
 
     col = dbt.db_connect_col(db_name, collection_name)
-    cursor = col.find({'liwc_anal.result.WC': {'$exists': True},
-                        'senti.result.whole.N': {'$gt': 10}}, {field: 1 for field in fields})
+    cursor = col.find({'liwc_anal.result.WC': {'$exists': True}}, {field: 1 for field in fields})
 
     data = []
     count = 0
@@ -468,8 +467,8 @@ if __name__ == '__main__':
     # out_nets()
     # uid = iot.get_values_one_field('fed', 'scom', 'id_str')
     # pickle.dump(uid, open('eduid.pick', 'w'))
-    export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
-    export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
-    # out_data()
+    # export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
+    # export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
+    out_data()
     # # out_undirect_data()
-    # out_wwwdata()
+    out_wwwdata()
