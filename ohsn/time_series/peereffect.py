@@ -106,14 +106,20 @@ def out_nets():
 
 
 def out_data():
-    net2 = gt.Graph.Read_GraphML('ed-net-all-active.graphml')
+    net2 = gt.Graph.Read_GraphML('data/ed-net-all-active.graphml')
     gt.summary(net2)
 
     com = pd.read_csv('data/fed.com.csv')
     print(com.shape)
-    com['posemor'] = com['posemo']/com['affect']
-    com['negemor'] = com['negemo']/com['affect']
-    com['emor'] = (com['posemo'] - com['negemo']) /com['affect']
+    com['posemor'] = np.divide(com['posemo'], com['affect'], 
+                               out=np.zeros_like(com['posemo']), 
+                               where=com['affect']!=0)
+    com['negemor'] = np.divide(com['negemo'], com['affect'], 
+                               out=np.zeros_like(com['negemo']), 
+                               where=com['affect']!=0)
+    com['emor'] = np.divide(com['posemo'] - com['negemo'], com['affect'], 
+                            out=np.zeros_like(com['posemo']), 
+                            where=com['affect']!=0)
     # com = com.drop(columns=['followers_day', 'friends_day', 'statuses_day', 'hashtag_pro', 'quote_pro', 'reply_pro', 'retweet_pro', 'dmention_pro'])
     # com = com.dropna()
     name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
@@ -191,9 +197,15 @@ def out_wwwdata():
     com = pd.read_csv('data/www.newcom.csv')
     com['created_at'] = pd.to_datetime(com['created_at'], format='%a %b %d %H:%M:%S +0000 %Y', errors='ignore')
 
-    com['posemor'] = com['posemo']/com['affect']
-    com['negemor'] = com['negemo']/com['affect']
-    com['emor'] = (com['posemo'] - com['negemo']) /com['affect']
+    com['posemor'] = np.divide(com['posemo'], com['affect'], 
+                               out=np.zeros_like(com['posemo']), 
+                               where=com['affect']!=0)
+    com['negemor'] = np.divide(com['negemo'], com['affect'], 
+                               out=np.zeros_like(com['negemo']), 
+                               where=com['affect']!=0)
+    com['emor'] = np.divide(com['posemo'] - com['negemo'], com['affect'], 
+                            out=np.zeros_like(com['posemo']), 
+                            where=com['affect']!=0)
     # com = com.dropna()
     name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
     'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
