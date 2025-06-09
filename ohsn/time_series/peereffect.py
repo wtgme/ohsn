@@ -429,10 +429,10 @@ def export_mongo_to_csv_chunked(
             'senti.result.whole.N',
             # 'senti.result.prior.scalem',
             # 'senti.result.post.scalem',
-            'engage.timeline_count',
-            'engage.friends_count',
-            'engage.followers_count',
-            'engage.statuses_count',
+            'timeline_count',
+            'friends_count',
+            'followers_count',
+            'statuses_count',
             'engage.active_day',
             'engage.followers_day', 
             'engage.friends_day', 
@@ -468,8 +468,8 @@ if __name__ == '__main__':
     # out_nets()
     # uid = iot.get_values_one_field('fed', 'scom', 'id_str')
     # pickle.dump(uid, open('eduid.pick', 'w'))
-    # export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
-    # export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
+    export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
+    export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
     # out_data()
-    # out_undirect_data()
-    out_wwwdata()
+    # # out_undirect_data()
+    # out_wwwdata()
