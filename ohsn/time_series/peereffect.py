@@ -191,6 +191,7 @@ def out_data():
 def out_wwwdata():
     # out peer effect data for www random users.
     # Note that the network directions are opposite with in ED networks
+    # Constructed from www_drop.py
     net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True) # users ---> followers
     net2 = gt.giant_component(net2)
 
