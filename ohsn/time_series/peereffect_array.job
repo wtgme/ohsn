@@ -1,0 +1,23 @@
+#!/bin/bash -l
+
+#SBATCH --job-name=cpu-ohsn
+#SBATCH --partition=cpu
+#SBATCH --mem=50G
+#SBATCH --signal=USR2
+#SBATCH --array=1-1000
+
+#SBATCH --output=peereffect_%A_%a.out
+#SBATCH --error=peereffect_%A_%a.err
+
+module load anaconda3/2022.10-gcc-13.2.0
+cd /users/k1810895/
+cd /users/k1810895/data/ohsn/ohsn/time_series/
+
+source /users/k1810895/.bashrc
+source activate py27
+
+# Calculate chunk index (0-999) from SLURM_ARRAY_TASK_ID (1-1000)
+chunk_id=$((SLURM_ARRAY_TASK_ID - 1))
+
+# Pass the chunk index to the Python script
+python peereffect.py $chunk_id

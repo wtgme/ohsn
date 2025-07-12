@@ -1,0 +1,19 @@
+#!/bin/bash -l
+
+#SBATCH --job-name=cpu-ohsn
+#SBATCH --partition=cpu
+#SBATCH --ntasks=1
+#SBATCH --mem=90G
+#SBATCH --signal=USR2
+#SBATCH --cpus-per-task=20
+
+#SBATCH --output=peereffect.out
+#SBATCH --error=peereffect.err
+
+module load anaconda3/2022.10-gcc-13.2.0
+cd /users/k1810895/
+cd /users/k1810895/prj_ppn_ar_group/Tao/ohsn/ohsn/time_series/
+
+source /users/k1810895/.bashrc
+source activate py27
+python peereffect.py 
