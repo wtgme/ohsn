@@ -154,6 +154,7 @@ def out_data():
             # Ego's followings and neighbors (including followings and followers)
             friends = set(net2.successors(uid))
             neighbors = set(net2.neighbors(uid))
+
             if len(friends) > 0:
                 friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
                 f_records = []
@@ -191,11 +192,13 @@ def out_data():
 
 
 def out_wwwdata(i=0):
+    # https://anlab-kaist.github.io/traces/WWW2010
     # dataset: https://github.com/ANLAB-KAIST/traces/releases/tag/twitter_rv.net
     # out peer effect data for www random users.
     # Note that the network directions are opposite with in ED networks
     # Constructed from www_drop.py
     # Read_Edgelist only accepts IDs, not names. 
+    # USER and FOLLOWER are represented by numeric ID (integer). 
     net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True, names=True, weights=False) # users ---> followers
     # All nodes: 61578041
     # Component counts: 59344352
@@ -264,8 +267,9 @@ def out_wwwdata(i=0):
             friends_count = row['friends_count']
             followers_count = row['followers_count']
             # # Fix division by zero error by checking if denominators are not zero
-            friends_ratio = (len(friends) / friends_count) if friends_count > 0 else 0
-            ufollowers_ratio = (len(ufollowers) / followers_count) if followers_count > 0 else 0
+            # This is the bug. change to float division otherwise it will be integer division and zeros. 
+            friends_ratio = float(len(friends)) / friends_count if friends_count > 0 else 0
+            ufollowers_ratio = float(len(ufollowers)) / followers_count if followers_count > 0 else 0
 
             
             record.append(friends_ratio)
@@ -274,6 +278,7 @@ def out_wwwdata(i=0):
             print(friends_ratio, ufollowers_ratio, len(friends), friends_count, len(ufollowers), followers_count)
             if True:
                 neighbors = set(net2.neighbors(uid)) # followees and followers
+
                 if len(friends) > 0:
                     friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
                     f_records = []
