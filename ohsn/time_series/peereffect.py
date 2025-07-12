@@ -12,6 +12,8 @@ import ohsn.util.io_util as iot
 # from lifelines.utils import datetimes_to_durations
 import ohsn.util.graph_util as gt
 import scipy.stats as stats
+import multiprocessing as mp
+from functools import partial
 
 def attribute_corre(filename):
     fields = ['liwc_anal.result.posemo',
@@ -188,12 +190,18 @@ def out_data():
     df.to_csv('data/peereff.csv')
 
 
-def out_wwwdata():
+def out_wwwdata(i=0):
+    # dataset: https://github.com/ANLAB-KAIST/traces/releases/tag/twitter_rv.net
     # out peer effect data for www random users.
     # Note that the network directions are opposite with in ED networks
     # Constructed from www_drop.py
-    net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True) # users ---> followers
-    net2 = gt.giant_component(net2)
+    # Read_Edgelist only accepts IDs, not names. 
+    net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True, names=True, weights=False) # users ---> followers
+    # All nodes: 61578041
+    # Component counts: 59344352
+    # net2 = gt.giant_component(net2)
+    # print(net2.vcount())
+
 
     com = pd.read_csv('data/www.newcom.csv')
     com['created_at'] = pd.to_datetime(com['created_at'], format='%a %b %d %H:%M:%S +0000 %Y', errors='ignore')
@@ -220,6 +228,10 @@ def out_wwwdata():
     com = com[name + ['created_at']]
     com = com.set_index(['id'])
 
+    # Filter to only process rows where index % 1000 == i
+    com = com[com.index % 1000 == i]
+    print("Processing chunk {}: {} rows".format(i, len(com)))
+
     data = []
     
     first_obser = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
@@ -229,7 +241,7 @@ def out_wwwdata():
     for index, row in com.iterrows():
         record = [index]
         uid = str(index)
-        print uid
+        # print uid
         record += row.tolist()
         exist = True
         try:
@@ -249,14 +261,18 @@ def out_wwwdata():
             # Ego's followings and neighbors (including followings and followers)
             friends = set(net2.predecessors(uid)) # followee. 
             ufollowers = set(net2.successors(uid)) # follower. 
-            friends_count = set([i for i in friends if i in com.index])
-            ufollowers_count = set([i for i in ufollowers if i in com.index])
-            # Fix division by zero error by checking if denominators are not zero
-            friends_ratio = len(friends_count) / len(friends) if len(friends) > 0 else 0
-            ufollowers_ratio = len(ufollowers_count) / len(ufollowers) if len(ufollowers) > 0 else 0
-            
-            if (friends_ratio > 0.45) & (ufollowers_ratio > 0.45):
+            friends_count = row['friends_count']
+            followers_count = row['followers_count']
+            # # Fix division by zero error by checking if denominators are not zero
+            friends_ratio = (len(friends) / friends_count) if friends_count > 0 else 0
+            ufollowers_ratio = (len(ufollowers) / followers_count) if followers_count > 0 else 0
 
+            
+            record.append(friends_ratio)
+            record.append(ufollowers_ratio)
+            # if (friends_ratio > 0) or (ufollowers_ratio > 0):
+            print(friends_ratio, ufollowers_ratio, len(friends), friends_count, len(ufollowers), followers_count)
+            if True:
                 neighbors = set(net2.neighbors(uid)) # followees and followers
                 if len(friends) > 0:
                     friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
@@ -289,14 +305,128 @@ def out_wwwdata():
                         data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
         
     # Use numerical_cols for the DataFrame column names instead of name[1:]
-    df = pd.DataFrame(data, columns=name + ['created_at', 'alive', 'duration'] + 
+    df = pd.DataFrame(data, columns=name + ['created_at', 'alive', 'duration', 'friends_ratio', 'ufollowers_ratio'] + 
                      ['fsum_'+field for field in numerical_cols] +
                      ['favg_'+field for field in numerical_cols] +  
                      ['ffsum_'+field for field in numerical_cols] +
                      ['ffavg_'+field for field in numerical_cols] +
                      ['fnum', 'ffnum']
                      )
-    df.to_csv('data/wwwpeereff.csv')
+    df.to_csv('data/wwwpeereff_{}.csv'.format(i))
+
+# def out_wwwdata():
+#     # out peer effect data for www random users.
+#     # Note that the network directions are opposite with in ED networks
+#     # Constructed from www_drop.py
+#     net2 = gt.Graph.Read_Ncol('data/wwwsub.net', directed=True) # users ---> followers
+#     net2 = gt.giant_component(net2)
+
+#     com = pd.read_csv('data/www.newcom.csv')
+#     com['created_at'] = pd.to_datetime(com['created_at'], format='%a %b %d %H:%M:%S +0000 %Y', errors='ignore')
+
+#     com['posemor'] = np.divide(com['posemo'], com['affect'], 
+#                                out=np.zeros_like(com['posemo']), 
+#                                where=com['affect']!=0)
+#     com['negemor'] = np.divide(com['negemo'], com['affect'], 
+#                                out=np.zeros_like(com['negemo']), 
+#                                where=com['affect']!=0)
+#     com['emor'] = np.divide(com['posemo'] - com['negemo'], com['affect'], 
+#                             out=np.zeros_like(com['posemo']), 
+#                             where=com['affect']!=0)
+#     # com = com.dropna()
+#     name = ['id', 'timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+#     'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
+#     'posemor', 'negemor', 'emor']
+    
+#     # Define numerical columns for friend calculations (excluding created_at)
+#     numerical_cols = ['timeline_count', 'friends_count', 'followers_count', 'statuses_count',
+#                       'affect', 'posemo', 'negemo', 'bio', 'body', 'ingest', 'scalem', 'posm', 'negm', 'level', 'active_day',
+#                       'posemor', 'negemor', 'emor']
+
+#     com = com[name + ['created_at']]
+#     com = com.set_index(['id'])
+
+#     data = []
+    
+#     first_obser = datetime.strptime('Mon Sep 28 20:03:05 +0000 2009', '%a %b %d %H:%M:%S +0000 %Y')
+#     print(com[com.level==1].shape)
+#     print(com['level'].nunique())
+
+#     for index, row in com.iterrows():
+#         record = [index]
+#         uid = str(index)
+#         print uid
+#         record += row.tolist()
+#         exist = True
+#         try:
+#             v = net2.vs.find(name=uid)
+#         except ValueError:
+#             exist = False
+#         if exist:
+#             alive = 0
+#             duration = 0
+#             if row['created_at'] > first_obser:
+#                 alive = 1
+#                 delt = row['created_at'] - first_obser
+#                 duration = delt.days + 1
+
+#             record.append(alive)
+#             record.append(duration)
+#             # Ego's followings and neighbors (including followings and followers)
+#             friends = set(net2.predecessors(uid)) # followee. 
+#             ufollowers = set(net2.successors(uid)) # follower. 
+#             friends_count = row['friends_count']
+#             followers_count = row['followers_count']
+#             # # Fix division by zero error by checking if denominators are not zero
+#             friends_ratio = len(friends) / friends_count if friends_count > 0 else 0
+#             ufollowers_ratio = len(ufollowers) / followers_count if followers_count > 0 else 0
+            
+#             record.append(len(friends))
+#             record.append(len(ufollowers))
+#             if (friends_ratio > 0.3) & (ufollowers_ratio > 0.3):
+#             # if True:
+
+#                 neighbors = set(net2.neighbors(uid)) # followees and followers
+#                 if len(friends) > 0:
+#                     friend_ids = [int(net2.vs[vi]['name']) for vi in friends] # return id
+#                     f_records = []
+#                     ff_records = []
+#                     for fid in friend_ids:
+#                         if fid in com.index:
+#                             # Only use numerical columns for calculations
+#                             f_records.append(com.loc[fid][numerical_cols].tolist())
+#                         # second-order followings - second-order follower - first-order neighbors
+#                         ffs = set(net2.predecessors(str(fid)))
+#                         followers = set(net2.successors(str(fid)))
+#                         ffs = ffs - followers
+#                         ffs = ffs - neighbors
+#                         if len(ffs) > 0:
+#                             ff_ids = [int(net2.vs[vi]['name']) for vi in ffs] # return id
+#                             for ffid in ff_ids:
+#                                 if ffid in com.index:
+#                                     # Only use numerical columns for calculations
+#                                     ff_records.append(com.loc[ffid][numerical_cols].tolist())
+#                     if (len(f_records) > 0) and (len(ff_records) > 0):
+#                         f_records = np.array(f_records)
+#                         ff_records = np.array(ff_records)
+#                         f_mean = np.mean(f_records, axis=0)
+#                         f_sum = np.sum(f_records, axis=0)
+#                         ff_mean = np.mean(ff_records, axis=0)
+#                         ff_sum = np.sum(ff_records, axis=0)
+#                         fnum = len(f_records)
+#                         ffnum = len(ff_records)
+#                         data.append(record + f_sum.tolist() + f_mean.tolist() + ff_sum.tolist() + ff_mean.tolist() + [fnum, ffnum] )
+        
+#     # Use numerical_cols for the DataFrame column names instead of name[1:]
+#     df = pd.DataFrame(data, columns=name + ['created_at', 'alive', 'duration', 'friends_count', 'ufollowers_count'] + 
+#                      ['fsum_'+field for field in numerical_cols] +
+#                      ['favg_'+field for field in numerical_cols] +  
+#                      ['ffsum_'+field for field in numerical_cols] +
+#                      ['ffavg_'+field for field in numerical_cols] +
+#                      ['fnum', 'ffnum']
+#                      )
+#     df.to_csv('data/wwwpeereff.csv')
+
 
 
 def out_undirect_data():
@@ -482,6 +612,12 @@ if __name__ == '__main__':
     # pickle.dump(uid, open('eduid.pick', 'w'))
     # export_mongo_to_csv_chunked(db_name='fed', collection_name='com', output_file='data/fed.com.csv')
     # export_mongo_to_csv_chunked(db_name='www', collection_name='newcom', output_file='data/www.newcom.csv')
-    out_data()
+    # out_data()
     # # out_undirect_data()
-    out_wwwdata()
+    # out_wwwdata()
+    import sys
+    if len(sys.argv) > 1:
+        i = int(sys.argv[1])
+    else:
+        i = 0
+    out_wwwdata(i)

@@ -18,10 +18,6 @@ cor(data)
 
 
 
-
-
-
-
 data("CigarettesSW")
 CigarettesSW
 CigarettesSW$rprice <- with(CigarettesSW, price/cpi)
